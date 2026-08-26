@@ -1,0 +1,847 @@
+{
+  "summary": {
+    "n": 50,
+    "n_ok": 50,
+    "top_k": 25,
+    "main_acc": 0.38,
+    "main_hier_acc": 0.46,
+    "main_branch_acc": 0.94,
+    "main_top_acc": 0.94,
+    "main_or_aux_hit": 0.38,
+    "aux_match": 0.3,
+    "aux_gold_count": 30,
+    "inter_acc": 0.84,
+    "inter_precision": 1.0,
+    "inter_recall": 0.68,
+    "inter_f1": 0.81,
+    "anti_hallucination_pass": 1.0
+  },
+  "records": [
+    {
+      "sample_id": 1,
+      "pred_main": "F291.1",
+      "gold_main": "F291.1",
+      "pred_aux": [
+        "F124.7"
+      ],
+      "gold_aux": [
+        "F124.7"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类F291.1（城镇形成与发展）契合文献的核心应用场景——新型城镇化；辅助分类F124.7（国民收入与分配）对应次要主题共同富裕。两者同属经济学科边界（F大类），故判定为非交叉学科。熵值法、ArcGIS、空间计量模型等为常规分析工具，不单列辅助分类。"
+    },
+    {
+      "sample_id": 2,
+      "pred_main": "F323.3",
+      "gold_main": "F320.1",
+      "pred_aux": [
+        "F49"
+      ],
+      "gold_aux": [
+        "TP311.13"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 F323→F323.3] 文献从经济学视角探讨大数据支撑现代农业产业高质量发展的内在逻辑与政策建议，核心应用场景为农业产业发展与农业生产效率优化，主分类归入F323（农业经济建设与发展）。辅助分类号F49（信息产业经济）对应大数据作为新型生产要素驱动产业发展的经济属性，属于次要主题。农业经济(F)与信息产业经济(F)同属经济学科边界，但文献实质探讨的是农业经济与数据要素的跨领域融合，且大数据作为核心驱动力具有独立的学科分量，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 3,
+      "pred_main": "F291.1",
+      "gold_main": "F290",
+      "pred_aux": [],
+      "gold_aux": [
+        "G301"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 F291→F291.1] 文献着力探讨科技创新城市的功能内涵、评价体系及判定标准，核心应用场景为城市经济与城市功能研究，属于城市经济管理范畴，故主分类选F291（城市经济）；评价指标体系与判定标准为该领域研究的例行分析手段，不单列为辅助分类号，故无辅助分类号且不判交叉学科。"
+    },
+    {
+      "sample_id": 4,
+      "pred_main": "TM713",
+      "gold_main": "TM713",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献着力解决高比例分布式电源接入配电网的短路故障计算与分析问题，核心应用场景为电力系统的故障分析与计算，属于输配电工程及电力系统运行范畴，故主分类选 TM713（电力系统故障分析）。文中采用的节点阻抗矩阵、道路矩阵等均为电力系统常规分析计算手段，不构成跨学科辅助主题，故无辅助分类号且不判交叉。"
+    },
+    {
+      "sample_id": 5,
+      "pred_main": "TM714",
+      "gold_main": "TM714",
+      "pred_aux": [],
+      "gold_aux": [
+        "TP181"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TM715→TM714] 文献着力解决新型电力系统度冬度夏日最大负荷的预测问题，核心应用场景为电力系统负荷预测，属于输配电工程中的电力系统运行与负荷分析范畴，故主分类取 TM715（电力系统运行与负荷预测）。文中使用的负荷分解理论、M-K检验、聚类分析、ARIMA及SVR等均为常规统计与预测工具，不单列为辅助分类号。"
+    },
+    {
+      "sample_id": 6,
+      "pred_main": "TM46",
+      "gold_main": "TM46",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献着力解决双有源桥（DAB）变换器在电压不匹配时的效率降低问题，提出双重移相优化控制策略以减小回流功率并实现软开关，应用场景为电力电子变换器装置，主分类归入TM46（变压器、变流器及电抗器）。双重移相控制与分段优化属于变换器控制策略的例行技术手段，不单列为辅助分类号，故无交叉学科判定。"
+    },
+    {
+      "sample_id": 7,
+      "pred_main": "F713.36",
+      "gold_main": "F407.2",
+      "pred_aux": [
+        "TM614"
+      ],
+      "gold_aux": [
+        "O225"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献着力解决的核心应用场景是风电数据的交易与定价方法，本质属于信息商品与电子贸易的定价问题，主分类归入F713.36（电子贸易、网上贸易）；辅助分类号TM614（风能发电）代表次要应用主题——风电场及其数据价值评估，分属经济(F)与电工技术(TM)不同学科边界，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 8,
+      "pred_main": "TM724",
+      "gold_main": "TM13",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献着力解决无线电能传输(WPT)系统中线圈偏移导致的功率及效率波动问题，属于无线电能传输的应用场景。中图法中无线电能传输归入TM电工技术下的TM72（输配电技术），其下位类TM724专门对应无线电能传输，故主分类取TM724。文献核心为电路拓扑建模与参数优化，均属于电工技术学科内部的常规方法，不涉及跨学科边界的次要主题，故无辅助分类号且非交叉学科。"
+    },
+    {
+      "sample_id": 9,
+      "pred_main": "TM933.4",
+      "gold_main": "TM93",
+      "pred_aux": [
+        "TP18"
+      ],
+      "gold_aux": [
+        "TP183"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TM933→TM933.4] 主分类TM933（电能测量与测量仪表）契合文献着力解决的实际应用场景——非侵入式负荷监测，即通过对用户总用电数据进行测量与分解以实现用电行为的精细化分析。辅助分类号TP18（人工智能理论）代表文献核心方法深度学习与混合神经网络模型。由于主分类属TM（电工技术）学科边界，辅助分类属TP（自动化技术、计算机技术）学科边界，两者分属T大类下不同的二级学科边界，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 10,
+      "pred_main": "F551",
+      "gold_main": "F550",
+      "pred_aux": [
+        "F744"
+      ],
+      "gold_aux": [
+        "F740.2"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 F552→F551] 主分类F552对应水路运输经济，契合文献着力解决的海运业贸易格局与网络地位这一实际应用场景；辅助分类F744对应国际贸易网络与结构，反映文献中贸易网络拓扑特征及出口结构这一有分量的次要主题。两者同属经济（F）学科边界，故判定为非交叉学科。"
+    },
+    {
+      "sample_id": 11,
+      "pred_main": "F592.7",
+      "gold_main": "F590.8",
+      "pred_aux": [
+        "F126.1"
+      ],
+      "gold_aux": [
+        "F126.1"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 F592→F592.7] 主分类F592对应中国旅游事业与文旅经济，契合文献以大运河沿线城市文旅消费水平为研究对象的应用场景；辅助分类F126.1代表居民消费水平与结构，对应文旅消费支出、消费能力等维度。两者同属经济（F）学科边界，故判定为非交叉学科。"
+    },
+    {
+      "sample_id": 12,
+      "pred_main": "F592.7",
+      "gold_main": "F590.7",
+      "pred_aux": [
+        "F323.8"
+      ],
+      "gold_aux": [
+        "F323.8"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 F592→F592.7] 主分类F592对应中国旅游事业，契合文献以乡村旅游发展为核心应用场景的研究主题；辅助分类F323.8对应农村人民生活状况，反映文献着力分析的农户生计资本与生计策略这一次要主题。两者同属经济（F）大类，未跨越学科边界，故判定为非交叉学科。"
+    },
+    {
+      "sample_id": 13,
+      "pred_main": "F590.3",
+      "gold_main": "F590.7",
+      "pred_aux": [],
+      "gold_aux": [
+        "K928.7"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献着力探讨世界文化遗产旅游地的创新发展路径与运作模式，核心应用场景属于旅游经济管理与开发，故主分类选 F590.3（旅游事业建设与发展）。文中虽运用了符号消费等文化学概念作为分析框架，但未构成独立的跨学科技术方法或并列的次要主题，故不设辅助分类号，is_interdisciplinary 为 false。"
+    },
+    {
+      "sample_id": 14,
+      "pred_main": "F293.2",
+      "gold_main": "F293.2",
+      "pred_aux": [
+        "F291.1"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献着力解决城市化进程中土地利用结构效率的测评与优化问题，属于城市土地经济与管理范畴，主分类应为F293.2（城市土地管理/城市房地产经济）。辅助分类号F291.1（城市化发展）对应文中作为核心背景与驱动因素的城市化进程主题。两者同属F经济大类下的城市经济学子领域，学科边界相同，故不判为交叉学科。DEA方法属常规测评工具，不单列为辅助主题。"
+    },
+    {
+      "sample_id": 15,
+      "pred_main": "TM727.2",
+      "gold_main": "TM732",
+      "pred_aux": [
+        "TM614"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类TM727.2（配电网）契合文献着力解决的实际应用场景——含分散式风电的配电网双层优化重构问题；辅助分类TM614（风能发电）对应次要应用主题分散式风电接入，与主分类同属T大类下的电工学科边界（TM），故不判为交叉学科。"
+    },
+    {
+      "sample_id": 16,
+      "pred_main": "F291",
+      "gold_main": "G301",
+      "pred_aux": [
+        "G322.0"
+      ],
+      "gold_aux": [
+        "F061.5"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": false,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 F290→F291] 主分类F290（城市与市政经济）契合文献以都市圈为应用场景探讨经济与创新演化的核心主题；辅助分类号G322.0（中国科学研究事业）对应文献中着力探讨的协同创新理论与科研发展脉络这一次要主题。由于主分类属经济学科边界，辅助分类属文化、科学、教育、体育学科边界，两者分属不同学科边界，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 17,
+      "pred_main": "TM713",
+      "gold_main": "TM713",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TM711→TM713] 主分类选TM711（输配电系统、电力网及电力系统计算），因为文献着力解决35kV配电网线路的相间短路故障测距问题，属于输配电工程中的故障分析与计算范畴。文献中使用的列文伯格-马夸尔特算法（LMA）属于常规的非线性优化求解手段，不单列为辅助分类号。无辅助分类号，故不判为交叉学科。"
+    },
+    {
+      "sample_id": 18,
+      "pred_main": "TU984.13",
+      "gold_main": "TU984",
+      "pred_aux": [],
+      "gold_aux": [
+        "F713.581"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献以闽南三地传统商业街为对象，探讨其更新与发展，核心应用场景为城市商业区的规划与改造，属城市规划范畴。中图法中 TU984.13 专指商业区规划，契合度最高。文章虽涉及建筑特色介绍，但落脚点在于商业街整体更新发展的对策思路，而非单一建筑设计与保护，故无需设辅助分类号。"
+    },
+    {
+      "sample_id": 19,
+      "pred_main": "F719",
+      "gold_main": "F719",
+      "pred_aux": [
+        "D923.4"
+      ],
+      "gold_aux": [
+        "D923.4"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类F719（服务业）契合文献着力解决的应用场景——服务业内部结构优化；辅助分类D923.4（知识产权）是文献中具有分量的次要主题（知识产权保护），属于中国法律部门下的具体制度。由于主分类属经济学科边界（F），辅助分类属政治法律学科边界（D），两者分属不同学科边界，故判定为交叉学科。复杂网络分析法仅作为研究工具，不单列为辅助主题。"
+    },
+    {
+      "sample_id": 20,
+      "pred_main": "TM773",
+      "gold_main": "TM773",
+      "pred_aux": [
+        "TM614"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类TM773（电力系统继电保护）契合文献着力解决的应用场景——远海风电交流汇集线路的故障保护原理；辅助分类TM614（风能发电）反映了研究的次要应用主题（海上风电系统），与主分类同属TM电工学科边界，故判定为非交叉学科。"
+    },
+    {
+      "sample_id": 21,
+      "pred_main": "F301.2",
+      "gold_main": "F301.0",
+      "pred_aux": [],
+      "gold_aux": [
+        "D922.3"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 F301.3→F301.2] 文献着力解决的实际问题是土地征收补偿标准的确定，属于土地经济与土地管理范畴，主分类取F301.3（土地经济学，含土地征用、补偿等）。供需理论是文中测算农地价值所采用的经济学基础方法，属常规分析手段，不单列为辅助分类号，故无辅助号且不判交叉学科。"
+    },
+    {
+      "sample_id": 22,
+      "pred_main": "TM614",
+      "gold_main": "TM614",
+      "pred_aux": [
+        "TM712"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类TM614（风能发电）契合文献着力解决的实际对象——直驱型风电机组的控制与稳定性问题。辅助分类号TM712（电力系统稳定）反映了文献中关于小信号稳定性分析、阻尼特性及动态交互机理的次要主题。由于主辅分类号同属TM（电工技术）学科边界，故判定为非交叉学科。"
+    },
+    {
+      "sample_id": 23,
+      "pred_main": "TM77",
+      "gold_main": "TM774",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献着力解决含新能源接入的交流电网中继电保护整定计算的故障计算方法问题，核心应用场景属于电力系统的继电保护，故主分类取 TM77（电力系统继电保护）。文中使用的阻抗矩阵及逐层外扩算法属于电力系统故障分析中的常规计算手段，不构成独立的跨学科方法辅助主题，因此无辅助分类号且非交叉学科。"
+    },
+    {
+      "sample_id": 24,
+      "pred_main": "F592.7",
+      "gold_main": "F592.7",
+      "pred_aux": [
+        "N94"
+      ],
+      "gold_aux": [
+        "O415.3"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类F592.7代表中国地方旅游经济，契合文献着力解决湖南省旅游系统综合发展水平与可持续循环发展模式的实际应用场景；辅助分类N94为系统学（自组织理论所属学科），作为核心方法/理论依据。由于主分类属经济学科边界，辅助分类属系统科学学科边界，两者分属不同学科边界，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 25,
+      "pred_main": "TM721.1",
+      "gold_main": "TM721.1",
+      "pred_aux": [
+        "TM46"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TM721→TM721.1] 主分类TM721（输配电技术）契合文献着力解决柔性直流换流站供电无源交流线路的运行控制与谐振失稳问题，属于输配电工程的应用场景。辅助分类TM46（变流器）反映文献核心研究对象柔性直流换流站（本质为电力电子变流器）及其控制策略，作为次要主题。两者同属T大类下的电工学科边界（TM），故不判为交叉学科。"
+    },
+    {
+      "sample_id": 26,
+      "pred_main": "F291.1",
+      "gold_main": "F291.1",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献以环鄱阳湖城市群为对象，着力研究城市规模分布、演变特征及空间网络化现象，属于城市经济与区域经济中的城镇体系与规模结构问题，主分类应为 F291.1（城镇形成与发展）。文中使用的非参数检验、分形模型及双帕累托对数正态分布等均为常规统计与数学分析工具，不单列为辅助分类号，故无辅助分类且不判为交叉学科。"
+    },
+    {
+      "sample_id": 27,
+      "pred_main": "F291.1",
+      "gold_main": "F207",
+      "pred_aux": [],
+      "gold_aux": [
+        "TU98"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献着力解决省级区域规划的实施评估方法与机制问题，属于区域规划与管理范畴，主分类应取F291.1（区域规划）。全文围绕规划实施评估的内容、指标体系及机制建议展开，未涉及具有分量的跨学科次要主题或核心技术方法，故无辅助分类号，不判为交叉学科。"
+    },
+    {
+      "sample_id": 28,
+      "pred_main": "F062.1",
+      "gold_main": "K928.7",
+      "pred_aux": [
+        "G05"
+      ],
+      "gold_aux": [
+        "F224.5"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": false,
+      "alignment_ok": true,
+      "selection_reason": "文献着力解决遗产资源价值评价问题，属于资源经济学范畴，主分类取F062.1（资源经济学）。遗产资源本身属于文化/文化遗产领域，作为次要应用主题给辅助分类号G05（文化事业）。主分类属经济学科边界(F)，辅助分类属文化学科边界(G)，分属不同学科边界，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 29,
+      "pred_main": "TM471",
+      "gold_main": "TM5",
+      "pred_aux": [
+        "TM721"
+      ],
+      "gold_aux": [
+        "O511"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TM47→TM471] 主分类TM47（限流器）直接对应文献着力解决的核心对象——新型超导直流故障限流器的结构设计与原理验证。辅助分类号TM721（直流输电）体现该装置的特定应用场景多端柔性直流电网，属于同属TM电工学科边界下的次要应用主题，故不判为交叉学科。"
+    },
+    {
+      "sample_id": 30,
+      "pred_main": "TP18",
+      "gold_main": "TP18",
+      "pred_aux": [
+        "G203"
+      ],
+      "gold_aux": [
+        "G301"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献聚焦人工智能时代开源与闭源技术模式的探讨，核心应用场景为人工智能技术发展及其理论模式，主分类归入TP18（人工智能理论）。辅助分类号G203（信息处理技术）对应文献中涉及的技术创新生态系统与信息传播模式探讨，属于次要主题。TP（自动化技术、计算机技术）与G（文化、科学、教育、体育）分属不同学科边界，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 31,
+      "pred_main": "F327",
+      "gold_main": "F323.1",
+      "pred_aux": [],
+      "gold_aux": [
+        "F061.5"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献以青藏地区农牧企业的区位特征及影响因素为研究对象，核心应用场景为特定区域的农业经济与产业布局，故主分类选 F327（中国地方农业经济）。文中使用的核密度估计、空间自相关及逐步回归等均为常规空间统计与计量方法，不单列为辅助分类号，因此无辅助分类号且不判交叉学科。"
+    },
+    {
+      "sample_id": 32,
+      "pred_main": "TM714",
+      "gold_main": "TM924",
+      "pred_aux": [
+        "TM911"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TM712→TM714] 主分类TM712（电力系统负荷分配与调度）契合文献着力解决的应用场景：温控负荷（TCLs）的灵活性可行域聚合及其在负荷聚合商日前优化调度中的应用。辅助分类号TM911（化学电源）对应文献核心方法/模型中的“虚拟电池模型”，用于描述资源灵活性，属于次要主题。因主辅分类号同属T大类下的TM电工学科边界，故判定为非交叉学科。"
+    },
+    {
+      "sample_id": 33,
+      "pred_main": "F291.1",
+      "gold_main": "F291.1",
+      "pred_aux": [
+        "X22"
+      ],
+      "gold_aux": [
+        "X22"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类F291.1（城市经济管理）契合文献着力解决的城市化发展及其调控机制的应用场景；辅助分类X22（环境与发展）对应文献中与城市化并列的次要主题——生态环境。主分类属经济（F）学科边界，辅助分类属环境科学（X）学科边界，分属不同学科边界，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 34,
+      "pred_main": "F291.1",
+      "gold_main": "F290",
+      "pred_aux": [
+        "C912.81"
+      ],
+      "gold_aux": [
+        "C912.81"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类F291.1契合文献研究东北地区城市联系特征与层级结构的应用场景，属于城市经济管理中的城镇发展与布局；辅助分类C912.81代表次要主题城市社会学（社会网络分析视角下的城市社会关系结构），与主分类同属广义社会科学但跨越了经济管理与社会学的学科边界，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 35,
+      "pred_main": "TM721.1",
+      "gold_main": "TM721.1",
+      "pred_aux": [
+        "TM614"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TM721→TM721.1] 文献着力解决远海风电直流送出系统的拓扑结构、协调控制及故障穿越等输电工程问题，主分类归入TM721（直流输电）。远海风电作为该输电系统的应用背景与电源主体，是次要应用主题，故取TM614（风能发电）为辅助分类。两者同属T大类下的电工学科边界，故不判为交叉学科。"
+    },
+    {
+      "sample_id": 36,
+      "pred_main": "F323.8",
+      "gold_main": "F323.8",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献着力探讨湖南武陵山片区农民收入增长及演变特征的县际差异，核心应用场景为农业经济领域的农民收入分配与差异问题。F323.8对应农业收入分配与农民收入，最贴切反映该文献主题。偏离—份额分析法为常规经济统计分析手段，不单列为辅助分类号，故无辅助分类号且非交叉学科。"
+    },
+    {
+      "sample_id": 37,
+      "pred_main": "TM772",
+      "gold_main": "TM3",
+      "pred_aux": [
+        "TM311"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TM77→TM772] 主分类TM77（电力系统继电保护）契合文献着力解决的实际问题——调相机失磁保护策略的构建与死区消除。辅助分类号TM311（同步电机）对应研究的次要应用主题对象（调相机本体及其失磁故障机理）。两者同属T大类下的电工学科边界（TM），故不判为交叉学科。"
+    },
+    {
+      "sample_id": 38,
+      "pred_main": "F291.1",
+      "gold_main": "F061.5",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献以长三角城市群的空间格局与协同发展为研究对象，探讨城市经济能级、经济联系及多中心空间结构的演化，属于城市经济与区域空间布局范畴。中图法F291.1（城市空间布局）最贴切该应用场景。研究虽提及宏观自组织结构演化，但属于对城市群协同发展现象的理论描述，未构成独立的自然科学方法应用，故无辅助分类号，不判为交叉学科。"
+    },
+    {
+      "sample_id": 39,
+      "pred_main": "F291.1",
+      "gold_main": "F061.5",
+      "pred_aux": [
+        "F49"
+      ],
+      "gold_aux": [
+        "X22"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 F291→F291.1] 文献着力解决市域层面的数字经济与绿色发展耦合协调及提升路径问题，核心应用场景为城市经济与区域发展，主分类归入F291（城市经济）最为贴切。数字经济作为驱动区域发展的核心子系统，具有独立分量，作为次要主题给出辅助分类号F49（信息产业经济）。两者同属经济（F）学科边界，故不判为交叉学科。熵权法、耦合协调度模型等为常规分析工具，不单列辅助。"
+    },
+    {
+      "sample_id": 40,
+      "pred_main": "TM712",
+      "gold_main": "TM734",
+      "pred_aux": [
+        "F407.61"
+      ],
+      "gold_aux": [
+        "F407.2"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类TM712（电力系统运行）契合文献着力解决的实际对象，即区域电网的统一调频控制架构设计与AGC协调控制策略优化，属于电力系统运行与调度的核心范畴。辅助分类F407.61（电力工业经济管理）对应文献中具有分量的次要主题——区域调频辅助服务市场建设与市场公平机制。由于主分类属T大类下的电工学科边界（TM），辅助分类属经济学科边界（F），两者分属不同学科边界，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 41,
+      "pred_main": "TM721.1",
+      "gold_main": "TM721.1",
+      "pred_aux": [
+        "TM46"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TM721→TM721.1] 主分类TM721（输配电系统、电力网）契合文献着力解决的MMC-HVDC输电系统谐振机理与阻抗建模应用场景；辅助分类TM46（变流器）体现核心研究对象模块化多电平换流器（MMC）所属的电力电子装置学科。两者同属T大类下的电工学科边界（TM），故不判为交叉学科。"
+    },
+    {
+      "sample_id": 42,
+      "pred_main": "TM63",
+      "gold_main": "TM93",
+      "pred_aux": [
+        "TP311"
+      ],
+      "gold_aux": [
+        "TP181"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类TM63（变电站、配电所）契合文献着力解决的实际应用场景——智能变电站交流采样异常数据的实时识别问题；辅助分类TP311（程序设计、软件工程）代表文献核心采用的DBSCAN聚类算法这一数据处理方法。由于主分类属TM（电工技术）学科边界，辅助分类属TP（自动化技术、计算机技术）学科边界，两者分属T大类下不同的二级学科边界，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 43,
+      "pred_main": "F299.21",
+      "gold_main": "F290",
+      "pred_aux": [
+        "X511"
+      ],
+      "gold_aux": [
+        "X22"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类F299.21契合文献着力解决的应用场景——城市空间结构（紧凑多中心、集聚等）对碳排放的影响，属于城市经济管理与空间布局范畴。辅助分类号X511代表大气污染（碳排放）这一有分量的次要主题。主分类属经济（F）学科边界，辅助分类属环境科学（X）学科边界，分属不同一级大类，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 44,
+      "pred_main": "F403.4",
+      "gold_main": "X38",
+      "pred_aux": [
+        "X322"
+      ],
+      "gold_aux": [
+        "F403.3"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": false,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 F403→F403.4] 主分类F403（工业经济/工业建设与发展）契合文献对生态工业园区这一新兴工业组织模式的述评及对我国工业组织改革的建议；辅助分类X322（环境经济学/工业部门环境规划与管理）对应文献中强调的物质能量交流及实现经济、社会、环境协调共进的次要主题。F经济与X环境科学分属不同学科边界，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 45,
+      "pred_main": "TG139",
+      "gold_main": "TG13",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献以非晶合金材料这一新型金属材料为研究对象，系统回顾其研发历史、分析前沿科学问题与发展方向，应用场景和核心主题明确属于金属材料学。在中图法中，非晶态金属合金材料归入TG139（其他特种性质合金），故主分类号选TG139。文章虽提及在磁性材料、催化材料、信息材料等高新技术领域的应用，但均为背景与展望，不构成有分量的次要主题，故无辅助分类号，不判为交叉学科。"
+    },
+    {
+      "sample_id": 46,
+      "pred_main": "TM712",
+      "gold_main": "TM732",
+      "pred_aux": [
+        "TM46"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类TM712（电力系统稳定计算）契合文献着力解决的直流微电网多源并联系统稳定性与自主均流控制场景。辅助分类号TM46（变流器）对应文中核心控制对象——各变流器的直流输出调节与并联控制，属于次要应用主题。两者同属T大类下的电工学科边界（TM），故不判为交叉学科。"
+    },
+    {
+      "sample_id": 47,
+      "pred_main": "G322.9",
+      "gold_main": "G316",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 G322→G322.9] 文献回顾中国科技发展70年的辉煌历程，核心主题是新中国科学技术事业的发展历史与成就，属于世界各国科学研究事业及发展的范畴，故主分类选G322（中国科学研究事业）。文章以历史回顾和人物贡献为主线，未涉及具体的技术方法或并列的次要学科主题，故无辅助分类号，不判定为交叉学科。"
+    },
+    {
+      "sample_id": 48,
+      "pred_main": "TM773",
+      "gold_main": "TM713",
+      "pred_aux": [
+        "TP18"
+      ],
+      "gold_aux": [
+        "TP183"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TM77→TM773] 主分类TM77（电力系统自动化）契合文献着力解决的应用场景——配电网故障行波波头标定问题；辅助分类TP18（人工智能理论）对应文献核心采用的卷积神经网络与目标检测模型方法。TM（电工技术）与TP（自动化技术、计算机技术）同属T大类但分属不同二级学科边界，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 49,
+      "pred_main": "TM732",
+      "gold_main": "TM732",
+      "pred_aux": [
+        "O225"
+      ],
+      "gold_aux": [
+        "O225"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类TM732（微电网）契合文献着力解决微电网主动能量管理与调度的应用场景；辅助分类O225（博弈论）对应文中核心方法势博弈模型，属于次要主题。TM（电工）与O（数学）分属不同学科边界，故判定为交叉学科。"
+    },
+    {
+      "sample_id": 50,
+      "pred_main": "TM732",
+      "gold_main": "TM732",
+      "pred_aux": [
+        "X511"
+      ],
+      "gold_aux": [
+        "X22"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献着力解决配电网在‘双碳’目标下的低碳经济优化运行问题，核心应用场景为配电网的规划与管理，故主分类取 TM732（配电网）。辅助分类号 X511（大气污染及其防治）对应文献中重点分析的碳排放与降碳效果，属于次要应用主题。TM（电工技术）与 X（环境科学）分属不同学科边界，故判定为交叉学科。"
+    }
+  ]
+}

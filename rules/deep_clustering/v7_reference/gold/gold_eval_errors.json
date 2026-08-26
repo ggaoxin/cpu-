@@ -1,0 +1,3064 @@
+{
+ "tech_errors": [
+  {
+   "document_id": "ZH_0005",
+   "title": "数字基础设施与中国城市的空间重构",
+   "pred": "T44",
+   "gold": "T42",
+   "gold_secondary": "T11",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0008",
+   "title": "含换流器型分布式电源配电网的不对称短路电流计算方法",
+   "pred": "T40",
+   "gold": "T49",
+   "gold_secondary": "T40",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0026",
+   "title": "省域新型城镇化与共同富裕耦合协调水平的时空特征及其影响因素",
+   "pred": "T48",
+   "gold": "T44",
+   "gold_secondary": "T48",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0027",
+   "title": "考虑大规模风光分层接入的配电网多层协调无功优化方法",
+   "pred": "T40",
+   "gold": "T37",
+   "gold_secondary": "T40",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0034",
+   "title": "含逆变型分布式电源外电网的短路计算等值及其影响因素分析",
+   "pred": "T40",
+   "gold": "T49",
+   "gold_secondary": "T40",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0040",
+   "title": "基于双向循环插补网络的分布式光伏集群时序数据耦合增强方法",
+   "pred": "T35",
+   "gold": "T01",
+   "gold_secondary": "T01",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0054",
+   "title": "大规模风电接入场景下的失步振荡中心定位方法",
+   "pred": "T49",
+   "gold": "T36",
+   "gold_secondary": "T04",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0056",
+   "title": "考虑不可测T接负荷的配电网虚拟三端电流差动保护",
+   "pred": "T40",
+   "gold": "T36",
+   "gold_secondary": "T40",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0061",
+   "title": "追踪源荷实时变化的仿射最优电-气能流在线计算方法",
+   "pred": "T40",
+   "gold": "T39",
+   "gold_secondary": "T40",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0062",
+   "title": "考虑响应可靠率的需求侧资源自主被动组合响应策略",
+   "pred": "T39",
+   "gold": "T37",
+   "gold_secondary": "T38",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0065",
+   "title": "计及电能量-备用耦合的配电网与光储充电站协调优化调度方法",
+   "pred": "T37",
+   "gold": "T39",
+   "gold_secondary": "T37",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0074",
+   "title": "新时期自然资源要素促进城乡融合发展：目标选择与政策设计",
+   "pred": "T21",
+   "gold": "T46",
+   "gold_secondary": "T21",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0077",
+   "title": "新时期我国新质生产力的源—汇功能甄别与空间布局",
+   "pred": "T44",
+   "gold": "T48",
+   "gold_secondary": "T07",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0080",
+   "title": "完善城乡融合发展体制机制研究",
+   "pred": "T21",
+   "gold": "T46",
+   "gold_secondary": "T02",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0081",
+   "title": "美丽中国目标下洞庭湖区旅游生态效率时空演化及其影响路径",
+   "pred": "T44",
+   "gold": "T41",
+   "gold_secondary": "T44",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0090",
+   "title": "快速动态响应同步调相机转子引线断裂故障分析",
+   "pred": "T14",
+   "gold": "T32",
+   "gold_secondary": "T29",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0101",
+   "title": "长三角地区科技型中小企业发展的时空格局及其影响因素",
+   "pred": "T44",
+   "gold": "T48",
+   "gold_secondary": "T42",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0105",
+   "title": "基于卡尔曼滤波和模型预测控制的混合储能平抑风电功率波动策略",
+   "pred": "T26",
+   "gold": "T49",
+   "gold_secondary": "T26",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0120",
+   "title": "综合提升新能源高占比受端电网小干扰和暂态电压稳定性的SVG优",
+   "pred": "T32",
+   "gold": "T37",
+   "gold_secondary": "T32",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0125",
+   "title": "数智时代：重置教育思维",
+   "pred": "T07",
+   "gold": "T06",
+   "gold_secondary": "T42",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0126",
+   "title": "数字经济的基石：芯片技术的“危”与“机”",
+   "pred": "T47",
+   "gold": "T06",
+   "gold_secondary": "T26",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0138",
+   "title": "城市居住区绿色空间可达性的社会与制度影响机制——以宁波为例",
+   "pred": "T48",
+   "gold": "T02",
+   "gold_secondary": "T46",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0151",
+   "title": "中国经济地理思想史的来源、脉络与特色——李小建等著《中国经济",
+   "pred": "T21",
+   "gold": "T06",
+   "gold_secondary": "T12",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0160",
+   "title": "基于土地利用的数字经济赋能中国城市高质量发展的机制与效应",
+   "pred": "T46",
+   "gold": "T42",
+   "gold_secondary": "T46",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0163",
+   "title": "混合嵌入性理论视角下东莞市韩国人创业空间特征及形成机制",
+   "pred": "T46",
+   "gold": "T20",
+   "gold_secondary": "T46",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0167",
+   "title": "乡村振兴与新型城镇化良性耦合——中国式城乡现代化发展科学内涵",
+   "pred": "T21",
+   "gold": "T46",
+   "gold_secondary": "T35",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0169",
+   "title": "乡村旅游地回流劳动力的就业选择及其影响因素",
+   "pred": "T21",
+   "gold": "T20",
+   "gold_secondary": "T15",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0172",
+   "title": "中国粮食生产韧性的时空格局及其影响因素",
+   "pred": "T48",
+   "gold": "T42",
+   "gold_secondary": "T48",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0179",
+   "title": "基于多智能体强化学习的差异化产销者参与社区能源交易方法",
+   "pred": "T37",
+   "gold": "T38",
+   "gold_secondary": "T13",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0180",
+   "title": "计及配电网业务适配性的智能通感算资源分配方法",
+   "pred": "T39",
+   "gold": "T32",
+   "gold_secondary": "T47",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0197",
+   "title": "基于FHO-CatBoost的分布式电源调控异常事件检测",
+   "pred": "T39",
+   "gold": "T02",
+   "gold_secondary": "T24",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0213",
+   "title": "基于近似动态规划的配电网实时协同调压策略",
+   "pred": "T49",
+   "gold": "T37",
+   "gold_secondary": "T39",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0230",
+   "title": "基于光储协调电压自均衡的光伏直流汇集方案研究",
+   "pred": "T49",
+   "gold": "T32",
+   "gold_secondary": "T04",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0231",
+   "title": "基于LCC注入信号归一化面积差的混合多端直流输电系统永久性故",
+   "pred": "T14",
+   "gold": "T36",
+   "gold_secondary": "T14",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0237",
+   "title": "计及高频雷电流下变电站接地网对周边燃气管网系统及新建地网系统",
+   "pred": "T40",
+   "gold": "T14",
+   "gold_secondary": "T40",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0240",
+   "title": "融合电网拓扑信息的分支竞争Q网络智能体紧急切负荷决策",
+   "pred": "T40",
+   "gold": "T01",
+   "gold_secondary": "T40",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0250",
+   "title": "基于相角差余弦值奇异熵的远海风电交流汇集线路单端量保护原理",
+   "pred": "T14",
+   "gold": "T36",
+   "gold_secondary": "T14",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0258",
+   "title": "朱光亚：科学家精神的培育者与践行典范——纪念“科技众帅之帅”",
+   "pred": "T23",
+   "gold": "T06",
+   "gold_secondary": "T17",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0259",
+   "title": "人工智能时代的开源与闭源技术模式探讨",
+   "pred": "T45",
+   "gold": "T06",
+   "gold_secondary": "T22",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0261",
+   "title": "中美地缘技术竞争视角下的中美智库观点及对我国的启示",
+   "pred": "T07",
+   "gold": "T45",
+   "gold_secondary": "T28",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0263",
+   "title": "科研人员标识的应用研究及对策建议",
+   "pred": "T06",
+   "gold": "T46",
+   "gold_secondary": "T46",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0267",
+   "title": "考虑相关性的配电网分布式光伏承载能力提升方法",
+   "pred": "T40",
+   "gold": "T39",
+   "gold_secondary": "T40",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0268",
+   "title": "基于行波全频带特征的配电网故障行波波头标定方法",
+   "pred": "T01",
+   "gold": "T36",
+   "gold_secondary": "T01",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0274",
+   "title": "基于DBSCAN的智能变电站交流采样异常实时识别算法",
+   "pred": "T01",
+   "gold": "T36",
+   "gold_secondary": "T07",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0275",
+   "title": "基于谐波检测的调相机失磁保护研究",
+   "pred": "T14",
+   "gold": "T36",
+   "gold_secondary": "T12",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0279",
+   "title": "计及老化失效与系统可靠性的电力变压器群体预防性检修/退役计划",
+   "pred": "T13",
+   "gold": "T37",
+   "gold_secondary": "T13",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0285",
+   "title": "智能算法安全：内涵、科学问题与展望",
+   "pred": "T47",
+   "gold": "T06",
+   "gold_secondary": "T25",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0286",
+   "title": "新质生产力培育下中国OFDI逆向技术溢出影响绿色全要素生产率",
+   "pred": "T41",
+   "gold": "T42",
+   "gold_secondary": "T12",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0288",
+   "title": "全国算力体系一体化建设的五大问题及治理对策",
+   "pred": "T07",
+   "gold": "T46",
+   "gold_secondary": "T46",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0289",
+   "title": "中美欧“泛数据主权”竞争格局及中国应对——基于数字堆栈模型",
+   "pred": "T43",
+   "gold": "T46",
+   "gold_secondary": "T13",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0291",
+   "title": "关于健全数字公共产品制度推进开源创新生态建设的若干思考",
+   "pred": "T47",
+   "gold": "T46",
+   "gold_secondary": "T21",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0292",
+   "title": "畜禽养殖业数据应用展望和问题分析",
+   "pred": "T47",
+   "gold": "T06",
+   "gold_secondary": "T28",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0293",
+   "title": "中国科学院海洋研究所：七十五载深蓝志 科研巨擘映辉煌",
+   "pred": "T45",
+   "gold": "T06",
+   "gold_secondary": "T27",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0294",
+   "title": "创造自主的数学研究之路——中国科学院数学事业的发展及展望",
+   "pred": "T45",
+   "gold": "T06",
+   "gold_secondary": "T12",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0295",
+   "title": "建院75周年之中国科学院长春光机所：凝心聚力，攻坚克难;创新",
+   "pred": "T26",
+   "gold": "T06",
+   "gold_secondary": "T12",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0298",
+   "title": "构建数智安全新格局 保障新发展格局",
+   "pred": "T45",
+   "gold": "T46",
+   "gold_secondary": "T04",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0299",
+   "title": "国家科技竞争力测度、演进与国际比较",
+   "pred": "T07",
+   "gold": "T41",
+   "gold_secondary": "T20",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0301",
+   "title": "中国耕地资源利用的“五化”态势与治理对策",
+   "pred": "T19",
+   "gold": "T46",
+   "gold_secondary": "T25",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0311",
+   "title": "考虑准线需求响应的高比例新能源电力系统调度优化",
+   "pred": "T39",
+   "gold": "T37",
+   "gold_secondary": "T39",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0315",
+   "title": "基于在线潮流反馈优化的配电网光伏电源功率公平分配策略",
+   "pred": "T40",
+   "gold": "T49",
+   "gold_secondary": "T01",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0335",
+   "title": "考虑应急电源功能的光储充放电站配置方法研究",
+   "pred": "T37",
+   "gold": "T32",
+   "gold_secondary": "T13",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0337",
+   "title": "主动换相型电流源换流器直流故障特性及恢复策略",
+   "pred": "T14",
+   "gold": "T49",
+   "gold_secondary": "T14",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0343",
+   "title": "抽能型高压并联电抗器磁路等效模型及匝间保护方法",
+   "pred": "T40",
+   "gold": "T36",
+   "gold_secondary": "T29",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0346",
+   "title": "数据驱动的用户无功补偿装置远程故障感知",
+   "pred": "T17",
+   "gold": "T34",
+   "gold_secondary": "T20",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0349",
+   "title": "新能源大规模并网环境下变电站防孤岛技术研究",
+   "pred": "T40",
+   "gold": "T36",
+   "gold_secondary": "T19",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0350",
+   "title": "nan",
+   "pred": "T37",
+   "gold": "T49",
+   "gold_secondary": "T13",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0356",
+   "title": "抑制间接矩阵变换器共模电压的调制策略",
+   "pred": "T17",
+   "gold": "T49",
+   "gold_secondary": "T17",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0359",
+   "title": "基于二次聚类的工业用户负荷可调节潜力特征提取与综合评估方法",
+   "pred": "T34",
+   "gold": "T41",
+   "gold_secondary": "T27",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0364",
+   "title": "长三角城市群旅游经济一体化形成机制与协同发展模式——基于联系",
+   "pred": "T46",
+   "gold": "T43",
+   "gold_secondary": "T46",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0379",
+   "title": "文旅高质量融合发展的理论建构与研究展望",
+   "pred": "T46",
+   "gold": "T06",
+   "gold_secondary": "T46",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0382",
+   "title": "基于二维水动力模型与数据融合的电力设施淹没风险动态评估及预警",
+   "pred": "T35",
+   "gold": "T41",
+   "gold_secondary": "T30",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0384",
+   "title": "全域视角下旅游廊道构建与网络体系评价——以渭南市为例",
+   "pred": "T46",
+   "gold": "T48",
+   "gold_secondary": "T22",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0385",
+   "title": "湖北省森林康养适宜性评价、区划及产品开发策略",
+   "pred": "T29",
+   "gold": "T48",
+   "gold_secondary": "T21",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0391",
+   "title": "典型独立同步电网新能源高渗透率运行中的频率稳定挑战与应对措施",
+   "pred": "T40",
+   "gold": "T49",
+   "gold_secondary": "T28",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0393",
+   "title": "长江中上游地区承接东部地区产业转移的实证分析",
+   "pred": "T41",
+   "gold": "T42",
+   "gold_secondary": "T07",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0395",
+   "title": "1990—2010年中国人口预期寿命与人均GDP的相关关系及",
+   "pred": "T42",
+   "gold": "T02",
+   "gold_secondary": "T07",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0401",
+   "title": "长江中游城市群环境压力的时空特征——以工业SO2排放为例",
+   "pred": "T44",
+   "gold": "T48",
+   "gold_secondary": "T31",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0405",
+   "title": "企业技术创新在世界科技强国建设中的地位和作用",
+   "pred": "T45",
+   "gold": "T06",
+   "gold_secondary": "T07",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0407",
+   "title": "“一带一路”沿线国家投资环境评价",
+   "pred": "T21",
+   "gold": "T41",
+   "gold_secondary": "T21",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0411",
+   "title": "基于邓小平“两个大局”战略转换重塑中国经济地理",
+   "pred": "T48",
+   "gold": "T06",
+   "gold_secondary": "T10",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0415",
+   "title": "混合型相控开关在地面自动过分相中的应用",
+   "pred": "T14",
+   "gold": "T17",
+   "gold_secondary": "T06",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0423",
+   "title": "返乡农民工创业选择的影响因素分析——基于5省465户返乡农民",
+   "pred": "T42",
+   "gold": "T20",
+   "gold_secondary": "T16",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0437",
+   "title": "武陵源风景区旅游客流量时空变化与调控对策",
+   "pred": "T48",
+   "gold": "T06",
+   "gold_secondary": "T29",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0443",
+   "title": "基于海洋经济地理视角的中国与加拿大海洋经济对比",
+   "pred": "T41",
+   "gold": "T02",
+   "gold_secondary": "T44",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0447",
+   "title": "基于场景构建的电压暂降特征量随机评估方法",
+   "pred": "T40",
+   "gold": "T30",
+   "gold_secondary": "T35",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0448",
+   "title": "世界文明格局演进与文化遗产保护战略",
+   "pred": "T45",
+   "gold": "T06",
+   "gold_secondary": "T12",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0449",
+   "title": "强化国家战略科技力量建设的思考",
+   "pred": "T45",
+   "gold": "T46",
+   "gold_secondary": "T13",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0450",
+   "title": "考虑碳排放的光储充一体站日前运行策略",
+   "pred": "T38",
+   "gold": "T37",
+   "gold_secondary": "T24",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0456",
+   "title": "中国中部六省的碳排放趋势研究",
+   "pred": "T07",
+   "gold": "T35",
+   "gold_secondary": "T26",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0459",
+   "title": "长江经济带城市协同发展格局及其优化策略初探",
+   "pred": "T43",
+   "gold": "T41",
+   "gold_secondary": "T43",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0461",
+   "title": "“一带一路”沿线国家安全形势评估及对策",
+   "pred": "T44",
+   "gold": "T48",
+   "gold_secondary": "T06",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0463",
+   "title": "1990年以来湖南人口与经济重心及其演化",
+   "pred": "T48",
+   "gold": "T44",
+   "gold_secondary": "T45",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0467",
+   "title": "我国网络信息安全发展的探讨",
+   "pred": "T45",
+   "gold": "T06",
+   "gold_secondary": "T42",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0469",
+   "title": "变电站二次测试中智能语音控制关键技术研究",
+   "pred": "T17",
+   "gold": "T26",
+   "gold_secondary": "T27",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0472",
+   "title": "中国草畜生产的时空匹配格局及驱动机制",
+   "pred": "T44",
+   "gold": "T41",
+   "gold_secondary": "T42",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0473",
+   "title": "专利拍卖在我国的发展机遇与挑战",
+   "pred": "T06",
+   "gold": "T38",
+   "gold_secondary": "T20",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0478",
+   "title": "文化区域的经济协同发展机理研究——以武陵山片区为例",
+   "pred": "T21",
+   "gold": "T46",
+   "gold_secondary": "T31",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0487",
+   "title": "科技助推“三变”改革 建立科技扶贫长效机制——中国科学院贵州",
+   "pred": "T45",
+   "gold": "T46",
+   "gold_secondary": "T16",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0489",
+   "title": "光伏发电接入柔直互联区域调频策略",
+   "pred": "T14",
+   "gold": "T49",
+   "gold_secondary": "T14",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0495",
+   "title": "我国耕地资源开发利用的问题与整治对策",
+   "pred": "T19",
+   "gold": "T46",
+   "gold_secondary": "T19",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0503",
+   "title": "国际科学教育发展的对比研究――理念、主题与实践的革新",
+   "pred": "T45",
+   "gold": "T06",
+   "gold_secondary": "T39",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0504",
+   "title": "新型农业经营主体融合发展与农户多维生计提升——基于政策势能集",
+   "pred": "T48",
+   "gold": "T42",
+   "gold_secondary": "T20",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0516",
+   "title": "基于派送效能与顾客满意度视角的物流快递自提柜选址及空间优化—",
+   "pred": "T41",
+   "gold": "T32",
+   "gold_secondary": "T22",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0517",
+   "title": "中国科学技术发展应重视的几个问题",
+   "pred": "T45",
+   "gold": "T06",
+   "gold_secondary": "T45",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0518",
+   "title": "中部地区公共卫生健康高质量发展研究",
+   "pred": "T48",
+   "gold": "T41",
+   "gold_secondary": "T48",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0520",
+   "title": "演化经济地理学视角下创新网络研究进展与展望",
+   "pred": "T43",
+   "gold": "T45",
+   "gold_secondary": "T43",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0523",
+   "title": "珠江三角洲城市群灾害易损性时空格局差异分析",
+   "pred": "T44",
+   "gold": "T48",
+   "gold_secondary": "T19",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0528",
+   "title": "川西横断山脉高山峡谷区旅游特色化开发战略——兼论中国西部山地",
+   "pred": "T21",
+   "gold": "T46",
+   "gold_secondary": "T20",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0532",
+   "title": "空间科学对国家科技、经济与社会发展的作用",
+   "pred": "T24",
+   "gold": "T06",
+   "gold_secondary": "T06",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0536",
+   "title": "改革开放以来湖南城乡居民收入两极分化演变研究",
+   "pred": "T48",
+   "gold": "T02",
+   "gold_secondary": "T04",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0542",
+   "title": "1996—2008年中国县级市减贫效应分解与空间差异分析",
+   "pred": "T48",
+   "gold": "T42",
+   "gold_secondary": "T34",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0544",
+   "title": "基于多智能体建模的旅游交通方式跃迁现象仿真研究",
+   "pred": "T20",
+   "gold": "T26",
+   "gold_secondary": "T12",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0549",
+   "title": "苏、鲁产业结构比较分析",
+   "pred": "T07",
+   "gold": "T42",
+   "gold_secondary": "T33",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0550",
+   "title": "基于交通视角的新疆城市等级体系演变研究",
+   "pred": "T48",
+   "gold": "T02",
+   "gold_secondary": "T46",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0555",
+   "title": "西安市文化娱乐业空间结构图谱及其形成机理",
+   "pred": "T44",
+   "gold": "T48",
+   "gold_secondary": "T48",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0556",
+   "title": "2010—2016年中国多维贫困动态分析——基于中国家庭跟踪",
+   "pred": "T21",
+   "gold": "T42",
+   "gold_secondary": "T24",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0560",
+   "title": "从追赶到领先——华为的创新之路",
+   "pred": "T45",
+   "gold": "T06",
+   "gold_secondary": "T09",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0561",
+   "title": "大力发展分布式可再生能源应用和智能微网",
+   "pred": "T12",
+   "gold": "T06",
+   "gold_secondary": "T34",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0563",
+   "title": "多跳中继宽带电力线通信网络中的OFDM跨层资源分配",
+   "pred": "T37",
+   "gold": "T32",
+   "gold_secondary": "T45",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0567",
+   "title": "跟网型海上风电中频汇集柔性直流送出系统的最优频率选择",
+   "pred": "T14",
+   "gold": "T32",
+   "gold_secondary": "T27",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0572",
+   "title": "改革开放以来江苏省区域经济差异格局演化研究",
+   "pred": "T42",
+   "gold": "T48",
+   "gold_secondary": "T16",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0580",
+   "title": "山东省农业旅游空间结构发育特征、优化模式及其驱动机制",
+   "pred": "T48",
+   "gold": "T46",
+   "gold_secondary": "T24",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0582",
+   "title": "基因编辑技术:进展与挑战",
+   "pred": "T23",
+   "gold": "T06",
+   "gold_secondary": "T23",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0592",
+   "title": "“8·8”九寨沟地震冲击下区域旅游经济联系的格局及影响因素",
+   "pred": "T48",
+   "gold": "T43",
+   "gold_secondary": "T48",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0597",
+   "title": "世界工业遗产的地理、产业分布及价值特征研究——基于《世界遗产",
+   "pred": "T21",
+   "gold": "T48",
+   "gold_secondary": "T21",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0598",
+   "title": "当代中国人的文化认同",
+   "pred": "T21",
+   "gold": "T06",
+   "gold_secondary": "T19",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0610",
+   "title": "中国区域经济增长条件趋同研究",
+   "pred": "T48",
+   "gold": "T42",
+   "gold_secondary": "T06",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0612",
+   "title": "数学研究的特征及资助对策",
+   "pred": "T06",
+   "gold": "T46",
+   "gold_secondary": "T23",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0617",
+   "title": "经济技术开发区建设对中国经济格局的影响",
+   "pred": "T42",
+   "gold": "T48",
+   "gold_secondary": "T42",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0619",
+   "title": "武陵源世界自然遗产地生态旅游者细分研究——基于环境态度与环境",
+   "pred": "T21",
+   "gold": "T20",
+   "gold_secondary": "T20",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0622",
+   "title": "评《区域经济协同发展研究——对湘鄂渝黔边区的实证分析》",
+   "pred": "T21",
+   "gold": "T06",
+   "gold_secondary": "T06",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0623",
+   "title": "产用融合——智能技术群驱动的第五制造范式",
+   "pred": "T07",
+   "gold": "T46",
+   "gold_secondary": "T17",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0624",
+   "title": "科技发达国家国立科研机构过去二十年改革发展观察",
+   "pred": "T45",
+   "gold": "T06",
+   "gold_secondary": "T10",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0625",
+   "title": "背靠背型电力弹簧分段控制方法研究",
+   "pred": "T14",
+   "gold": "T49",
+   "gold_secondary": "T14",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0628",
+   "title": "区域物流引力和地位模型的构建及应用研究",
+   "pred": "T41",
+   "gold": "T02",
+   "gold_secondary": "T14",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0629",
+   "title": "2018年夏季全国气候趋势展望",
+   "pred": "T07",
+   "gold": "T35",
+   "gold_secondary": "T26",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0632",
+   "title": "基于电流突变采样值轨迹特征的快速母线保护",
+   "pred": "T47",
+   "gold": "T36",
+   "gold_secondary": "T47",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0633",
+   "title": "SSM空间模型及其在珠三角制造业发展中的应用",
+   "pred": "T42",
+   "gold": "T48",
+   "gold_secondary": "T26",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0634",
+   "title": "基于深度神经网络的变电站继电保护装置状态监测技术",
+   "pred": "T36",
+   "gold": "T01",
+   "gold_secondary": "T36",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0644",
+   "title": "国家创新体系的发展演进分析与若干思考",
+   "pred": "T45",
+   "gold": "T46",
+   "gold_secondary": "T25",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0648",
+   "title": "湖南物流产业集群系统发展研究",
+   "pred": "T45",
+   "gold": "T46",
+   "gold_secondary": "T09",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0649",
+   "title": "现代农业科技助力马铃薯产业精准扶贫――中国科学院微生物研究所",
+   "pred": "T12",
+   "gold": "T46",
+   "gold_secondary": "T09",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0654",
+   "title": "中国高原生态旅游发展潜力评价",
+   "pred": "T21",
+   "gold": "T41",
+   "gold_secondary": "T20",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0658",
+   "title": "计及行波折反射的柔性直流电网故障限流器参数优化",
+   "pred": "T14",
+   "gold": "T37",
+   "gold_secondary": "T14",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0666",
+   "title": "广东生态发展区生态补偿机制建设探讨",
+   "pred": "T29",
+   "gold": "T46",
+   "gold_secondary": "T19",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0674",
+   "title": "国家级贫困县政策的减贫效应及其空间异质性",
+   "pred": "T48",
+   "gold": "T21",
+   "gold_secondary": "T46",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0677",
+   "title": "不同接地方式下配电网绝缘监察的灵敏性分析",
+   "pred": "T14",
+   "gold": "T36",
+   "gold_secondary": "T49",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0680",
+   "title": "建构的世界经济地理格局——以战后日本崛起为例",
+   "pred": "T21",
+   "gold": "T06",
+   "gold_secondary": "T42",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0681",
+   "title": "国家自然科学基金如何更好地引导基础研究多元投入?",
+   "pred": "T06",
+   "gold": "T46",
+   "gold_secondary": "T38",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0682",
+   "title": "河南省农用地集约利用对农民收入影响实证研究:1978—201",
+   "pred": "T34",
+   "gold": "T42",
+   "gold_secondary": "T18",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0689",
+   "title": "长期冰川学观测引领大陆性和干旱区冰川变化与影响研究",
+   "pred": "T25",
+   "gold": "T29",
+   "gold_secondary": "T28",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0692",
+   "title": "新自由主义与国家空间:反思与启示",
+   "pred": "T48",
+   "gold": "T06",
+   "gold_secondary": "T34",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0693",
+   "title": "我国实施精准扶贫的区域模式与可持续途径",
+   "pred": "T21",
+   "gold": "T06",
+   "gold_secondary": "T24",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0695",
+   "title": "“单位制”城市空间的社会生产研究",
+   "pred": "T42",
+   "gold": "T06",
+   "gold_secondary": "T42",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0698",
+   "title": "中小城市城乡社区生活圈建设路径研究——以榆林市榆阳区为例",
+   "pred": "T20",
+   "gold": "T46",
+   "gold_secondary": "T17",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0703",
+   "title": "支撑虚拟电厂互动的信息通信关键技术研究展望",
+   "pred": "T49",
+   "gold": "T06",
+   "gold_secondary": "T42",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0705",
+   "title": "基于自组织理论的湖南旅游系统演化分析",
+   "pred": "T20",
+   "gold": "T06",
+   "gold_secondary": "T10",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0712",
+   "title": "我国国际科技合作政策演进研究及对新时期政策布局的思考",
+   "pred": "T45",
+   "gold": "T46",
+   "gold_secondary": "T11",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0714",
+   "title": "藏区新型城镇化的发展路径探讨——以康定县为例",
+   "pred": "T21",
+   "gold": "T46",
+   "gold_secondary": "T45",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0716",
+   "title": "评《城乡发展差异测度及其协调发展研究——以重庆市为例》",
+   "pred": "T44",
+   "gold": "T06",
+   "gold_secondary": "T44",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0718",
+   "title": "价格与激励需求响应下电动汽车负荷聚集商调度策略",
+   "pred": "T39",
+   "gold": "T37",
+   "gold_secondary": "T17",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0719",
+   "title": "“三业结合”全面提振中国经济的逻辑与路径",
+   "pred": "T21",
+   "gold": "T46",
+   "gold_secondary": "T11",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0721",
+   "title": "基于参数法的物流园区用地规模预测——以长沙市为例",
+   "pred": "T48",
+   "gold": "T35",
+   "gold_secondary": "T23",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0724",
+   "title": "河南省产业结构演进与机理探究",
+   "pred": "T07",
+   "gold": "T42",
+   "gold_secondary": "T30",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0726",
+   "title": "疏勒河中下游绿洲土地利用变化及其驱动力分析",
+   "pred": "T29",
+   "gold": "T48",
+   "gold_secondary": "T29",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0727",
+   "title": "环鄱阳湖城市群城市规模结构演变特征",
+   "pred": "T41",
+   "gold": "T48",
+   "gold_secondary": "T11",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0729",
+   "title": "中国东部沿海五大城市群旅游流网络的结构特征及其韧性评估——基",
+   "pred": "T48",
+   "gold": "T43",
+   "gold_secondary": "T19",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0732",
+   "title": "绿色设计案例分析",
+   "pred": "T07",
+   "gold": "T06",
+   "gold_secondary": "T18",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0733",
+   "title": "中国省际资本流动规模实证研究",
+   "pred": "T07",
+   "gold": "T42",
+   "gold_secondary": "T20",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0736",
+   "title": "皖南与皖北旅游产业合作主观博弈分析",
+   "pred": "T21",
+   "gold": "T38",
+   "gold_secondary": "T31",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0737",
+   "title": "中国化肥消费强度变化驱动效应时空差异与影响因素解析",
+   "pred": "T42",
+   "gold": "T48",
+   "gold_secondary": "T33",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0741",
+   "title": "关于科技在应对重大突发公共卫生事件中发挥统筹协同作用的思考",
+   "pred": "T45",
+   "gold": "T46",
+   "gold_secondary": "T06",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0746",
+   "title": "中心镇推进城乡一体化的时空演进模式研究:理论与实证",
+   "pred": "T48",
+   "gold": "T44",
+   "gold_secondary": "T10",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0748",
+   "title": "近20年来张家界入境旅游流与居民收入增长的考察",
+   "pred": "T21",
+   "gold": "T42",
+   "gold_secondary": "T25",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0749",
+   "title": "构建科技创新“双循环”新发展格局",
+   "pred": "T45",
+   "gold": "T46",
+   "gold_secondary": "T11",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0754",
+   "title": "新疆煤化工发展中产业生态系统的构建",
+   "pred": "T29",
+   "gold": "T46",
+   "gold_secondary": "T25",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0764",
+   "title": "比较视野下的中国科学院外籍院士制度初步研究",
+   "pred": "T45",
+   "gold": "T46",
+   "gold_secondary": "T21",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0765",
+   "title": "退役锂离子动力电池储能系统风冷热管理仿真",
+   "pred": "T40",
+   "gold": "T14",
+   "gold_secondary": "T32",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0767",
+   "title": "中原经济区县域交通优势度与区域经济空间耦合",
+   "pred": "T48",
+   "gold": "T41",
+   "gold_secondary": "T48",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0771",
+   "title": "2016年中国经济增长形势展望",
+   "pred": "T21",
+   "gold": "T06",
+   "gold_secondary": "T42",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0772",
+   "title": "电力市场、碳市场及绿证市场互动机理及协调机制",
+   "pred": "T16",
+   "gold": "T38",
+   "gold_secondary": "T46",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0773",
+   "title": "污染企业迁移意愿的影响因素研究——以浙江省上虞市为例",
+   "pred": "T46",
+   "gold": "T20",
+   "gold_secondary": "T46",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0779",
+   "title": "冰芯气候环境记录研究：从科学到政策",
+   "pred": "T06",
+   "gold": "T46",
+   "gold_secondary": "T19",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0781",
+   "title": "中国文化产业发展的区域特征与成因研究——基于第五次和第六次人",
+   "pred": "T48",
+   "gold": "T42",
+   "gold_secondary": "T42",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0789",
+   "title": "中国科技新城的空间联系特征及其影响机制",
+   "pred": "T42",
+   "gold": "T43",
+   "gold_secondary": "T42",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0791",
+   "title": "基于村镇空间“物—场”模型的乡村聚落布局优化研究",
+   "pred": "T48",
+   "gold": "T28",
+   "gold_secondary": "T21",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0792",
+   "title": "碳中和目标下美国氢能战略转型及特征分析",
+   "pred": "T06",
+   "gold": "T48",
+   "gold_secondary": "T21",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0793",
+   "title": "以生态保护为前提开发开化旅游业",
+   "pred": "T29",
+   "gold": "T06",
+   "gold_secondary": "T45",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0802",
+   "title": "非隔离型模块化多电平DC/DC变换器的最小化桥臂环流控制",
+   "pred": "T17",
+   "gold": "T49",
+   "gold_secondary": "T17",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0804",
+   "title": "平行哲学：智能产业与智慧经济的本源及其目标",
+   "pred": "T21",
+   "gold": "T06",
+   "gold_secondary": "T06",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0814",
+   "title": "特高压换流站系统的地震易损性分析",
+   "pred": "T40",
+   "gold": "T30",
+   "gold_secondary": "T03",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0815",
+   "title": "景区经营权转让下旅游资源开发激励约束契约设计",
+   "pred": "T20",
+   "gold": "T38",
+   "gold_secondary": "T15",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0823",
+   "title": "基于非期望产出的中国城市绿色发展效率及影响因素分析",
+   "pred": "T42",
+   "gold": "T41",
+   "gold_secondary": "T12",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0837",
+   "title": "技术要素集聚对我国区域经济增长差异的影响",
+   "pred": "T07",
+   "gold": "T06",
+   "gold_secondary": "T45",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0838",
+   "title": "大湘南示范区承接转移的产业选择",
+   "pred": "T48",
+   "gold": "T42",
+   "gold_secondary": "T20",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0843",
+   "title": "广佛都市圈公路网络通达性及其空间格局",
+   "pred": "T48",
+   "gold": "T41",
+   "gold_secondary": "T48",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0846",
+   "title": "基于电压突变量的差动保护同步方法研究",
+   "pred": "T40",
+   "gold": "T36",
+   "gold_secondary": "T06",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0849",
+   "title": "中国人才培养急需“双重转型”",
+   "pred": "T45",
+   "gold": "T46",
+   "gold_secondary": "T20",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0850",
+   "title": "我国北方地区清洁供暖技术现状与问题探讨",
+   "pred": "T32",
+   "gold": "T06",
+   "gold_secondary": "T45",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0859",
+   "title": "改进引力-斥力算法在配电网单线图自动生成中的应用研究",
+   "pred": "T34",
+   "gold": "T27",
+   "gold_secondary": "T27",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0861",
+   "title": "基于5G组网的智能分布式配电网保护研究与应用",
+   "pred": "T40",
+   "gold": "T36",
+   "gold_secondary": "T19",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0868",
+   "title": "寻求共同基础 推进交流合作――对美国智库和科学界主要科技政策",
+   "pred": "T45",
+   "gold": "T06",
+   "gold_secondary": "T21",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0872",
+   "title": "儒家思想视角下传统宗族聚落空间营造及其现代启示——以湖南省岳",
+   "pred": "T20",
+   "gold": "T06",
+   "gold_secondary": "T25",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0877",
+   "title": "我国LED产业发展的制约因素与对策分析——基于产业集群网络范",
+   "pred": "T20",
+   "gold": "T43",
+   "gold_secondary": "T12",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0888",
+   "title": "水资源约束下的干旱内陆河流域城市适度规模研究",
+   "pred": "T41",
+   "gold": "T44",
+   "gold_secondary": "T20",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0891",
+   "title": "铸造强国重器:关键核心技术突破的规律探索与体系构建",
+   "pred": "T45",
+   "gold": "T46",
+   "gold_secondary": "T43",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0892",
+   "title": "开启深渊之门——海斗深渊前沿科技问题研究与攻关先导科技专项进",
+   "pred": "T26",
+   "gold": "T06",
+   "gold_secondary": "T45",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0904",
+   "title": "元素视角下的中国稀土供需格局及平衡利用策略",
+   "pred": "T19",
+   "gold": "T46",
+   "gold_secondary": "T14",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0910",
+   "title": "我国农业保险空间格局动态演变及收敛研究",
+   "pred": "T42",
+   "gold": "T48",
+   "gold_secondary": "T48",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0911",
+   "title": "武汉市人口扩散与就业扩散的时空关系研究",
+   "pred": "T48",
+   "gold": "T42",
+   "gold_secondary": "T48",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0912",
+   "title": "我国海洋经济的区域特征分析及其发展对策",
+   "pred": "T45",
+   "gold": "T41",
+   "gold_secondary": "T07",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0915",
+   "title": "环首都流通圈物流供应链节点空间布局优化",
+   "pred": "T42",
+   "gold": "T37",
+   "gold_secondary": "T13",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0918",
+   "title": "2014年中国人文地理学术年会在湖南长沙召开",
+   "pred": "T45",
+   "gold": "T06",
+   "gold_secondary": "T48",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0920",
+   "title": "我国地球科学发展的若干思考与建议",
+   "pred": "T45",
+   "gold": "T06",
+   "gold_secondary": "T28",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0933",
+   "title": "适配柔直系统快速性及可靠性需求的雷击干扰识别方法",
+   "pred": "T27",
+   "gold": "T36",
+   "gold_secondary": "T27",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0938",
+   "title": "基于农户层面的耕地经济产出价值研究",
+   "pred": "T06",
+   "gold": "T46",
+   "gold_secondary": "T18",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0943",
+   "title": "湖南武陵山片区农民收入增长及演变特征的县际差异",
+   "pred": "T48",
+   "gold": "T42",
+   "gold_secondary": "T28",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0945",
+   "title": "上海苏州河沿岸创意活动的地理空间及其集聚研究",
+   "pred": "T20",
+   "gold": "T48",
+   "gold_secondary": "T23",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0949",
+   "title": "典型旅游城市空间形态演变及影响因素——以张家界为例",
+   "pred": "T48",
+   "gold": "T44",
+   "gold_secondary": "T25",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0953",
+   "title": "采用自补偿复合电流判据的变电站长段动力电缆漏电监测方法",
+   "pred": "T40",
+   "gold": "T36",
+   "gold_secondary": "T36",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0954",
+   "title": "地下水-农田生态系统关键过程综合试验模拟装置（禹城地下水农田",
+   "pred": "T41",
+   "gold": "T29",
+   "gold_secondary": "T11",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0958",
+   "title": "我国区域产业转移的态势与承接的竞争格局",
+   "pred": "T07",
+   "gold": "T41",
+   "gold_secondary": "T07",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0962",
+   "title": "开展近海生态系统长期观测 引领海洋生态系统健康研究",
+   "pred": "T25",
+   "gold": "T29",
+   "gold_secondary": "T19",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0967",
+   "title": "基于BP人工神经网络的小城镇生态规划研究——以梅河口市中和镇",
+   "pred": "T41",
+   "gold": "T01",
+   "gold_secondary": "T21",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0982",
+   "title": "美国技术政策的演变",
+   "pred": "T45",
+   "gold": "T46",
+   "gold_secondary": "T46",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0983",
+   "title": "中国旅游服务出口地理集中度与出口不稳定性关系研究",
+   "pred": "T48",
+   "gold": "T42",
+   "gold_secondary": "T21",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0988",
+   "title": "一流智库战略研究成果的质量管理机制",
+   "pred": "T45",
+   "gold": "T46",
+   "gold_secondary": "T32",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0990",
+   "title": "特大城市两种高压配网典型接线可靠性比较研究",
+   "pred": "T36",
+   "gold": "T32",
+   "gold_secondary": "T08",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0992",
+   "title": "山西电力现货市场中长期与现货衔接问题及对策",
+   "pred": "T40",
+   "gold": "T38",
+   "gold_secondary": "T11",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0993",
+   "title": "城市边缘区农户宅基地腾退动机影响因素研究",
+   "pred": "T48",
+   "gold": "T42",
+   "gold_secondary": "T48",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0995",
+   "title": "高通量作物表型监测:育种和精准农业发展的加速器",
+   "pred": "T46",
+   "gold": "T06",
+   "gold_secondary": "T06",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0996",
+   "title": "黑龙江省八五三农场高标准基本农田建设时序分析",
+   "pred": "T30",
+   "gold": "T41",
+   "gold_secondary": "T29",
+   "status": "candidate_new_topic"
+  }
+ ],
+ "app_errors": [
+  {
+   "document_id": "ZH_0017",
+   "title": "计及拓扑相似性的含分散式风电配网双层优化重构方法",
+   "pred": "A36",
+   "gold": "A31",
+   "gold_secondary": "A34",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0024",
+   "title": "电信隐性转移支付对工业企业资本循环的影响",
+   "pred": "A50",
+   "gold": "A39",
+   "gold_secondary": "A43",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0031",
+   "title": "极端气象灾害下考虑MESS主动调控的配电网故障恢复策略",
+   "pred": "A37",
+   "gold": "A31",
+   "gold_secondary": "A37",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0037",
+   "title": "一种基于圆周运动轨迹方程的电力系统基波频率测量方法",
+   "pred": "A37",
+   "gold": "A31",
+   "gold_secondary": "A10",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0040",
+   "title": "基于双向循环插补网络的分布式光伏集群时序数据耦合增强方法",
+   "pred": "A34",
+   "gold": "A31",
+   "gold_secondary": "A34",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0058",
+   "title": "含光储充的配网虚拟电厂二次调频随机模型预测控制策略",
+   "pred": "A35",
+   "gold": "A31",
+   "gold_secondary": "A33",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0061",
+   "title": "追踪源荷实时变化的仿射最优电-气能流在线计算方法",
+   "pred": "A27",
+   "gold": "A33",
+   "gold_secondary": "A27",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0070",
+   "title": "考虑配电网灵活性不足风险的分布鲁棒低碳优化调度",
+   "pred": "A35",
+   "gold": "A31",
+   "gold_secondary": "A35",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0077",
+   "title": "新时期我国新质生产力的源—汇功能甄别与空间布局",
+   "pred": "A43",
+   "gold": "A39",
+   "gold_secondary": "A39",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0084",
+   "title": "基于电-碳点对点交易的虚拟电厂联盟与配电网协同低碳运行策略研",
+   "pred": "A44",
+   "gold": "A31",
+   "gold_secondary": "A33",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0085",
+   "title": "考虑用户需求响应博弈推演的区域综合能源运营策略",
+   "pred": "A36",
+   "gold": "A33",
+   "gold_secondary": "A36",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0102",
+   "title": "基于直升机优化调度的电力系统灾后快速恢复模型",
+   "pred": "A31",
+   "gold": "A37",
+   "gold_secondary": "A37",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0106",
+   "title": "极寒灾害下电力-天然气耦合系统故障连锁传播过程推演方法",
+   "pred": "A31",
+   "gold": "A33",
+   "gold_secondary": "A28",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0130",
+   "title": "基于近似熵变化量判据的混合直流输电系统纵联保护方案",
+   "pred": "A37",
+   "gold": "A32",
+   "gold_secondary": "A37",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0134",
+   "title": "长三角地区生态韧性抵抗——适应——恢复的耦合协调及影响机制",
+   "pred": "A43",
+   "gold": "A44",
+   "gold_secondary": "A39",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0140",
+   "title": "碳中和目标下的长江中游城市群产业生态可持续性演化特征与影响机",
+   "pred": "A40",
+   "gold": "A39",
+   "gold_secondary": "A44",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0141",
+   "title": "演化经济地理学的“需求转向”研究进展与展望",
+   "pred": "A43",
+   "gold": "A39",
+   "gold_secondary": "A43",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0155",
+   "title": "中国减污降碳与扩绿增长耦合协调度的时空特征及其驱动因素",
+   "pred": "A41",
+   "gold": "A44",
+   "gold_secondary": "A39",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0156",
+   "title": "长三角城市群高铁与民航服务网络空间特征及其影响因素",
+   "pred": "A43",
+   "gold": "A46",
+   "gold_secondary": "A46",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0163",
+   "title": "混合嵌入性理论视角下东莞市韩国人创业空间特征及形成机制",
+   "pred": "A43",
+   "gold": "A50",
+   "gold_secondary": "A24",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0169",
+   "title": "乡村旅游地回流劳动力的就业选择及其影响因素",
+   "pred": "A45",
+   "gold": "A42",
+   "gold_secondary": "A45",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0184",
+   "title": "表后光伏发电辨识方法综述",
+   "pred": "A34",
+   "gold": "A31",
+   "gold_secondary": "A34",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0185",
+   "title": "一种多虚拟同步机并联系统虚拟动态互阻尼控制方法",
+   "pred": "A38",
+   "gold": "A33",
+   "gold_secondary": "A38",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0186",
+   "title": "大语言模型在电力系统中的应用初探",
+   "pred": "A27",
+   "gold": "A30",
+   "gold_secondary": "A09",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0192",
+   "title": "分布式智能电网的理论发展与技术体系",
+   "pred": "A26",
+   "gold": "A31",
+   "gold_secondary": "A31",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0200",
+   "title": "现货市场下考虑预测误差的风电场日前报价策略研究",
+   "pred": "A34",
+   "gold": "A36",
+   "gold_secondary": "A34",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0202",
+   "title": "三级调度电磁暂态云仿真资源互济机制设计与实现",
+   "pred": "A33",
+   "gold": "A30",
+   "gold_secondary": "A13",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0207",
+   "title": "基于高斯混合模型的紧急控制策略适应性风险评估方法及其应用",
+   "pred": "A31",
+   "gold": "A37",
+   "gold_secondary": "A01",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0210",
+   "title": "考虑富氧燃烧技术与绿证-碳配额等价交互的综合能源低碳经济调度",
+   "pred": "A36",
+   "gold": "A33",
+   "gold_secondary": "A36",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0216",
+   "title": "基于电感复用的准谐振型变换器",
+   "pred": "A37",
+   "gold": "A34",
+   "gold_secondary": "A37",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0229",
+   "title": "计及负荷侧频率支持的分布鲁棒频率约束机组组合",
+   "pred": "A35",
+   "gold": "A30",
+   "gold_secondary": "A28",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0231",
+   "title": "基于LCC注入信号归一化面积差的混合多端直流输电系统永久性故",
+   "pred": "A37",
+   "gold": "A32",
+   "gold_secondary": "A07",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0234",
+   "title": "“源-网-荷-储”协调控制低碳经济优化及降碳效果分析",
+   "pred": "A35",
+   "gold": "A31",
+   "gold_secondary": "A44",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0237",
+   "title": "计及高频雷电流下变电站接地网对周边燃气管网系统及新建地网系统",
+   "pred": "A34",
+   "gold": "A37",
+   "gold_secondary": "A27",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0239",
+   "title": "基于深度自适应K-means++算法的电抗器声纹聚类方法",
+   "pred": "A09",
+   "gold": "A37",
+   "gold_secondary": "A09",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0240",
+   "title": "融合电网拓扑信息的分支竞争Q网络智能体紧急切负荷决策",
+   "pred": "A31",
+   "gold": "A37",
+   "gold_secondary": "A26",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0241",
+   "title": "基于事件触发的动态一致性馈线负载均衡控制策略",
+   "pred": "A32",
+   "gold": "A31",
+   "gold_secondary": "A38",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0245",
+   "title": "小样本条件下基于深度特征融合的配电网高阻接地故障识别方法",
+   "pred": "A37",
+   "gold": "A31",
+   "gold_secondary": "A05",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0251",
+   "title": "基于海马优化深层极限学习机的电力信息物理系统FDIA检测",
+   "pred": "A27",
+   "gold": "A26",
+   "gold_secondary": "A27",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0253",
+   "title": "无间隔棒输电线路轨迹提取与椭圆检测的舞动辨识",
+   "pred": "A37",
+   "gold": "A32",
+   "gold_secondary": "A19",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0254",
+   "title": "基于KDE传递熵因果分析的强迫功率振荡扰动源定位方法",
+   "pred": "A34",
+   "gold": "A37",
+   "gold_secondary": "A23",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0255",
+   "title": "胡海岩：加强科技伦理治理遴选培养优秀人才",
+   "pred": "A25",
+   "gold": "A48",
+   "gold_secondary": "A48",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0256",
+   "title": "开放治理与创新方向规制：推进通用人工智能发展的制度机制研究",
+   "pred": "A26",
+   "gold": "A40",
+   "gold_secondary": "A26",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0257",
+   "title": "科学开发地下空间资源，激活城市经济高质量发展",
+   "pred": "A28",
+   "gold": "A51",
+   "gold_secondary": "A50",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0258",
+   "title": "朱光亚：科学家精神的培育者与践行典范——纪念“科技众帅之帅”",
+   "pred": "A04",
+   "gold": "A48",
+   "gold_secondary": "A04",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0273",
+   "title": "考虑预测误差不确定性和功率互济的配电网直流合环重构",
+   "pred": "A34",
+   "gold": "A31",
+   "gold_secondary": "A34",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0278",
+   "title": "应用多参数协同自适应方法的虚拟同步发电机控制策略",
+   "pred": "A33",
+   "gold": "A38",
+   "gold_secondary": "A33",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0280",
+   "title": "一种用于非平衡分布式微网的双重灵活模型预测功率控制方法",
+   "pred": "A31",
+   "gold": "A33",
+   "gold_secondary": "A07",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0282",
+   "title": "基于不对称低压穿越的逆变型电源的故障计算模型",
+   "pred": "A37",
+   "gold": "A38",
+   "gold_secondary": "A37",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0286",
+   "title": "新质生产力培育下中国OFDI逆向技术溢出影响绿色全要素生产率",
+   "pred": "A44",
+   "gold": "A50",
+   "gold_secondary": "A50",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0302",
+   "title": "国际发展环境变化与我国科技战略选择：历史回顾与未来展望",
+   "pred": "A43",
+   "gold": "A40",
+   "gold_secondary": "A25",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0332",
+   "title": "基于电容换流的限流型混合式直流断路器",
+   "pred": "A37",
+   "gold": "A32",
+   "gold_secondary": "A07",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0342",
+   "title": "基于分布式通信架构的温控负荷参与电力系统频率调控模型",
+   "pred": "A31",
+   "gold": "A36",
+   "gold_secondary": "A15",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0347",
+   "title": "基于自适应插值强跟踪扩展卡尔曼滤波的电力系统动态状态估计研究",
+   "pred": "A34",
+   "gold": "A30",
+   "gold_secondary": "A49",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0349",
+   "title": "新能源大规模并网环境下变电站防孤岛技术研究",
+   "pred": "A38",
+   "gold": "A34",
+   "gold_secondary": "A51",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0351",
+   "title": "基于改进秃鹰算法优化极限学习机的谐波发射水平估计",
+   "pred": "A09",
+   "gold": "A30",
+   "gold_secondary": "A26",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0390",
+   "title": "电-气-碳-绿证多市场下综合能源供应商联合均衡模型",
+   "pred": "A36",
+   "gold": "A33",
+   "gold_secondary": "A36",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0392",
+   "title": "湖南省文化产业集团化发展实证研究",
+   "pred": "A04",
+   "gold": "A43",
+   "gold_secondary": "A17",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0394",
+   "title": "基于PSCAD的饱和铁心型超导限流器性能分析",
+   "pred": "A32",
+   "gold": "A37",
+   "gold_secondary": "A38",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0395",
+   "title": "1990—2010年中国人口预期寿命与人均GDP的相关关系及",
+   "pred": "A47",
+   "gold": "A39",
+   "gold_secondary": "A47",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0399",
+   "title": "转型背景下“中心—外围”特征的演变机制与发展趋势——基于江苏",
+   "pred": "A43",
+   "gold": "A39",
+   "gold_secondary": "A43",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0408",
+   "title": "融合物理与数据知识的电力系统扰动后频率在线快速计算方法",
+   "pred": "A27",
+   "gold": "A26",
+   "gold_secondary": "A27",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0415",
+   "title": "混合型相控开关在地面自动过分相中的应用",
+   "pred": "A37",
+   "gold": "A46",
+   "gold_secondary": "A37",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0424",
+   "title": "美日“先进存储研究联合体”发展路径与启示",
+   "pred": "A43",
+   "gold": "A40",
+   "gold_secondary": "A43",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0444",
+   "title": "中国省域创新基础设施与创新产出水平的耦合协调发展及其影响因素",
+   "pred": "A50",
+   "gold": "A40",
+   "gold_secondary": "A46",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0451",
+   "title": "加强半导体基础能力建设 点亮半导体自立自强发展的“灯塔”",
+   "pred": "A43",
+   "gold": "A16",
+   "gold_secondary": "A16",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0457",
+   "title": "基于VMD-WVD的故障行波全波形时-频分析方法",
+   "pred": "A37",
+   "gold": "A31",
+   "gold_secondary": "A37",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0465",
+   "title": "我国生物产业发展现状及政策建议",
+   "pred": "A50",
+   "gold": "A43",
+   "gold_secondary": "A50",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0469",
+   "title": "变电站二次测试中智能语音控制关键技术研究",
+   "pred": "A37",
+   "gold": "A26",
+   "gold_secondary": "A37",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0473",
+   "title": "专利拍卖在我国的发展机遇与挑战",
+   "pred": "A48",
+   "gold": "A40",
+   "gold_secondary": "A25",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0475",
+   "title": "衡阳市城镇化进程的障碍与对策研究",
+   "pred": "A47",
+   "gold": "A41",
+   "gold_secondary": "A47",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0481",
+   "title": "图深度学习技术在智能暂态稳定评估中的应用及展望",
+   "pred": "A27",
+   "gold": "A26",
+   "gold_secondary": "A26",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0483",
+   "title": "基于DS-LCC拓扑抗偏移性的建模与优化",
+   "pred": "A09",
+   "gold": "A38",
+   "gold_secondary": "A32",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0487",
+   "title": "科技助推“三变”改革 建立科技扶贫长效机制——中国科学院贵州",
+   "pred": "A28",
+   "gold": "A48",
+   "gold_secondary": "A07",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0494",
+   "title": "中国碳市场顶层设计重大问题及建议",
+   "pred": "A43",
+   "gold": "A36",
+   "gold_secondary": "A40",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0499",
+   "title": "考虑风-储-直参与调频的电力系统频率特征定量分析",
+   "pred": "A32",
+   "gold": "A35",
+   "gold_secondary": "A34",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0501",
+   "title": "换流阀相变乳液换热性能及其工程应用研究",
+   "pred": "A09",
+   "gold": "A32",
+   "gold_secondary": "A19",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0502",
+   "title": "生产性服务业集聚空间效应与城市技术创新——基于长江经济带10",
+   "pred": "A40",
+   "gold": "A39",
+   "gold_secondary": "A40",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0505",
+   "title": "国土空间规划下城市收缩与复兴中的空间形态调整",
+   "pred": "A51",
+   "gold": "A41",
+   "gold_secondary": "A51",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0509",
+   "title": "高比例水电系统AGC稳定性分析及控制策略优化",
+   "pred": "A38",
+   "gold": "A34",
+   "gold_secondary": "A34",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0510",
+   "title": "基于改进无迹卡尔曼滤波的短线路同杆并架双回线参数辨识",
+   "pred": "A37",
+   "gold": "A32",
+   "gold_secondary": "A19",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0513",
+   "title": "省际交界区跨界环境风险全过程管理机制构建",
+   "pred": "A44",
+   "gold": "A13",
+   "gold_secondary": "A28",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0529",
+   "title": "基于城市特色景观的城市识别系统构建策略",
+   "pred": "A46",
+   "gold": "A39",
+   "gold_secondary": "A09",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0533",
+   "title": "沿海城市人地关系地域系统脆弱性研究——以大连市为例",
+   "pred": "A51",
+   "gold": "A39",
+   "gold_secondary": "A51",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0534",
+   "title": "基于六普数据的湖南省人口老龄化发展态势与对策研究",
+   "pred": "A04",
+   "gold": "A47",
+   "gold_secondary": "A09",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0536",
+   "title": "改革开放以来湖南城乡居民收入两极分化演变研究",
+   "pred": "A39",
+   "gold": "A41",
+   "gold_secondary": "A10",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0540",
+   "title": "厦漳泉传统商业街更新与发展研究",
+   "pred": "A43",
+   "gold": "A41",
+   "gold_secondary": "A44",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0568",
+   "title": "近3年《经济地理》发表论文的评论——现任《经济地理》主编给论",
+   "pred": "A25",
+   "gold": "A39",
+   "gold_secondary": "A05",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0584",
+   "title": "人才跨国流动的动力与影响研究评述",
+   "pred": "A25",
+   "gold": "A48",
+   "gold_secondary": "A49",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0588",
+   "title": "基于直流电力分组传输的缓存储能研究",
+   "pred": "A35",
+   "gold": "A31",
+   "gold_secondary": "A35",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0594",
+   "title": "科技工作者创造了中国科技发展70年的辉煌",
+   "pred": "A40",
+   "gold": "A48",
+   "gold_secondary": "A22",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0597",
+   "title": "世界工业遗产的地理、产业分布及价值特征研究——基于《世界遗产",
+   "pred": "A46",
+   "gold": "A43",
+   "gold_secondary": "A46",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0613",
+   "title": "并网变换器的多频率耦合等幅振荡分析",
+   "pred": "A32",
+   "gold": "A38",
+   "gold_secondary": "A30",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0620",
+   "title": "基于供需理论的土地征收补偿研究——以湖北省为例",
+   "pred": "A44",
+   "gold": "A42",
+   "gold_secondary": "A27",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0639",
+   "title": "洞庭湖区两型社会发展水平时空分异",
+   "pred": "A41",
+   "gold": "A44",
+   "gold_secondary": "A26",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0640",
+   "title": "电力系统SDH网络非对称路径PTP对时策略",
+   "pred": "A27",
+   "gold": "A37",
+   "gold_secondary": "A11",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0642",
+   "title": "基于主客观赋权相结合的省级电网发展诊断分析方法与实证研究",
+   "pred": "A27",
+   "gold": "A37",
+   "gold_secondary": "A49",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0646",
+   "title": "中国西南地区传统村落空间分布特征及其影响机理",
+   "pred": "A41",
+   "gold": "A45",
+   "gold_secondary": "A24",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0648",
+   "title": "湖南物流产业集群系统发展研究",
+   "pred": "A43",
+   "gold": "A46",
+   "gold_secondary": "A43",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0656",
+   "title": "长江经济带“共抓大保护、不搞大开发”的基础与策略",
+   "pred": "A51",
+   "gold": "A44",
+   "gold_secondary": "A51",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0667",
+   "title": "基于拓扑聚合的输电断面辨识方法与断面传输极限的研究",
+   "pred": "A31",
+   "gold": "A32",
+   "gold_secondary": "A15",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0684",
+   "title": "直流微网混合储能系统控制策略现状及展望",
+   "pred": "A35",
+   "gold": "A33",
+   "gold_secondary": "A35",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0685",
+   "title": "意愿调查法在我国遗产资源价值评价领域的应用与研究进展",
+   "pred": "A25",
+   "gold": "A45",
+   "gold_secondary": "A51",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0696",
+   "title": "中美欧内部数字治理格局比较研究",
+   "pred": "A24",
+   "gold": "A40",
+   "gold_secondary": "A13",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0697",
+   "title": "国际创新统计体系演化与国内发展研究",
+   "pred": "A48",
+   "gold": "A40",
+   "gold_secondary": "A22",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0706",
+   "title": "中国高端制造业的全球贸易网络格局及其影响因素分析",
+   "pred": "A50",
+   "gold": "A43",
+   "gold_secondary": "A50",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0717",
+   "title": "河南省新冠肺炎疫情时空扩散特征与人口流动风险评估——基于12",
+   "pred": "A10",
+   "gold": "A07",
+   "gold_secondary": "A10",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0719",
+   "title": "“三业结合”全面提振中国经济的逻辑与路径",
+   "pred": "A46",
+   "gold": "A39",
+   "gold_secondary": "A46",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0734",
+   "title": "江西省农村居民收入时空差异及其影响因素",
+   "pred": "A51",
+   "gold": "A42",
+   "gold_secondary": "A42",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0738",
+   "title": "中国科学院科技扶贫创新举措及成效",
+   "pred": "A25",
+   "gold": "A48",
+   "gold_secondary": "A42",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0762",
+   "title": "知识产权保护促进了服务业内部结构优化吗？——基于复杂网络视角",
+   "pred": "A50",
+   "gold": "A43",
+   "gold_secondary": "A24",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0773",
+   "title": "污染企业迁移意愿的影响因素研究——以浙江省上虞市为例",
+   "pred": "A43",
+   "gold": "A13",
+   "gold_secondary": "A43",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0777",
+   "title": "创新型企业城市内部空间分布及组织逻辑——以南京市为例",
+   "pred": "A46",
+   "gold": "A40",
+   "gold_secondary": "A43",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0781",
+   "title": "中国文化产业发展的区域特征与成因研究——基于第五次和第六次人",
+   "pred": "A41",
+   "gold": "A39",
+   "gold_secondary": "A10",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0782",
+   "title": "国民休闲驱动机制研究——生活方式、信息刺激与休闲消费行为的结",
+   "pred": "A40",
+   "gold": "A45",
+   "gold_secondary": "A49",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0784",
+   "title": "生命与健康大数据现状和展望",
+   "pred": "A24",
+   "gold": "A22",
+   "gold_secondary": "A30",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0794",
+   "title": "基于QQ群网络的东北地区城市联系特征与层级结构",
+   "pred": "A46",
+   "gold": "A39",
+   "gold_secondary": "A15",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0798",
+   "title": "从“人、财、物”视角出发,提升网络空间的安全态势",
+   "pred": "A24",
+   "gold": "A26",
+   "gold_secondary": "A48",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0803",
+   "title": "满足静态电压稳定增强要求的发电机最佳调整方法",
+   "pred": "A38",
+   "gold": "A30",
+   "gold_secondary": "A30",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0812",
+   "title": "基于NRCA的中国省际能源利用评价研究",
+   "pred": "A42",
+   "gold": "A51",
+   "gold_secondary": "A51",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0813",
+   "title": "长沙市土地利用结构熵值时序分析",
+   "pred": "A46",
+   "gold": "A41",
+   "gold_secondary": "A19",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0819",
+   "title": "全球流动空间中的当代世界城市网络理论研究",
+   "pred": "A46",
+   "gold": "A39",
+   "gold_secondary": "A40",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0824",
+   "title": "数字技术赋能国家统计现代化建设",
+   "pred": "A24",
+   "gold": "A40",
+   "gold_secondary": "A19",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0855",
+   "title": "暂态电能质量扰动引发电压变动对闪变检测的影响",
+   "pred": "A37",
+   "gold": "A38",
+   "gold_secondary": "A25",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0857",
+   "title": "国家级新区设立的效用分析",
+   "pred": "A50",
+   "gold": "A39",
+   "gold_secondary": "A29",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0863",
+   "title": "城市规模的分布及演进特征——基于18个国家统计数据的实证研究",
+   "pred": "A46",
+   "gold": "A39",
+   "gold_secondary": "A35",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0867",
+   "title": "基于并行粒子群算法的电力系统分区抗差状态估计",
+   "pred": "A34",
+   "gold": "A30",
+   "gold_secondary": "A28",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0869",
+   "title": "基于断路器重合闸的柔性直流输电线路单端故障测距方法",
+   "pred": "A32",
+   "gold": "A37",
+   "gold_secondary": "A32",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0875",
+   "title": "中南地区陶瓷手工艺作坊时空演变及经济效应",
+   "pred": "A15",
+   "gold": "A45",
+   "gold_secondary": "A15",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0885",
+   "title": "西北地区主体功能区划方案",
+   "pred": "A39",
+   "gold": "A51",
+   "gold_secondary": "A26",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0890",
+   "title": "合成生物学的医学应用研究进展",
+   "pred": "A07",
+   "gold": "A22",
+   "gold_secondary": "A07",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0892",
+   "title": "开启深渊之门——海斗深渊前沿科技问题研究与攻关先导科技专项进",
+   "pred": "A48",
+   "gold": "A51",
+   "gold_secondary": "A28",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0895",
+   "title": "中国东南半壁南北方地区人口空间分异格局及其影响因素",
+   "pred": "A41",
+   "gold": "A39",
+   "gold_secondary": "A40",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0900",
+   "title": "空间尺度对城市竞标地租理论的适用性影响分析——以深圳经济特区",
+   "pred": "A46",
+   "gold": "A39",
+   "gold_secondary": "A39",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0901",
+   "title": "基于改进GMM-CNN-GRU混合的非侵入式负荷监测方法研究",
+   "pred": "A09",
+   "gold": "A26",
+   "gold_secondary": "A37",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0920",
+   "title": "我国地球科学发展的若干思考与建议",
+   "pred": "A48",
+   "gold": "A28",
+   "gold_secondary": "A30",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0923",
+   "title": "基于新型日期映射法和ISGU混合模型的短期电力负荷预测",
+   "pred": "A09",
+   "gold": "A36",
+   "gold_secondary": "A01",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0926",
+   "title": "基于模块化多电平矩阵式换流器的分频输电系统低频侧阻抗建模及稳",
+   "pred": "A32",
+   "gold": "A34",
+   "gold_secondary": "A32",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0927",
+   "title": "不平衡电网下隔离型固态变压器非线性一体化控制",
+   "pred": "A37",
+   "gold": "A38",
+   "gold_secondary": "A37",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0942",
+   "title": "城市负债研究的国内外进展与展望",
+   "pred": "A40",
+   "gold": "A50",
+   "gold_secondary": "A47",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0945",
+   "title": "上海苏州河沿岸创意活动的地理空间及其集聚研究",
+   "pred": "A39",
+   "gold": "A45",
+   "gold_secondary": "A31",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0946",
+   "title": "面向区域调频辅助服务市场的南方电网统一调频控制区设计与策略优",
+   "pred": "A31",
+   "gold": "A36",
+   "gold_secondary": "A28",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0956",
+   "title": "加强喀斯特关键带长期观测研究,支撑西南石漠化区生态恢复与民生",
+   "pred": "A51",
+   "gold": "A44",
+   "gold_secondary": "A23",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0959",
+   "title": "湖南“省直管县”财政体制改革对县域经济发展影响实证分析",
+   "pred": "A39",
+   "gold": "A24",
+   "gold_secondary": "A05",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0967",
+   "title": "基于BP人工神经网络的小城镇生态规划研究——以梅河口市中和镇",
+   "pred": "A46",
+   "gold": "A44",
+   "gold_secondary": "A26",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0973",
+   "title": "生物技术启发下的信息技术革新",
+   "pred": "A22",
+   "gold": "A26",
+   "gold_secondary": "A22",
+   "status": "review"
+  },
+  {
+   "document_id": "ZH_0979",
+   "title": "基于“时空图”的广州市社会空间分异",
+   "pred": "A46",
+   "gold": "A39",
+   "gold_secondary": "A39",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0980",
+   "title": "青岛市迈向现代化国际城市综合评价及战略对策",
+   "pred": "A40",
+   "gold": "A39",
+   "gold_secondary": "A15",
+   "status": "candidate_new_topic"
+  },
+  {
+   "document_id": "ZH_0985",
+   "title": "中国五大城市群生态效率的演变及其影响因素",
+   "pred": "A40",
+   "gold": "A44",
+   "gold_secondary": "A39",
+   "status": "matched"
+  },
+  {
+   "document_id": "ZH_0987",
+   "title": "常德市住宿业空间结构时空演化特征及影响因素",
+   "pred": "A41",
+   "gold": "A45",
+   "gold_secondary": "A46",
+   "status": "candidate_new_topic"
+  }
+ ],
+ "tech_acc": 0.768,
+ "app_acc": 0.85
+}

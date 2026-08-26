@@ -1,0 +1,107 @@
+functional_item: 关键词识别工具
+name: 英文科技文献关键词识别
+description: 从英文科技文献中抽取反映主题的关键短语/术语，后置引擎去重/过滤停用词/排序。
+input_type: text
+engine_type: keyword
+lang: en   # 触发英文短语挖掘器（nltk POS）
+
+system_prompt: |
+  You are an expert in keyword extraction from English scientific literature. Extract keyphrases
+  reflecting the core topic from the input document. The input may be an abstract or the full text;
+  some literature (e.g., technical reports) has no abstract section — extract from whatever
+  content is provided.
+
+  Principles:
+  1. Keywords should be noun phrases / domain terms (e.g., "perovskite solar cells", "protein kinase C",
+     "deep learning"). Avoid verb phrases, full clauses, or single generic words.
+  2. Keep technical terms/acronyms intact (e.g., "TOPCon", "CNN", "BRCA2"); expand acronyms only when meaningful.
+  3. Pick keywords MOST RELEVANT to the document's core content — not merely frequent words. Drop function-only or
+     generic words (study, method, result, analysis, approach, based, paper, etc.) and background/edge terms.
+  4. Classify each keyword into exactly one of 5 types and aim for TYPE COVERAGE (avoid clustering in one type):
+     - research_object: the core entity/substance/system BEING STUDIED — the actual object of the research,
+       a concrete object/material/organism/system name (e.g., "perovskite solar cells", "titanium silicide",
+       "TOPCon tandem solar cells", "Nile tilapia", "chronic kidney disease"). This MUST be the studied
+       object itself, never a phenomenon/property/measured attribute — "optical properties", "efficiency",
+       "growth performance" belong to phenomenon_metric, NOT research_object.
+     - technical_method: the technique/algorithm/method used (e.g., "graph convolutional network", "deep learning")
+     - application_scenario: the domain/scenario where it is applied (e.g., "drug-drug interaction prediction")
+     - material_data: materials/datasets/corpus used (e.g., "titanium dioxide", "PubMed")
+     - phenomenon_metric: observed phenomenon or evaluation metric (e.g., "recombination loss", "energy gap",
+       "optical properties", "efficiency")
+  5. Pick 0-2 keywords per type: choose the MOST RELEVANT representative(s) for each type; if the document has no
+     strong candidate for a type, output 0 for that type (do NOT pad with weak/off-topic words). Core types may have 2.
+  6. Prefer concise base terms; avoid quantifier-modified longer variants unless the modified form is a recognized fixed term.
+  7. Do not list author names as keywords.
+
+principles: |
+  Judge by "topic representativeness"; beware:
+  A. Fragmentation: splitting a compound term into single words.
+  B. Generic: extracting function words (study/method/result/approach) with no topic info.
+  C. Redundancy: synonyms or hypernym/hyponym duplicates.
+  Weight reflects topic representativeness: research object / core method > secondary method > background.
+
+dictionaries:
+  stopwords:
+    - study
+    - studies
+    - method
+    - methods
+    - result
+    - results
+    - analysis
+    - approach
+    - approaches
+    - research
+    - paper
+    - based
+    - using
+    - used
+    - use
+    - via
+    - objective
+    - background
+    - conclusion
+    - purpose
+    - introduction
+    - aim
+    - data
+    - model
+    - models
+    - system
+    - systems
+    - theory
+    - process
+    - processes
+    - effect
+    - effects
+    - impact
+    - role
+    - factor
+    - factors
+    - level
+    - levels
+    - case
+    - cases
+    - group
+    - groups
+    - patient
+    - patients
+    - review
+    - framework
+    - performance
+
+output_schema:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        type: object
+        properties:
+          keyword: {type: string}
+          weight: {type: number}
+          type: {type: string, enum: [research_object, technical_method, application_scenario, material_data, phenomenon_metric]}
+        required: [keyword, weight, type]
+  required: [data]
+
+examples: []

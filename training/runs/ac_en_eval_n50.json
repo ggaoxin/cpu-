@@ -1,0 +1,823 @@
+{
+  "summary": {
+    "n": 50,
+    "n_ok": 50,
+    "top_k": 25,
+    "main_acc": 0.04,
+    "main_hier_acc": 0.66,
+    "main_branch_acc": 0.9,
+    "main_top_acc": 0.92,
+    "main_or_aux_hit": 0.04,
+    "aux_match": 0.444,
+    "aux_gold_count": 9,
+    "inter_acc": 0.94,
+    "inter_precision": 0.5,
+    "inter_recall": 0.667,
+    "inter_f1": 0.571,
+    "anti_hallucination_pass": 1.0
+  },
+  "records": [
+    {
+      "sample_id": 1,
+      "pred_main": "TM914.4+1",
+      "gold_main": "TM615",
+      "pred_aux": [
+        "TN304.055"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TM914.4→TM914.4+1] 本文的核心应用场景是钙钛矿/硅串联太阳能电池，属于太阳能电池的范畴，因此主分类号为TM914.4（太阳能电池）。辅助分类号TN304.055（半导体材料制备）对应于文章中探讨的硅化钛复合层的形成机制及氧化工艺，这属于材料制备方法/工具层面的研究，是对主分类号应用场景的支撑。由于辅助分类号仅作为材料制备方法（3a类），并未构成与太阳能电池并列的实质性应用贡献，因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 2,
+      "pred_main": "U491.2",
+      "gold_main": "U49",
+      "pred_aux": [
+        "TM727"
+      ],
+      "gold_aux": [],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 U491.1→U491.2] 本文的核心应用场景是交通基础设施（公路、铁路、水路）的自洽能源系统设计，属于交通工程中的交通设施与能源管理范畴，故主分类号为U491.1（交通工程设施/交通能源）。辅助分类号为TM727（配电网/微电网），因为微电网和储能是该系统不可或缺的实质性平行应用主题，且论文对微电网的拓扑结构和配置优化有具体探讨。由于交通工程（U）与电工技术（TM）属于不同的学科门类边界，且论文在两个领域均有实质性贡献，因此判定为跨学科（is_interdisciplinary=true）。"
+    },
+    {
+      "sample_id": 3,
+      "pred_main": "R471",
+      "gold_main": "R47",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R47→R471] 本文主要探讨了新加坡综合医院通过引入沉浸式护理研究项目来提升护士的研究能力和循证实践能力。文章的核心主题是护理学专业人员的科研能力培养与职业发展，属于护理学范畴，因此主分类号为R47（护理学）。文章虽然涉及教育和培训方法（如沉浸式学习、实习项目），但这些方法是作为提升护理研究能力的手段，并未对教育学本身做出实质性的学科贡献，因此不设辅助分类号，也不属于跨学科。"
+    },
+    {
+      "sample_id": 4,
+      "pred_main": "R541",
+      "gold_main": "R54",
+      "pred_aux": [
+        "R726.5"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R542→R541] 本文综述了心脏传导系统在心源性猝死（SCD）中的病理学改变，核心主题属于心脏疾病的病理与临床范畴，因此主分类号归入R542（心脏疾病）。文章特别强调了婴儿猝死综合征（SIDS）和胎儿宫内猝死综合征（SIUDS）中的心脏传导系统病变，这构成了对小儿心脏疾病实质性探讨的次要主题，故给予辅助分类号R726.5（小儿心脏疾病）。由于主辅分类号同属医学（R）大类，未跨越学科边界，因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 5,
+      "pred_main": "R749.053",
+      "gold_main": "R749",
+      "pred_aux": [
+        "R971"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R749.4→R749.053] 本文献主要探讨度洛西汀治疗伴有抑郁症的暴食症的临床疗效，属于精神疾病的应用场景，因此主分类号归入R749.4（进食障碍）。辅助分类号为R971.43（抗抑郁药），因为度洛西汀作为抗抑郁药物在此处作为治疗工具被使用，属于方法/工具学科（3a），并未对药物学本身做出实质性贡献，故is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 6,
+      "pred_main": "Q936",
+      "gold_main": "Q939",
+      "pred_aux": [
+        "Q949.32"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文研究了粗糙脉孢菌中蛋白激酶C（NPKC）的激活、亚细胞定位及其在细胞生长、隔膜发育和昼夜节律中的生物学功能。核心内容属于酶学/蛋白质的生物学功能研究，因此主分类号为Q936（酶）。辅助分类号为Q949.32（真菌分类学），因为研究对象粗糙脉孢菌属于真菌，但论文并未对真菌分类学本身做出实质性贡献，仅是将其作为生物学研究对象，属于同一生物学大类下的背景物种，因此不作为跨学科处理，is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 7,
+      "pred_main": "R782.2",
+      "gold_main": "R62",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文主要研究不同种族人群的唇部比例、体积及其对面部美学的影响，并探讨唇部增强治疗的个性化方案。其核心应用场景属于口腔颌面外科/整形美容外科领域，因此主分类号归入R782.2（口腔颌面部整形外科学）。文中使用的三维成像技术仅作为测量和评估的工具，属于方法/工具借用（3a类），不构成对成像技术学科本身的实质性贡献，因此不设为辅助分类号，也不属于跨学科。"
+    },
+    {
+      "sample_id": 8,
+      "pred_main": "O641.4",
+      "gold_main": "O621",
+      "pred_aux": [
+        "O613.62"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文的核心研究内容是合成基于碳硼烷配体的钴(II)无限配位聚合物（ICP），并探讨其形貌对气体吸附性质的影响。这属于无机化学中的配位化学领域，因此主分类号为O641.4（配位化学）。碳硼烷作为配体被引入，属于硼化合物的化学性质研究，作为辅助分类号O613.62（第III族元素及其化合物）。两者同属化学（O类）的下属子领域，且碳硼烷仅作为研究工具/配体使用，并未构成跨学科的平行应用主题，因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 9,
+      "pred_main": "R541.1",
+      "gold_main": "R54",
+      "pred_aux": [
+        "R361"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文献主要研究先天性心脏病（左向右分流）合并不可逆丛源性肺动脉病患者的年龄相关病理学变化，核心应用场景为先天性心脏病的临床与病理研究，故主分类号为R541.1（先天性心脏病）。研究中详细观察了肺动脉丛状病变的组织病理学特征和抗原表达，属于病理学方法与手段，作为辅助分类号R361（病理形态学）。由于病理学在此仅作为研究工具，文献并未对病理学学科本身做出实质性贡献，因此不构成跨学科。"
+    },
+    {
+      "sample_id": 10,
+      "pred_main": "R739.41",
+      "gold_main": "R73",
+      "pred_aux": [
+        "R944.9"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文的核心应用场景是治疗替莫唑胺耐药的儿童弥漫性中线胶质瘤（DIPG），属于神经系统肿瘤的药物治疗，因此主分类号为R739.41（神经系统肿瘤）。文中开发了纳米脂质体和脱铁蛋白纳米笼来包载药物以改善药代动力学和靶向递送，这属于药剂学中的靶向给药系统（R944.9）。该辅助分类是作为实现治疗目的的药物剂型工具（3a类），并未对药剂学基础理论本身做出实质性贡献，因此不标记为跨学科（is_interdisciplinary=false）。"
+    },
+    {
+      "sample_id": 11,
+      "pred_main": "C912.81",
+      "gold_main": "C912",
+      "pred_aux": [
+        "D756.1"
+      ],
+      "gold_aux": [],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文的核心应用场景是社会学领域中的城市社区空间研究，探讨在脱欧背景下波兰移民与当地居民如何通过社区食物项目建立包容性的社区空间，因此主分类号选为C912.81（城市社会学）。文章同时深入探讨了英国脱欧（Brexit）这一政治事件引发的移民不安全感及社会排斥问题，对移民政策与社会政治环境有实质性论述，故辅以D756.138（英国社会结构与社会问题）。社会学与政治学属于不同的学科门类，且本文对政治社会背景有实质性贡献，故判定为跨学科。"
+    },
+    {
+      "sample_id": 12,
+      "pred_main": "R969.1",
+      "gold_main": "R96",
+      "pred_aux": [
+        "R814.42"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文献主要研究选择性σ1受体拮抗剂MR309在健康志愿者中的药代动力学（PK）及其与脑内σ1受体占据率的关系，以支持其在神经性疼痛治疗中的临床应用。核心主题为药物在人体内的代谢动力学和药效学（受体占据率），属于临床药理学范畴，故主分类号为R969.1（临床药理学）。研究过程中使用了正电子发射断层扫描（PET）技术来测定脑内受体占据率，PET在此作为方法学工具（3a），故给予辅助分类号R814.42（PET成像）。由于PET仅作为药理学研究的测量工具，文献并未对核医学或影像学本身做出实质性贡献，因此不属于跨学科研究，is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 13,
+      "pred_main": "X820.3",
+      "gold_main": "X8",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文的核心主题是区域和战略环境评价（RSEA/SEA）的案例研究，探讨如何将环境、社会和健康影响整合到评估体系中。根据中图分类法，环境影响评价属于环境科学（X类），具体为环境质量分析与评价（X82）下的环境影响评价（X820.3）。文章虽然涉及土地利用规划和项目规划，但这些是环境评价的应用场景和背景，而非独立的平行贡献学科，因此不设辅助分类号，也不属于跨学科。"
+    },
+    {
+      "sample_id": 14,
+      "pred_main": "R683.41",
+      "gold_main": "R68",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文是一项关于掌骨骨折（手部骨折）微创内固定手术的临床回顾性对比研究，比较了髓内螺钉和连接克氏针的临床与影像学结果。核心主题属于骨科学中骨折的手术治疗，因此主分类号选为R683.41（上肢骨折）。文章未对其他学科领域做出实质性贡献，故无辅助分类号，且不属于跨学科文献。"
+    },
+    {
+      "sample_id": 15,
+      "pred_main": "TN918.1",
+      "gold_main": "TP3",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": false,
+      "alignment_ok": true,
+      "selection_reason": "本文研究物理签名认证方案的性能分析，将签名建模为随机过程并计算虚警和漏检的信息率，核心应用场景属于身份认证与信息安全的理论分析。中图法中TN918.1对应密码学、密码分析与身份认证，最为贴切。文中使用的随机过程统计建模和模式分类方法属于数学与信号处理的通用工具，不作为辅助学科，因此无辅助代码且非跨学科。"
+    },
+    {
+      "sample_id": 16,
+      "pred_main": "R723.13",
+      "gold_main": "R58",
+      "pred_aux": [
+        "R394"
+      ],
+      "gold_aux": [
+        "R394"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R723.14→R723.13] 本文研究土耳其儿童家族性早发型肥胖的临床特征及黑皮质素4受体（MC4R）基因变异与多态性。核心应用场景为儿童肥胖症的临床研究，属于儿科学中儿童内分泌及代谢性疾病范畴，故主分类号为R723.14。辅助分类号R394（医学遗传学）代表本文使用的遗传学分析方法与基因变异机制探讨，属于方法/工具学科（3a），本文并未对遗传学基础理论本身做出实质性贡献，因此不作为平行应用主题，is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 17,
+      "pred_main": "R699.2",
+      "gold_main": "R69",
+      "pred_aux": [
+        "R815"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文献的核心应用场景是评估移植肾切除术前进行肾动脉栓塞对手术效果（如出血量、手术时间等）的影响，属于肾脏外科手术范畴，故主分类号为R699.2（肾脏手术）。辅助分类号为R815（血管内栓塞术/介入性放射学），因为肾动脉栓塞是作为外科手术的辅助技术手段被使用，属于方法/工具借用（3a类），并未对介入放射学本身做出实质性学科贡献，因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 18,
+      "pred_main": "O613.71",
+      "gold_main": "O613",
+      "pred_aux": [
+        "TQ424"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文的核心主题是利用壳聚糖和Pluronic P123制备掺氮多孔石墨碳材料，并研究其形貌、结构以及CO2吸附和光催化制氢性能。碳元素的单质（如石墨碳）化学研究归属于O613.71（碳的单质化学），这是最贴合材料基础化学属性和合成机理的分类。辅助分类号为TQ424（吸附剂），因为文章探讨了该碳材料作为CO2吸附剂的应用。这属于材料化学基础研究向化工应用领域的延伸，TQ作为工业技术下的化工学科，与O化学为不同的学科边界。但由于吸附剂性能是该碳材料本征特性的应用展现，而非对化工吸附理论或工艺的实质性贡献，因此作为方法/应用工具（3a）处理，is_interdisciplinary设为false。"
+    },
+    {
+      "sample_id": 19,
+      "pred_main": "R742.5",
+      "gold_main": "R742",
+      "pred_aux": [
+        "R394"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文研究了帕金森病（PD）相关的LRRK2基因突变如何干扰星形胶质细胞对α-突触核蛋白的清除，核心应用场景是帕金森病的发病机制，属于神经病学中的锥体外系疾病，因此主分类号为R742.5。文中探讨了LRRK2基因突变（G2019S）及其对细胞病理过程的影响，医学遗传学是其实质性次要主题，故赋予辅助分类号R394。由于医学遗传学（R394）与神经病学（R74）同属医药卫生（R）大类，根据同学科边界规则，不属于跨学科，故is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 20,
+      "pred_main": "O643.36",
+      "gold_main": "O644",
+      "pred_aux": [
+        "O614.122"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文的核心应用场景是催化反应（光催化降解染料和催化还原），属于物理化学中的催化领域，故主分类号为O643.36（催化剂与催化反应）。论文在研究催化性能时使用了银纳米团簇作为催化剂材料，这涉及无机化学中银及其化合物的性质，故设O614.122为辅助分类号。由于银纳米团簇在此仅作为催化反应的工具/材料，论文并未对银化学本身做出实质性贡献，属于借用其他分支的工具（3a），因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 21,
+      "pred_main": "R512.99",
+      "gold_main": "R37",
+      "pred_aux": [
+        "R741"
+      ],
+      "gold_aux": [
+        "R51"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文主要研究COVID-19的神经系统并发症及其分子机制，属于病毒性传染病的范畴，因此主分类号为R512.99（冠状病毒感染）。文章同时探讨了COVID-19与各种脑部疾病之间的遗传关联及神经学表现，这属于神经病学的实质性次要主题，故给出辅助分类号R741（神经病学）。由于主辅分类号均属于医学（R）大类，未跨越学科边界，因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 22,
+      "pred_main": "R186",
+      "gold_main": "R1",
+      "pred_aux": [
+        "R511.7"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文的核心应用场景是评估荷兰儿童流感疫苗接种项目的成本效益，属于预防医学与公共卫生领域的疫苗接种工作，因此主分类号为R186（预防接种、计划免疫）。辅助分类号为R511.7（流行性感冒），因为文章具体针对流感这一传染病的预防。两者同属医学（R）大类，且流感是预防接种的具体对象，属于同一学科边界内的主题细分，因此不作为跨学科处理（is_interdisciplinary=false）。"
+    },
+    {
+      "sample_id": 23,
+      "pred_main": "R651.1+2",
+      "gold_main": "R65",
+      "pred_aux": [
+        "TP391.41"
+      ],
+      "gold_aux": [
+        "TP3"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R651→R651.1+2] 本文的核心应用场景是神经外科手术（如岩斜区脑膜瘤手术），旨在通过手持式微型手术机器人避免术中血管损伤以提升患者安全，主分类应归入神经外科学 R651。文中使用的深度学习实时血管分割与三维重建技术属于方法/工具层面的应用（TP391.41 图像识别），并未对计算机视觉学科本身做出实质性贡献，因此作为辅助分类（类型3a），且不构成跨学科。"
+    },
+    {
+      "sample_id": 24,
+      "pred_main": "R52",
+      "gold_main": "R52",
+      "pred_aux": [
+        "R692.5"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文的核心应用场景是潜伏性结核感染（LTBI）在高风险人群中的筛查与治疗，属于结核病学的范畴，因此主分类号为R52。文章以终末期肾病（ESRD）血液透析患者为研究对象，探讨了该特定人群的LTBI患病率及治疗结果，肾病（R692.5）作为并行的应用主题设为辅助分类号。由于主辅分类号均属于医学（R）大类，未跨越学科边界，因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 25,
+      "pred_main": "R749.055",
+      "gold_main": "R749",
+      "pred_aux": [
+        "R197.1"
+      ],
+      "gold_aux": [
+        "R186"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R749.4→R749.055] 本文的核心应用场景是评估不同形式认知行为疗法（CBT）治疗抑郁症的长期成本效益。抑郁症的情感性精神障碍治疗对应主分类号R749.4。文章使用了卫生经济学评价方法（决策分析模型、增量成本效益比等），这属于卫生服务管理与卫生经济学评价的范畴，对应辅助分类号R197.1。由于卫生经济学方法仅作为评价工具使用，文章并未对卫生经济学学科本身做出实质性贡献，且与医学同属R大类，因此不作为跨学科处理（is_interdisciplinary=false）。"
+    },
+    {
+      "sample_id": 26,
+      "pred_main": "R194",
+      "gold_main": "R19",
+      "pred_aux": [
+        "TP311.13"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R199→R194] 本文的核心主题是开发用于评估临床登记库质量和数据的工具（REQueST），以支持卫生技术评估（HTA）机构的决策。这属于卫生服务管理、医疗质量评估与卫生技术评估的范畴，因此主分类号归入R199（卫生事业管理/卫生技术评估）。辅助分类号为TP311.13（数据库理论与系统），因为该工具被转化为基于Web的应用程序和Excel版本来处理和评估登记库数据，使用了信息技术工具。这属于借用其他学科的方法/工具（3a类），论文本身并未对计算机科学或数据库理论做出实质性贡献，因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 27,
+      "pred_main": "O437",
+      "gold_main": "O436",
+      "pred_aux": [
+        "O437"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 O436→O437] 本文的核心主题是利用飞秒激光对纳米颗粒进行光捕获，并探讨了在超越衍射极限的条件下，由非线性光学效应诱导的三维球状捕获壳层结构。光捕获本质上是光与物质相互作用产生梯度力、散射力等力学效应的体现，属于物理光学范畴，因此主分类号归入O436（物理光学）。同时，该现象的诱导机制为非线性光学效应，属于辅助主题，故给出辅助分类号O437（非线性光学）。由于主分类号与辅助分类号均属于物理学（O类）的同一学科边界内，且非线性效应在此处作为解释光捕获现象的物理机制，并非跨学科的应用贡献，因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 28,
+      "pred_main": "TQ028.8",
+      "gold_main": "TQ028",
+      "pred_aux": [
+        "O647.6"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文的核心应用场景是膜分离技术，研究介孔膜的表面功能化修饰对孔结构和气体渗透机制的影响，属于膜分离工程领域，故主分类号为TQ028.8（膜分离过程与设备）。文中使用了硅烷化学修饰进行表面功能化，这属于物理化学中表面化学的研究方法与工具，作为辅助分类号O647.6（表面化学）。由于这是借用化学方法作为工具来服务于膜分离这一核心应用场景，并未对表面化学学科本身做出实质性的平行贡献，因此不属于跨学科研究，is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 29,
+      "pred_main": "R814.42",
+      "gold_main": "R814",
+      "pred_aux": [
+        "R981"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文主要探讨不同碘浓度的造影剂对血管特异性体模CT图像重建技术及图像质量的影响，核心应用场景为X线断层扫描（CT）成像技术，故主分类号为R814.42（X线计算机断层扫描（CT））。造影剂作为研究中的测试变量和辅助主题，归入R981.1（X线造影剂）。由于造影剂属于医学影像检查中的辅助用药，本文并未对造影剂的药理学或化学制备本身做出实质性贡献，而是将其作为成像技术的工具进行评估，属于方法/工具类辅助（3a），因此不构成跨学科，is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 30,
+      "pred_main": "Q959.4",
+      "gold_main": "Q958",
+      "pred_aux": [
+        "Q958.12"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文研究了湖鳟雌鱼对雄性化学刺激（嗅觉线索）的行为反应，核心应用场景属于动物行为学，对应中图法动物行为学分类 Q959.4。文中探讨了嗅觉线索在鱼类聚集和交配中的作用，这涉及化学生态学（Q958.12），但这是作为研究动物通讯行为的生态机制，属于同一生物学学科边界内的交叉，因此设为辅助分类号且 is_interdisciplinary=false。"
+    },
+    {
+      "sample_id": 31,
+      "pred_main": "R749.4+1",
+      "gold_main": "R749",
+      "pred_aux": [
+        "R338"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R749.4→R749.4+1] 本文的核心应用场景是探讨重度抑郁症（MDD）的发病机制，特别是免疫反应（IFN-α和TLR3激活）如何导致海马神经可塑性受损从而诱发抑郁，因此主分类号归入R749.4（情感性精神病/抑郁症）。辅助分类号为R338（中枢神经生理学），因为论文详细研究了海马CA1区树突棘密度、突触蛋白表达及膜片钳记录的神经元兴奋性等神经生理学机制。这属于方法/工具学科（3a），即借用神经生理学方法来解释精神疾病的病理机制，并未对神经生理学本身做出平行的实质性贡献，因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 32,
+      "pred_main": "R743.2",
+      "gold_main": "R743",
+      "pred_aux": [
+        "R544.1"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R743→R743.2] 本文献综述了慢性高血压对脑血流自动调节的影响及其与阿尔茨海默病等慢性脑部疾病的关联。核心应用场景是探讨脑血管循环、脑血流调节及其在脑部疾病中的病理机制，属于神经病学与精神病学范畴，故主分类号为R743（脑血管疾病）。高血压作为影响脑血流的外周病理因素，是文献的实质性次要主题，故设辅助分类号R544.1（高血压）。由于主辅分类号同属医学（R）大类，学科边界相同，因此不属于跨学科。"
+    },
+    {
+      "sample_id": 33,
+      "pred_main": "S791.24",
+      "gold_main": "S718",
+      "pred_aux": [
+        "S718.43"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文主要研究瑞士石松树干的水力特性及其随海拔和季节的变化，核心应用场景为该树种的生理生态与林学特性，故主分类号为S791.24（松树）。辅助分类号为S718.43（树木生理学），因为论文具体探讨了木质部导水率、水分运输等树木生理特征。两者同属林业（S）大类，根据同学科边界规则，不构成跨学科，故is_interdisciplinary为false。电阻率断层扫描技术仅作为原位无损探测工具使用，不作为辅助分类号列出。"
+    },
+    {
+      "sample_id": 34,
+      "pred_main": "TM282",
+      "gold_main": "O482",
+      "pred_aux": [
+        "TB383"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": false,
+      "alignment_ok": true,
+      "selection_reason": "本文的核心应用场景是纳米发电机（一种压电器件），通过微结构化提升其压电输出性能，属于压电材料与器件的应用研究，因此主分类归入TM282（压电材料及器件）。辅助分类为TB383（纳米材料），因为论文使用了ZnSnO3纳米线和PDMS复合材料作为器件的功能材料，这属于借用纳米材料科学的技术手段（方法/工具），并未对纳米材料的基础理论本身做出实质性贡献，故不构成跨学科（is_interdisciplinary=false）。"
+    },
+    {
+      "sample_id": 35,
+      "pred_main": "R722.6",
+      "gold_main": "R72",
+      "pred_aux": [
+        "R581.2"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R722.1→R722.6] 本文献的核心应用场景是探讨早产儿/低出生体重儿在新生儿期出现高促甲状腺素血症的发生率及其相关因素，属于新生儿疾病范畴，故主分类号归入R722.1（新生儿疾病）。文献中具体研究了先天性甲状腺功能减退症及高促甲状腺素血症，这属于内分泌系统疾病（R581.2 甲状腺功能减退症），作为实质性的次要主题列出。由于主分类与辅助分类同属医学（R）大类，未跨越学科边界，因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 36,
+      "pred_main": "TS26",
+      "gold_main": "TS26",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TS262.6→TS26] 本文的核心应用场景是酿酒工艺，研究在红酒发酵过程中使用α-蒎烯作为二氧化硫的替代添加剂，以实现无二氧化硫红酒的酿造，并评估了其对红酒理化性质、抗菌性及感官特性的影响。这属于食品工业中的酿酒工程，因此主分类号归入TS262.6（果酒）。研究虽然涉及抗菌和抗氧化等化学与生物学特性的评估，但这些均作为酿酒添加剂效果的评价手段，未构成独立的平行应用学科贡献，故不设辅助分类号，也不属于跨学科。"
+    },
+    {
+      "sample_id": 37,
+      "pred_main": "R725.7",
+      "gold_main": "R72",
+      "pred_aux": [
+        "R575.5"
+      ],
+      "gold_aux": [
+        "R575"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文研究儿童和青少年肥胖人群中颈围与非酒精性脂肪肝（NAFLD）的关联。研究对象为儿科人群，核心应用场景是儿科内分泌与代谢疾病，因此主分类号为R725.7（小儿内科学中的代谢性疾病）。非酒精性脂肪肝作为研究的具体疾病，属于消化系统疾病（R575.5），作为辅助分类号。由于两者同属医学（R）大类，属于同一学科边界下的细分主题，因此不构成跨学科，is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 38,
+      "pred_main": "R575.6+2",
+      "gold_main": "R575",
+      "pred_aux": [
+        "R581"
+      ],
+      "gold_aux": [
+        "R582"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R575.6→R575.6+2] 本文报告了一例因甲状腺功能亢进导致体重迅速下降而引发胆结石的病例，核心应用场景为胆石症（Cholelithiasis）的临床诊断与治疗，故主分类号归入R575.6（胆石症）。甲状腺功能亢进（格雷夫斯病）作为引发胆石症的伴随疾病和病理机制，属于平行应用主题，故设为辅助分类号R581（甲状腺功能亢进症）。两者同属R类内科学，未跨越学科边界，因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 39,
+      "pred_main": "R737.31",
+      "gold_main": "R737",
+      "pred_aux": [
+        "Q503"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R737.3→R737.31] 本文主要报告了一例高级别浆液性卵巢癌患者在治疗过程中产生BRCA2继发突变导致耐药的病例，核心应用场景为卵巢肿瘤的病理与耐药机制研究，故主分类号归入R737.3（女性生殖器肿瘤）。文中使用了微滴式数字PCR（ddPCR）作为检测低频突变的技术手段，这属于分子生物学与基因工程中的核酸扩增技术（Q503）。由于该研究仅是借用此分子生物学技术作为工具来服务于肿瘤临床研究，并未对PCR技术本身做出实质性改进或贡献，因此属于方法/工具借用（3a），is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 40,
+      "pred_main": "R749",
+      "gold_main": "R58",
+      "pred_aux": [
+        "R589.4"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R747→R749] 本文主要探讨苯丙酮尿症（PKU）患者的疾病自我表征、智商评估以及生活质量、社会歧视、焦虑或抑郁等心理社会问题，核心应用场景属于神经精神疾病与心理健康的临床研究，因此主分类号为R747（神经系疾病及精神病）。辅助分类号为R589.4（代谢障碍疾病），因为苯丙酮尿症作为一种代谢性疾病是研究的背景和基础。由于本文未对代谢性疾病的生化机制或治疗本身做出实质性贡献，仅将其作为研究对象背景，故辅助分类号属于背景提及的学科，不构成跨学科研究，is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 41,
+      "pred_main": "S963.73",
+      "gold_main": "S96",
+      "pred_aux": [
+        "S941"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 S963.7→S963.73] 本文主要研究在尼罗罗非鱼饲料中添加马齿苋粉末对其生长性能、抗氧化和免疫反应的影响，属于水产养殖中的饲料添加剂应用，因此主分类号为S963.7（鱼类饲料：添加剂）。同时，研究评估了马齿苋增强鱼类对嗜水气单胞菌感染的抗病力和存活率，这涉及水产动物病害及其防治，故设辅助分类号S941（水产动物疾病及其防治）。两者同属水产科学（S）范畴，且病害抗性评估是饲料添加剂功效验证的一部分，并非独立的平行应用贡献，因此不属于跨学科。"
+    },
+    {
+      "sample_id": 42,
+      "pred_main": "S855.2",
+      "gold_main": "S855",
+      "pred_aux": [
+        "R378.91"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 S855.1→S855.2] 本文主要研究南非野生动物与家畜交界处传统管理牛群中牛分枝杆菌的感染流行率，核心应用场景为家畜传染病学，故主分类号为S855.1（家畜传染病）。文中使用了牛分枝杆菌的分离、基因分型等微生物学方法，这属于兽医学研究借用的方法/工具，故设辅助分类号为R378.91（分枝杆菌）。由于仅作为方法工具借用，并未对医学基础学科本身做出实质性平行贡献，因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 43,
+      "pred_main": "S965.232",
+      "gold_main": "Q959",
+      "pred_aux": [
+        "S917.4"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": false,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 S965.122→S965.232] 本文主要研究酸化对褐鳟种群的影响以及放流对种群恢复和遗传多样性的贡献，核心应用场景为水产养殖中的鱼类资源增殖与保护，故主分类号为S965.122（鳟鱼）。文中大量使用微卫星标记分析种群的遗传多样性和种群瓶颈等，这属于鱼类遗传学的研究方法，作为辅助分类号S917.4（鱼类遗传学）。由于遗传学分析仅作为研究工具，本文并未对遗传学理论本身做出实质性贡献，因此不属于跨学科研究，is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 44,
+      "pred_main": "Q959.46+8",
+      "gold_main": "Q959",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 Q959.468→Q959.46+8] 本文的核心内容是描述和命名来自加蓬南部的一种鲤形目鲤科鱼类新物种，属于动物分类学的范畴。在中图分类法中，动物分类学归入Q959.4，鲤形目（Cypriniformes）的具体分类号为Q959.468。文章虽然提及了生物多样性保护和异速生长等形态学特征，但这些均为新种描述的辅助内容，不构成独立的平行应用主题，因此无需设置辅助分类号，也不属于跨学科研究。"
+    },
+    {
+      "sample_id": 45,
+      "pred_main": "R544.1",
+      "gold_main": "R749",
+      "pred_aux": [
+        "R749.4"
+      ],
+      "gold_aux": [
+        "R544"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "本文探讨了去甲肾上腺素转运体（NET）基因表达及其组蛋白乙酰化修饰在高血压与抑郁症共病中的作用机制，发现NET可通过调节TNF-α和IL-6等炎症因子影响这两种疾病的关联。高血压与抑郁症共病是核心应用场景，两者同属医学（R类）范畴，不构成跨学科。高血压作为主要疾病表型，主分类选定为R544.1（高血压）；抑郁症作为共病机制探讨的平行应用主题，作为辅助分类R749.4（情感性障碍/抑郁症）。由于两者同属R大类，学科边界相同，故is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 46,
+      "pred_main": "TS255",
+      "gold_main": "R151",
+      "pred_aux": [
+        "R151.3"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": false,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TS255.4→TS255] 本文主要探讨西瓜作为潜在功能性零食的应用，重点分析西瓜中的植物化学物质（如番茄红素、维生素C等）作为天然抗氧化剂在食品中的应用，属于食品工业中果蔬加工与利用的范畴，故主分类号为TS255.4。文中虽涉及这些植物化学物质对降低慢性疾病（如心血管疾病、糖尿病等）风险的营养与保健作用，但这属于食品的营养价值与人体健康关系，作为辅助分类归入R151.3（营养学）。由于这是对食品营养保健功能的探讨，而非对医学治疗或疾病本身做出实质性贡献，属于食品科学在营养健康领域的延伸应用，因此不作为跨学科处理。"
+    },
+    {
+      "sample_id": 47,
+      "pred_main": "R542.4+2",
+      "gold_main": "R54",
+      "pred_aux": [
+        "R978.1"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R542.4→R542.4+2] 本文主要探讨了头孢洛林酯治疗革兰氏阳性心内膜炎的临床经验与疗效，核心应用场景为心内膜炎的临床治疗，属于心脏内科学范畴，故主分类号为R542.4（心内膜炎）。辅助分类号为R978.1（抗微生物药物/抗生素），因为头孢洛林酯作为抗生素药物是本研究的关键治疗手段。这属于方法/工具学科（3a），即研究借用了抗生素药物学领域的工具来贡献于心脏内科的临床治疗，并未对抗生素药物学本身做出实质性贡献，因此is_interdisciplinary为false。"
+    },
+    {
+      "sample_id": 48,
+      "pred_main": "TS7",
+      "gold_main": "X7",
+      "pred_aux": [
+        "X701"
+      ],
+      "gold_aux": [
+        "TQ"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": false,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TS743→TS7] 本文的核心应用场景是硫酸盐法（牛皮纸）制浆厂中的生物质碳捕集与利用（BECCS/BECCU），评估其对制浆工艺操作和能量平衡的影响，因此主分类号为TS743（制浆法）。同时，论文实质性地探讨了二氧化碳的捕集、储存和利用技术以及负碳排放潜力，对环境科学领域的废气处理与综合利用做出了实质性贡献，故设辅助分类号X701（废气处理与综合利用）。这属于平行应用主题（3b），制浆工业（T类工业技术下的TS）与环境科学（X类）属于不同的学科边界，因此判定为跨学科。"
+    },
+    {
+      "sample_id": 49,
+      "pred_main": "Q954.56+1",
+      "gold_main": "Q954",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 Q954.5→Q954.56+1] 本文研究了叙利亚仓鼠（啮齿动物）主动脉弓的分支模式及其形态学变异，并与其它啮齿动物和兔类进行了比较形态学分析。核心主题属于动物解剖学/动物形态学范畴，因此主分类号选为Q954.5（动物形态学）。文中使用的乳胶注射和腐蚀铸型技术属于常规解剖学观察方法，不构成独立的跨学科贡献，故无辅助分类号，且不属于跨学科文献。"
+    },
+    {
+      "sample_id": 50,
+      "pred_main": "G642.0",
+      "gold_main": "G642",
+      "pred_aux": [
+        "P5"
+      ],
+      "gold_aux": [
+        "P5"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 G642.4→G642.0] 本文的核心应用场景是高等教育教学：研究本科生在地球科学入门课程中对弹性回跳理论的概念理解，并评估一项教学干预措施的有效果，因此主分类号为G642.4（高等教育教学法与教学组织）。在研究过程中，文章实质性地探讨了地质学（板块构造、岩石弹性形变、地震机制）的专业内容，地质学构成了与教育并列的实质性应用主题，故作为辅助分类号P5（地质学）。由于教育学（G）与地质学（P）属于不同的学科门类，且本文对地质学概念的教学有实质性贡献，因此判定为跨学科。"
+    }
+  ]
+}

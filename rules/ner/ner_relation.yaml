@@ -1,0 +1,110 @@
+functional_item: 命名实体识别工具
+name: 实体关系识别
+description: 在实体识别基础上抽取实体间关系三元组，构建知识网络。
+input_type: text
+engine_type: ner
+
+system_prompt: |
+  你是实体关系抽取专家。请基于输入文本中的实体（若输入为上游已识别实体列表则
+  直接复用列表中的实体；否则先从文本识别实体），再抽取实体之间的语义关系，
+  输出关系三元组 (头实体, 关系, 尾实体)。关系如“治疗”“抑制”“使用”“属于”等。
+
+  关系不一定有显式动词——很多关系隐含在语言机制里（见 principles），须主动识别含蓄关系，
+  不要只抓“X 属于 Y”这类显式句式。
+
+  在抽取三元组的同时，请 best-effort 地给出以下依存与上下文信息（用于知识网络可视化与可解释性）：
+  - 每条 relation 附 dependency_path：连接头实体到尾实体的依存句法路径字符串，
+    形如 "头实体 ←[主语]— 触发词 —[宾语]→ 尾实体"；并附 trigger（关系触发词）、
+    sentence_id（所在句编号 SENT-000…）、context（该句原文片段）。
+  - 顶层 dependency_parse：句子级依存三元组列表 [{sentence_id, head, relation, dependent}]，
+    relation 用中文语法角色（主语/谓语/宾语/状语/定语）。
+  - 顶层 dependency_paths：每条三元组对应的路径 [{triple_id, path}]，triple_id 形如 TRIPLE_001。
+  - 顶层 context_fragments：每条三元组支撑句 [{sentence_id, text}]。
+  依存分析允许近似，无需精确语言学标注，但路径须能体现实体间的语法连接。
+
+  实体识别与边界准则（按语义角色归类，勿依赖名称枚举）：
+  - 机构=组织行为主体（大学/公司/政府/学会，能主办/承担/隶属）；勿把期刊/数据库/检索系统/出版物/项目/产品/标准等非组织载体归为机构。
+  - 地名/区域归 LOCATION 类；会议/活动归 EVENT 类；人物归 PERSON 类。
+  - 实体边界取完整语义单元，含括号/版本/版次（如"XX（光盘版）""XX(第3版)"）整体判定，不得拆分；三元组引用完整实体片段。
+
+principles: |
+  关系识别要举一反三，按"语言机制"而非"个别句式"识别含蓄关系：
+  1. 实体并列暗示层级/组成关系：当两个同类实体紧邻并列（A B，A 是 B 的上位概念或 B 是 A 的
+     组成部分），即使无显式关系动词，也应识别 B→A 的隶属/组成关系。
+     例：“四川传媒学院 表演学院”→表演学院 隶属 四川传媒学院；“四川省 成都市”→成都市 属于 四川省；
+     “深度学习 卷积神经网络”→卷积神经网络 属于 深度学习。该机制对机构/地点/方法/组织等同类实体普遍适用。
+  2. 关系常隐含于非显式动词的语言机制：修饰从句（“X 用于 Y”→X 应用于 Y；“X 面向 Y”→X 服务于 Y）、
+     工具介词（“采用/用 X”→使用关系）、因果连接（“X 导致/引发 Y”→X 导致 Y）、
+     并列协同（“X 与 Y 协同”→协同关系）。识别这些机制后按语义归类到关系类型。
+  3. 逐对检查实体间的层级链，不遗漏：同一组实体可能有多重关系。
+     例：作者—任职于—学院、作者—任职于—大学、学院—隶属—大学，三者都应抽出，不要只抽一条。
+  4. 关系名用最贴切的通用动词，同义表达均可（属于/任职于/就职于、应用于/赋能/服务于）——
+     后续按语义相似度聚合，不必纠结用词统一。
+  关系须文本可语义支撑，不得臆造；置信度低的含蓄关系可降低 confidence 但仍输出。
+
+rules:
+  - id: NER-REL-001
+    description: 每个关系三元组必须包含头实体、关系、尾实体三个要素。
+  - id: NER-REL-002
+    description: 关系须为文本中可语义支撑的真实关系，不得臆造。
+  - id: NER-REL-003
+    description: 头尾实体需先在 entities 中列出，三元组引用其片段。
+  - id: NER-REL-004
+    description: 输出实体列表、关系三元组列表、上下文片段与置信度。
+  - id: NER-REL-005
+    description: 主动识别含蓄关系（实体并列、修饰从句、工具介词、因果连接等隐含机制），不只抓显式动词句式。
+
+output_schema:
+  type: object
+  properties:
+    data:
+      type: object
+      properties:
+        entities:
+          type: array
+          items:
+            type: object
+            properties:
+              text: {type: string}
+              type: {type: string}
+        relations:
+          type: array
+          items:
+            type: object
+            properties:
+              head: {type: string}
+              relation: {type: string}
+              tail: {type: string}
+              context: {type: string}
+              confidence: {type: number}
+              triple_id: {type: string}
+              sentence_id: {type: string}
+              trigger: {type: string}
+              dependency_path: {type: string}
+        dependency_parse:
+          type: array
+          items:
+            type: object
+            properties:
+              sentence_id: {type: string}
+              head: {type: string}
+              relation: {type: string}
+              dependent: {type: string}
+        dependency_paths:
+          type: array
+          items:
+            type: object
+            properties:
+              triple_id: {type: string}
+              path: {type: string}
+        context_fragments:
+          type: array
+          items:
+            type: object
+            properties:
+              sentence_id: {type: string}
+              text: {type: string}
+    confidence: {type: number}
+  required: [data]
+
+examples: []

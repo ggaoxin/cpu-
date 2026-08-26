@@ -1,0 +1,99 @@
+[
+  {
+    "doc_id": "ch3",
+    "type": "ner_research",
+    "entities": [
+      {
+        "canonical": "大数据与 AI 画像",
+        "type": "METHOD",
+        "variants": [
+          "大数据与 AI 画像",
+          "big data and AI portrait technologies",
+          "AI 画像技术",
+          "AI 画像模型"
+        ]
+      },
+      {
+        "canonical": "动态画像模型",
+        "type": "METHOD",
+        "variants": [
+          "动态画像模型",
+          "dynamic portrait models"
+        ]
+      },
+      {
+        "canonical": "四维思政画像",
+        "type": "METHOD",
+        "variants": [
+          "四维思政画像"
+        ]
+      },
+      {
+        "canonical": "轻量化 AI 工具矩阵",
+        "type": "METHOD",
+        "variants": [
+          "轻量化 AI 工具矩阵"
+        ]
+      },
+      {
+        "canonical": "算法审核与纠错机制",
+        "type": "METHOD",
+        "variants": [
+          "算法审核与纠错机制"
+        ]
+      },
+      {
+        "canonical": "算法黑箱",
+        "type": "THEORY",
+        "variants": [
+          "算法黑箱"
+        ]
+      },
+      {
+        "canonical": "算法偏见",
+        "type": "THEORY",
+        "variants": [
+          "算法偏见"
+        ]
+      },
+      {
+        "canonical": "算法歧视",
+        "type": "THEORY",
+        "variants": [
+          "算法歧视"
+        ]
+      },
+      {
+        "canonical": "高校思想政治教育个性化实践",
+        "type": "TOPIC",
+        "variants": [
+          "高校思想政治教育个性化实践",
+          "Personalized Practice in Ideological and Political Education"
+        ]
+      },
+      {
+        "canonical": "学生思想监测",
+        "type": "TOPIC",
+        "variants": [
+          "学生思想监测",
+          "student ideological monitoring"
+        ]
+      },
+      {
+        "canonical": "重点群体预警",
+        "type": "TOPIC",
+        "variants": [
+          "重点群体预警"
+        ]
+      },
+      {
+        "canonical": "数据安全与伦理规范",
+        "type": "TOPIC",
+        "variants": [
+          "数据安全与伦理规范",
+          "安全伦理规范"
+        ]
+      }
+    ]
+  }
+]

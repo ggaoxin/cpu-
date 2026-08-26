@@ -1,0 +1,21 @@
+{
+  "version": "dual-axis-rule-fusion-v1",
+  "rule_mode": "audit",
+  "technical_rule_mode": "audit",
+  "application_rule_mode": "audit",
+  "technical_rule_weight": 0.12,
+  "technical_rule_policy": "fallback_only",
+  "application_rule_weight": 0.16,
+  "application_rule_policy": "fallback_only",
+  "technical_axis_extraction": "local",
+  "application_axis_extraction": "llm_verified",
+  "status": "audit_only_pending_codex_gold_development_ablation",
+  "constraints": {
+    "technical_rule_weight_max": 0.4,
+    "application_rule_weight_max": 0.35,
+    "rules_assign_cluster_membership": false,
+    "topic_library_used": false,
+    "minimum_distinct_application_facets": 2,
+    "single_rule_can_trigger_application_expansion": false
+  }
+}

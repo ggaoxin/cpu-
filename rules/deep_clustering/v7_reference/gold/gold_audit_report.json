@@ -1,0 +1,3746 @@
+[
+ {
+  "axis": "technical",
+  "doc": 5,
+  "gold": "T47",
+  "pred": "T44",
+  "correct": "pred",
+  "correct_id": "T44",
+  "reason": "文献主要基于面板数据研究数字基础设施对城市空间结构、人口密度等的影响，探讨其时空演化特征，属于T44范畴；gold标注的“数字孪生、软件平台与系统架构”与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 27,
+  "gold": "T37",
+  "pred": "T40",
+  "correct": "pred",
+  "correct_id": "T40",
+  "reason": "文献核心在于利用神经网络进行台区等值建模（模型降维等值），以解决配电网多层协调无功优化问题。其关键创新点是数据驱动的等值模型构建，而非优化算法或数学规划理论本身，因此T40更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 8,
+  "gold": "T49",
+  "pred": "T40",
+  "correct": "pred",
+  "correct_id": "T40",
+  "reason": "文献核心研究含IBDG配电网的短路电流计算方法及等效模型建立，属于电力系统建模与计算范畴，而非控制策略与稳定性分析。"
+ },
+ {
+  "axis": "technical",
+  "doc": 34,
+  "gold": "T49",
+  "pred": "T40",
+  "correct": "pred",
+  "correct_id": "T40",
+  "reason": "文献核心内容为基于多端口电网络理论推导外电网的戴维南等值电路模型和参数表达式，并进行短路计算等值及影响因素分析，属于电力系统建模与等值计算范畴。虽然摘要提及低穿控制策略，但仅为分析等值参数的影响因素服务，非研究控制策略与稳定性本身。因此模型判定T40更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 40,
+  "gold": "T38",
+  "pred": "T35",
+  "correct": "other",
+  "correct_id": "T36",
+  "reason": "文献核心为基于深度学习的缺失数据插补与修复方法，属于数据质量提升与数据挖掘范畴，而非博弈论(T38)或时序预测(T35)。"
+ },
+ {
+  "axis": "technical",
+  "doc": 49,
+  "gold": "T07",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献研究城乡居家养老服务设施的空间配给均等性，涉及空间关联测度、可达性与均等性分析，属于空间统计与GIS分析范畴。gold标注（病例报告）明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 54,
+  "gold": "T34",
+  "pred": "T49",
+  "correct": "pred",
+  "correct_id": "T49",
+  "reason": "文献研究大规模风电接入下的失步振荡中心定位及系统稳定性，属于控制策略与稳定性分析，而非聚类或模式识别。"
+ },
+ {
+  "axis": "technical",
+  "doc": 62,
+  "gold": "T06",
+  "pred": "T39",
+  "correct": "other",
+  "correct_id": "T40",
+  "reason": "文献提出了具体的组合响应机制、响应模型及优化算法，属于电力系统需求响应的优化与控制策略研究，应归入T40（系统优化、控制与调度）。gold（综述/理论）和pred（鲁棒/随机不确定性优化）均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 81,
+  "gold": "T41",
+  "pred": "T44",
+  "correct": "pred",
+  "correct_id": "T44",
+  "reason": "文献核心在于分析旅游生态效率的时空特征与演变趋势，并探究其影响路径，属于时空演化分析范畴，模型判定T44比gold标注T41更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 120,
+  "gold": "T37",
+  "pred": "T32",
+  "correct": "other",
+  "correct_id": "T31",
+  "reason": "文献核心是电力系统（受端电网）中静止无功发生器(SVG)的优化配置，以提升电压稳定性，属于电力系统运行与控制范畴，而非通用的工程系统设计(T32)或纯数学规划(T37)。"
+ },
+ {
+  "axis": "technical",
+  "doc": 101,
+  "gold": "T07",
+  "pred": "T44",
+  "correct": "pred",
+  "correct_id": "T44",
+  "reason": "文献研究长三角地区科技型中小企业发展的时空格局演变及影响因素，属于典型的时空演化研究，模型判定T44准确。gold标注T07（病例报告）明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 117,
+  "gold": "T26",
+  "pred": "T49",
+  "correct": "pred",
+  "correct_id": "T49",
+  "reason": "文献核心是提出一种基于级联式模糊控制的能量管理策略，以解决微网中的功率分配与平抑波动问题，属于控制策略的设计与分析，而非机器人自动化。因此模型判定T49更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 121,
+  "gold": "T40",
+  "pred": "T36",
+  "correct": "pred",
+  "correct_id": "T36",
+  "reason": "文献核心为区分励磁涌流与故障电流，以解决继电保护问题，属于故障诊断与保护算法范畴，而非电力系统建模与潮流计算。"
+ },
+ {
+  "axis": "technical",
+  "doc": 98,
+  "gold": "T13",
+  "pred": "T01",
+  "correct": "other",
+  "correct_id": "T08",
+  "reason": "文献核心是应用TCN-LSTM模型解决电网电能质量扰动分类问题，属于电力系统与电能质量分析，应归入电气工程相关类别。gold标注(材料表征)完全不符，模型判定(深度学习)仅反映了所用技术手段，未体现其电力工程的应用领域。"
+ },
+ {
+  "axis": "technical",
+  "doc": 122,
+  "gold": "T13",
+  "pred": "T49",
+  "correct": "pred",
+  "correct_id": "T49",
+  "reason": "文献研究微电网变换器的自抗扰控制策略及观测器重构，涉及稳定性和抗扰性能分析，属于控制策略范畴，模型判定T49正确，gold标注T13材料表征与性能测试明显不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 125,
+  "gold": "T23",
+  "pred": "T07",
+  "correct": "other",
+  "correct_id": "T11 教育与教学研究",
+  "reason": "文献探讨数智时代的教育思维转变与创生教育实践，属于教育学领域，gold和pred标注均与内容无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 123,
+  "gold": "T34",
+  "pred": "T37",
+  "correct": "pred",
+  "correct_id": "T37",
+  "reason": "文献核心是构建综合能源系统参与市场的随机优化调度模型，以总成本最低为目标，属于优化调度与数学规划范畴。聚类仅为生成典型场景的预处理步骤，非核心研究内容。"
+ },
+ {
+  "axis": "technical",
+  "doc": 127,
+  "gold": "T13",
+  "pred": "T06",
+  "correct": "pred",
+  "correct_id": "T06",
+  "reason": "文献梳理大湾区新材料发展现状并提出策略建议，属于综述与观点性质，并非具体的材料表征与性能测试研究。"
+ },
+ {
+  "axis": "technical",
+  "doc": 138,
+  "gold": "T02",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献核心为基于GIS(高德地图API)测度绿色空间可达性并分析其城郊空间差异与影响机制，属于空间统计与GIS分析范畴。随机森林仅作为辅助测度工具，不构成经典机器学习研究的主体，故模型判定更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 151,
+  "gold": "T42",
+  "pred": "T21",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献为关于《中国经济地理思想史》的书评，探讨经济地理学思想史脉络，属于经济地理学领域，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 160,
+  "gold": "T37",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨数字经济赋能城市高质量发展的理论机制并进行实证检验，属于理论机制与政策路径研究。gold标注的优化调度与数学规划与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 149,
+  "gold": "T19",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献研究中国城市公路可达性的时空变化，涉及空间分布特征与演变规律分析，属于空间统计与GIS分析范畴。gold标注（环境处理与资源回收工艺）与文献内容完全无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 126,
+  "gold": "T10",
+  "pred": "T47",
+  "correct": "other",
+  "correct_id": "T11 集成电路设计与EDA",
+  "reason": "文献主要探讨芯片技术、集成电路及EDA工具，属于集成电路设计与EDA领域，gold和pred均不正确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 165,
+  "gold": "T11",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献研究高铁可达性及其空间效应，涉及空间格局演变、重心测度等，属于空间统计与GIS分析范畴。gold标注(T11成像与诊断检测)明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 167,
+  "gold": "T02",
+  "pred": "T21",
+  "correct": "pred",
+  "correct_id": "T21",
+  "reason": "文献探讨乡村振兴与新型城镇化的良性耦合及中国式城乡现代化发展的科学内涵与时代选择，属于宏观经济与社会政策分析范畴。gold标注(T02 经典机器学习与统计建模)与内容完全无关，模型判定(T21 经济评价与政策分析)更符合文献主题。"
+ },
+ {
+  "axis": "technical",
+  "doc": 172,
+  "gold": "T42",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献核心方法为标准差椭圆和地理探测器，重点分析粮食生产韧性的空间格局，属于空间统计与GIS分析范畴，而非面板回归或因果识别。"
+ },
+ {
+  "axis": "technical",
+  "doc": 169,
+  "gold": "T20",
+  "pred": "T21",
+  "correct": "other",
+  "correct_id": "T19",
+  "reason": "文献主要研究乡村旅游地回流劳动力的就业选择及影响因素，属于人口流动、就业与劳动力市场研究范畴，应归入T19（人口与劳动经济）。gold标注侧重研究方法，模型判定侧重经济评价，均未准确反映文献的劳动经济学核心主题。"
+ },
+ {
+  "axis": "technical",
+  "doc": 176,
+  "gold": "T17",
+  "pred": "T36",
+  "correct": "pred",
+  "correct_id": "T36",
+  "reason": "文献研究光伏逆变器故障及恢复特征下的控制参数辨识，目的是为继电保护提供准确的故障特性分析基础，属于故障诊断、定位与保护算法范畴，而非工程器件与原型设计。"
+ },
+ {
+  "axis": "technical",
+  "doc": 175,
+  "gold": "T09",
+  "pred": "T37",
+  "correct": "pred",
+  "correct_id": "T37",
+  "reason": "文献研究综合能源虚拟电厂的随机低碳调度策略，涉及碳捕集、风光不确定性及多能耦合优化，属于优化调度与数学规划范畴。gold标注（组学测序与生物信息分析）明显与文献内容无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 197,
+  "gold": "T40",
+  "pred": "T39",
+  "correct": "other",
+  "correct_id": "T41",
+  "reason": "文献提出基于FHO-CatBoost的异常事件检测模型，用于分布式电源调控，属于电力系统运行与控制中的故障检测与诊断，而非潮流计算或优化理论本身。"
+ },
+ {
+  "axis": "technical",
+  "doc": 180,
+  "gold": "T19",
+  "pred": "T39",
+  "correct": "other",
+  "correct_id": "T11",
+  "reason": "文献研究配电网分级调控业务中的通感算资源分配与适配性评估，属于电力系统及其自动化领域，gold和pred均明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 230,
+  "gold": "T14",
+  "pred": "T49",
+  "correct": "pred",
+  "correct_id": "T49",
+  "reason": "文献研究光伏直流汇集系统的电压失衡问题，提出基于光储协调的电压自均衡方案，核心属于系统控制策略与稳定性分析，模型判定正确。gold标注的数值模拟与有限元计算与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 237,
+  "gold": "T07",
+  "pred": "T40",
+  "correct": "pred",
+  "correct_id": "T40",
+  "reason": "文献研究变电站接地网及周边管网的阻性耦合影响，使用CDEGS等软件进行地网仿真与建模分析，属于电力系统建模与仿真范畴。gold标注（病例报告）明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 244,
+  "gold": "T49",
+  "pred": "T40",
+  "correct": "pred",
+  "correct_id": "T40",
+  "reason": "文献核心在于提出基于聚合电流的配电网短路故障计算方法，推导电流电压解析表达式，并利用道路矩阵形成节点阻抗矩阵，属于电力系统建模与等值计算范畴，而非控制策略与稳定性分析。"
+ },
+ {
+  "axis": "technical",
+  "doc": 249,
+  "gold": "T47",
+  "pred": "T49",
+  "correct": "pred",
+  "correct_id": "T49",
+  "reason": "文献主要研究混合风电场的频率电压支撑控制机理，提出了分布式自适应解耦控制策略，属于控制策略与稳定性分析范畴，模型判定正确。gold标注的数字孪生与系统架构与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 240,
+  "gold": "T02",
+  "pred": "T40",
+  "correct": "other",
+  "correct_id": "T03 深度学习与神经网络",
+  "reason": "文献核心方法是深度强化学习（分支竞争Q网络、图卷积增强），属于深度学习与神经网络范畴。gold标注的T02经典机器学习不够准确，模型判定的T40电力系统建模偏离了算法核心。"
+ },
+ {
+  "axis": "technical",
+  "doc": 258,
+  "gold": "T02",
+  "pred": "T23",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献主题为纪念科学家朱光亚及探讨科学家精神，属于科技史、科技哲学或科学社会学范畴，与gold标注的机器学习和pred标注的微生物学均无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 259,
+  "gold": "T40",
+  "pred": "T45",
+  "correct": "pred",
+  "correct_id": "T45",
+  "reason": "文献探讨AI开源与闭源技术模式的争议与发展态势，属于技术态势研判，模型判定正确；gold标注为电力系统相关，明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 263,
+  "gold": "T28",
+  "pred": "T06",
+  "correct": "pred",
+  "correct_id": "T06",
+  "reason": "文献运用文献调研与网站调研方法剖析科研人员标识的应用现状与不足，并提出对策建议，属于对现有情况的综述与探讨，符合T06叙述性综述与理论观点，而非具体的实验与综合研究方法。"
+ },
+ {
+  "axis": "technical",
+  "doc": 266,
+  "gold": "T12",
+  "pred": "T01",
+  "correct": "other",
+  "correct_id": "T04 计算机视觉与图像处理",
+  "reason": "文献研究的是电力设备红外图像的超分辨率重建，涉及特征提取、注意力机制和图像生成等图像处理技术。虽然使用了Transformer和GAN，但核心应用场景是图像处理而非单纯的深度学习理论；同时与材料合成与制备工艺无关。因此两者均不准确，应归为计算机视觉与图像处理。"
+ },
+ {
+  "axis": "technical",
+  "doc": 268,
+  "gold": "T12",
+  "pred": "T01",
+  "correct": "other",
+  "correct_id": "T08",
+  "reason": "文献研究内容为配电网故障行波波头标定，属于电力系统故障检测与诊断领域，应归类于电气工程。gold标注（材料合成）明显错误，模型判定（深度学习）仅为所用工具手段，未反映文献的实质研究领域。"
+ },
+ {
+  "axis": "technical",
+  "doc": 257,
+  "gold": "T29",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨城市地下空间开发的战略意义、存在问题及六大综合体系建设，属于宏观政策、制度设计与规划管理范畴，与T46相符；gold标注T29（野外采样与生态调查）与内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 267,
+  "gold": "T39",
+  "pred": "T40",
+  "correct": "pred",
+  "correct_id": "T40",
+  "reason": "文献核心为利用Copula和Nataf变换处理相关性样本并进行概率潮流计算，以求解配电网光伏承载能力，属于电力系统建模与潮流计算范畴，而非鲁棒或随机优化理论。"
+ },
+ {
+  "axis": "technical",
+  "doc": 279,
+  "gold": "T12",
+  "pred": "T13",
+  "correct": "other",
+  "correct_id": "T08",
+  "reason": "文献研究的是电力变压器群体的预防性检修与退役计划协同优化，涉及老化失效建模、可靠性评估与运筹决策，属于电力系统运行与设备资产管理范畴，而非材料合成制备或材料表征测试。"
+ },
+ {
+  "axis": "technical",
+  "doc": 285,
+  "gold": "T39",
+  "pred": "T47",
+  "correct": "other",
+  "correct_id": "T20 人工智能基础理论",
+  "reason": "文献探讨智能算法的安全内涵、科学问题与展望，涉及人工智能伦理与安全及算法可信性，属于人工智能基础理论范畴。gold标注（鲁棒优化）和模型判定（数字孪生/系统架构）均与文献主题不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 288,
+  "gold": "T15",
+  "pred": "T07",
+  "correct": "other",
+  "correct_id": "T01 人工智能与计算科学",
+  "reason": "文献探讨算力体系一体化建设、异构算力布局及算电协同等人工智能核心要素的治理对策，属于人工智能与计算科学领域。gold标注（原子分子模拟）和模型判定（病例报告）均明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 289,
+  "gold": "T08",
+  "pred": "T43",
+  "correct": "other",
+  "correct_id": "T11 科技政策与管理",
+  "reason": "文献探讨中美欧数据主权竞争格局及应对策略，属于科技政策与国际关系范畴，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 292,
+  "gold": "T38",
+  "pred": "T47",
+  "correct": "other",
+  "correct_id": "T44",
+  "reason": "文献探讨的是大数据、人工智能等新一代信息技术在畜禽养殖业数据收集、处理及市场化交易中的应用，属于数据资源开发与行业数字化转型范畴。gold标注偏向经济学市场机制，模型判定偏向软件系统架构，均未准确概括其“行业数据应用与价值化”的核心主题。"
+ },
+ {
+  "axis": "technical",
+  "doc": 294,
+  "gold": "T26",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T01 科学学与科技政策",
+  "reason": "文献探讨中国科学院数学事业的发展历程、成就与展望，属于科技政策与科研机构发展研究范畴，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 293,
+  "gold": "T26",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献主要介绍中科院海洋所的历史、科研成就与未来展望，属于机构发展或科技政策管理类内容。gold（控制规划与机器人自动化）和pred（文献计量与技术态势研判）均与文献主题不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 295,
+  "gold": "T13",
+  "pred": "T26",
+  "correct": "other",
+  "correct_id": "T14",
+  "reason": "文献主要介绍长春光机所的历史、科研成果及未来展望，涉及光学技术、精密仪器与装备等，属于综述或机构介绍类文章，应归类于T14（综述与述评），而非材料表征或控制规划。"
+ },
+ {
+  "axis": "technical",
+  "doc": 300,
+  "gold": "T23",
+  "pred": "T06",
+  "correct": "pred",
+  "correct_id": "T06",
+  "reason": "文献回顾了人胚胎来源细胞的应用历史、研究进展及监管制度演进，属于典型的叙述性综述，gold标注的微生物培养明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 299,
+  "gold": "T29",
+  "pred": "T07",
+  "correct": "other",
+  "correct_id": "T08 数据分析与统计",
+  "reason": "文献主要研究国家科技竞争力的测度框架构建、多维指数测算与国际比较，属于数据分析与统计评价范畴。gold（野外采样与生态调查）和pred（病例报告与病例系列）均与文献内容完全无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 308,
+  "gold": "T29",
+  "pred": "T37",
+  "correct": "pred",
+  "correct_id": "T37",
+  "reason": "文献研究水电站负荷优化分配中的时间尺度效应，属于优化调度范畴，模型判定T37准确；gold标注T29（野外采样与生态调查）与文献内容无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 298,
+  "gold": "T13",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献探讨的是数智技术发展带来的安全挑战及数智安全新格局的构建，属于宏观层面的科技政策、安全与发展战略研究，而非材料表征测试或文献计量研判。"
+ },
+ {
+  "axis": "technical",
+  "doc": 301,
+  "gold": "T29",
+  "pred": "T19",
+  "correct": "other",
+  "correct_id": "T20 农业与生态经济",
+  "reason": "文献主要探讨中国耕地资源利用的态势、成因及治理对策，属于农业经济与土地资源管理范畴。gold标注（野外采样与生态调查）和模型判定（环境处理与资源回收工艺）均与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 304,
+  "gold": "T24",
+  "pred": "T49",
+  "correct": "pred",
+  "correct_id": "T49",
+  "reason": "文献研究光伏并网系统的间谐波电流抑制方法，属于控制策略范畴，模型判定正确；gold标注为分子检测，与文献内容完全无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 311,
+  "gold": "T40",
+  "pred": "T39",
+  "correct": "other",
+  "correct_id": "T44",
+  "reason": "文献核心为将需求响应纳入高比例新能源电力系统的日前调度，建立两阶段调度优化模型，属于电力系统调度运行范畴，而非潮流计算或纯优化理论。"
+ },
+ {
+  "axis": "technical",
+  "doc": 325,
+  "gold": "T38",
+  "pred": "T06",
+  "correct": "pred",
+  "correct_id": "T06",
+  "reason": "文献主要探讨新型储能的发展现状、盈利模式及面临的问题，并提出政策建议与发展思路，属于探讨性、叙述性的综述与观点文章，未涉及博弈论或具体的多主体决策模型构建，因此模型判定T06更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 335,
+  "gold": "T31",
+  "pred": "T37",
+  "correct": "pred",
+  "correct_id": "T37",
+  "reason": "文献以运营商收益最大化为目标函数建立配置模型，并利用CPLEX求解器求解，属于典型的优化调度与数学规划，模型判定准确。gold标注的理化分析与定量测定不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 349,
+  "gold": "T09",
+  "pred": "T40",
+  "correct": "other",
+  "correct_id": "T38",
+  "reason": "文献研究新能源并网防孤岛技术、孤岛识别及联切策略，属于电力系统继电保护与安全稳定控制范畴，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 354,
+  "gold": "T39",
+  "pred": "T49",
+  "correct": "pred",
+  "correct_id": "T49",
+  "reason": "文献核心是针对永磁同步电机提出无模型超螺旋快速终端滑模控制策略及扰动观测器设计，属于控制策略与稳定性分析，而非鲁棒优化理论。"
+ },
+ {
+  "axis": "technical",
+  "doc": 356,
+  "gold": "T12",
+  "pred": "T17",
+  "correct": "other",
+  "correct_id": "T18",
+  "reason": "文献研究的是间接矩阵变换器的调制策略以抑制共模电压，属于电力电子与电气传动控制系统的范畴，而非材料制备(T12)或工程器件原型设计(T17)。"
+ },
+ {
+  "axis": "technical",
+  "doc": 364,
+  "gold": "T43",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献核心在于探讨旅游经济一体化的形成机制与协同发展模式，属于理论机制与政策路径范畴。社会网络分析仅是文中使用的实证方法之一，gold标注将其归为方法类父类不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 377,
+  "gold": "T13",
+  "pred": "T49",
+  "correct": "pred",
+  "correct_id": "T49",
+  "reason": "文献主要研究并网逆变器锁相环的控制结构优化、零极点配置及系统鲁棒性分析，属于控制策略与稳定性分析范畴，而非材料表征与性能测试。"
+ },
+ {
+  "axis": "technical",
+  "doc": 369,
+  "gold": "T34",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨国家战略驱动的跨界地区治理重构、协同治理逻辑及政策路径，属于理论机制与政策路径范畴，与聚类、关联规则等模式识别算法无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 382,
+  "gold": "T41",
+  "pred": "T35",
+  "correct": "other",
+  "correct_id": "T44",
+  "reason": "文献核心为基于水动力模型与数据融合的电力设施淹没风险评估及预警，属于自然灾害影响评估与防灾减灾范畴，而非单纯的指标体系(T41)或时序预测(T35)。"
+ },
+ {
+  "axis": "technical",
+  "doc": 384,
+  "gold": "T15",
+  "pred": "T46",
+  "correct": "other",
+  "correct_id": "T11",
+  "reason": "文献研究旅游廊道构建与网络体系空间布局，属于地理与空间分析范畴，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 386,
+  "gold": "T41",
+  "pred": "T42",
+  "correct": "pred",
+  "correct_id": "T42",
+  "reason": "文献基于2010-2020年县域面板数据，运用计量模型和门槛效应探讨空间分异特征，属于面板回归与计量经济范畴，T42比T41更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 391,
+  "gold": "T31",
+  "pred": "T40",
+  "correct": "other",
+  "correct_id": "T41",
+  "reason": "文献聚焦高比例新能源接入下的频率稳定风险、系统惯量降低及调频资源协同等运行问题，属于电力系统稳定性分析与控制范畴。Gold（理化分析）与Pred（潮流与等值计算）均不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 396,
+  "gold": "T02",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献主题为创新驱动与中国经济高质量发展，属于宏观经济政策与发展路径研究，与T46相符。gold标注的机器学习与统计建模与文献内容完全无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 393,
+  "gold": "T31",
+  "pred": "T41",
+  "correct": "pred",
+  "correct_id": "T41",
+  "reason": "文献通过构建产业梯度系数和相对梯度系数进行测算与对比，明确各省区重点承接产业并提出政策建议，属于典型的指标体系构建与综合评价，而非纯粹的理化分析与定量测定。"
+ },
+ {
+  "axis": "technical",
+  "doc": 402,
+  "gold": "T10",
+  "pred": "T06",
+  "correct": "pred",
+  "correct_id": "T06",
+  "reason": "文献探讨形象资产管理的理论内涵与建设路径，属于理论探索与观点论述，模型判定为叙述性综述与理论观点准确。gold标注（病理组织与免疫组化诊断）与内容完全无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 405,
+  "gold": "T31",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "F01",
+  "reason": "文献探讨企业技术创新在建设科技强国中的作用，属于科技政策与管理领域，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 411,
+  "gold": "T27",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献研究重塑中国经济地理与横向区划，涉及空间分区与区域分析，符合T48；gold标注的信号图像处理明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 407,
+  "gold": "T02",
+  "pred": "T21",
+  "correct": "pred",
+  "correct_id": "T21",
+  "reason": "文献主要构建投资环境评价体系，运用聚类分析和主成分分析法对“一带一路”沿线国家投资环境进行打分与分类，核心属于经济评价与政策分析，而非单纯的机器学习与统计建模方法研究。"
+ },
+ {
+  "axis": "technical",
+  "doc": 412,
+  "gold": "T25",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献研究历史文化名城的空间变迁与土地利用特征，涉及空间数据的分析，模型判定为空间统计、GIS与分区分析比gold的数据集、基准与工具验证更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 401,
+  "gold": "T23",
+  "pred": "T44",
+  "correct": "pred",
+  "correct_id": "T44",
+  "reason": "文献采用EOF和GWR模型分析工业SO2排放的时空演变特征与驱动因素，属于时空演化分析范畴，与T44相符。gold标注T23（微生物）与文献内容完全无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 415,
+  "gold": "T15",
+  "pred": "T14",
+  "correct": "other",
+  "correct_id": "T03",
+  "reason": "文献研究混合型相控开关在电气化铁路自动过分相中的应用，涉及电力电子技术、高压开关与电力系统，属于电气工程领域，gold和pred标注均错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 418,
+  "gold": "T42",
+  "pred": "T41",
+  "correct": "pred",
+  "correct_id": "T41",
+  "reason": "文献运用DEA方法对珠三角城市群的整体与结构运行效率进行综合评价，属于指标体系与综合评价范畴，而非面板回归或因果识别。"
+ },
+ {
+  "axis": "technical",
+  "doc": 423,
+  "gold": "T06",
+  "pred": "T42",
+  "correct": "pred",
+  "correct_id": "T42",
+  "reason": "文献基于微观调查样本数据，运用最优尺度回归和多水平模型进行实证分析，属于计量经济学方法应用，模型判定T42更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 434,
+  "gold": "T35",
+  "pred": "T06",
+  "correct": "pred",
+  "correct_id": "T06",
+  "reason": "文献综述了中国分布式光伏发电的现状、政策及未来展望，属于典型的叙述性综述，gold标注的时序预测与状态估计与内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 413,
+  "gold": "T29",
+  "pred": "T41",
+  "correct": "pred",
+  "correct_id": "T41",
+  "reason": "文献核心是基于物质流分析构建生态效率指标，对湖南省工业生态效率进行综合评价与时空比较，属于指标体系与综合评价范畴，而非野外采样与生态调查。"
+ },
+ {
+  "axis": "technical",
+  "doc": 419,
+  "gold": "T46",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献核心采用基尼系数、Mann-Kendall法和聚类分析探讨区域经济差异的空间格局，属于空间统计与分区分析方法范畴，模型判定更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 424,
+  "gold": "T12",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献主要研究美日研究联合体的运行机制、发展战略与政策启示，属于科技政策与制度设计范畴，而非具体的材料合成与制备工艺。因此模型判定T46更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 437,
+  "gold": "T06",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献重点分析了旅游客流在景区的时空分布特征，并探讨了其与生态旅游承载力之间的关系，属于典型的空间分布与统计分析研究，而非单纯的叙述性综述或理论观点。"
+ },
+ {
+  "axis": "technical",
+  "doc": 448,
+  "gold": "T21",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献探讨文明古国文化遗产保护战略与文明交流互鉴，属于人文社科领域，gold和pred的科技/经济/情报类标注均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 447,
+  "gold": "T21",
+  "pred": "T40",
+  "correct": "pred",
+  "correct_id": "T40",
+  "reason": "文献核心为配电网场景降维、节点加权网络等值及短路故障计算，属于电力系统建模与等值计算范畴，而非经济评价与政策分析。"
+ },
+ {
+  "axis": "technical",
+  "doc": 443,
+  "gold": "T02",
+  "pred": "T41",
+  "correct": "pred",
+  "correct_id": "T41",
+  "reason": "文献核心是应用统计指标和主成分分析方法对中加两国海洋经济综合实力进行对比与评价，属于综合评价范畴，而非探讨经典机器学习算法或统计建模理论本身。"
+ },
+ {
+  "axis": "technical",
+  "doc": 439,
+  "gold": "T23",
+  "pred": "T42",
+  "correct": "pred",
+  "correct_id": "T42",
+  "reason": "文献使用江苏、浙江两省数据建立模型进行实证分析，探讨高等教育与人才集聚对经济增长的驱动作用，属于计量经济学范畴。gold标注（微生物）明显错误，模型判定（计量经济）准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 450,
+  "gold": "T31",
+  "pred": "T38",
+  "correct": "other",
+  "correct_id": "T14",
+  "reason": "文献研究光储充一体站的日前运行策略，涉及光伏出力、负荷场景生成及经济调度，属于电力系统运行控制与调度优化范畴，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 454,
+  "gold": "T28",
+  "pred": "T37",
+  "correct": "pred",
+  "correct_id": "T37",
+  "reason": "文献核心是构建多目标能量管理模型并利用改进的旗鱼算法进行求解，属于典型的优化调度与数学规划问题，而非泛化的实验研究方法。"
+ },
+ {
+  "axis": "technical",
+  "doc": 449,
+  "gold": "T31",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T99 科技政策与管理",
+  "reason": "文献探讨国家战略科技力量建设、国家实验室及国立科研机构发展，属于科技政策与管理范畴。gold（理化分析与定量测定）与pred（文献计量与技术态势研判）均与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 456,
+  "gold": "T14",
+  "pred": "T07",
+  "correct": "other",
+  "correct_id": "T08",
+  "reason": "文献主要采用预估模型测算碳排放趋势并分析森林碳汇，属于环境科学与生态学领域的实证与预测研究，而非数值模拟或病例报告。"
+ },
+ {
+  "axis": "technical",
+  "doc": 469,
+  "gold": "T34",
+  "pred": "T17",
+  "correct": "other",
+  "correct_id": "T11 人工智能与模式识别",
+  "reason": "文献核心是研究针对电力专用词库的智能语音识别引擎及离线识别技术，属于人工智能与语音识别应用，而非聚类等数据挖掘算法（T34）或纯硬件器件设计（T17）。"
+ },
+ {
+  "axis": "technical",
+  "doc": 467,
+  "gold": "T28",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T74",
+  "reason": "文献探讨我国网络信息安全发展及其对国家安全体系的意义，属于信息安全与网络安全领域，gold和pred的标注均与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 464,
+  "gold": "T36",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨西北地区生态保护与高质量发展的协同推进策略和路径，属于宏观政策与制度设计范畴，模型判定T46准确；gold标注T36（故障诊断等）明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 478,
+  "gold": "T45",
+  "pred": "T21",
+  "correct": "pred",
+  "correct_id": "T21",
+  "reason": "文献研究文化区域的经济协同发展机理并提出政策建议，属于经济评价与政策分析范畴。gold标注的文献计量与技术态势研判与文献内容完全不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 473,
+  "gold": "T38",
+  "pred": "T06",
+  "correct": "other",
+  "correct_id": "T14",
+  "reason": "文献探讨专利拍卖在技术转移中的应用、机遇与挑战，属于技术转移与知识产权管理范畴，而非博弈论或纯叙述性综述。"
+ },
+ {
+  "axis": "technical",
+  "doc": 472,
+  "gold": "T41",
+  "pred": "T44",
+  "correct": "pred",
+  "correct_id": "T44",
+  "reason": "文献核心内容为测度草畜生产的时空匹配格局、空间相关性及驱动效应，并使用了改进耦合协调模型，属于耦合协调与时空演化范畴，比单纯的指标体系与综合评价更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 486,
+  "gold": "T12",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献主要研究新材料产业集群的发展战略、空间分布特征及政策建议，属于宏观产业与政策研究范畴，而非具体的材料合成与制备工艺，因此模型判定更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 480,
+  "gold": "T25",
+  "pred": "T36",
+  "correct": "pred",
+  "correct_id": "T36",
+  "reason": "文献主要研究配网差动保护的数据同步方案，属于电力系统继电保护范畴，模型判定为故障诊断、定位与保护算法更准确。gold标注（数据集、基准与工具验证）与内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 487,
+  "gold": "T23",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献内容为科技扶贫实践与探讨，属于农业与生物技术或政策管理类，gold和pred均与内容无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 497,
+  "gold": "T25",
+  "pred": "T06",
+  "correct": "pred",
+  "correct_id": "T06",
+  "reason": "文献阐述了我国能源战略问题并提出了区域能源战略要点，属于叙述性综述与理论观点，而非数据集、基准与工具验证。"
+ },
+ {
+  "axis": "technical",
+  "doc": 499,
+  "gold": "T25",
+  "pred": "T40",
+  "correct": "pred",
+  "correct_id": "T40",
+  "reason": "文献核心为建立风-储-直调频频率响应模型并进行理论推导与定量分析，属于电力系统建模范畴，而非数据集或工具验证。"
+ },
+ {
+  "axis": "technical",
+  "doc": 495,
+  "gold": "T29",
+  "pred": "T19",
+  "correct": "other",
+  "correct_id": "T14",
+  "reason": "文献主要探讨我国耕地资源开发利用的问题与整治对策，属于农业资源管理与土地整治范畴，而非野外采样或环境处理工艺。"
+ },
+ {
+  "axis": "technical",
+  "doc": 503,
+  "gold": "T20",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T13 教育科学",
+  "reason": "文献探讨国际科学教育的发展趋势、理念与实践革新，属于教育科学范畴。gold的定性研究和pred的文献计量均不符合文献内容。"
+ },
+ {
+  "axis": "technical",
+  "doc": 516,
+  "gold": "T20",
+  "pred": "T41",
+  "correct": "other",
+  "correct_id": "T11",
+  "reason": "文献主要研究物流快递自提柜的选址与空间优化，构建集合覆盖模型并利用LINGO、AHP等方法进行求解，属于运筹学与系统工程领域的最优化方法应用，应归入T11（最优化方法）。"
+ },
+ {
+  "axis": "technical",
+  "doc": 517,
+  "gold": "T23",
+  "pred": "T45",
+  "correct": "pred",
+  "correct_id": "T45",
+  "reason": "文献探讨了中国科技发展的宏观战略、科研范式变革及未来机遇，属于科技政策与态势研判范畴。模型判定T45准确，gold标注T23（微生物）与内容完全无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 505,
+  "gold": "T29",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献探讨国土空间规划下城市收缩的空间形态调整与结构优化，涉及空间模式概括与布局分析，属于空间统计、GIS与分区分析范畴。gold标注(T29)明显不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 518,
+  "gold": "T41",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献核心运用地理空间分析方法研究公共卫生健康保障水平的空间格局和空间分异特征，属于空间统计与GIS分析范畴，模型判定比gold标注更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 528,
+  "gold": "T24",
+  "pred": "T21",
+  "correct": "pred",
+  "correct_id": "T21",
+  "reason": "文献探讨川西横断山脉高山峡谷区旅游特色化开发战略及西部山地旅游发展路径，属于旅游发展战略与政策研究范畴，模型判定T21（经济评价与政策分析）更准确。gold标注T24（遗传关联与PCR分子检测）与文献内容完全无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 531,
+  "gold": "T19",
+  "pred": "T41",
+  "correct": "pred",
+  "correct_id": "T41",
+  "reason": "文献主要运用PCA和AHP方法构建指标体系，对区域经济发展方式转变进程进行综合评价，属于指标体系与综合评价范畴，而非环境处理与资源回收工艺。"
+ },
+ {
+  "axis": "technical",
+  "doc": 536,
+  "gold": "T02",
+  "pred": "T48",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献研究的是居民收入两极分化演变及影响因素，使用主成分分析等方法，属于经济与社会科学领域的统计应用，而非空间统计或纯粹的机器学习理论。"
+ },
+ {
+  "axis": "technical",
+  "doc": 542,
+  "gold": "T42",
+  "pred": "T48",
+  "correct": "other",
+  "correct_id": "T41",
+  "reason": "文献核心为贫困测度与分解方法（FGT指数、贫困增长曲线），探讨经济增长与收入分配的减贫效应，属于发展与分配经济学范畴。空间差异仅为区域对比视角，非核心空间统计方法；亦非面板回归或因果识别研究。"
+ },
+ {
+  "axis": "technical",
+  "doc": 537,
+  "gold": "T02",
+  "pred": "T41",
+  "correct": "pred",
+  "correct_id": "T41",
+  "reason": "文献主要基于生态效率概念建立评价框架，使用主成分分析法和功效系数法对中部地区进行定量综合评价，属于指标体系与综合评价，而非单纯的经典机器学习与统计建模。"
+ },
+ {
+  "axis": "technical",
+  "doc": 543,
+  "gold": "T13",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献利用粮食产量计算模型，从省域、区域、地市等不同空间尺度分析粮食生产的区域分化特征，并探讨其空间成因，属于典型的空间统计与分区分析。gold标注的“材料表征与性能测试”与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 532,
+  "gold": "T11",
+  "pred": "T24",
+  "correct": "other",
+  "correct_id": "T03 航空航天技术",
+  "reason": "文献探讨空间科学对科技、经济与社会发展的作用，涉及航天技术及空间科学卫星，属于航空航天领域，gold和pred标注均错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 544,
+  "gold": "T25",
+  "pred": "T20",
+  "correct": "other",
+  "correct_id": "T19",
+  "reason": "文献采用多智能体建模与仿真技术定量研究旅游交通方式跃迁现象，属于建模与仿真研究，而非数据集验证或定性社会研究。"
+ },
+ {
+  "axis": "technical",
+  "doc": 554,
+  "gold": "T12",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T11",
+  "reason": "文献主要探讨非晶合金材料的发展趋势、科学问题与应用启示，属于材料科学领域的综述与战略研究，而非具体的合成制备工艺（T12）或纯文献计量分析（T45）。"
+ },
+ {
+  "axis": "technical",
+  "doc": 549,
+  "gold": "T42",
+  "pred": "T07",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献使用Shift-share方法和数学模型对苏鲁两省产业结构进行实证比较分析，属于区域经济与产业经济研究范畴，而非面板回归因果识别或医学病例报告。"
+ },
+ {
+  "axis": "technical",
+  "doc": 555,
+  "gold": "T13",
+  "pred": "T44",
+  "correct": "pred",
+  "correct_id": "T44",
+  "reason": "文献利用POI数据探究文化娱乐业的空间格局、对称结构与形成机理，属于空间分布与时空演化研究范畴。模型判定T44准确，而gold标注T13（材料表征与性能测试）与文献内容完全不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 550,
+  "gold": "T02",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献使用改进的重力模型、集中度系数等分析城市空间引力、空间结构和等级体系演变，属于空间统计与GIS分析范畴，而非泛指的经典机器学习与统计建模。"
+ },
+ {
+  "axis": "technical",
+  "doc": 556,
+  "gold": "T06",
+  "pred": "T21",
+  "correct": "pred",
+  "correct_id": "T21",
+  "reason": "文献基于CFPS数据对中国多维贫困状况进行实证测度与动态分析，并评估反贫困政策实施效果，属于经济评价与政策分析，而非叙述性综述或纯理论观点。"
+ },
+ {
+  "axis": "technical",
+  "doc": 560,
+  "gold": "T24",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T03",
+  "reason": "文献主要讲述华为公司的创新历程与企业发展，属于企业创新管理或科技产业案例，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 558,
+  "gold": "T44",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献利用旅游经济联系度、基尼系数等指标分析旅游规模分布及空间特征，核心在于空间分布格局的统计与特征分析，符合T48“空间统计、GIS与分区分析”的范畴。gold标注偏向耦合协调与障碍度模型，与本文内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 567,
+  "gold": "T15",
+  "pred": "T14",
+  "correct": "other",
+  "correct_id": "T08",
+  "reason": "文献研究海上风电柔直送出系统的最优频率选择，涉及电力系统设计与工程计算，不属于第一性原理或数值模拟方法类。"
+ },
+ {
+  "axis": "technical",
+  "doc": 563,
+  "gold": "T05",
+  "pred": "T37",
+  "correct": "pred",
+  "correct_id": "T37",
+  "reason": "文献研究的是电力线通信网络中的跨层资源分配与调度建模，属于优化调度范畴，与系统综述/Meta分析无关。模型判定更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 572,
+  "gold": "T46",
+  "pred": "T42",
+  "correct": "other",
+  "correct_id": "T41",
+  "reason": "文献主要使用基尼系数、Mann-Kendall法和聚类分析研究江苏省区域经济差异的格局演化，属于空间统计与区域差异分析，而非理论制度设计(T46)或面板回归与因果识别(T42)。"
+ },
+ {
+  "axis": "technical",
+  "doc": 579,
+  "gold": "T13",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨城市群经济机理与区域协调发展的理论机制及政策路径，属于T46；gold标注T13（材料表征与性能测试）明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 580,
+  "gold": "T46",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献核心应用空间结构理论和空间分析技术，探讨点轴式空间结构、集聚模式及交通通达性，属于空间统计与GIS分析范畴，模型判定更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 582,
+  "gold": "T24",
+  "pred": "T23",
+  "correct": "other",
+  "correct_id": "T21",
+  "reason": "文献主题为基因编辑技术及其进展与挑战，属于基因工程与遗传改造范畴，而非PCR分子检测（T24）或微生物培养与宏基因组分析（T23）。"
+ },
+ {
+  "axis": "technical",
+  "doc": 583,
+  "gold": "T29",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨城市化与生态环境协调发展的调控机制，侧重于产业、规划、社会、政策等理论与制度层面的分析，不涉及野外采样与生态调查，模型判定更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 585,
+  "gold": "T18",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨长株潭试验区从行政治理向社会治理的转型及社会治理体系创新，属于公共管理与制度政策研究范畴，模型判定T46准确。gold标注T18（化学合成与催化反应）完全错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 523,
+  "gold": "T10",
+  "pred": "T44",
+  "correct": "pred",
+  "correct_id": "T44",
+  "reason": "文献研究珠三角城市群灾害易损性的时空格局差异，属于时空演化分析范畴，模型判定T44准确；gold标注T44（病理组织等）明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 596,
+  "gold": "T19",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献主要研究资源型产业链的演进机理、治理模式与升级路径，属于产业经济与理论机制范畴。gold标注偏向环境工程，与内容不符；模型判定T46更契合文献的理论与政策研究属性。"
+ },
+ {
+  "axis": "technical",
+  "doc": 592,
+  "gold": "T43",
+  "pred": "T48",
+  "correct": "other",
+  "correct_id": "T11 区域与城市经济学",
+  "reason": "文献核心探讨的是危机事件冲击下区域旅游经济联系的格局与影响因素，属于区域旅游经济研究范畴。虽然使用了社会网络分析和GIS空间分析等方法，但这些是研究手段而非研究主体，因此gold和pred标注均未能准确反映其经济学/旅游经济的学科本质。"
+ },
+ {
+  "axis": "technical",
+  "doc": 597,
+  "gold": "T07",
+  "pred": "T21",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献研究世界工业遗产的地理、产业分布及价值特征，属于描述性与分析性研究，非病例报告(T07)或经济政策分析(T21)，应归为T01。"
+ },
+ {
+  "axis": "technical",
+  "doc": 595,
+  "gold": "T34",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献研究东北地区高质量发展的战略路径与政策思路，属于理论机制、制度设计与政策路径范畴。gold标注（聚类、关联规则与模式识别）与文本内容无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 598,
+  "gold": "T10",
+  "pred": "T21",
+  "correct": "other",
+  "correct_id": "T03",
+  "reason": "文献探讨当代中国人的文化认同及社会心理学理论，属于人文与社会科学领域，gold的医学诊断标注与pred的经济政策标注均完全错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 608,
+  "gold": "T19",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨黄河流域生态保护与高质量发展的宏观战略框架、路径与对策，属于区域发展战略与政策路径研究，而非具体的“环境处理与资源回收工艺”。模型判定更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 612,
+  "gold": "T31",
+  "pred": "T06",
+  "correct": "pred",
+  "correct_id": "T06",
+  "reason": "文献梳理了数学研究的特征与资助现状，分析了存在的问题并提出政策建议，属于叙述性综述与理论观点，而非具体的理化分析与定量测定。"
+ },
+ {
+  "axis": "technical",
+  "doc": 603,
+  "gold": "T45",
+  "pred": "T40",
+  "correct": "pred",
+  "correct_id": "T40",
+  "reason": "文献主要研究水轮机水锤效应与风电调频的频率特性，通过建立数学模型、使用直流潮流法推导代数微分方程并进行线性化处理与频域解析式分析，属于电力系统建模与潮流计算范畴。gold标注(T45)明显与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 617,
+  "gold": "T24",
+  "pred": "T42",
+  "correct": "pred",
+  "correct_id": "T42",
+  "reason": "文献使用地理加权回归等空间计量方法研究经济技术开发区对经济格局的影响，属于计量经济学范畴，模型判定T42正确；gold标注T24（遗传关联与PCR分子检测）与文献内容完全无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 619,
+  "gold": "T29",
+  "pred": "T21",
+  "correct": "other",
+  "correct_id": "T14",
+  "reason": "文献主要研究生态旅游者的市场细分，基于环境态度与行为视角，属于旅游市场与消费者行为研究范畴，而非野外生态调查或经济政策分析。"
+ },
+ {
+  "axis": "technical",
+  "doc": 621,
+  "gold": "T37",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献主要利用网络关注度数据揭示旅游需求的时空变化特征，并分析其在空间上的“多中心”分布，属于空间统计与GIS分析范畴。gold标注的“优化调度与数学规划”与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 622,
+  "gold": "T45",
+  "pred": "T21",
+  "correct": "pred",
+  "correct_id": "T21",
+  "reason": "文献是对区域经济协同发展研究著作的评述，属于经济领域，模型判定T21更准确；gold标注T45文献计量与技术态势研判与内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 624,
+  "gold": "T18",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献主要探讨科技发达国家国立科研机构的治理模式与改革发展，并提出对策建议，属于科技政策与管理领域，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 629,
+  "gold": "T35",
+  "pred": "T07",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献为气候趋势预测，属于气象学领域的预测报告，非时序预测算法或病例报告。"
+ },
+ {
+  "axis": "technical",
+  "doc": 628,
+  "gold": "T02",
+  "pred": "T41",
+  "correct": "pred",
+  "correct_id": "T41",
+  "reason": "文献主要基于统计数据测算各项指数，划分类型并比较发展水平，属于典型的指标体系构建与综合评价研究，而非经典机器学习或统计建模算法研究。"
+ },
+ {
+  "axis": "technical",
+  "doc": 632,
+  "gold": "T13",
+  "pred": "T47",
+  "correct": "other",
+  "correct_id": "T08",
+  "reason": "文献研究的是基于电流突变采样值轨迹特征的快速母线保护，属于电力系统继电保护领域，而非材料表征或数字孪生平台架构。"
+ },
+ {
+  "axis": "technical",
+  "doc": 643,
+  "gold": "T10",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献研究城乡公路交通建设模式与路径对策，属于制度设计与政策路径范畴，模型判定正确；gold标注（病理组织与免疫组化诊断）明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 644,
+  "gold": "T43",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T01 科学学理论与方法",
+  "reason": "文献探讨国家创新体系的发展演进与建设实践，属于科学学与科技政策研究范畴。gold标注(T43)和模型判定(T45)均侧重于网络分析或文献计量方法，与文献实际内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 633,
+  "gold": "T29",
+  "pred": "T42",
+  "correct": "other",
+  "correct_id": "T11 区域经济与空间经济",
+  "reason": "文献研究珠三角制造业的空间演变与相互作用，属于区域经济与空间经济范畴。gold标注（野外采样）明显错误，模型判定（面板回归）虽涉及计量方法但非核心主题。"
+ },
+ {
+  "axis": "technical",
+  "doc": 648,
+  "gold": "T14",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T11 区域发展与空间布局",
+  "reason": "文献主要研究湖南物流产业集群的系统规划与发展，属于区域经济与产业空间布局范畴，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 654,
+  "gold": "T29",
+  "pred": "T21",
+  "correct": "other",
+  "correct_id": "T14",
+  "reason": "文献主要研究中国高原生态旅游发展潜力的评价体系构建与空间分布规律，属于地理学与区域可持续发展研究范畴，而非野外采样调查或纯经济政策分析。"
+ },
+ {
+  "axis": "technical",
+  "doc": 649,
+  "gold": "T23",
+  "pred": "T12",
+  "correct": "other",
+  "correct_id": "T20 农业科学与技术",
+  "reason": "文献主要探讨马铃薯产业科技扶贫实践，涉及农业科技应用与推广，属于农业科学与技术领域，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 657,
+  "gold": "T31",
+  "pred": "T42",
+  "correct": "pred",
+  "correct_id": "T42",
+  "reason": "文献运用Hedonic模型和多元线性回归分析定量测度行政区划调整对住宅价格的影响，属于计量经济学和回归分析方法的应用，而非单纯的理化分析与定量测定。"
+ },
+ {
+  "axis": "technical",
+  "doc": 660,
+  "gold": "T31",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献利用信息熵理论和空间数据对两市土地利用结构演化进行空间比较分析，属于空间统计与分区分析范畴，而非单纯的理化分析与定量测定。"
+ },
+ {
+  "axis": "technical",
+  "doc": 658,
+  "gold": "T37",
+  "pred": "T14",
+  "correct": "other",
+  "correct_id": "T20",
+  "reason": "文献主要研究柔性直流电网中故障限流器的参数优化与故障暂态响应分析，属于电力系统及其自动化/高电压技术领域。gold标注的优化调度与数学规划和模型判定的数值模拟与有限元计算均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 662,
+  "gold": "T19",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献主要探讨黄河三角洲农业高质量发展的新模式，依据国家战略需求和发展现状提出发展路径，属于宏观层面的理论机制与政策路径研究，而非具体的环境处理与资源回收工艺。"
+ },
+ {
+  "axis": "technical",
+  "doc": 680,
+  "gold": "T34",
+  "pred": "T21",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献探讨社会建构主义、国家行为体及国际关系理论在经济地理中的应用，属于国际关系与地缘政治范畴，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 682,
+  "gold": "T01",
+  "pred": "T34",
+  "correct": "other",
+  "correct_id": "T04",
+  "reason": "文献主要研究农用地集约利用对农民收入的影响，核心方法为协整分析、VAR模型等计量经济学方法，而非深度学习或模式识别。BP神经网络仅作为辅助测算工具，gold和pred标注均偏离主题。"
+ },
+ {
+  "axis": "technical",
+  "doc": 683,
+  "gold": "T18",
+  "pred": "T06",
+  "correct": "pred",
+  "correct_id": "T06",
+  "reason": "文献探讨疫情下分餐制的思考与对策建议，属于社会科学领域的综述与观点，gold标注的化学领域明显错误，模型判定更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 692,
+  "gold": "T42",
+  "pred": "T48",
+  "correct": "other",
+  "correct_id": "T01 政治经济学与经济地理",
+  "reason": "文献探讨新自由主义思潮与国家空间的演变，属于政治地理与政治经济学范畴。gold标注（计量经济）与模型判定（空间统计/GIS）均侧重技术方法，与文献的宏观理论反思内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 693,
+  "gold": "T06",
+  "pred": "T21",
+  "correct": "pred",
+  "correct_id": "T21",
+  "reason": "文献重点探讨精准扶贫的区域模式与可持续途径，提出完善区域政策体系、产业政策体系等，属于经济评价与政策分析范畴，而非单纯的理论观点或叙述性综述。"
+ },
+ {
+  "axis": "technical",
+  "doc": 696,
+  "gold": "T13",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献研究中美欧数字治理格局、数字生态发展模式及规制体系，属于宏观政策与制度设计范畴，模型判定T46准确。gold标注T13（材料表征与性能测试）与内容完全无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 695,
+  "gold": "T34",
+  "pred": "T42",
+  "correct": "other",
+  "correct_id": "T01 城市规划与区域发展",
+  "reason": "文献研究的是“单位制”城市空间的社会生产，属于城市地理与空间政治经济学范畴，与gold的聚类/模式识别和pred的面板回归/计量经济均无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 697,
+  "gold": "T30",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献主要探讨创新统计体系的演化与建设，强调借鉴国际经验、结合我国特色及推动创新驱动发展战略，属于宏观层面的制度设计与政策路径研究，而非具体的风险评估或空间统计方法。"
+ },
+ {
+  "axis": "technical",
+  "doc": 689,
+  "gold": "T29",
+  "pred": "T25",
+  "correct": "other",
+  "correct_id": "T12 地球科学",
+  "reason": "文献主要介绍天山冰川站的长期观测及其在冰川学理论、冰川变化与水文影响研究中的贡献，属于地球科学（冰川学/水文学）范畴。gold（野外采样）和pred（数据集）均未能准确反映其学科研究属性。"
+ },
+ {
+  "axis": "technical",
+  "doc": 703,
+  "gold": "T13",
+  "pred": "T49",
+  "correct": "other",
+  "correct_id": "T69 信息与通信技术",
+  "reason": "文献主要探讨支撑虚拟电厂互动的信息通信关键技术（如边缘计算、D2D通信等），属于信息与通信技术领域，gold标注和模型判定均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 712,
+  "gold": "T24",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T11 科技政策与战略研究",
+  "reason": "文献主要研究我国国际科技合作政策的演进与布局，属于科技政策与战略研究领域。gold标注（遗传关联与PCR分子检测）完全无关，模型判定（文献计量与技术态势研判）也不符合，该文核心是政策分析而非文献计量或技术态势研判。"
+ },
+ {
+  "axis": "technical",
+  "doc": 714,
+  "gold": "T34",
+  "pred": "T21",
+  "correct": "pred",
+  "correct_id": "T21",
+  "reason": "文献探讨藏区新型城镇化的发展路径与模式，属于区域经济与政策分析范畴，模型判定T21准确。gold标注T34（聚类、关联规则与模式识别）与内容无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 707,
+  "gold": "T29",
+  "pred": "T06",
+  "correct": "pred",
+  "correct_id": "T06",
+  "reason": "文献归纳分析科赫研究所在融合科学方面的机制建设并探讨启示，属于叙述性综述与理论观点，而非野外采样与生态调查。"
+ },
+ {
+  "axis": "technical",
+  "doc": 716,
+  "gold": "T35",
+  "pred": "T44",
+  "correct": "pred",
+  "correct_id": "T44",
+  "reason": "文献是对一本关于城乡发展差异测度及其协调发展研究著作的评论，核心主题涉及城乡发展的耦合协调分析，模型判定T44更贴合文献内容，gold标注T35时序预测与状态估计与文献主题不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 718,
+  "gold": "T07",
+  "pred": "T39",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献研究的是电动汽车负荷聚集商的调度策略与需求响应，属于电力系统优化调度领域，而非医学病例报告或数学不确定性优化理论。gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 719,
+  "gold": "T42",
+  "pred": "T21",
+  "correct": "pred",
+  "correct_id": "T21",
+  "reason": "文献探讨的是产业、就业与企业结合提振中国经济的路径与逻辑，属于宏观经济政策与发展战略分析，而非具体的计量经济学方法或因果识别研究。因此，模型判定的“经济评价与政策分析”比gold标注更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 724,
+  "gold": "T34",
+  "pred": "T07",
+  "correct": "other",
+  "correct_id": "T01 经济学",
+  "reason": "文献研究河南省产业结构演进与机理，属于产业经济学范畴，gold和pred标注均错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 721,
+  "gold": "T35",
+  "pred": "T48",
+  "correct": "other",
+  "correct_id": "T14",
+  "reason": "文献核心为利用参数法进行物流园区用地规模预测，属于运筹与管理科学/物流供应链管理范畴。既非时序预测，也非空间统计与GIS分析。"
+ },
+ {
+  "axis": "technical",
+  "doc": 727,
+  "gold": "T17",
+  "pred": "T41",
+  "correct": "other",
+  "correct_id": "T08 区域与城市规划",
+  "reason": "文献研究环鄱阳湖城市群的城市规模结构演变特征，属于城市地理与区域规划范畴，gold标注（工程器件）明显错误，模型判定（指标体系）过于宽泛且未切中核心主题。"
+ },
+ {
+  "axis": "technical",
+  "doc": 726,
+  "gold": "T06",
+  "pred": "T29",
+  "correct": "pred",
+  "correct_id": "T29",
+  "reason": "文献基于多期遥感影像解译获取数据，并利用动态变化模型分析土地利用变化及驱动力，属于利用空间观测与调查数据进行地理与生态分析的实证研究，而非纯叙述性综述或理论观点。模型判定更符合其实证研究特征。"
+ },
+ {
+  "axis": "technical",
+  "doc": 730,
+  "gold": "T31",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨财政体制改革、区域财政横向均衡制度设计及政策路径，属于理论机制与制度政策研究，而非理化分析与定量测定。"
+ },
+ {
+  "axis": "technical",
+  "doc": 731,
+  "gold": "T40",
+  "pred": "T38",
+  "correct": "pred",
+  "correct_id": "T38",
+  "reason": "文献核心是电力现货市场机制设计、分时容量电价制定及解决新能源与灵活性资源的市场利益分配问题，属于市场机制与多主体决策范畴，而非电力系统物理建模与潮流计算。"
+ },
+ {
+  "axis": "technical",
+  "doc": 732,
+  "gold": "T12",
+  "pred": "T07",
+  "correct": "other",
+  "correct_id": "T14 环境科学与工程",
+  "reason": "文献主要探讨绿色设计理念及案例（能源、制造、建筑等），并分析苹果手机生命周期及环境污染潜力，属于环境科学与工程领域。gold（材料合成）和pred（病例报告）均明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 733,
+  "gold": "T38",
+  "pred": "T07",
+  "correct": "other",
+  "correct_id": "T03",
+  "reason": "文献研究中国省际资本流动规模及其制度成因，属于经济学领域的实证研究，应归入T03 经济学。gold标注（博弈论与多主体决策）和模型判定（病例报告）均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 737,
+  "gold": "T18",
+  "pred": "T42",
+  "correct": "pred",
+  "correct_id": "T42",
+  "reason": "文献基于省级面板数据，运用因素分解和计量实证模型分析化肥消费强度的时空差异与驱动因素，属于计量经济学范畴，而非化学合成与催化反应。"
+ },
+ {
+  "axis": "technical",
+  "doc": 747,
+  "gold": "T12",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献利用统计年鉴和聚类分析研究农民收入的时空分异与区域差异格局，属于空间统计与分区分析范畴，模型判定正确；gold标注（材料合成与制备工艺）明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 741,
+  "gold": "T12",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T99 科技政策与管理",
+  "reason": "文献探讨科技在应对突发公共卫生事件中的统筹协同作用及科研攻关管理，属于科技政策与管理范畴，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 748,
+  "gold": "T12",
+  "pred": "T21",
+  "correct": "pred",
+  "correct_id": "T21",
+  "reason": "文献研究旅游流与居民收入增长的相互影响及政策建议，属于经济评价与政策分析，gold标注材料合成明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 749,
+  "gold": "T24",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T11 科技政策与战略",
+  "reason": "文献探讨以技术科学思想指导构建我国科技创新“双循环”新发展格局的战略构想与路径，属于科技政策与战略研究范畴。gold标注（遗传关联与PCR分子检测）完全无关，模型判定（文献计量与技术态势研判）也不符合，故均不正确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 760,
+  "gold": "T40",
+  "pred": "T36",
+  "correct": "pred",
+  "correct_id": "T36",
+  "reason": "文献主要研究基于暂态量的继电保护原理与方法，属于继电保护范畴，模型判定T36（故障诊断、定位与保护算法）准确。gold标注T40（电力系统建模、潮流与等值计算）与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 759,
+  "gold": "T12",
+  "pred": "T20",
+  "correct": "other",
+  "correct_id": "T14 经济与管理科学",
+  "reason": "文献研究的是服装加工产业集群的发展路径与区域经济，属于经济与管理领域，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 754,
+  "gold": "T47",
+  "pred": "T29",
+  "correct": "other",
+  "correct_id": "T08 产业生态与循环经济",
+  "reason": "文献探讨的是煤化工产业生态系统的构建与产业链设计，属于产业生态与循环经济范畴，gold的数字孪生与模型判定的生态调查均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 765,
+  "gold": "T10",
+  "pred": "T40",
+  "correct": "other",
+  "correct_id": "T44",
+  "reason": "文献研究退役锂离子动力电池储能系统的风冷热管理，属于储能技术与电池热管理范畴，gold标注（病理组织）明显错误，模型判定（电力系统潮流计算）也不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 767,
+  "gold": "T41",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献核心内容为交通优势度与经济的空间格局分析、耦合协调度测度及类型区划分，侧重于空间统计与分区分析，模型判定比gold标注更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 769,
+  "gold": "T31",
+  "pred": "T41",
+  "correct": "pred",
+  "correct_id": "T41",
+  "reason": "文献运用DEA-Tobit模型对各省水资源效率进行测算，并分析其区域差异及影响因素，核心在于构建评价体系并进行综合评价，而非单纯的理化分析与定量测定。因此模型判定更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 773,
+  "gold": "T20",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨环境规制、政府博弈等外部因素与企业规模内部因素对污染企业迁移意愿的作用机制，属于理论机制与政策路径研究范畴，而非单纯的问卷调查方法或定性社会研究。"
+ },
+ {
+  "axis": "technical",
+  "doc": 771,
+  "gold": "T07",
+  "pred": "T21",
+  "correct": "pred",
+  "correct_id": "T21",
+  "reason": "文献内容为2016年中国宏观经济形势展望与GDP增速预测，属于经济评价与政策分析。gold标注（病例报告）明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 774,
+  "gold": "T24",
+  "pred": "T36",
+  "correct": "pred",
+  "correct_id": "T36",
+  "reason": "文献研究的是XLPE配电电缆的局部缺陷定位与诊断方法，属于电力系统故障诊断范畴。gold标注的T24（遗传关联与PCR分子检测）属于生物分子检测领域，明显错误。模型判定的T36（故障诊断、定位与保护算法）与文献内容高度契合。"
+ },
+ {
+  "axis": "technical",
+  "doc": 789,
+  "gold": "T43",
+  "pred": "T42",
+  "correct": "other",
+  "correct_id": "T10",
+  "reason": "文献主要使用引力模型和空间杜宾模型分析科技新城的空间联系特征与影响机制，属于空间计量与空间经济学范畴，而非单纯的社会网络分析或传统的面板回归与因果识别。"
+ },
+ {
+  "axis": "technical",
+  "doc": 791,
+  "gold": "T28",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献以宁夏盐池县为例，运用引力模型进行定量评价，并基于空间影响程度对乡村聚落进行空间分类与布局优化，属于典型的空间统计与GIS分区分析，模型判定T48比gold的T28更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 790,
+  "gold": "T20",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨雄安新区理想城市的建设目标与内涵，属于宏观政策与制度设计范畴，T46更准确；gold的T20偏向具体社会调查方法，明显不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 800,
+  "gold": "T29",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨的是通过生态建设布局优化提升固碳能力的政策途径，属于政策与制度设计范畴，模型判定T46准确。gold标注T29（野外采样与生态调查）与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 793,
+  "gold": "T05",
+  "pred": "T29",
+  "correct": "other",
+  "correct_id": "T20",
+  "reason": "文献探讨的是旅游资源开发与生态保护的关系，属于旅游经济/资源开发范畴，而非系统综述或野外采样调查。"
+ },
+ {
+  "axis": "technical",
+  "doc": 781,
+  "gold": "T13",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献基于人口普查数据研究31省市文化产业的区域特征与空间分布不平衡，并使用区位商和计量检验分析其空间影响因素，属于空间统计与区域分析范畴。gold标注（材料表征与性能测试）与文献内容完全无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 804,
+  "gold": "T07",
+  "pred": "T21",
+  "correct": "other",
+  "correct_id": "T03 哲学与理论探讨",
+  "reason": "文献探讨人工智能的哲学本源、目标及新体系（平行哲学），属于哲学与理论探讨，gold和pred均错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 813,
+  "gold": "T31",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献利用信息熵等方法分析长沙市土地利用结构的动态演变特征及空间利用类型，属于空间统计与分区分析范畴，模型判定更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 814,
+  "gold": "T49",
+  "pred": "T40",
+  "correct": "other",
+  "correct_id": "T41",
+  "reason": "文献主要研究特高压换流站系统的地震易损性、失效概率及抗震薄弱环节，属于电力系统抗震防灾与可靠性分析范畴，而非控制策略(T49)或潮流计算(T40)。"
+ },
+ {
+  "axis": "technical",
+  "doc": 812,
+  "gold": "T17",
+  "pred": "T41",
+  "correct": "pred",
+  "correct_id": "T41",
+  "reason": "文献利用NRCA方法对中国省际能源利用进行分类时空分异分析与综合评价，属于指标体系与综合评价范畴，gold标注的工程器件明显错误，模型判定准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 815,
+  "gold": "T19",
+  "pred": "T20",
+  "correct": "other",
+  "correct_id": "T03",
+  "reason": "文献基于委托代理理论建立激励契约模型，探讨道德风险问题，属于经济学与管理学范畴，应归入T03 经济与管理。gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 816,
+  "gold": "T10",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献研究城市旅游经济联系的空间分布与整合，使用了通达度指数和空间测度模型，属于空间统计与GIS分析范畴。gold标注（病理组织与免疫组化诊断）完全错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 823,
+  "gold": "T07",
+  "pred": "T42",
+  "correct": "pred",
+  "correct_id": "T42",
+  "reason": "文献使用非期望SBM模型和Tobit模型分析面板数据，属于计量经济学方法，模型判定T42正确；gold标注T07（病例报告）明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 838,
+  "gold": "T02",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献使用克拉森区域分类法分析两地产业梯度差异与产业转移对象，属于空间区域分类与分区分析，符合T48；与机器学习/统计建模(T02)无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 843,
+  "gold": "T41",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献核心是利用GIS和空间度量模型分析公路网络通达性的空间格局，属于典型的空间统计与GIS分析应用，T48比T41更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 839,
+  "gold": "T34",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献研究不同区域的粮食安全演变及空间差异，属于空间统计与分区分析范畴，模型判定T48更准确；gold标注T34（聚类、关联规则与模式识别）与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 817,
+  "gold": "T30",
+  "pred": "T48",
+  "correct": "other",
+  "correct_id": "T11",
+  "reason": "文献主要研究地质公园的空间分布与旅游发展对策，属于旅游地理与区域发展领域，而非单纯的空间统计或风险评估方法。"
+ },
+ {
+  "axis": "technical",
+  "doc": 835,
+  "gold": "T29",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨产业集群演化的文化生态作用机理与结构优化，属于经济管理领域的理论机制与制度设计，而非生物学意义上的野外生态调查。"
+ },
+ {
+  "axis": "technical",
+  "doc": 846,
+  "gold": "T49",
+  "pred": "T40",
+  "correct": "other",
+  "correct_id": "T50",
+  "reason": "文献研究的是配网差动保护的数据同步方法及误差分析，属于继电保护范畴，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 849,
+  "gold": "T23",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T11 教育与人才培养",
+  "reason": "文献主要探讨中国人才培养的双重转型及高等教育改革，属于教育与人才培养领域，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 840,
+  "gold": "T40",
+  "pred": "T37",
+  "correct": "pred",
+  "correct_id": "T37",
+  "reason": "文献核心为以运行成本最小为目标的区域综合能源系统中长期优化运行方法构建，属于优化调度范畴。gold标注偏向电力系统稳态建模计算，未能准确反映文献的优化调度主旨。"
+ },
+ {
+  "axis": "technical",
+  "doc": 859,
+  "gold": "T20",
+  "pred": "T34",
+  "correct": "other",
+  "correct_id": "T11 人工智能与机器学习",
+  "reason": "文献提出改进引力-斥力算法用于配电网单线图自动生成，属于算法优化与人工智能应用，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 870,
+  "gold": "T31",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献基于集聚扩散理论构建空间模型，分析旅游流在武汉城市圈内的空间结构、集聚扩散特征及路径，属于空间统计与分区分析范畴，而非理化分析与定量测定。"
+ },
+ {
+  "axis": "technical",
+  "doc": 872,
+  "gold": "T19",
+  "pred": "T20",
+  "correct": "other",
+  "correct_id": "T14 建筑规划与设计理论",
+  "reason": "文献主要探讨传统宗族聚落的空间布局、建筑景观设计及环境营造，属于建筑规划与环境设计范畴，而非环境工程处理或社会学研究方法。"
+ },
+ {
+  "axis": "technical",
+  "doc": 860,
+  "gold": "T43",
+  "pred": "T06",
+  "correct": "pred",
+  "correct_id": "T06",
+  "reason": "文献主要分析了“创新社会论”兴起的认识基础，并提出了未来创新政策的导向，属于理论观点与叙述性综述，而非社会网络与复杂网络分析。"
+ },
+ {
+  "axis": "technical",
+  "doc": 880,
+  "gold": "T20",
+  "pred": "T45",
+  "correct": "pred",
+  "correct_id": "T45",
+  "reason": "文献基于《国家创新指数报告》的科技指标数据，分析国家科技创新发展态势与短板，属于文献计量与技术态势研判范畴，而非问卷调查与定性社会研究。"
+ },
+ {
+  "axis": "technical",
+  "doc": 863,
+  "gold": "T44",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献核心是基于多国统计数据，运用统计分布检验、空间马尔可夫链等方法分析城市规模的分布与动态演进特征，属于空间统计与数据分析的范畴。gold标注偏向具体的评价模型（耦合协调等），不如模型判定贴切。"
+ },
+ {
+  "axis": "technical",
+  "doc": 877,
+  "gold": "T13",
+  "pred": "T20",
+  "correct": "other",
+  "correct_id": "T08 产业经济与管理",
+  "reason": "文献主要从产业集群网络范式视角分析我国LED产业发展的制约因素与对策，属于产业经济与管理范畴，而非材料表征测试或社会研究方法。"
+ },
+ {
+  "axis": "technical",
+  "doc": 885,
+  "gold": "T02",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献核心为基于GIS的空间分析（叠加、缓冲区分析）与综合区划方法，属于空间统计与分区分析范畴，而非传统的经典机器学习与统计建模。"
+ },
+ {
+  "axis": "technical",
+  "doc": 886,
+  "gold": "T07",
+  "pred": "T42",
+  "correct": "pred",
+  "correct_id": "T42",
+  "reason": "文献基于11个OECD国家投入产出表的面板数据进行实证回归分析，探讨各因素对服务贸易竞争力的影响，属于计量经济学与因果识别范畴。gold标注（病例报告）明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 891,
+  "gold": "T31",
+  "pred": "T45",
+  "correct": "pred",
+  "correct_id": "T45",
+  "reason": "文献探讨关键核心技术的突破规律与创新体系构建，属于宏观科技战略与政策研究范畴。gold标注（理化分析与定量测定）完全不符；模型判定（文献计量与技术态势研判）更贴近科技战略研判，相对更准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 873,
+  "gold": "T18",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献研究入境旅游业对危机事件响应的区域差异，使用了变异系数等方法分析空间分布特征，属于空间统计与分区分析范畴。gold标注的化学合成与催化反应完全无关。"
+ },
+ {
+  "axis": "technical",
+  "doc": 904,
+  "gold": "T15",
+  "pred": "T19",
+  "correct": "other",
+  "correct_id": "T20",
+  "reason": "文献主要从宏观角度分析中国稀土供需格局与资源安全策略，属于矿产资源经济与管理范畴，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 910,
+  "gold": "T13",
+  "pred": "T42",
+  "correct": "pred",
+  "correct_id": "T42",
+  "reason": "文献运用Kernel密度估计、Markov链及空间计量模型进行收敛性分析，属于计量经济学方法，模型判定准确。gold标注的材料表征与性能测试明显不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 911,
+  "gold": "T42",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "摘要明确指出使用ArcGIS方法探索空间差异，并分析空间协调性，核心研究手段为空间统计与GIS分析，而非面板回归或因果识别。"
+ },
+ {
+  "axis": "technical",
+  "doc": 919,
+  "gold": "T07",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献探讨2050年中国建成世界科技创新强国的政策与路径选择，属于政策路径研究，模型判定T46准确；gold标注T07（病例报告）明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 918,
+  "gold": "T17",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T14",
+  "reason": "该文献报道的是人文地理学术年会的召开情况，属于会议新闻，应归属于T14（科技新闻与学术动态）。gold和pred均不正确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 912,
+  "gold": "T44",
+  "pred": "T45",
+  "correct": "other",
+  "correct_id": "T41",
+  "reason": "文献主要采用指标分析对我国海洋经济进行区域分类和特征归纳，并提出对策，属于区域经济特征分析范畴，而非耦合协调/时空演化或文献计量研判。"
+ },
+ {
+  "axis": "technical",
+  "doc": 915,
+  "gold": "T28",
+  "pred": "T42",
+  "correct": "other",
+  "correct_id": "T11",
+  "reason": "文献主要运用CLRIP集成优化方法和禁忌搜索算法解决物流供应链的选址、路径与库存优化问题，属于运筹学与最优化方法，而非实验方法或面板回归。"
+ },
+ {
+  "axis": "technical",
+  "doc": 920,
+  "gold": "T19",
+  "pred": "T45",
+  "correct": "pred",
+  "correct_id": "T45",
+  "reason": "文献主要梳理国际地球科学发展趋势、总结现状与科技资助情况，并提出未来发展方向和研究计划，属于典型的战略研究与科技态势研判，符合T45类。gold标注的“环境处理与资源回收工艺”与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 926,
+  "gold": "T14",
+  "pred": "T40",
+  "correct": "pred",
+  "correct_id": "T40",
+  "reason": "文献核心内容为M3C换流器及风电机组的阻抗建模与稳定性判别，属于电力系统建模与等值计算范畴。gold标注的数值模拟与有限元计算不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 933,
+  "gold": "T14",
+  "pred": "T27",
+  "correct": "pred",
+  "correct_id": "T27",
+  "reason": "文献提出基于小波熵、中值滤波等信号处理算法的雷击干扰识别方法，核心属于信号处理与算法优化，而非数值模拟与有限元计算。"
+ },
+ {
+  "axis": "technical",
+  "doc": 922,
+  "gold": "T31",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献以杭州市为例，定量测度撤县设区前后公共服务水平的时空变化特征及空间分布格局，核心在于空间分布与时空演变分析，符合T48空间统计与分区分析。gold标注T31侧重理化测定，不符合本文社会科学与空间分析属性。"
+ },
+ {
+  "axis": "technical",
+  "doc": 937,
+  "gold": "T41",
+  "pred": "T30",
+  "correct": "pred",
+  "correct_id": "T30",
+  "reason": "文献核心为基于设备时变状态的变电站短时风险评估建模，属于风险评估范畴，模型判定T30更准确；gold标注T41仅反映了文中的状态评价方法，偏离了文献整体主题。"
+ },
+ {
+  "axis": "technical",
+  "doc": 939,
+  "gold": "T06",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献利用遥感数据（TM/UTM）分析城市土地利用的时空变化与转化来源，并探讨其空间扩展的驱动因素，属于典型的空间统计与GIS分析范畴，而非单纯的叙述性综述或理论观点。"
+ },
+ {
+  "axis": "technical",
+  "doc": 938,
+  "gold": "T46",
+  "pred": "T06",
+  "correct": "other",
+  "correct_id": "T05",
+  "reason": "文献采用收益还原法和C-D生产函数进行实证核算与计量分析，属于典型的实证研究，而非理论机制设计或叙述性综述。"
+ },
+ {
+  "axis": "technical",
+  "doc": 943,
+  "gold": "T34",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献应用偏离-份额分析法探讨县市区农民收入的空间演变与区域差异，属于空间统计与分区分析范畴，模型判定T48更准确。gold标注(T34聚类与模式识别)与文献内容不符。"
+ },
+ {
+  "axis": "technical",
+  "doc": 953,
+  "gold": "T15",
+  "pred": "T40",
+  "correct": "other",
+  "correct_id": "T44",
+  "reason": "文献研究内容为变电站动力电缆漏电监测方法及判据构建，属于电力系统继电保护与安全控制范畴，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 945,
+  "gold": "T12",
+  "pred": "T20",
+  "correct": "other",
+  "correct_id": "T04 城乡规划与市政工程",
+  "reason": "文献研究苏州河沿岸创意产业的空间分布与集聚规律，属于城乡规划与人文地理领域。gold标注（材料合成）完全错误，模型判定（问卷调查方法）仅涉及可能的研究方法而非文献主题。"
+ },
+ {
+  "axis": "technical",
+  "doc": 958,
+  "gold": "T02",
+  "pred": "T07",
+  "correct": "other",
+  "correct_id": "T01",
+  "reason": "文献研究区域产业转移态势与承接竞争力，运用主成分分析法进行评价，属于经济学与区域发展领域的实证研究，应归入T01经济学与管理学。gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 978,
+  "gold": "T31",
+  "pred": "T48",
+  "correct": "pred",
+  "correct_id": "T48",
+  "reason": "文献利用空间分析方法研究住宅地价的时空分布与空间布局特征，属于空间统计与分区分析范畴，而非理化分析与定量测定。"
+ },
+ {
+  "axis": "technical",
+  "doc": 969,
+  "gold": "T42",
+  "pred": "T41",
+  "correct": "pred",
+  "correct_id": "T41",
+  "reason": "文献核心为运用GEM模型、熵权PCA法构建综合评价体系，识别关键因子并分析省域物流集群竞争力的演变规律与特征，属于典型的综合评价研究，而非侧重面板回归或因果识别。"
+ },
+ {
+  "axis": "technical",
+  "doc": 967,
+  "gold": "T01",
+  "pred": "T41",
+  "correct": "other",
+  "correct_id": "T09 城镇与区域规划方法",
+  "reason": "文献核心为小城镇生态规划及生态适宜度评价，属于城乡规划领域应用研究。BP神经网络仅是使用的工具方法，gold标注过度放大了算法本身；模型判定忽略了规划主题。两者均非最准确的父类。"
+ },
+ {
+  "axis": "technical",
+  "doc": 961,
+  "gold": "T07",
+  "pred": "T42",
+  "correct": "pred",
+  "correct_id": "T42",
+  "reason": "文献使用面板数据模型分析生均教育经费支出的影响因素，属于计量经济学与因果识别范畴，模型判定正确。gold标注（病例报告）明显错误。"
+ },
+ {
+  "axis": "technical",
+  "doc": 981,
+  "gold": "T18",
+  "pred": "T46",
+  "correct": "pred",
+  "correct_id": "T46",
+  "reason": "文献研究粤港澳区域合作、制度创新与经济发展规划，属于理论机制与政策路径范畴，与化学合成无关，gold标注明显错误，模型判定正确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 990,
+  "gold": "T33",
+  "pred": "T36",
+  "correct": "other",
+  "correct_id": "T31",
+  "reason": "文献主要研究高压配网典型接线的可靠性比较与灵敏度分析，属于电力系统规划与可靠性评估范畴，而非生物行为比较或故障诊断算法。"
+ },
+ {
+  "axis": "technical",
+  "doc": 985,
+  "gold": "T19",
+  "pred": "T41",
+  "correct": "pred",
+  "correct_id": "T41",
+  "reason": "文献核心为运用SBM-Tobit模型测度和评价五大城市群生态效率的时空演变及影响因素，属于综合评价与指标体系研究范畴，而非具体的环境处理与资源回收工艺。"
+ },
+ {
+  "axis": "technical",
+  "doc": 995,
+  "gold": "T24",
+  "pred": "T46",
+  "correct": "other",
+  "correct_id": "T15",
+  "reason": "文献主要介绍高通量作物表型监测平台(Crop 3D)及其在育种和精准农业中的应用，涉及激光雷达、无人机等农业信息技术，gold和pred均不准确。"
+ },
+ {
+  "axis": "technical",
+  "doc": 996,
+  "gold": "T07",
+  "pred": "T30",
+  "correct": "pred",
+  "correct_id": "T30",
+  "reason": "文献研究农田建设时序与空间分布规律，涉及空间统计与评价，模型判定T30更准确；gold标注T30病例报告完全错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 5,
+  "gold": "A40",
+  "pred": "A41",
+  "correct": "pred",
+  "correct_id": "A41",
+  "reason": "文献核心探讨数字基础设施对城市空间结构、人口密度及多中心形态的影响，属于城市地理与城镇化空间重构范畴，A41比侧重经济与产业创新的A40更贴切。"
+ },
+ {
+  "axis": "application",
+  "doc": 11,
+  "gold": "A31",
+  "pred": "A36",
+  "correct": "pred",
+  "correct_id": "A36",
+  "reason": "文献核心研究输配电价动态激励机制，涉及定价方式与激励约束机制设计，属于电力市场与能源经济范畴，模型判定A36更准确。gold标注A31侧重配电网与分布式能源系统物理层面，与本文定价机制研究主题不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 12,
+  "gold": "A27",
+  "pred": "A31",
+  "correct": "pred",
+  "correct_id": "A31",
+  "reason": "文献研究内容为短路电流超标校验及样本扩充，属于电力系统配电网领域的应用研究，而非纯粹的物理数学基础科学，因此模型判定A31更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 20,
+  "gold": "A35",
+  "pred": "A37",
+  "correct": "pred",
+  "correct_id": "A37",
+  "reason": "文献核心为机组轴承的故障诊断与监测，属于电力设备的运维与故障恢复范畴。gold标注A35侧重储能技术本身，不如A37准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 37,
+  "gold": "A31",
+  "pred": "A37",
+  "correct": "other",
+  "correct_id": "A33",
+  "reason": "文献核心内容为电力系统基波频率的精确测量方法，属于电力系统分析与控制范畴。gold标注(A31)侧重配电网与分布式能源，模型判定(A37)侧重设备运维与故障恢复，均未准确反映其电力系统稳态分析与测量的本质。"
+ },
+ {
+  "axis": "application",
+  "doc": 6,
+  "gold": "A40",
+  "pred": "A48",
+  "correct": "other",
+  "correct_id": "A49 生物与医药技术",
+  "reason": "文献核心内容为新药研发（小分子、抗体、细胞与基因治疗等）的发展态势与现状分析，属于生物与医药技术领域。gold（数字经济与技术创新）和pred（科技政策与人才）均未准确反映其医药领域的专业属性。"
+ },
+ {
+  "axis": "application",
+  "doc": 49,
+  "gold": "A46",
+  "pred": "A47",
+  "correct": "pred",
+  "correct_id": "A47",
+  "reason": "文献核心研究对象为居家养老服务设施，关注养老服务质量、供需公平及城乡均等性，属于典型的民生与公共服务范畴。gold标注偏向硬基础设施，不如模型判定准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 59,
+  "gold": "A09",
+  "pred": "A38",
+  "correct": "pred",
+  "correct_id": "A38",
+  "reason": "文献研究直流微网DC-DC变流器的控制与优化，属于电力电子领域，gold标注医学影像明显错误，模型判定正确。"
+ },
+ {
+  "axis": "application",
+  "doc": 44,
+  "gold": "A27",
+  "pred": "A32",
+  "correct": "pred",
+  "correct_id": "A32",
+  "reason": "文献核心研究直流保护采样信号的降噪与噪声干扰识别，旨在解决柔性直流输电系统中行波保护易受噪声影响的问题，属于输电与高压直流系统保护技术的实际应用，而非纯基础科学。"
+ },
+ {
+  "axis": "application",
+  "doc": 81,
+  "gold": "A41",
+  "pred": "A45",
+  "correct": "pred",
+  "correct_id": "A45",
+  "reason": "文献研究对象为旅游生态效率，核心探讨旅游经济、旅游资源禀赋及环境规制等因素，属于旅游研究范畴，模型判定A45更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 97,
+  "gold": "A09",
+  "pred": "A37",
+  "correct": "pred",
+  "correct_id": "A37",
+  "reason": "文献研究的是电力变压器中油纸绝缘的老化程度诊断，属于电力设备的运维与故障诊断范畴，而非医学领域的影像诊断或医疗器械。因此模型判定A37更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 102,
+  "gold": "A28",
+  "pred": "A31",
+  "correct": "other",
+  "correct_id": "A14",
+  "reason": "文献核心为电力系统灾后恢复与直升机优化调度，属于电力系统可靠性、弹性与应急恢复范畴，而非气候自然灾害(A28)或配电网(A31)。"
+ },
+ {
+  "axis": "application",
+  "doc": 125,
+  "gold": "A26",
+  "pred": "A25",
+  "correct": "pred",
+  "correct_id": "A25",
+  "reason": "文献核心探讨数智时代教育思维的转变与教育范式的重塑，关键词和摘要均聚焦于教育、创生教育和成长，属于教育培训领域，而非具体的计算机或人工智能技术研究。"
+ },
+ {
+  "axis": "application",
+  "doc": 128,
+  "gold": "A39",
+  "pred": "A38",
+  "correct": "pred",
+  "correct_id": "A38",
+  "reason": "文献研究内容为充电站谐波检测、有源电力滤波器控制及频率自适应策略，属于电力电子与逆变器控制范畴，与区域经济、城市群与空间发展（A39）无关。模型判定A38更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 77,
+  "gold": "A48",
+  "pred": "A43",
+  "correct": "other",
+  "correct_id": "A44",
+  "reason": "文献聚焦新质生产力的空间组织、源汇功能甄别与时空格局，属于区域经济与空间布局范畴，而非科技政策(A48)或产业结构(A43)。"
+ },
+ {
+  "axis": "application",
+  "doc": 134,
+  "gold": "A41",
+  "pred": "A43",
+  "correct": "other",
+  "correct_id": "A39",
+  "reason": "文献核心为生态韧性、耦合协调及影响机制，属于生态环境与可持续发展领域。gold标注偏向城乡融合，pred标注偏向产业结构，均未能准确概括文献的生态与环境科学主题。"
+ },
+ {
+  "axis": "application",
+  "doc": 138,
+  "gold": "A46",
+  "pred": "A47",
+  "correct": "pred",
+  "correct_id": "A47",
+  "reason": "文献探讨绿色空间可达性及其社会与制度影响机制，关注公共服务均等化、居民需求与社会公平，属于公共服务与社会治理范畴，而非单纯的交通物流与基础设施。"
+ },
+ {
+  "axis": "application",
+  "doc": 149,
+  "gold": "A39",
+  "pred": "A46",
+  "correct": "pred",
+  "correct_id": "A46",
+  "reason": "文献以公路网数据为基础测度城市可达性，核心研究对象为交通网络与可达性，属于交通基础设施范畴。"
+ },
+ {
+  "axis": "application",
+  "doc": 151,
+  "gold": "A27",
+  "pred": "A39",
+  "correct": "other",
+  "correct_id": "A12 经济学综合",
+  "reason": "文献是对《中国经济地理思想史》一书的读后感和评述，属于书评类文献，应归入经济学综合类。gold标注和模型判定均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 155,
+  "gold": "A46",
+  "pred": "A41",
+  "correct": "other",
+  "correct_id": "A20",
+  "reason": "文献研究的是减污降碳与扩绿增长的耦合协调度及驱动因素，属于环境科学与绿色低碳发展领域，gold（交通物流）和pred（城镇化）均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 159,
+  "gold": "A30",
+  "pred": "A40",
+  "correct": "pred",
+  "correct_id": "A40",
+  "reason": "文献聚焦于边缘区域创新、创新路径及区域创新体系，属于技术创新与创新网络范畴，模型判定A40准确。gold标注A30（其他综合与难归类应用）不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 173,
+  "gold": "A30",
+  "pred": "A50",
+  "correct": "pred",
+  "correct_id": "A50",
+  "reason": "文献研究中国境外经贸合作区、东道国投资环境及本地嵌入程度，核心属于国际投资与开放经济范畴，模型判定A50比gold的A30更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 179,
+  "gold": "A35",
+  "pred": "A36",
+  "correct": "pred",
+  "correct_id": "A36",
+  "reason": "文献核心研究社区能源交易机制及产消者交易策略，属于能源交易范畴，模型判定A36准确。gold标注A35侧重储能硬件，不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 163,
+  "gold": "A50",
+  "pred": "A43",
+  "correct": "other",
+  "correct_id": "A11",
+  "reason": "文献探讨的是移民（韩国人）在东莞的创业空间特征及形成机制，涉及族裔经济、社会网络和混合嵌入性理论，属于人文地理学、人口迁移与城市社会学范畴，与金融贸易（A50）或制造业企业发展（A43）均不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 182,
+  "gold": "A31",
+  "pred": "A35",
+  "correct": "pred",
+  "correct_id": "A35",
+  "reason": "文献核心研究对象为电动汽车充电负荷预测，属于电动汽车充换电领域，模型判定A35比gold标注A31（配电网）更贴合文献主题。"
+ },
+ {
+  "axis": "application",
+  "doc": 192,
+  "gold": "A27",
+  "pred": "A26",
+  "correct": "other",
+  "correct_id": "A14",
+  "reason": "文献探讨分布式智能电网的理论与技术体系，属于电气工程与能源科学领域，gold（物理数学）和pred（计算机科学）均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 186,
+  "gold": "A30",
+  "pred": "A27",
+  "correct": "other",
+  "correct_id": "A14",
+  "reason": "文献探讨大语言模型在电力系统（功率预测、最优潮流计算等）中的应用，属于电气工程与能源领域，应归入A14。gold将其归为其他综合，pred归为物理数学，均未能准确反映其电力系统的工程应用属性。"
+ },
+ {
+  "axis": "application",
+  "doc": 202,
+  "gold": "A21",
+  "pred": "A33",
+  "correct": "other",
+  "correct_id": "A14",
+  "reason": "文献主要研究电网电磁暂态云仿真及跨域计算资源调度，属于电力系统仿真与计算领域，gold标注（化学催化）明显错误，模型判定（微电网）也不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 207,
+  "gold": "A38",
+  "pred": "A31",
+  "correct": "other",
+  "correct_id": "A32 电力系统与能源互联",
+  "reason": "文献主要研究电力系统故障后的紧急控制策略及风险评估，属于电力系统稳定性与安全控制范畴，不属于电力电子与逆变器控制(A38)，也不属于配电网与分布式能源(A31)。"
+ },
+ {
+  "axis": "application",
+  "doc": 212,
+  "gold": "A17",
+  "pred": "A26",
+  "correct": "pred",
+  "correct_id": "A26",
+  "reason": "文献核心是利用Stacking模型和数字孪生体进行电网停电预警，涉及人工智能与数据分析，模型判定更准确。gold标注的光学光子、天线与射频与文献内容不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 216,
+  "gold": "A34",
+  "pred": "A37",
+  "correct": "other",
+  "correct_id": "A36",
+  "reason": "文献研究的是隔离DC-DC变换器的拓扑与谐振技术，属于电力电子变换装置范畴，应归入电力电子与电力传动相关类目；gold标注偏向发电系统，模型判定偏向运维保护，均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 229,
+  "gold": "A16",
+  "pred": "A35",
+  "correct": "other",
+  "correct_id": "A33",
+  "reason": "文献研究的是电力系统频率安全、机组组合优化调度及分布鲁棒优化，属于电力系统运行与控制范畴，gold标注（电子半导体）和模型判定（储能与充换电）均明显偏离主题。"
+ },
+ {
+  "axis": "application",
+  "doc": 237,
+  "gold": "A26",
+  "pred": "A34",
+  "correct": "other",
+  "correct_id": "A02",
+  "reason": "文献研究变电站接地网与周边燃气管网在雷电流下的阻性耦合影响，属于电气工程领域，gold和pred均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 240,
+  "gold": "A38",
+  "pred": "A31",
+  "correct": "other",
+  "correct_id": "A04",
+  "reason": "文献研究内容为基于深度强化学习的电力系统紧急切负荷决策，属于电力系统分析与控制范畴，gold标注(A38)和模型判定(A31)均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 245,
+  "gold": "A31",
+  "pred": "A37",
+  "correct": "pred",
+  "correct_id": "A37",
+  "reason": "文献核心是针对高阻接地故障的识别方法，属于故障检测与恢复范畴，A37比A31更准确"
+ },
+ {
+  "axis": "application",
+  "doc": 248,
+  "gold": "A35",
+  "pred": "A36",
+  "correct": "pred",
+  "correct_id": "A36",
+  "reason": "文献核心为极端高温下的需求响应与有序用电管理，属于需求响应范畴；移动储能仅为协调手段之一，不构成核心主题，故A36比A35更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 251,
+  "gold": "A09",
+  "pred": "A27",
+  "correct": "other",
+  "correct_id": "A08 人工智能与自动化控制",
+  "reason": "文献提出基于海马优化算法和深层极限学习机的FDIA检测定位算法，属于人工智能与自动化控制（或电力系统安全）范畴，gold医学诊断和pred物理数学均错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 254,
+  "gold": "A22",
+  "pred": "A34",
+  "correct": "other",
+  "correct_id": "A14",
+  "reason": "文献研究电力系统强迫功率振荡扰动源定位，属于电气工程领域。gold标注（分子生物学）明显错误，模型判定（新能源发电）过于狭隘，未涵盖电力系统广域量测与振荡分析，故归为A14（电气工程）。"
+ },
+ {
+  "axis": "application",
+  "doc": 239,
+  "gold": "A35",
+  "pred": "A09",
+  "correct": "other",
+  "correct_id": "A11",
+  "reason": "文献研究高压并联电抗器的声纹信号监测与聚类，属于电力设备状态监测与故障诊断范畴，应归入A11（电力系统与设备）或相关电气工程类。gold（储能、电动汽车）和pred（医学影像）均与文献内容不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 255,
+  "gold": "A26",
+  "pred": "A25",
+  "correct": "pred",
+  "correct_id": "A25",
+  "reason": "文献核心探讨科技伦理治理、人才培养及教育支撑作用，属于科研能力建设与教育范畴。虽提及人工智能，但仅为背景，非计算机科学具体研究。"
+ },
+ {
+  "axis": "application",
+  "doc": 257,
+  "gold": "A49",
+  "pred": "A28",
+  "correct": "other",
+  "correct_id": "A14 城镇化与城市基础设施",
+  "reason": "文献探讨城市地下空间的科学开发与综合体系建设，属于城市基础设施与城镇化规划范畴，gold和pred均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 263,
+  "gold": "A25",
+  "pred": "A48",
+  "correct": "pred",
+  "correct_id": "A48",
+  "reason": "文献探讨科研人员标识的应用现状、对策建议及统筹国内力量，属于科研管理、科研机构与人才发展范畴，A48比A25更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 258,
+  "gold": "A40",
+  "pred": "A04",
+  "correct": "other",
+  "correct_id": "A11 科技哲学、科技史与科学家",
+  "reason": "文献探讨朱光亚的生平贡献与科学家精神，属于科技史与科学家研究范畴。gold标注（数字经济与技术创新）和模型判定（神经精神与心理健康）均与文献内容明显不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 270,
+  "gold": "A16",
+  "pred": "A37",
+  "correct": "pred",
+  "correct_id": "A37",
+  "reason": "文献核心为干式电抗器的故障诊断方法，属于电力设备的故障检测与恢复范畴，模型判定A37更准确；gold标注A16（电子半导体与传感器件）与文献主题不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 280,
+  "gold": "A09",
+  "pred": "A31",
+  "correct": "pred",
+  "correct_id": "A31",
+  "reason": "文献研究的是分布式微网的电能质量与功率控制，涉及模型预测控制和T型三电平变换器，属于电力系统领域，与医学影像和医疗器械无关，模型判定正确。"
+ },
+ {
+  "axis": "application",
+  "doc": 283,
+  "gold": "A26",
+  "pred": "A22",
+  "correct": "other",
+  "correct_id": "A23",
+  "reason": "文献核心为利用数字化与AI技术辅助细胞工厂设计，以实现绿色生物制造，属于生物工程与生物技术（A23）的交叉应用。gold仅强调计算机技术，pred仅强调底层分子机制，均未准确概括其生物制造与工程应用的主体属性。"
+ },
+ {
+  "axis": "application",
+  "doc": 294,
+  "gold": "A40",
+  "pred": "A48",
+  "correct": "pred",
+  "correct_id": "A48",
+  "reason": "文献主要总结中国科学院数学事业的发展历程与成就，探讨国立科研机构的发展与面临的问题，属于科技政策与科研机构发展范畴。gold标注的数字经济与创新网络与文献内容不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 302,
+  "gold": "A40",
+  "pred": "A43",
+  "correct": "other",
+  "correct_id": "A10 科技发展规律与战略",
+  "reason": "文献核心探讨国际环境变化下我国科技战略的历史演进与未来选择，属于宏观科技战略与政策研究范畴。gold标注偏向数字经济与创新网络，模型判定偏向产业与企业，均未准确反映其宏观战略属性。"
+ },
+ {
+  "axis": "application",
+  "doc": 307,
+  "gold": "A25",
+  "pred": "A38",
+  "correct": "pred",
+  "correct_id": "A38",
+  "reason": "文献研究晶闸管可控移相器(TCPST)的拓扑及驱动策略，属于电力电子与电网控制范畴，模型判定A38准确；gold标注A38教育培训明显错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 308,
+  "gold": "A19",
+  "pred": "A34",
+  "correct": "other",
+  "correct_id": "A20",
+  "reason": "文献研究内容为水电站机组负荷优化分配与调度，属于水利发电工程范畴，gold的机械制造和pred的风电光伏均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 287,
+  "gold": "A48",
+  "pred": "A42",
+  "correct": "pred",
+  "correct_id": "A42",
+  "reason": "文献探讨大数据支撑现代农业发展的逻辑与政策建议，核心主题为农业与数据要素，属于农业农村领域，模型判定A42更准确。gold标注A48偏向科技政策与人才，不够贴切。"
+ },
+ {
+  "axis": "application",
+  "doc": 309,
+  "gold": "A35",
+  "pred": "A34",
+  "correct": "other",
+  "correct_id": "A33",
+  "reason": "文献核心为低压交流系统的短路故障检测与保护方法，属于电力系统继电保护与安全稳定控制范畴，而非储能或新能源发电本身。"
+ },
+ {
+  "axis": "application",
+  "doc": 318,
+  "gold": "A31",
+  "pred": "A32",
+  "correct": "pred",
+  "correct_id": "A32",
+  "reason": "文献摘要明确指出该混合式直流断路器是应用于中高压直流输配电系统的优选技术方案，且涉及换流站侧电压与故障电流，属于输电与高压直流换流系统范畴，模型判定A32比gold标注A32更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 335,
+  "gold": "A31",
+  "pred": "A35",
+  "correct": "pred",
+  "correct_id": "A35",
+  "reason": "文献核心研究对象为光储充放电站，涉及储能电池容量配置、电动汽车V2G及充放电桩，高度契合A35（储能、电动汽车与充换电）的范畴。"
+ },
+ {
+  "axis": "application",
+  "doc": 342,
+  "gold": "A37",
+  "pred": "A31",
+  "correct": "other",
+  "correct_id": "A30",
+  "reason": "文献主要研究温控负荷作为需求侧资源参与电力系统频率调控，属于电力系统运行控制范畴，而非配电网或设备运维。"
+ },
+ {
+  "axis": "application",
+  "doc": 347,
+  "gold": "A01",
+  "pred": "A34",
+  "correct": "other",
+  "correct_id": "A33 电力系统与智能电网",
+  "reason": "文献研究内容为电力系统的动态状态估计及滤波算法，属于电力系统领域，gold的心血管疾病完全错误，模型判定的新能源发电也不准确，正确父类应为电力系统。"
+ },
+ {
+  "axis": "application",
+  "doc": 346,
+  "gold": "A05",
+  "pred": "A37",
+  "correct": "pred",
+  "correct_id": "A37",
+  "reason": "文献研究无功补偿装置的远程故障感知，属于电力设备运维与故障诊断范畴。gold标注（骨科肌肉与康复医学）明显错误，模型判定符合文献主题。"
+ },
+ {
+  "axis": "application",
+  "doc": 356,
+  "gold": "A30",
+  "pred": "A38",
+  "correct": "pred",
+  "correct_id": "A38",
+  "reason": "文献研究间接矩阵变换器的空间矢量调制策略以抑制共模电压，属于电力电子与逆变器控制范畴，模型判定A38准确；gold标注A29（其他综合与难归类应用）明显错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 394,
+  "gold": "A27",
+  "pred": "A32",
+  "correct": "pred",
+  "correct_id": "A32",
+  "reason": "文献主要研究超导故障限流器在电力系统中的阻抗变化、暂态稳定性及极限切除时间，属于电力系统安全与运行控制范畴，归入输电系统类（A32）比基础科学（A27）更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 390,
+  "gold": "A33",
+  "pred": "A36",
+  "correct": "pred",
+  "correct_id": "A36",
+  "reason": "文献核心研究综合能源供应商在多市场中的博弈行为与联合均衡模型，侧重于市场交易与均衡分析，而非微电网或综合能源系统的物理运行与架构，因此A36更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 367,
+  "gold": "A43",
+  "pred": "A46",
+  "correct": "pred",
+  "correct_id": "A46",
+  "reason": "文献核心研究对象为物流企业及其时空分布，并重点探究了交通条件等基础设施维度的影响因素，属于交通物流范畴，A46比A43更贴切。"
+ },
+ {
+  "axis": "application",
+  "doc": 351,
+  "gold": "A25",
+  "pred": "A09",
+  "correct": "other",
+  "correct_id": "A11",
+  "reason": "文献涉及改进秃鹰算法优化极限学习机进行谐波发射水平估计，属于电力系统谐波分析与人工智能算法应用，应归入A11（电力与能源系统或相关电气工程类），gold和pred均错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 395,
+  "gold": "A39",
+  "pred": "A47",
+  "correct": "other",
+  "correct_id": "A11 人口与城市化",
+  "reason": "文献核心研究对象为人口预期寿命及其与经济发展的关系，属于人口学范畴，gold的区域经济和pred的公共服务均非最准确的父类。"
+ },
+ {
+  "axis": "application",
+  "doc": 415,
+  "gold": "A16",
+  "pred": "A37",
+  "correct": "pred",
+  "correct_id": "A37",
+  "reason": "文献主要研究混合式高压复合开关在地面自动过分相系统中的应用，旨在解决供电臂切换时的过电压和励磁涌流问题，属于电力系统设备与保护控制范畴，而非基础半导体器件或传感器件研究。"
+ },
+ {
+  "axis": "application",
+  "doc": 436,
+  "gold": "A09",
+  "pred": "A38",
+  "correct": "pred",
+  "correct_id": "A38",
+  "reason": "文献研究Vienna整流器的模型预测控制与占空比控制，属于电力电子变换器及其控制范畴，A38准确；gold标注A09医学影像与器械错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 440,
+  "gold": "A42",
+  "pred": "A41",
+  "correct": "pred",
+  "correct_id": "A41",
+  "reason": "文献核心探讨中国城镇化的第三次浪潮，聚焦知识经济、创新驱动与人力资本对城镇化进程的推动，属于城镇化发展研究范畴，模型判定A41更准确。gold标注偏向农业农村，与文献主题不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 463,
+  "gold": "A04",
+  "pred": "A39",
+  "correct": "pred",
+  "correct_id": "A39",
+  "reason": "文献研究湖南省人口与经济重心的空间演化及区域协调发展，属于区域经济与空间发展范畴，模型判定正确；gold标注与文献内容无关。"
+ },
+ {
+  "axis": "application",
+  "doc": 465,
+  "gold": "A39",
+  "pred": "A50",
+  "correct": "other",
+  "correct_id": "A14",
+  "reason": "文献主要探讨我国生物产业发展现状及政策建议，属于产业经济范畴，gold的区域经济和pred的金融贸易均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 457,
+  "gold": "A31",
+  "pred": "A37",
+  "correct": "pred",
+  "correct_id": "A37",
+  "reason": "文献主要研究故障行波的时频分析方法，以解决行波保护和故障定位的可靠性问题，属于电力系统故障检测、保护与恢复范畴，模型判定A37更准确。gold标注A31侧重配电网与分布式能源，与文献核心内容不完全匹配。"
+ },
+ {
+  "axis": "application",
+  "doc": 468,
+  "gold": "A16",
+  "pred": "A48",
+  "correct": "pred",
+  "correct_id": "A48",
+  "reason": "文献探讨国家信息技术体系自立自强的发展战略、构建原则及开源生态建设，属于宏观科技政策与发展战略范畴，而非具体的电子半导体器件研究。"
+ },
+ {
+  "axis": "application",
+  "doc": 473,
+  "gold": "A40",
+  "pred": "A48",
+  "correct": "pred",
+  "correct_id": "A48",
+  "reason": "文献主要探讨专利拍卖在我国发展的机遇与挑战，并针对科研院所专利转移转化提出对策建议，侧重于技术转移机制与科技政策管理，属于A48科技政策与科研机构范畴，而非A40数字经济与技术创新网络。"
+ },
+ {
+  "axis": "application",
+  "doc": 481,
+  "gold": "A25",
+  "pred": "A27",
+  "correct": "other",
+  "correct_id": "A14",
+  "reason": "文献探讨图深度学习在电力系统暂态稳定评估中的应用，属于电力系统运行与控制范畴，应归入A14电力系统。"
+ },
+ {
+  "axis": "application",
+  "doc": 469,
+  "gold": "A26",
+  "pred": "A37",
+  "correct": "other",
+  "correct_id": "A38",
+  "reason": "文献主要研究变电站二次测试系统，属于电力系统测试与控制范畴，而非计算机科学基础理论或电力设备运维故障恢复。"
+ },
+ {
+  "axis": "application",
+  "doc": 483,
+  "gold": "A01",
+  "pred": "A09",
+  "correct": "other",
+  "correct_id": "B03",
+  "reason": "文献研究的是无线电能传输系统的拓扑建模与优化，属于电气工程与电力电子领域，与心血管疾病或医疗器械均无关。"
+ },
+ {
+  "axis": "application",
+  "doc": 487,
+  "gold": "A30",
+  "pred": "A28",
+  "correct": "other",
+  "correct_id": "A29",
+  "reason": "文献探讨中国科学院的定点科技扶贫实践与长效机制建立，属于农业与生态环境技术及区域发展应用范畴，而非气候地球科学或难归类应用。"
+ },
+ {
+  "axis": "application",
+  "doc": 498,
+  "gold": "A39",
+  "pred": "A36",
+  "correct": "pred",
+  "correct_id": "A36",
+  "reason": "文献主题为电力负荷预测，涉及电力能源消耗管理，属于电力市场与需求侧管理范畴，与区域经济和空间发展无关。"
+ },
+ {
+  "axis": "application",
+  "doc": 494,
+  "gold": "A36",
+  "pred": "A43",
+  "correct": "other",
+  "correct_id": "A38 能源经济与环境政策",
+  "reason": "文献核心探讨碳市场顶层设计及其与可持续发展、产业结构调整、技术创新等宏观经济与环境政策的协同，属于能源经济与环境政策范畴。gold偏向电力市场交易，pred偏向产业结构，均未能准确概括其宏观政策与碳市场机制设计的核心。"
+ },
+ {
+  "axis": "application",
+  "doc": 499,
+  "gold": "A35",
+  "pred": "A32",
+  "correct": "other",
+  "correct_id": "A33",
+  "reason": "文献核心为电力系统频率特征定量分析及频率稳定性，属于电力系统运行分析与控制范畴，应归入A33（电力系统分析与运行）。gold侧重储能，pred侧重直流输电，均未能准确反映文献以系统频率响应和稳定性分析为主的核心主题。"
+ },
+ {
+  "axis": "application",
+  "doc": 496,
+  "gold": "A44",
+  "pred": "A50",
+  "correct": "pred",
+  "correct_id": "A50",
+  "reason": "文献核心内容为全球核电设备贸易网络结构演化及影响因素分析，属于国际贸易与经济范畴，模型判定A50更准确；gold标注A44侧重环境治理，与文献主题不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 505,
+  "gold": "A41",
+  "pred": "A51",
+  "correct": "pred",
+  "correct_id": "A51",
+  "reason": "文献核心探讨国土空间规划体系下的城市空间布局、结构优化及空间形态调整，属于国土空间规划范畴，A51比A41更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 513,
+  "gold": "A13",
+  "pred": "A44",
+  "correct": "pred",
+  "correct_id": "A44",
+  "reason": "文献聚焦于省际交界区跨界环境风险的管理机制构建，属于宏观层面的环境治理与风险管理，而非具体的水环境或污染治理技术，因此模型判定的A44更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 510,
+  "gold": "A49",
+  "pred": "A37",
+  "correct": "pred",
+  "correct_id": "A37",
+  "reason": "文献研究内容为电力系统中同杆并架双回线的参数辨识，涉及阻抗/导纳模型与量测误差校正，属于电力设备运维与状态评估范畴，与航空航天等高端装备无关。"
+ },
+ {
+  "axis": "application",
+  "doc": 522,
+  "gold": "A39",
+  "pred": "A45",
+  "correct": "pred",
+  "correct_id": "A45",
+  "reason": "文献核心内容为旅游业发展的影响因素及对策研究，属于旅游领域，而非区域经济或空间发展。"
+ },
+ {
+  "axis": "application",
+  "doc": 534,
+  "gold": "A07",
+  "pred": "A04",
+  "correct": "other",
+  "correct_id": "A11 公共卫生与预防医学",
+  "reason": "文献研究的是湖南省人口老龄化的发展态势与对策，属于人口学/公共卫生领域，gold标注（感染微生物）和模型判定（神经精神）均明显错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 530,
+  "gold": "A44",
+  "pred": "A48",
+  "correct": "pred",
+  "correct_id": "A48",
+  "reason": "文献主要介绍中国科学院典型培养物保藏委员会的成立、更名及下属资源库的职能与支撑作用，侧重于科研机构建设与发展，而非具体的生态环境治理技术或环保实践。"
+ },
+ {
+  "axis": "application",
+  "doc": 560,
+  "gold": "A24",
+  "pred": "A40",
+  "correct": "pred",
+  "correct_id": "A40",
+  "reason": "文献以华为为案例，探讨企业技术创新与全球化发展，属于技术创新与创新网络范畴，模型判定A40更准确，gold标注A24经济政策与本文主题不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 584,
+  "gold": "A09",
+  "pred": "A25",
+  "correct": "other",
+  "correct_id": "A11",
+  "reason": "文献研究的是人才跨国流动的动力与影响，属于人口学、人力资源或社会学范畴，与医学影像(A09)和教育培训(A25)均不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 563,
+  "gold": "A27",
+  "pred": "A31",
+  "correct": "pred",
+  "correct_id": "A31",
+  "reason": "文献研究宽带电力线通信网络及跨层资源分配，属于电力线通信技术在配电网中的应用，符合A31配电网范畴；gold标注A27物理数学与基础科学不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 594,
+  "gold": "A27",
+  "pred": "A40",
+  "correct": "other",
+  "correct_id": "A28 科技哲学、科技与社会",
+  "reason": "文献回顾中国科技发展70年历程及科技工作者的贡献，属于科技与社会、科技史范畴，而非基础科学或数字经济技术创新。"
+ },
+ {
+  "axis": "application",
+  "doc": 597,
+  "gold": "A43",
+  "pred": "A46",
+  "correct": "other",
+  "correct_id": "A41",
+  "reason": "文献主要研究世界工业遗产的地理、产业分布及价值特征，属于建筑遗产保护与城乡规划范畴，gold的产业结构和pred的交通物流均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 608,
+  "gold": "A41",
+  "pred": "A44",
+  "correct": "pred",
+  "correct_id": "A44",
+  "reason": "文献聚焦黄河流域生态保护、资源环境承载能力评价及生态恢复保护战略，关键词与摘要核心均指向生态保护与环境治理，模型判定A44更准确。gold标注A41（城镇化等）仅涉及局部对策，非文献核心主题。"
+ },
+ {
+  "axis": "application",
+  "doc": 639,
+  "gold": "A24",
+  "pred": "A41",
+  "correct": "other",
+  "correct_id": "A11",
+  "reason": "文献主要利用人工神经网络模型对洞庭湖区两型社会发展水平进行时空分异评价与预测，属于区域可持续发展与生态环境评价研究，应归入A11（区域发展与空间治理/生态环境）类，gold和pred均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 642,
+  "gold": "A19",
+  "pred": "A27",
+  "correct": "other",
+  "correct_id": "A02",
+  "reason": "文献研究内容为电网发展诊断评价方法，涉及电力系统分析、指标体系构建与综合评价，属于电力工程/电气工程领域，而非机械装备或基础数理科学。"
+ },
+ {
+  "axis": "application",
+  "doc": 640,
+  "gold": "A04",
+  "pred": "A27",
+  "correct": "other",
+  "correct_id": "A08 计算机与信息科学",
+  "reason": "文献研究SDH网络PTP对时及路径延时补偿，属于通信网络与时间同步技术范畴，应归入计算机与信息科学。gold标注（神经精神）明显错误，模型判定（物理数学）也不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 599,
+  "gold": "A38",
+  "pred": "A46",
+  "correct": "other",
+  "correct_id": "A14",
+  "reason": "文献核心为高速铁路牵引供电系统与机车变流器的电气稳定性建模与分析，属于电气工程范畴，应归入A14（电力系统与电气工程）。"
+ },
+ {
+  "axis": "application",
+  "doc": 646,
+  "gold": "A39",
+  "pred": "A41",
+  "correct": "other",
+  "correct_id": "A11",
+  "reason": "文献主要研究传统村落的空间分布特征及自然、人文影响机理，属于人文地理学、乡村地理与聚落空间研究范畴，而非区域经济（A39）或城镇化与城乡融合（A41）。"
+ },
+ {
+  "axis": "application",
+  "doc": 661,
+  "gold": "A27",
+  "pred": "A39",
+  "correct": "pred",
+  "correct_id": "A39",
+  "reason": "文献以北部湾经济区为例，研究后发经济区的经济增长趋同与空间俱乐部趋同，核心属于区域经济与空间发展领域。空间计量模型仅为研究方法，不应归入物理数学与基础科学。"
+ },
+ {
+  "axis": "application",
+  "doc": 680,
+  "gold": "A30",
+  "pred": "A39",
+  "correct": "other",
+  "correct_id": "A39",
+  "reason": "文献探讨经济地理学结合国际关系建构主义理论，分析国家行为体对经济地理格局的影响，属于区域经济与空间发展范畴，模型判定A39更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 682,
+  "gold": "A26",
+  "pred": "A42",
+  "correct": "pred",
+  "correct_id": "A42",
+  "reason": "文献主要研究河南省农用地集约利用与农民收入的关系，属于农业经济与土地管理领域。虽然使用了遗传算法和BP神经网络等模型作为测算工具，但研究核心和落脚点在于农业农村经济，因此A42比A26更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 668,
+  "gold": "A30",
+  "pred": "A37",
+  "correct": "pred",
+  "correct_id": "A37",
+  "reason": "文献研究电网关键线路辨识，涉及线路故障率、电压稳定性及故障下的系统失负荷量衡量，属于电力系统设备运维、保护与故障恢复范畴，比gold的“其他综合与难归类”更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 686,
+  "gold": "A22",
+  "pred": "A37",
+  "correct": "pred",
+  "correct_id": "A37",
+  "reason": "文献研究内容为电网主动解列断面定位，属于电力系统故障恢复与控制范畴，模型判定A37准确；gold标注A22（分子生物学等）完全错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 685,
+  "gold": "A30",
+  "pred": "A25",
+  "correct": "pred",
+  "correct_id": "A25",
+  "reason": "文献是对特定领域研究论文的统计分析、梳理与述评，属于科研综述与科研能力建设范畴，符合A25；gold的A30为兜底类，不够准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 687,
+  "gold": "A46",
+  "pred": "A41",
+  "correct": "pred",
+  "correct_id": "A41",
+  "reason": "文献核心探讨鸭绿江水文特性对丹东市城市空间格局演变的影响，属于城市空间形态与发展演变研究，符合A41城镇化与城乡融合范畴，而非交通物流基础设施研究。"
+ },
+ {
+  "axis": "application",
+  "doc": 717,
+  "gold": "A07",
+  "pred": "A10",
+  "correct": "pred",
+  "correct_id": "A10",
+  "reason": "文献主要研究新冠肺炎疫情的时空扩散特征及人口流动风险评估，属于流行病学与公共卫生范畴，而非感染微生物与抗菌耐药。"
+ },
+ {
+  "axis": "application",
+  "doc": 700,
+  "gold": "A43",
+  "pred": "A50",
+  "correct": "other",
+  "correct_id": "A44 国际经济合作与援助",
+  "reason": "文献核心内容为中国与印尼在资源环境领域的科技合作及战略对接，属于国际科技/经济合作范畴。gold（产业结构与制造业）和pred（金融贸易与投资）均偏离主题。"
+ },
+ {
+  "axis": "application",
+  "doc": 725,
+  "gold": "A39",
+  "pred": "A42",
+  "correct": "pred",
+  "correct_id": "A42",
+  "reason": "文献以农村居民点为研究对象，探讨其空间布局与优化，涉及土地利用、农村人口与经济发展，属于农业农村与土地领域，而非宏观区域经济或城市群研究。"
+ },
+ {
+  "axis": "application",
+  "doc": 738,
+  "gold": "A28",
+  "pred": "A25",
+  "correct": "other",
+  "correct_id": "A14",
+  "reason": "文献主要论述中国科学院的科技扶贫举措与成效，属于农业与农村发展（或区域发展与社会治理）范畴，gold的气候地球科学与自然灾害和pred的教育培训与科研能力建设均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 740,
+  "gold": "A41",
+  "pred": "A42",
+  "correct": "pred",
+  "correct_id": "A42",
+  "reason": "文献研究大豆生产的时空格局及影响因素，属于农业生产与产业经济范畴，模型判定A42更准确。gold标注A41偏向城镇化与城乡融合，与文献核心内容不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 745,
+  "gold": "A10",
+  "pred": "A43",
+  "correct": "pred",
+  "correct_id": "A43",
+  "reason": "文献研究西安市创意产业的空间格局与演化，属于产业经济与空间布局范畴，模型判定A43更贴切；gold标注A10（公共卫生等）明显错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 733,
+  "gold": "A46",
+  "pred": "A50",
+  "correct": "pred",
+  "correct_id": "A50",
+  "reason": "文献核心研究省际资本流动规模及投资环境，属于金融、投资与开放经济范畴。gold标注的'交通物流'与文献内容不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 762,
+  "gold": "A43",
+  "pred": "A50",
+  "correct": "other",
+  "correct_id": "A44",
+  "reason": "文献研究的是知识产权保护对服务业内部结构优化的影响，属于产业结构与服务业经济范畴，而非制造业企业发展或金融贸易投资。"
+ },
+ {
+  "axis": "application",
+  "doc": 763,
+  "gold": "A46",
+  "pred": "A41",
+  "correct": "pred",
+  "correct_id": "A41",
+  "reason": "文献研究城市公园用地的时空演变及驱动因素，属于城市土地利用与空间结构范畴，与城镇化及城乡融合主题高度契合，故模型判定更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 764,
+  "gold": "A19",
+  "pred": "A48",
+  "correct": "pred",
+  "correct_id": "A48",
+  "reason": "文献主要研究外籍院士制度、科研机构建设及国际合作交流，属于科技政策与科研管理范畴，gold标注的机械制造领域明显错误，模型判定准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 773,
+  "gold": "A13",
+  "pred": "A43",
+  "correct": "pred",
+  "correct_id": "A43",
+  "reason": "文献核心探讨污染企业迁移意愿的影响因素，涉及企业规模、产业联系、政府博弈等，属于企业发展与产业结构范畴。gold标注偏向具体污染治理，不如模型判定贴切。"
+ },
+ {
+  "axis": "application",
+  "doc": 774,
+  "gold": "A01",
+  "pred": "A31",
+  "correct": "pred",
+  "correct_id": "A31",
+  "reason": "文献研究的是XLPE配电电缆的局部缺陷诊断与定位方法，属于配电网运维范畴，与心血管系统疾病无关，gold标注明显错误，模型判定更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 748,
+  "gold": "A43",
+  "pred": "A45",
+  "correct": "pred",
+  "correct_id": "A45",
+  "reason": "文献主要研究入境旅游流与居民收入增长的关系，属于旅游经济范畴，模型判定A45更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 782,
+  "gold": "A19",
+  "pred": "A40",
+  "correct": "other",
+  "correct_id": "A11 经济与管理",
+  "reason": "文献研究国民休闲消费行为驱动机制及政策，属于经济与管理领域，gold和pred均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 786,
+  "gold": "A16",
+  "pred": "A32",
+  "correct": "pred",
+  "correct_id": "A32",
+  "reason": "文献核心研究对象为柔性直流输电工程中的模块化多电平换流器（MMC），重点在于换流器系统层面的子模块电流应力计算及其对换流阀、阀冷系统设计和器件选型的作用，属于输电与换流系统范畴，而非基础半导体器件或传感器件本身的研究。"
+ },
+ {
+  "axis": "application",
+  "doc": 789,
+  "gold": "A50",
+  "pred": "A39",
+  "correct": "pred",
+  "correct_id": "A39",
+  "reason": "文献研究科技新城的空间联系特征与影响机制，使用引力模型和空间杜宾模型分析空间集聚与网络结构，属于区域经济与空间发展范畴，模型判定准确。gold标注的金融贸易等与文献内容不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 784,
+  "gold": "A11",
+  "pred": "A24",
+  "correct": "other",
+  "correct_id": "A17 生物学、农学与医学",
+  "reason": "文献聚焦生命与健康领域的大数据，属于生物医学与信息技术的交叉，gold标注(A11)局限于动物健康明显错误；模型判定(A24)侧重社会治理，未准确反映生命健康这一核心学科领域。"
+ },
+ {
+  "axis": "application",
+  "doc": 797,
+  "gold": "A27",
+  "pred": "A41",
+  "correct": "pred",
+  "correct_id": "A41",
+  "reason": "文献研究内容为城乡统筹发展水平评价及实证分析，属于城镇化与城乡融合领域，模型判定准确；gold标注物理数学明显错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 803,
+  "gold": "A27",
+  "pred": "A38",
+  "correct": "other",
+  "correct_id": "A33",
+  "reason": "文献研究的是电力系统发电机优化调度与静态电压稳定性，属于电力系统运行与控制范畴，gold标注（物理数学）和模型判定（电力电子与逆变器）均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 798,
+  "gold": "A07",
+  "pred": "A24",
+  "correct": "other",
+  "correct_id": "A19 信息安全与网络安全",
+  "reason": "文献探讨网络安全态势、人才认定、网络保险与网络靶场，属于信息安全与网络安全领域，gold标注（感染微生物）完全错误，模型判定（经济政策）未切中核心主题。"
+ },
+ {
+  "axis": "application",
+  "doc": 824,
+  "gold": "A40",
+  "pred": "A24",
+  "correct": "pred",
+  "correct_id": "A24",
+  "reason": "文献核心探讨数字技术如何赋能国家统计现代化建设，涉及政府统计、国家治理现代化及法制体系顶层设计，属于社会治理与宏观经济管理范畴，A24比A40更贴切。"
+ },
+ {
+  "axis": "application",
+  "doc": 855,
+  "gold": "A38",
+  "pred": "A37",
+  "correct": "other",
+  "correct_id": "A36 电力系统运行与调度",
+  "reason": "文献主要研究电能质量监测、闪变检测与数据分析方法，属于电力系统运行与分析范畴。gold标注偏向电力电子装置控制，pred标注偏向设备运维与故障恢复，均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 852,
+  "gold": "A19",
+  "pred": "A48",
+  "correct": "pred",
+  "correct_id": "A48",
+  "reason": "文献研究中科院外籍院士群体特征及政策建议，属于科技政策与人才发展范畴，模型判定A48准确，gold标注A19机械制造明显错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 833,
+  "gold": "A40",
+  "pred": "A45",
+  "correct": "pred",
+  "correct_id": "A45",
+  "reason": "文献以景区智慧旅游设施布局为研究对象，核心理论为旅游便利性，关键词和摘要均高度聚焦于旅游服务与景区管理，属于旅游领域研究，而非数字经济或技术创新网络。"
+ },
+ {
+  "axis": "application",
+  "doc": 857,
+  "gold": "A34",
+  "pred": "A50",
+  "correct": "other",
+  "correct_id": "A53 区域与城市经济",
+  "reason": "文献研究国家级新区设立对区域和城市经济的带动效用，属于区域与城市经济范畴。gold标注（新能源发电）完全无关，模型判定（金融贸易）也不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 885,
+  "gold": "A28",
+  "pred": "A39",
+  "correct": "pred",
+  "correct_id": "A39",
+  "reason": "文献核心为“主体功能区划”及区域发展方向与政策，属于空间规划与区域发展范畴。gold标注偏向自然地理与灾害，未能准确反映文献在区域经济与空间发展层面的核心内容，故模型判定更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 886,
+  "gold": "A43",
+  "pred": "A50",
+  "correct": "pred",
+  "correct_id": "A50",
+  "reason": "文献核心研究服务贸易竞争力、服务外包及投入产出，属于国际贸易与开放经济范畴，模型判定A50更准确；gold标注A43偏向产业与制造业，不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 889,
+  "gold": "A09",
+  "pred": "A41",
+  "correct": "pred",
+  "correct_id": "A41",
+  "reason": "文献研究城市规模、紧凑度与土地集约化的耦合，属于城镇化与城乡空间发展领域，模型判定A41正确；gold标注A09医学影像明显错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 890,
+  "gold": "A03",
+  "pred": "A07",
+  "correct": "other",
+  "correct_id": "A08 生物医学工程与其他生物医学应用",
+  "reason": "文献综述合成生物学在医学领域的整体应用（包括肿瘤、代谢疾病、感染等），gold和pred均以偏概全，应归为生物医学工程或综合应用类。"
+ },
+ {
+  "axis": "application",
+  "doc": 863,
+  "gold": "A14",
+  "pred": "A46",
+  "correct": "other",
+  "correct_id": "A43",
+  "reason": "文献研究城市规模分布及演进特征，属于城市地理与城市规划范畴，gold标注（能源）和模型判定（交通基础设施）均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 891,
+  "gold": "A25",
+  "pred": "A48",
+  "correct": "pred",
+  "correct_id": "A48",
+  "reason": "文献探讨关键核心技术突破的战略需求、挑战瓶颈及创新体系构建，涉及科技政策、科研机构组织模式与人才发展机制，属于科技政策与管理范畴。gold标注偏向教育培训，不如模型判定准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 898,
+  "gold": "A02",
+  "pred": "A44",
+  "correct": "pred",
+  "correct_id": "A44",
+  "reason": "文献研究中国绿色化发展水平及演化规律，属于绿色低碳与环境治理范畴，gold标注（内分泌代谢）明显错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 899,
+  "gold": "A36",
+  "pred": "A43",
+  "correct": "other",
+  "correct_id": "A11 经济理论、经济思想史与流派",
+  "reason": "文献综述了新制度经济学、经济社会学等理论视角下的专业市场集群形成机制，属于经济理论与应用经济学范畴，gold的电力市场和pred的制造业均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 911,
+  "gold": "A21",
+  "pred": "A39",
+  "correct": "pred",
+  "correct_id": "A39",
+  "reason": "文献研究武汉市人口与就业扩散的时空关系，属于城市空间发展范畴，模型判定准确；gold标注为化学催化领域，明显错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 924,
+  "gold": "A40",
+  "pred": "A20",
+  "correct": "other",
+  "correct_id": "A11",
+  "reason": "文献主要分析我国机器人产业的现状与发展趋势，属于产业经济与政策研究范畴，应归入经济与管理类，而非具体的技术创新网络或机器人技术本身。"
+ },
+ {
+  "axis": "application",
+  "doc": 900,
+  "gold": "A40",
+  "pred": "A46",
+  "correct": "other",
+  "correct_id": "A41",
+  "reason": "文献以深圳为例，利用GIS分析空间尺度对城市竞标地租理论及土地利用的影响，属于城市地理与空间结构研究范畴。gold标注（数字经济）和模型判定（交通物流）均与文献核心内容不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 923,
+  "gold": "A03",
+  "pred": "A09",
+  "correct": "other",
+  "correct_id": "A11 人工智能与机器学习",
+  "reason": "文献研究的是基于深度学习(GRU)和优化算法(ISSA)的短期电力负荷预测方法，属于电力系统或人工智能交叉领域，与医学、肿瘤、影像诊断等完全无关，gold和pred标注均错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 894,
+  "gold": "A39",
+  "pred": "A42",
+  "correct": "pred",
+  "correct_id": "A42",
+  "reason": "文献核心探讨西藏农牧系统的耦合发展、草地生态与农牧民增收，属于典型的农业农村与乡村振兴议题，模型判定A42比gold的A39更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 920,
+  "gold": "A28",
+  "pred": "A48",
+  "correct": "other",
+  "correct_id": "A04 地球科学",
+  "reason": "文献主要探讨我国地球科学的发展战略、现状趋势与资助机制。gold标注为气候与自然灾害过于狭隘且不符；模型判定为科技政策虽沾边，但文献核心落脚点在于地球科学本身的发展，应归入地球科学父类。"
+ },
+ {
+  "axis": "application",
+  "doc": 934,
+  "gold": "A39",
+  "pred": "A44",
+  "correct": "pred",
+  "correct_id": "A44",
+  "reason": "文献核心聚焦于资源环境问题、脱钩模型、节能减排与绿色发展，旨在为环境治理政策提供建议，属于绿色低碳与环境治理范畴。虽然研究对象是京津冀区域，但落脚点在资源环境而非空间发展。"
+ },
+ {
+  "axis": "application",
+  "doc": 945,
+  "gold": "A21",
+  "pred": "A39",
+  "correct": "pred",
+  "correct_id": "A39",
+  "reason": "文献研究苏州河沿岸创意产业的空间分布与集聚机理，属于区域经济与空间发展范畴，模型判定正确；gold标注为化学领域，明显错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 951,
+  "gold": "A46",
+  "pred": "A47",
+  "correct": "other",
+  "correct_id": "A09",
+  "reason": "文献研究住宅租金的空间分布规律及影响因素，属于城市经济与房地产领域，应归入A09 经济与管理。gold和pred均不准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 953,
+  "gold": "A15",
+  "pred": "A37",
+  "correct": "pred",
+  "correct_id": "A37",
+  "reason": "文献研究内容为动力电缆漏电监测方法及故障辨识，旨在提升智能运维水平，属于电力设备运维与故障监测范畴。gold标注A15（结构材料等）与内容不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 956,
+  "gold": "A28",
+  "pred": "A51",
+  "correct": "other",
+  "correct_id": "A24 生态与环境科学",
+  "reason": "文献核心内容为喀斯特生态系统观测、物质循环规律、石漠化治理与生态恢复，属于生态与环境科学范畴。gold标注偏向气候与自然灾害，模型判定偏向国土空间，均未准确反映其生态学研究的本质。"
+ },
+ {
+  "axis": "application",
+  "doc": 959,
+  "gold": "A24",
+  "pred": "A39",
+  "correct": "pred",
+  "correct_id": "A39",
+  "reason": "文献核心探讨“省直管县”财政体制改革对县域经济发展的影响，属于区域经济范畴。gold标注偏向宏观政策与法律，不如模型判定的“区域经济”准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 974,
+  "gold": "A15",
+  "pred": "A43",
+  "correct": "pred",
+  "correct_id": "A43",
+  "reason": "文献研究高耗能产业的空间格局演化、产业转移及成因，属于产业结构与产业经济范畴。gold标注偏向具体材料，不符合文献宏观产业研究主题。"
+ },
+ {
+  "axis": "application",
+  "doc": 967,
+  "gold": "A04",
+  "pred": "A46",
+  "correct": "other",
+  "correct_id": "A14 城镇与区域发展",
+  "reason": "文献主要研究小城镇生态规划与生态适宜度评价，属于城乡规划与生态环境领域，gold的心理学分类和pred的基础设施分类均明显错误。"
+ },
+ {
+  "axis": "application",
+  "doc": 979,
+  "gold": "A50",
+  "pred": "A46",
+  "correct": "other",
+  "correct_id": "A14",
+  "reason": "文献核心是利用时空图和MDS方法修正社会空间分异指数，探讨广州市的社会空间分异特征，属于城市社会学与人文地理学范畴，而非金融贸易或交通物流基础设施。"
+ },
+ {
+  "axis": "application",
+  "doc": 985,
+  "gold": "A41",
+  "pred": "A40",
+  "correct": "other",
+  "correct_id": "A20",
+  "reason": "文献核心为运用SBM-Tobit模型测度城市群生态效率及其影响因素，属于资源、环境与生态经济领域，而非城镇化或数字经济/技术创新。"
+ },
+ {
+  "axis": "application",
+  "doc": 981,
+  "gold": "A46",
+  "pred": "A50",
+  "correct": "pred",
+  "correct_id": "A50",
+  "reason": "文献主要探讨粤港澳区域经济合作、制度创新、统一市场及经贸关系，属于区域经济与开放经济范畴，而非交通物流与基础设施。"
+ },
+ {
+  "axis": "application",
+  "doc": 980,
+  "gold": "A29",
+  "pred": "A40",
+  "correct": "other",
+  "correct_id": "A11 区域发展、城市经济与管理",
+  "reason": "文献研究青岛市现代化国际城市的指标体系与战略对策，属于区域发展与城市经济管理范畴，gold和pred均不正确。"
+ },
+ {
+  "axis": "application",
+  "doc": 990,
+  "gold": "A32",
+  "pred": "A31",
+  "correct": "pred",
+  "correct_id": "A31",
+  "reason": "文献研究对象为110kV高压配网及其典型接线方式，属于配电网范畴，模型判定A31比gold标注A32更准确。"
+ },
+ {
+  "axis": "application",
+  "doc": 995,
+  "gold": "A17",
+  "pred": "A42",
+  "correct": "pred",
+  "correct_id": "A42",
+  "reason": "文献主要研究作物表型监测平台及其在育种和精准农业中的应用，属于农业科技范畴，模型判定A42更准确。gold标注A17光学光子等与文献核心内容不符。"
+ },
+ {
+  "axis": "application",
+  "doc": 998,
+  "gold": "A26",
+  "pred": "A37",
+  "correct": "pred",
+  "correct_id": "A37",
+  "reason": "文献核心研究对象为智能变电站二次设备，涉及硬件平台、保护测试及顺序控制，属于电力系统及其自动化领域，而非纯粹的计算机科学或人工智能。"
+ },
+ {
+  "axis": "application",
+  "doc": 942,
+  "gold": "A30",
+  "pred": "A40",
+  "correct": "other",
+  "correct_id": "A11",
+  "reason": "文献主题为城市负债的国内外研究进展与展望，属于经济学/金融学领域的文献综述，与数字经济或技术创新无关，也不属于难归类应用。"
+ }
+]

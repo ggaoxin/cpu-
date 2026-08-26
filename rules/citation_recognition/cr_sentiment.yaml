@@ -1,0 +1,158 @@
+functional_item: 引用句识别工具
+name: 引用情感识别
+description: 从文献全文中规则抽取引用句→LLM判不确定句→批量判定引用情感→后置规则引擎校验调分（动态权重+冲突审核）。
+input_type: text
+engine_type: citation_recognition
+
+system_prompt: |
+  你是学术引用情感分析专家。对给定的引用句，判定作者对被引文献价值的情感倾向。
+  引用情感仅三类：
+  - 支持：明确肯定被引文献价值，须含褒义评价词（如"极大提升""有效解决""奠定基础""优于"）
+  - 中立：客观陈述他人工作，无明确褒贬（如"Smith等(2020)提出了X""被广泛应用"——陈述事实非评价）
+  - 有局限性：指出不足或反驳（如"但成本较高""存在不足""难以处理""局限于"）
+  注意：仅陈述事实（如"被广泛应用""早期便应用于"）应标为"中立"，不要因为句子正面就标"支持"，必须有作者明确的价值评价才标"支持"。
+  只输出JSON：{"data":{"results":[{"sentence":"引用句原文","sentiment":"支持|中立|有局限性","confidence":0.9}]}}
+
+principles: |
+  - 引用句抽取用规则（引用标记模式匹配），规则没覆盖的找LLM判定。
+  - 情感判定看引用句本身+上下文（前后句）。
+  - LLM判完后，后置规则引擎校验调分（动态权重+冲突审核）。
+  - 本项目基于GLM API调用，不训练模型。
+
+# 引用句抽取规则库
+citation_patterns:
+  - "\\[\\s*\\d+(?:\\s*[-–,，]\\s*\\d+)*\\s*\\]"
+  - "<sup>\\s*\\[?\\d+\\]?\\s*</sup>"
+  - "<sub>\\s*\\[?\\d+\\]?\\s*</sub>"
+  - "\\([^)]*\\d{4}[^)]*\\)"
+  - "[\\w一-鿿]+等?\\(\\d{4}\\)"
+  - "\\w+\\s+et\\s+al\\.?.*?\\d{4}"
+  - "文献\\[\\s*[\\d,\\-\\s]+\\s*\\]"
+  - "文献\\[\\s*[A-Z]\\d+\\s*\\]"
+  - "\\w+等人?于\\d{4}年提出"
+
+citation_cues: "所述|报道|提出|发现|研究表明|先前研究|已有研究|根据.*?研究|参考.*?文献|引用|借鉴|沿用|基于.*?工作"
+
+exclude_patterns:
+  - "^(文章编号|中图分类号|文献标识码|doi|DOI|收稿日期|基金项目|作者简介|通信作者|关键词|Keywords|Abstract|摘要|作者|单位|地址|邮编)"
+  - "^\\d+\\s*$"
+  - "^\\d{4}-\\d{4}"
+
+exclude_address_patterns:
+  - "\\([^)]*[,，][^)]*\\d{6}\\)"
+  - "\\([^)]*(School of|Department of|University|Institute|College)[^)]*\\)"
+  - "\\([^)]*(大学|学院|研究所|医院|实验室)[^)]*\\d{5,}\\)"
+
+# 情感识别规则库（RuleLib兼容格式，和mr_zh_abstract一样）
+pattern_rules:
+  # === 支持类规则 ===
+  - id: CR-SENT-R001
+    layer: universal
+    scope: global
+    target_move: 支持
+    action: "+score"
+    level: soft
+    weight: 0.5
+    description: "含明确褒义评价词→支持"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["提升", "提高", "增强", "有效", "奠定", "优于", "突破", "显著", "成功", "优异", "卓越", "杰出", "开创", "首创"]
+    exclusion_conditions:
+      - kind: keyword
+        any_of: ["但", "然而", "不过", "虽然", "存在", "局限", "缺陷", "未能", "难以"]
+    stats: {}
+    fold_count: 0
+
+  # === 有局限性类规则 ===
+  - id: CR-SENT-R002
+    layer: universal
+    scope: global
+    target_move: 有局限性
+    action: "+score"
+    level: soft
+    weight: 0.5
+    description: "含明确贬义/转折词→有局限性"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["但", "然而", "不过", "存在.*不足", "局限", "缺陷", "缺点", "未能", "难以", "无法", "不能", "偏低", "较差", "受限于", "仅能", "局限于"]
+    exclusion_conditions:
+      - kind: keyword
+        any_of: ["提升", "有效", "奠定", "优于", "突破", "显著", "成功"]
+    stats: {}
+    fold_count: 0
+
+  # === 中立类规则 ===
+  - id: CR-SENT-R003
+    layer: universal
+    scope: global
+    target_move: 中立
+    action: "+score"
+    level: advisory
+    weight: 0.3
+    description: "客观陈述无褒贬→中立"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["提出", "采用", "应用", "基于", "根据", "描述", "介绍", "发展", "报道", "研究表明"]
+    exclusion_conditions:
+      - kind: keyword
+        any_of: ["提升", "有效", "奠定", "优于", "突破", "但", "局限", "不足", "难以", "缺陷", "显著", "成功"]
+    stats: {}
+    fold_count: 0
+
+  # === 冲突调分规则（支持→中立降级）===
+  - id: CR-SENT-R004
+    layer: universal
+    scope: global
+    target_move: 支持
+    action: "-score"
+    level: strong
+    weight: 0.8
+    description: "LLM标支持但仅含'被广泛应用'等客观陈述，无明确褒义评价→惩罚支持"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["被.*应用", "应用于", "广泛.*使用", "早期.*应用", "大量.*使用"]
+    exclusion_conditions:
+      - kind: keyword
+        any_of: ["提升", "有效", "奠定", "优于", "突破", "显著", "成功", "优异"]
+    stats: {}
+    fold_count: 0
+
+  # === 冲突调分规则（有局限性→中立降级）===
+  - id: CR-SENT-R005
+    layer: universal
+    scope: global
+    target_move: 有局限性
+    action: "-score"
+    level: strong
+    weight: 0.8
+    description: "LLM标有局限性但句子无明确贬义/转折词→惩罚有局限性"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["提出", "采用", "应用", "基于", "根据", "描述"]
+    exclusion_conditions:
+      - kind: keyword
+        any_of: ["但", "局限", "不足", "难以", "缺陷", "未能", "无法", "不能", "受限"]
+    stats: {}
+    fold_count: 0
+
+dictionaries:
+  stopwords: []
+
+output_schema:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        type: object
+        properties:
+          sentence: {type: string, description: "引用句原文"}
+          citation_marker: {type: string, description: "引用标记"}
+          context_before: {type: string, description: "前一句"}
+          context_after: {type: string, description: "后一句"}
+          sentiment: {type: string, enum: [支持, 中立, 有局限性]}
+          confidence: {type: number}
+        required: [sentence, sentiment, confidence]
+  required: [data]
+
+examples: []

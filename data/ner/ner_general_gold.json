@@ -1,0 +1,41 @@
+[
+  {
+    "doc_id": "ch3",
+    "type": "ner_general",
+    "entities": [
+      {
+        "canonical": "侯晓洁",
+        "type": "PERSON",
+        "variants": [
+          "侯晓洁",
+          "Hou Xiaojie"
+        ]
+      },
+      {
+        "canonical": "四川传媒学院",
+        "type": "ORGANIZATION",
+        "variants": [
+          "四川传媒学院",
+          "Sichuan University of Media and Communications"
+        ]
+      },
+      {
+        "canonical": "表演学院",
+        "type": "ORGANIZATION",
+        "variants": [
+          "表演学院",
+          "School of Performance"
+        ]
+      },
+      {
+        "canonical": "成都",
+        "type": "LOCATION",
+        "variants": [
+          "成都",
+          "Chengdu",
+          "四川成都"
+        ]
+      }
+    ]
+  }
+]

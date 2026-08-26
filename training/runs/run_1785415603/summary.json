@@ -1,0 +1,46 @@
+{
+  "run_dir": "/root/autodl-tmp/semantic-toolkit/training/runs/run_1785415603",
+  "resume": false,
+  "elapsed_sec": 6600.1,
+  "folds": [
+    {
+      "fold_id": 0,
+      "best_test_acc": 0.8559322033898306,
+      "best_macro_f1": 0.8163728470111449,
+      "rule_count": 5,
+      "iterations": 1
+    },
+    {
+      "fold_id": 1,
+      "best_test_acc": 0.8114754098360656,
+      "best_macro_f1": 0.6864849498327759,
+      "rule_count": 6,
+      "iterations": 1
+    },
+    {
+      "fold_id": 2,
+      "best_test_acc": 0.7403846153846154,
+      "best_macro_f1": 0.5289405331510595,
+      "rule_count": 6,
+      "iterations": 1
+    },
+    {
+      "fold_id": 3,
+      "best_test_acc": 0.7699115044247787,
+      "best_macro_f1": 0.6386411761754227,
+      "rule_count": 5,
+      "iterations": 1
+    },
+    {
+      "fold_id": 4,
+      "best_test_acc": 0.8372093023255814,
+      "best_macro_f1": 0.7542290455951658,
+      "rule_count": 6,
+      "iterations": 1
+    }
+  ],
+  "cv_mean_acc": 0.8029826070721743,
+  "holdout_acc": 0.7831858407079646,
+  "holdout_macro_f1": 0.6522397833835081,
+  "final_rule_count": 8
+}

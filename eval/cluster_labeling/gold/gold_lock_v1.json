@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "locked_at": "2026-08-15T07:05:00+08:00",
+  "purpose": "Lock Codex-reviewed Gold labels before any cluster-label prediction is generated.",
+  "annotation_policy": "Manual semantic review by Codex; no GLM or other API model was used to create Gold labels.",
+  "files": [
+    {
+      "path": "eval/cluster_labeling/gold/technology_gold_v1.json",
+      "sha256": "076B3559C3C0921139330D4DD4A8B5918C6BE3AD5C8C1FF06FEEFB12F0106B68"
+    },
+    {
+      "path": "eval/cluster_labeling/gold/application_gold_v1.json",
+      "sha256": "F2812BF5B2A62CA2944E68FC48842B284467A4E715745004D721A693ADBAF0B0"
+    }
+  ]
+}

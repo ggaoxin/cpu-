@@ -1,0 +1,80 @@
+[
+  {
+    "canonical": "算法审核与纠错机制",
+    "type": "METHOD",
+    "variants": [
+      "算法审核与纠错机制"
+    ],
+    "llm_variants": [
+      "算法审查与纠错机制",
+      "算法审核与纠错",
+      "algorithmic auditing and error correction mechanism",
+      "algorithmic audit and correction mechanism"
+    ],
+    "n_docs": 1,
+    "source_docs": [
+      "ch3"
+    ],
+    "llm_fail_count": 1,
+    "first_seen": "ch3"
+  },
+  {
+    "canonical": "学生思想监测",
+    "type": "TOPIC",
+    "variants": [
+      "学生思想监测",
+      "student ideological monitoring"
+    ],
+    "llm_variants": [
+      "学生思想动态监测",
+      "学生思想状况监测",
+      "学生思想动态跟踪",
+      "student ideological tracking",
+      "student ideological surveillance"
+    ],
+    "n_docs": 1,
+    "source_docs": [
+      "ch3"
+    ],
+    "llm_fail_count": 2,
+    "first_seen": "ch3"
+  },
+  {
+    "canonical": "重点群体预警",
+    "type": "TOPIC",
+    "variants": [
+      "重点群体预警"
+    ],
+    "llm_variants": [
+      "Key Group Early Warning",
+      "重点人群预警",
+      "重点群体监测预警"
+    ],
+    "n_docs": 1,
+    "source_docs": [
+      "ch3"
+    ],
+    "llm_fail_count": 2,
+    "first_seen": "ch3"
+  },
+  {
+    "canonical": "数据安全与伦理规范",
+    "type": "TOPIC",
+    "variants": [
+      "数据安全与伦理规范",
+      "安全伦理规范"
+    ],
+    "llm_variants": [
+      "数据安全与伦理",
+      "数据伦理与安全",
+      "Data Security and Ethics",
+      "Data Security and Ethical Norms"
+    ],
+    "n_docs": 1,
+    "source_docs": [
+      "ch3"
+    ],
+    "llm_fail_count": 2,
+    "first_seen": "ch3"
+  }
+]

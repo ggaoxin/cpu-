@@ -1,0 +1,101 @@
+﻿document_id,en_name,technical_cluster_id,v5_prediction,v6_reduced_prediction,v6_prediction,v6_correct
+DOC_0008,Construction and validation of nomogram prognostic model for predicting survival in hepatoblastoma patients: a population-based study,T03,T03,T03,T03,True
+DOC_0009,Determinants/Predictors of QT Abnormalities in Patients on Psychotropic Medications in a Nigerian Tertiary Hospital,T03,T11,T03,T03,True
+DOC_0011,An experimental study of a novel external fixator based on universal joints for the rapid initial stabilization of mandibular comminuted fractures,T22,T10,T03,T03,False
+DOC_0014,A tri-band low-profile shared-aperture mesh patch/Fabry-Perot cavity antenna,T17,T17,T17,T17,True
+DOC_0017,"Hematological, histomorphological, and immunohistochemical diagnosis of bilateral testicular Sertoli cell tumor in a Mongrel dog: a case history",T07,T06,T10,T10,False
+DOC_0025,Effect of adding telerehabilitation home program to pharmaceutical treatment on the symptoms and the quality of life in children with functional constipation: a randomized controlled trial,T04,T04,T04,T04,True
+DOC_0031,Estrogen receptor alpha XbaI GG genotype was associated with severe preeclampsia,T24,T24,T24,T24,True
+DOC_0037,Impact of atrial fibrillation on platelet gene expression,T09,T11,T24,T09,True
+DOC_0043,Charged Covalent Triazine Frameworks for CO 2 Capture and Conversion,T12,T12,T18,T18,False
+DOC_0045,Metastatic disease masquerading as small intestinal tumoural masses: two case reports and literature review,T07,T06,T07,T07,True
+DOC_0049,The value of electrophysiologic study in decision-making regarding the need for pacemaker implantation after TAVI,T06,T11,T03,T03,False
+DOC_0069,Nanoplatform to Investigate Tumor-Initiating Cancer Stem Cells: Breaking the Diagnostic Barrier,T12,T12,T12,T13,False
+DOC_0131,Different Morphology Dependence for Efficient Indoor Organic Photovoltaics: The Role of the Leakage Current and Recombination Losses,T12,T12,T12,T12,True
+DOC_0135,Tetrandrine induces apoptosis and growth suppression of colon cancer cells in mice,T22,T08,T22,T22,True
+DOC_0142,"The Optimal Sample Size for Usability Testing, From the Manufacturer’s Perspective: A Value-of-Information Approach",T06,T21,T21,T21,False
+DOC_0149,Second harmonic generation in glass-based metasurfaces using tailored surface lattice resonances,T17,T17,T17,T17,True
+DOC_0152,Laser–particle interaction-based analysis of powder particle effects on temperatures and distortions in directed energy deposition additive manufacturing,T12,T16,T12,T12,True
+DOC_0154,Glyceraldehyde-3-Phosphate Dehydrogenase Facilitates Macroautophagic Degradation of Mutant Huntingtin Protein Aggregates,T08,T08,T08,T08,True
+DOC_0161,Age-related changes among 25 patients with congenital cardiac left-to-right shunts and irreversible plexogenic pulmonary arteriopathy,T10,T11,T11,T03,False
+DOC_0191,Therapeutic Assay with the Non-toxic C-Terminal Fragment of Tetanus Toxin (TTC) in Transgenic Murine Models of Prion Disease,T22,T22,T22,T22,True
+DOC_0202,Trapeziectomy versus joint replacement for first carpometacarpal (CMC 1) joint osteoarthritis: a systematic review and meta-analysis,T05,T05,T05,T05,True
+DOC_0204,Defect Engineering in Ultrathin SnSe Nanosheets for High-Performance Optoelectronic Applications,T12,T14,T12,T12,True
+DOC_0205,The pediatric early warning system score: A severity of illness score to predict urgent medical need in hospitalized children,T03,T03,T03,T03,True
+DOC_0211,Isolation and antimicrobial resistance of motile Salmonella enterica from the poultry hatchery environment,T24,T23,T24,T24,True
+DOC_0247,MiR-124 Regulates the Inflammation and Apoptosis in Myocardial Infarction Rats by Targeting STAT3,T24,T08,T24,T08,False
+DOC_0262,Sentinel lymph node biopsy in patients with endometrial cancer and an indocyanine green or iodinated contrast reaction - A proposed management algorithm,T03,T03,T03,T03,True
+DOC_0286,"Impact of intraoperative magnetic resonance imaging on gross total resection, extent of resection, and residual tumor volume in pituitary surgery: systematic review and meta-analysis",T05,T05,T05,T05,True
+DOC_0303,Statistical physics treatment of tetracycline adsorption: energetic studies,T16,T19,T16,T16,True
+DOC_0311,"Fe and As geochemical self-removal dynamics in mineral waters: evidence from the Ferrarelle groundwater system (Riardo Plain, Southern Italy)",T19,T19,T19,T19,True
+DOC_0317,E-nose coupled with an artificial neural network to detection of fraud in pure and industrial fruit juices,T01,T01,T01,T01,True
+DOC_0327,Monodisperse Selectively Permeable Hydrogel Capsules Made from Single Emulsion Drops,T13,T12,T12,T12,False
+DOC_0337,A Bis(Salamo)-Based Fluorogenic Sensor for Highly Selective and Sequential Recognition of Cu2+ and B4O72− Ions in Semi-Aqueous Medium,T15,T18,T15,T15,True
+DOC_0346,Simple One-step Solid-state Synthesis of Highly Crystalline N Doped Carbon Dots As Selective Turn Off-sensor for Picric Acid and Metanil Yellow,T18,T14,T12,T12,False
+DOC_0355,Novel CMC-CdTe / ZnS QDs Nanosensor for the Detection of Anticancer Drug Epirubicin,T12,T14,T12,T12,True
+DOC_0361,Parkinson’s Disease–Associated LRRK2 Interferes with Astrocyte-Mediated Alpha-Synuclein Clearance,T13,T24,T24,T09,False
+DOC_0381,Perylenetetracarboxylic acid–incorporated silver nanocluster for cost-effective visible-light-driven photocatalysis and catalytic reduction,T18,T13,T12,T18,True
+DOC_0386,Effects of citral on serum inflammatory factors and liver gene expression of IL-6 and TNF-alpha in experimental diabetes,T24,T24,T24,T22,False
+DOC_0387,Exposure to p40 in Early Life Prevents Intestinal Inflammation in Adulthood Through Inducing a Long-Lasting Epigenetic Imprint on TGFβ,T22,T08,T22,T22,True
+DOC_0388,Preferences for e-Mental Health Interventions in Germany: A Discrete Choice Experiment,T21,T21,T21,T21,True
+DOC_0393,Cost-Effectiveness of an Opioid Abuse–Prevention Program Using the Narcotics Information Management System in South Korea,T21,T21,T21,T21,True
+DOC_0394,"scRNA-Seq Reveals New Enteric Nervous System Roles for GDNF, NRTN, and TBX3",T09,T09,T09,T09,True
+DOC_0398,Antioxidant-rich natural fruit and vegetable products and human health,T06,T06,T31,T06,True
+DOC_0411,Correlations for catalyst deactivation during valorization of biomass-derived acetone and butanol,T18,T18,T18,T18,True
+DOC_0420,Mesenteric Neural Crest Cells Are the Embryological Basis of Skip Segment Hirschsprung’s Disease,T22,T08,T09,T08,False
+DOC_0424,Construction of Hybrid Fluorescent Sensor for Cu2+ Detection Using Fluorescein-functionalized CdS Quantum Dots Via FRET,T12,T14,T12,T12,True
+DOC_0445,Wide-gap photoluminescence control of quantum dots through atomic interdiffusion and bandgap renormalization,T12,T14,T12,T12,True
+DOC_0479,Crohn’s Disease Pathobiont Adherent-Invasive E coli Disrupts Epithelial Mitochondrial Networks With Implications for Gut Permeability,T09,T08,T22,T09,True
+DOC_0500,Microfluidic Crystallization of Surfactant-Free Doped Zinc Sulfide Nanoparticles for Optical Bioimaging Applications,T12,T12,T12,T12,True
+DOC_0502,A modified Ising model of Barabási–Albert network with gene-type spins,T14,T14,T14,T14,True
+DOC_0504,Reproductive outcomes after floxuridine-based regimens for gestational trophoblastic neoplasia: A retrospective cohort study in a national referral center in China,T03,T03,T03,T03,True
+DOC_0505,"Chronic Memantine Treatment Ameliorates Behavioral Deficits, Neuron Loss, and Impaired Neurogenesis in a Model of Alzheimer’s Disease",T22,T22,T22,T22,True
+DOC_0508,Synchronous robotic right hemicolectomy and subtotal gastrectomy,T26,T25,T26,T26,True
+DOC_0520,The Genetic Architecture of Carbon Tetrachloride-Induced Liver Fibrosis in Mice,T09,T09,T09,T09,True
+DOC_0537,Prominent coagulation disorder is closely related to inflammatory response and could be as a prognostic indicator for ICU patients with COVID-19,T03,T07,T03,T03,True
+DOC_0543,Montecarlo Simulation and HAXPES Analysis of Organosilane Segregation in Titania Xerogel Films; Towards a Generic Surface Chemofunctionalization Process,T13,T13,T12,T01,False
+DOC_0544,"Claims in orthopedic foot/ankle surgery, how can they help to improve quality of care? A retrospective claim analysis",T03,T25,T03,T03,True
+DOC_0545,"Investigating the effects of myofascial induction therapy techniques on pain, function and quality of life in patients with chronic low back pain",T20,T04,T20,T20,True
+DOC_0551,Lipidic nanomaterials to deliver natural compounds against cancer: a review,T06,T26,T06,T06,True
+DOC_0557,The kinematic features of hyoid bone movement during swallowing in different disease populations: A narrative review,T06,T06,T03,T06,True
+DOC_0560,The gut microbiota structure of the terrestrial isopod Porcellionides pruinosus (Isopoda: Oniscidea),T23,T23,T23,T23,True
+DOC_0565,Second harmonic generation in metasurfaces with multipole resonant coupling,T17,T17,T14,T14,False
+DOC_0578,Identification of the Nrf2 in the fathead minnow muscle cell line: role for a regulation in response to H2O2 induced the oxidative stress in fish cell,T24,T22,T22,T24,True
+DOC_0580,Re-usage of the Waste Drug as Molecular Chemosensor for Fe3+ Ion: Application towards Fluorescent Ink,T13,T14,T12,T12,False
+DOC_0592,Oxygen Exchange in Dual-Phase La 0.65 Sr 0.35 MnO 3 –CeO 2 Composites for Solar Thermochemical Fuel Production,T12,T12,T12,T12,True
+DOC_0599,Deciphering Food Hawkerpreneurship: Challenges and success factors in franchising street food businesses in Malaysia,T20,T26,T06,T06,False
+DOC_0600,Homogenizing the Teaching of Engaged Medical Examinations to Large Numbers of Students: the Experience of the Digital Rectal Examination,T20,T02,T20,T20,True
+DOC_0621,CBF regulation in hypertension and Alzheimer’s disease,T06,T06,T06,T06,True
+DOC_0623,A Review of the Methods Used to Generate Utility Values in NICE Technology Assessments for Children and Adolescents,T21,T21,T21,T21,True
+DOC_0633,Quadriceps tendon autograft for primary ACL reconstruction: a Bayesian network meta-analysis,T05,T05,T05,T05,True
+DOC_0644,Laparoscopic ileo-colic resection and right hemicolectomy for Crohn’s disease and colon cancer: a preliminary comparative study on post-operative outcome,T03,T25,T03,T03,True
+DOC_0669,Soil water availability shapes species richness in mid‐latitude shrub steppe plant communities,T29,T29,T29,T29,True
+DOC_0675,Analyses of rare collection samples as conservation tool for the last known Italian population of Graphoderus bilineatus (Insecta: Coleoptera),T25,T29,T29,T29,False
+DOC_0686,Design of circularly polarized patch antennas using anisotropic high refractive index metamaterial loading,T17,T17,T17,T17,True
+DOC_0692,Upper extremity deep vein thrombosis treated with direct oral anticoagulants: a multi-center real world experience,T11,T03,T05,T05,False
+DOC_0693,Diagnosis of Mild Cognitive Impairment and Alzheimer’s Disease by the Plasma and Serum Amyloid-beta 42 Assay through Highly Sensitive Peptoid Nanosheet Sensor,T31,T27,T11,T11,False
+DOC_0695,Cloning of hepatic lipase and the effects of dietary nutrition on hepatic lipase expression in genetically improved farmed tilapia (Oreochromis niloticus),T24,T24,T24,T24,True
+DOC_0707,"Ghrelin, obestatin and the ghrelin/obestatin ratio as potential mediators for food intake among obese children: a case control study",T03,T24,T03,T03,True
+DOC_0720,Evaluating Thermal Quenching Temperature in Eu 3+ -Substituted Oxide Phosphors via Machine Learning,T02,T16,T02,T02,True
+DOC_0730,Local anesthetic pain catheters to reduce opioid use in massive weight loss patients undergoing abdominoplasty: A comparative study,T03,T25,T03,T03,True
+DOC_0741,Gallstone formation due to rapid weight loss through hyperthyroidism,T07,T06,T07,T07,True
+DOC_0747,In vivo radiation dosimetry and image quality of turbo-flash and retrospective dual-source CT coronary angiography,T03,T27,T11,T03,True
+DOC_0759,Tuning the Electrocatalytic Activity of Co 3 O 4 through Discrete Elemental Doping,T18,T12,T18,T18,True
+DOC_0768,Quantum chemical simulation and laboratory testing of the curing mechanism and performance of resin bio-oil,T15,T14,T12,T12,False
+DOC_0772,Dual Radionuclide Theranostic Pretargeting,T22,T27,T22,T22,True
+DOC_0784,Osteosynthesis of sternal fractures with double locking compression plate fixation: a retrospective cohort study,T03,T10,T03,T03,True
+DOC_0786,Assessment of the reporting quality of RCTs for novel oral anticoagulants in venous thromboembolic disease based on the CONSORT statement,T02,T04,T03,T04,False
+DOC_0792,Pulmonary embolism response team implementation improves awareness and education among the house staff and faculty,T11,T02,T20,T20,False
+DOC_0801,"Effect of dietary purslane (Portulaca oleracea L.) leaves powder on growth, immunostimulation, and protection of Nile tilapia, Oreochromis niloticus against Aeromonas hydrophila infection",T33,T33,T33,T33,True
+DOC_0817,A Systematic Review of MicroRNA Expression as Biomarker of Late-Onset Alzheimer’s Disease,T05,T06,T24,T05,True
+DOC_0824,An energetics‐performance framework for wild fishes,T30,T33,T33,T33,False
+DOC_0846,Biological soil crust and vascular plant interactions in Western Myall ( Acacia papyrocarpa ) open woodland in South Australia,T29,T29,T29,T29,True
+DOC_0878,Gastroprotective effects of mumie on aspirin-induced gastric lesions in rats,T10,T22,T22,T22,False
+DOC_0915,"Microglial Depletion with Clodronate Liposomes Increases Proinflammatory Cytokine Levels, Induces Astrocyte Activation, and Damages Blood Vessel Integrity",T22,T08,T22,T22,True
+DOC_0919,Oxytocin Neurons Enable Melanocortin Regulation of Male Sexual Function in Mice,T22,T22,T22,T22,True
+DOC_0937,"Improved Multicellular Response, Biomimetic Mineralization, Angiogenesis, and Reduced Foreign Body Response of Modified Polydioxanone Scaffolds for Skeletal Tissue Regeneration",T12,T26,T22,T22,False
+DOC_0939,Tailoring Fast Directional Mass Transport of Nano-Confined Ag–Cu Alloys upon Heating: Effect of the AlN Barrier Thickness,T12,T13,T12,T12,True
+DOC_0955,Hyaluronic acid is superior to autologous fat for treatment of temporal hollowing after lateral orbital wall decompression: A prospective interventional trial,T11,T27,T03,T03,False
+DOC_0959,"Trends, demographics, and conditions of emergency dental visits in Taiwan 1997–2013: A nationwide population-based retrospective study",T03,T20,T03,T03,True
+DOC_0980,Using the Surface Features of Plant Matter to Create All-Polymer Pseudocapacitors with High Areal Capacitance,T12,T12,T12,T12,True
+DOC_0985,TiO Phase Stabilized into Freestanding Nanofibers as Strong Polysulfide Immobilizer in Li–S Batteries: Evidence for Lewis Acid–Base Interactions,T13,T13,T13,T12,False

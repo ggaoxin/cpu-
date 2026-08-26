@@ -1,0 +1,21 @@
+{
+  "version": "deep-clustering-input-representation-v1",
+  "manual_text_max_characters": 8000,
+  "structured_confidence_threshold": 0.85,
+  "minimum_title_characters": 2,
+  "minimum_abstract_characters": 40,
+  "minimum_keyword_count": 2,
+  "plain_text_chunk_characters": 900,
+  "plain_text_selected_chunks": 6,
+  "technical_source_weights": {
+    "title": 0.15,
+    "abstract": 0.65,
+    "keywords": 0.20
+  },
+  "application_source_weights": {
+    "title": 0.20,
+    "abstract": 0.70,
+    "keywords": 0.10
+  },
+  "publication_date_used_for_clustering": false
+}

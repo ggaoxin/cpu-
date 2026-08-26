@@ -1,0 +1,444 @@
+{
+  "evaluation_contract": "manual_three_round_cluster_label_gold_v1",
+  "cluster_count": 16,
+  "metrics": {
+    "cluster_count": 16,
+    "acceptable_top1_accuracy": 0.125,
+    "candidate_recall_at_5": 0.3125,
+    "required_concept_precision": 1.0,
+    "required_concept_recall": 0.6875,
+    "required_concept_f1": 0.814815,
+    "semantic_similarity_mean": 0.736439,
+    "semantic_pass_rate": 0.625,
+    "length_compliance_rate": 1.0,
+    "evidence_grounding_rate": 1.0,
+    "distinctiveness_pass_rate": 0.8125,
+    "duplicate_label_rate": 0.0
+  },
+  "metrics_by_split": {
+    "development": {
+      "cluster_count": 12,
+      "acceptable_top1_accuracy": 0.166667,
+      "candidate_recall_at_5": 0.333333,
+      "required_concept_precision": 1.0,
+      "required_concept_recall": 0.708333,
+      "required_concept_f1": 0.829268,
+      "semantic_similarity_mean": 0.752413,
+      "semantic_pass_rate": 0.666667,
+      "length_compliance_rate": 1.0,
+      "evidence_grounding_rate": 1.0,
+      "distinctiveness_pass_rate": 0.916667,
+      "duplicate_label_rate": 0.0
+    },
+    "locked_test": {
+      "cluster_count": 4,
+      "acceptable_top1_accuracy": 0.0,
+      "candidate_recall_at_5": 0.25,
+      "required_concept_precision": 1.0,
+      "required_concept_recall": 0.625,
+      "required_concept_f1": 0.769231,
+      "semantic_similarity_mean": 0.688517,
+      "semantic_pass_rate": 0.5,
+      "length_compliance_rate": 1.0,
+      "evidence_grounding_rate": 1.0,
+      "distinctiveness_pass_rate": 0.5,
+      "duplicate_label_rate": 0.0
+    }
+  },
+  "rows": [
+    {
+      "cluster_id": "T-EN-01",
+      "split": "development",
+      "prediction": "Dopamine Agonist (DA) resistant and meta-analysis",
+      "gold_label": "Systematic review and meta-analysis",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": true,
+      "matched_required_concepts": [
+        "meta-analysis"
+      ],
+      "missing_required_concepts": [
+        "systematic review"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.599028,
+      "semantic_pass": false,
+      "label_length": 6,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "T-EN-02",
+      "split": "development",
+      "prediction": "randomized controlled trial and clinical trial",
+      "gold_label": "Randomized clinical trials",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "randomized",
+        "clinical trial"
+      ],
+      "missing_required_concepts": [],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.773121,
+      "semantic_pass": true,
+      "label_length": 6,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 2,
+      "concept_fp": 0,
+      "concept_fn": 0
+    },
+    {
+      "cluster_id": "T-EN-03",
+      "split": "development",
+      "prediction": "nomogram and cox regression",
+      "gold_label": "Survival and prognostic modeling",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "prognostic"
+      ],
+      "missing_required_concepts": [
+        "survival"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.542146,
+      "semantic_pass": false,
+      "label_length": 4,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "T-EN-04",
+      "split": "locked_test",
+      "prediction": "first-principles and density functional theory",
+      "gold_label": "First-principles molecular simulation",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "first-principles"
+      ],
+      "missing_required_concepts": [
+        "simulation"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.717841,
+      "semantic_pass": true,
+      "label_length": 5,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "T-EN-05",
+      "split": "development",
+      "prediction": "raman and spectroscopy",
+      "gold_label": "Spectroscopic and microscopic characterization",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "spectroscopy"
+      ],
+      "missing_required_concepts": [
+        "characterization"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.611645,
+      "semantic_pass": false,
+      "label_length": 3,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "T-EN-06",
+      "split": "development",
+      "prediction": "deep learning Segmentation",
+      "gold_label": "Deep learning segmentation and detection",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "deep learning",
+        "segmentation"
+      ],
+      "missing_required_concepts": [],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.824971,
+      "semantic_pass": true,
+      "label_length": 3,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 2,
+      "concept_fp": 0,
+      "concept_fn": 0
+    },
+    {
+      "cluster_id": "T-EN-07",
+      "split": "development",
+      "prediction": "numerical simulation and finite element",
+      "gold_label": "Finite element and numerical simulation",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": true,
+      "matched_required_concepts": [
+        "finite element",
+        "simulation"
+      ],
+      "missing_required_concepts": [],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.919321,
+      "semantic_pass": true,
+      "label_length": 5,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 2,
+      "concept_fp": 0,
+      "concept_fn": 0
+    },
+    {
+      "cluster_id": "T-EN-08",
+      "split": "locked_test",
+      "prediction": "synthesized synthesis",
+      "gold_label": "Nanomaterial synthesis and self-assembly",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "synthesis"
+      ],
+      "missing_required_concepts": [
+        "nanomaterial"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.592151,
+      "semantic_pass": false,
+      "label_length": 2,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": false,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "T-ZH-01",
+      "split": "development",
+      "prediction": "空间溢出效应与空间杜宾",
+      "gold_label": "空间计量与溢出效应分析",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "空间计量",
+        "溢出效应"
+      ],
+      "missing_required_concepts": [],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.788496,
+      "semantic_pass": true,
+      "label_length": 11,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 2,
+      "concept_fp": 0,
+      "concept_fn": 0
+    },
+    {
+      "cluster_id": "T-ZH-02",
+      "split": "development",
+      "prediction": "分布鲁棒优化",
+      "gold_label": "鲁棒优化与调度",
+      "acceptable_top1": true,
+      "candidate_recall_at_5": true,
+      "matched_required_concepts": [
+        "鲁棒优化"
+      ],
+      "missing_required_concepts": [
+        "调度"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.836262,
+      "semantic_pass": true,
+      "label_length": 6,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "T-ZH-03",
+      "split": "development",
+      "prediction": "故障定位",
+      "gold_label": "故障诊断与定位",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "定位"
+      ],
+      "missing_required_concepts": [
+        "故障诊断"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.902785,
+      "semantic_pass": true,
+      "label_length": 4,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "T-ZH-04",
+      "split": "locked_test",
+      "prediction": "稳定性分析控制",
+      "gold_label": "控制策略与稳定性分析",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": true,
+      "matched_required_concepts": [
+        "控制",
+        "稳定性分析"
+      ],
+      "missing_required_concepts": [],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.857182,
+      "semantic_pass": true,
+      "label_length": 7,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": false,
+      "concept_tp": 2,
+      "concept_fp": 0,
+      "concept_fn": 0
+    },
+    {
+      "cluster_id": "T-ZH-05",
+      "split": "development",
+      "prediction": "transformer与神经网络",
+      "gold_label": "深度神经网络预测",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "深度学习"
+      ],
+      "missing_required_concepts": [
+        "预测"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.583259,
+      "semantic_pass": false,
+      "label_length": 6,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": false,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "T-ZH-06",
+      "split": "development",
+      "prediction": "网络结构与社会网络分析",
+      "gold_label": "复杂网络结构分析",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "网络结构",
+        "分析"
+      ],
+      "missing_required_concepts": [],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.811546,
+      "semantic_pass": true,
+      "label_length": 11,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 2,
+      "concept_fp": 0,
+      "concept_fn": 0
+    },
+    {
+      "cluster_id": "T-ZH-07",
+      "split": "development",
+      "prediction": "耦合协调评价",
+      "gold_label": "综合评价与耦合分析",
+      "acceptable_top1": true,
+      "candidate_recall_at_5": true,
+      "matched_required_concepts": [
+        "耦合"
+      ],
+      "missing_required_concepts": [
+        "综合评价"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.836379,
+      "semantic_pass": true,
+      "label_length": 6,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "T-ZH-08",
+      "split": "locked_test",
+      "prediction": "新型电力系统仿真",
+      "gold_label": "数字孪生与仿真分析",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "仿真"
+      ],
+      "missing_required_concepts": [
+        "数字孪生"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.586893,
+      "semantic_pass": false,
+      "label_length": 8,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    }
+  ]
+}

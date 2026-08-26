@@ -1,0 +1,112 @@
+{
+  "version": "8.1",
+  "base_version": "7.0",
+  "parent_taxonomy": {
+    "technical": 49,
+    "application": 51
+  },
+  "technical_topic_map": {
+    "entries": 160,
+    "fine_topics": 80,
+    "parent_topics": 80,
+    "languages": {
+      "zh": 85,
+      "en": 75
+    },
+    "statuses": {
+      "stable": 43,
+      "candidate": 6,
+      "reviewed": 77,
+      "parent_fallback": 34
+    },
+    "sources": {
+      "v7_zh_high_medium_gold": 13,
+      "v7_en_high_medium_gold": 57,
+      "v8_seeded_boundary_topic": 36,
+      "v8_parent_fallback": 18,
+      "v8_taxonomy_parent_prototype": 34,
+      "v8_rule_anchor_full_corpus": 2
+    }
+  },
+  "application_topic_map": {
+    "entries": 176,
+    "fine_topics": 92,
+    "parent_topics": 84,
+    "languages": {
+      "zh": 98,
+      "en": 78
+    },
+    "statuses": {
+      "candidate": 8,
+      "stable": 48,
+      "reviewed": 81,
+      "parent_fallback": 39
+    },
+    "sources": {
+      "v7_zh_high_medium_gold": 16,
+      "v7_en_high_medium_gold": 56,
+      "v8_seeded_boundary_topic": 43,
+      "v8_parent_fallback": 19,
+      "v8_taxonomy_parent_prototype": 39,
+      "v8_rule_anchor_full_corpus": 3
+    }
+  },
+  "zh_mapping": {
+    "documents": 1000,
+    "technical": {
+      "statuses": {
+        "matched": 527,
+        "candidate_new_topic": 400,
+        "review": 73
+      },
+      "unique_topics": 74,
+      "unique_parents": 38
+    },
+    "application": {
+      "statuses": {
+        "matched": 647,
+        "candidate_new_topic": 262,
+        "review": 91
+      },
+      "unique_topics": 84,
+      "unique_parents": 37
+    }
+  },
+  "en_mapping": {
+    "documents": 1000,
+    "technical": {
+      "statuses": {
+        "matched": 522,
+        "candidate_new_topic": 336,
+        "review": 142
+      },
+      "unique_topics": 68,
+      "unique_parents": 42
+    },
+    "application": {
+      "statuses": {
+        "matched": 515,
+        "candidate_new_topic": 392,
+        "review": 93
+      },
+      "unique_topics": 73,
+      "unique_parents": 46
+    }
+  },
+  "zh_incremental": {
+    "proposals": 30,
+    "assigned_candidates": 371
+  },
+  "en_incremental": {
+    "proposals": 42,
+    "assigned_candidates": 373
+  },
+  "small_batch_example": {
+    "technical": {
+      "matched": 15
+    },
+    "application": {
+      "matched": 15
+    }
+  }
+}

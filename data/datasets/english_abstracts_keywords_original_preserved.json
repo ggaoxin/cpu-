@@ -1,0 +1,251 @@
+[
+  {
+    "abstract": "Probabilistic mental simulation is thought to play a key role in human reasoning, planning, and prediction, yet the demands of simulation in complex environments exceed realistic human capacity limits. A theory with growing evidence is that people simulate using simplified representations of the environment that abstract away from irrelevant details, but it is unclear how people determine these simplifications efficiently. Here, we present a “Just-in-Time” framework for simulation-based reasoning that demonstrates how such representations can be constructed online with minimal added computation. The model uses a tight interleaving of simulation, visual search, and representation modification, with the current simulation guiding where to look and visual search flagging objects that should be encoded for subsequent simulation. Despite only ever encoding a small subset of objects, the model makes high-utility predictions. We find strong empirical support for this account over alternative models in a grid-world planning task and a physical reasoning task across a range of behavioral measures. Together, these results offer a concrete algorithmic account",
+    "keywords": [
+      "mental simulation",
+      "human planning",
+      "reduced representations",
+      "visual search",
+      "grid-world planning",
+      "physical reasoning"
+    ]
+  },
+  {
+    "abstract": "In democracies, major policy decisions typically require some form of majority or consensus, so elites must secure mass support to govern. Historically, elites could shape support only through limited instruments like schooling and mass media; advances in AI-driven persuasion sharply reduce the cost and increase the precision of shaping public opinion, making the distribution of preferences itself an object of deliberate design. We develop a dynamic model in which elites choose how much to reshape the distribution of policy preferences, subject to persuasion costs and a majority rule constraint. With a single elite, any optimal intervention tends to push society toward more polarized opinion profiles—a “polarization pull”—and improvements in persuasion technology accelerate this drift. When two opposed elites alternate in power, the same technology also creates incentives to park society in “semi-lock” regions where opinions are more cohesive and harder for a rival to overturn, so advances in persuasion can either heighten or dampen polarization depending on the environment. Taken together, cheaper persuasion technologies recast polarization as a strategic instrument of governance rather than a purely emergent social byproduct, with important implications for democratic stability as AI capabilities advance.",
+    "keywords": [
+      "AI-driven persuasion",
+      "mass preferences",
+      "political polarization",
+      "dynamic model",
+      "majority rule",
+      "democratic stability"
+    ]
+  },
+  {
+    "abstract": "Previous studies on visual customization primarily rely on the objective alignment between various control signals (e.g., language, layout and canny) and the edited images, which largely ignore the subjective emotional contents, and more importantly lack general-purpose foundation models for affective visual customization. With this in mind, this paper proposes an LLM-centric Affective Visual Customization (L-AVC) task, which focuses on generating images within modifying their subjective emotions via Multimodal LLM. Further, this paper contends that how to make the model efficiently align emotion conversion in semantic (named inter-emotion semantic conversion) and how to precisely retain emotion-agnostic contents (named exter-emotion semantic retaining) are rather important and challenging in this L-AVC task. To this end, this paper proposes an Efficient and Precise Emotion Manipulating (EPEM) ∗ Corresponding author: Jingjing Wang Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components of this work owned by others than the author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org. WWW ’26, Dubai, United Arab Emirates © 2026 Copyright held by the owner/author(s). Publication rights licensed to ACM. ACM ISBN 979-8-4007-2307-0/2026/04 https://doi.org/10.1145/3774904.3792585 approach for editing subjective emotions in images. Specifically, an Efficient Inter-emotion Converting (EIC) module is tailored to make the LLM efficiently align emotion conversion in semantics before and after editing, followed by a Precise Extra-emotion Retaining (PER) module to precisely retain the emotion-agnostic contents. Comprehensive experimental evaluations on our constructed L-AVC dataset demonstrate the great advantage of the proposed EPEM approach to the L-AVC task over several state-of-the-art baselines. This justifies the importance of emotion information for L-AVC and the effectiveness of EPEM in efficiently and precisely manipulating such information.",
+    "keywords": [
+      "LLM-centric Affective Visual Customization",
+      "Inter-emotion Semantic Conversion",
+      "Exter-emotion Semantic Retaining"
+    ]
+  },
+  {
+    "abstract": "Offline black-box optimization (BBO) aims to find optimal designs based solely on an offline dataset of designs and their labels. Such scenarios frequently arise in domains like DNA sequence design and robotics, where only a few labeled data points are available. Traditional methods typically rely on task-specific proxy or generative models, overlooking the in-context learning capabilities of pre-trained large language models (LLMs). Recent efforts have adapted autoregressive LLMs to BBO by framing task descriptions and offline datasets as natural language prompts, enabling direct design generation. However, these designs often contain bidirectional dependencies, which left-to-right models struggle to capture. In this paper, we explore diffusion LLMs for BBO, leveraging their bidirectional modeling and iterative refinement capabilities. This motivates our in-context denoising module: we condition the diffusion LLM on the task description and the offline dataset, both formatted in natural language, and prompt it to denoise masked designs into improved candidates. To guide the generation toward high-performing designs, we introduce masked diffusion tree search, which casts the denoising process as a step-wise Monte Carlo Tree Search that dynamically balances exploration and exploitation. Each node represents a partially masked design, each denoising step is an action, and candidates are evaluated via expected improvement under a Gaussian Process trained on the offline dataset. Our method, dLLM, achieves state-of-the-art results in few-shot settings on design-bench.",
+    "keywords": [
+      "offline black-box optimization",
+      "diffusion large language models",
+      "in-context denoising",
+      "masked diffusion tree search",
+      "Monte Carlo tree search",
+      "Gaussian process",
+      "few-shot optimization"
+    ]
+  },
+  {
+    "abstract": "Progress on training and architecture strategies have enabled LLMs with millions of tokens in context length. However, empirical evidence suggests that such long-context LLMs can consume far more text than they can reliably use. On the other hand, it has been shown that inference-time compute can be used to scale performance of LLMs, often by generating thinking tokens, on challenging tasks involving multi-step reasoning. Through controlled experiments on sandbox long-context tasks, we find that such inference-time strategies show rapid diminishing returns, and fail at long context. We attribute these failures to score dilution, a phenomenon inherent to static self-attention. Further, we show that current inference-time strategies cannot retrieve relevant long-context signals under certain conditions. We propose query-only test-time-training (qTTT) that, through targeted gradients updates on the given context, provably overcomes limitations of static self-attention. We find that this simple shift in how inference-time compute is spent leads to consistently large performance improvements across models and long-context benchmarks. qTTT leads to massive 12.6% and 14.1% points improvements for Qwen3-4B on average across subsets of LongBench-v2 and ZeroScrolls benchmarks. The takeaway is practical: for long context, a small amount of context-specific training is a better use of inference compute than current inference-time scaling strategies like producing more thinking tokens.",
+    "keywords": [
+      "long-context language models",
+      "test-time training",
+      "query-only test-time training",
+      "inference-time compute",
+      "score dilution",
+      "static self-attention",
+      "LongBench-v2"
+    ]
+  },
+  {
+    "abstract": "Pass@k is a widely used performance metric for verifiable large language model tasks, including mathematical reasoning, code generation, and short-answer reasoning. It defines success if any of 𝑘 independently sampled solutions passes a verifier. This multi-sample inference metric has motivated inference-aware fine-tuning methods that directly optimize pass@𝑘. However, prior work reports a recurring trade-off: pass@k improves while pass@1 degrades under such methods. This trade-off is practically important because pass@1 often remains a hard operational constraint due to latency and cost budgets, imperfect verifier coverage, and the need for a reliable single-shot fallback. We study the origin of this trade-off and provide a theoretical characterization of when pass@k policy optimization can reduce pass@1 through gradient conflict induced by prompt interference. We show that pass@𝑘 policy gradients can conflict with pass@1 gradients because pass@𝑘 optimization implicitly reweights prompts toward low-success prompts; when these prompts are what we term negatively interfering, their upweighting can rotate the pass@k update direction away from the pass@1 direction. We illustrate our theoretical findings with large language model experiments on verifiable mathematical reasoning tasks.",
+    "keywords": [
+      "pass@k optimization",
+      "pass@1 performance",
+      "prompt interference",
+      "policy gradients",
+      "gradient conflict",
+      "mathematical reasoning"
+    ]
+  },
+  {
+    "abstract": "The prevalence and low cost of LLMs have led to a rise of synthetic content. From review sites to court documents, “natural” content has been contaminated by data points that appear similar to natural data, but are in fact LLM-generated. In this work we revisit fundamental learning theory questions in this, now ubiquitous, setting. We model this scenario as a sequence of learning tasks where the input is a mix of natural and synthetic data, and the learning algorithms are oblivious to the origin of any individual example. We study the possibilities and limitations of ERM in this setting. For the problem of estimating the mean of an arbitrary d-dimensional distribution, we find that while ERM converges to the true mean, it is outperformed by an algorithm that assigns non-uniform weights to examples from different generations of data. For the PAC learning setting, the disparity is even more stark. We find that ERM does not always converge to the true concept, echoing the model collapse literature. However, we show there are algorithms capable of learning the correct hypothesis for arbitrary VC classes and arbitrary amounts of contamination.",
+    "keywords": [
+      "synthetic data",
+      "empirical risk minimization",
+      "model collapse",
+      "PAC learning",
+      "VC classes",
+      "data contamination"
+    ]
+  },
+  {
+    "abstract": "Time series forecasting (TSF) traditionally relies on fast-thinking paradigms that map historical observations directly to future sequences of continuous values. While effective, such approaches often frame forecasting as a pattern-matching problem and tend to overlook explicit reasoning over temporal dynamics and contextual factors, which are critical for modeling long-range dependencies and non-stationary behaviors in real-world scenarios. Recent slowthinking large language models (LLMs), such as OpenAI o1 and DeepSeek-R1, demonstrate strong inference-time multi-step reasoning abilities. This raises a fundamental question: can slow-thinking LLMs reason over temporal dynamics to support accurate TSF, even without task-specific training? To investigate this question, we present TimeReasoner, a systematic empirical study that reformulates TSF as a conditional reasoning process performed entirely at inference time. TimeReasoner integrates hybrid instructions consisting of task directives, timestamps, sequential values, and optional contextual features, and induces multi-step temporal reasoning in pretrained slow-thinking LLMs through chain-of-thought prompting and rollout-based reasoning strategies. Extensive experiments across diverse TSF benchmarks show that slow-thinking LLMs consistently outperform prior baselines or achieve competitive training-free forecasting performance. Beyond accuracy, we analyze how different inference-time reasoning strategies influence forecasting behaviors, highlighting both the potential and limitations of slow-thinking paradigms for TSF.1",
+    "keywords": [
+      "Forecasting",
+      "Long Chain-of-thought",
+      "Time Series Reasoning"
+    ]
+  },
+  {
+    "abstract": "Self-training systems often degenerate due to the lack of an external criterion for judging data quality, leading to reward hacking and semantic drift. This paper provides a proof-of-concept system architecture for stable self-training under sparse external feedback and bounded memory, and empirically characterises its learning dynamics and failure modes. We introduce a self-training architecture in which learning is mediated exclusively by environmental viability, rather than by reward, objective functions, or externally defined fitness criteria. Candidate behaviours are executed under real resource constraints, and only those whose environmental effects both persist and preserve the possibility of future interaction are propagated. The environment does not provide semantic feedback, dense rewards, or task-specific supervision; selection operates solely through differential survival of behaviours as world-altering events, making proxy optimisation impossible and rendering reward-hacking evolutionarily unstable. Analysis of semantic dynamics shows that improvement arises primarily through the persistence of effective and repeatable strategies under a regime of consolidation and pruning, a paradigm we refer to as negative-space learning (NSL), and that models develop meta-learning strategies (such as deliberate experimental failure in order to elicit informative error messages) without explicit instruction. This work establishes that environment-grounded selection enables sustainable open-ended self-improvement, offering a viable path toward more robust and generalisable autonomous systems without reliance on human-curated data or complex reward shaping.",
+    "keywords": [
+      "self-training",
+      "environment-mediated selection",
+      "reward hacking",
+      "semantic drift",
+      "negative-space learning",
+      "open-ended self-improvement",
+      "autonomous systems"
+    ]
+  },
+  {
+    "abstract": "We present TranslateGemma, a suite of open machine translation models based on the Gemma 3 foundation models. To enhance the inherent multilingual capabilities of Gemma 3 for the translation task, we employ a two-stage fine-tuning process. First, supervised fine-tuning is performed using a rich mixture of high-quality large-scale synthetic parallel data generated via state-of-the-art models and human-translated parallel data. This is followed by a reinforcement learning phase, where we optimize translation quality using an ensemble of reward models, including MetricX-QE and AutoMQM, targeting translation quality. We demonstrate the effectiveness of TranslateGemma with human evaluation on the WMT25 test set across 10 language pairs and with automatic evaluation on the WMT24++ benchmark across 55 language pairs. Automatic metrics show consistent and substantial gains over the baseline Gemma 3 models across all sizes. Notably, smaller TranslateGemma models often achieve performance comparable to larger baseline models, offering improved efficiency. We also show that TranslateGemma models retain strong multimodal capabilities, with enhanced performance on the Vistra image translation benchmark. The release of the open TranslateGemma models aims to provide the research community with powerful and adaptable tools for machine translation.",
+    "keywords": [
+      "machine translation",
+      "TranslateGemma",
+      "supervised fine-tuning",
+      "reinforcement learning",
+      "synthetic parallel data",
+      "multilingual models",
+      "multimodal translation",
+      "WMT benchmarks"
+    ]
+  },
+  {
+    "abstract": "Discriminative approaches to classification often learn shortcuts that hold in-distribution but fail even under minor distribution shift. This failure mode stems from an overreliance on features that are spuriously correlated with the label. We show that generative classifiers, which use class-conditional generative models, can avoid this issue by modeling all features, both core and spurious, instead of mainly spurious ones. These generative classifiers are simple to train, avoiding the need for specialized augmentations, strong regularization, extra hyperparameters, or knowledge of the specific spurious correlations to avoid. We find that diffusion-based and autoregressive generative classifiers achieve state-of-the-art performance on five standard image and text distribution shift benchmarks and reduce the impact of spurious correlations in realistic applications, such as medical or satellite datasets. Finally, we carefully analyze a Gaussian toy setting to understand the inductive biases of generative classifiers, as well as the data properties that determine when generative classifiers outperform discriminative ones. Code is at https://github.com/alexlioralexli/generative-classifiers.",
+    "keywords": [
+      "generative classifiers",
+      "shortcut learning",
+      "distribution shift",
+      "spurious correlations",
+      "class-conditional generative models",
+      "diffusion models",
+      "autoregressive models"
+    ]
+  },
+  {
+    "abstract": "Knowledge Distillation (KD) is increasingly adopted to transfer capabilities from large language models to smaller ones, offering significant improvements in efficiency and utility while often surpassing standard fine-tuning. Beyond performance, KD is also explored as a privacy-preserving mechanism to mitigate the risk of training data leakage. While training data memorization has been extensively studied in standard pre-training and fine-tuning settings, its dynamics in a knowledge distillation setup remain poorly understood. In this work, we study memorization across the KD pipeline using three large language model (LLM) families (Pythia, OLMo-2, Qwen-3) and three datasets (FineWeb, Wikitext, Nemotron-CC-v2). We find: (1) distilled models memorize significantly less training data than standard fine-tuning (reducing memorization by more than 50%); (2) some examples are inherently easier to memorize and account for a large fraction of memorization during distillation (over 95%); (3) student memorization is predictable prior to distillation using features based on zlib entropy, KL divergence, and perplexity; and (4) while soft and hard distillation have similar overall memorization rates, hard distillation poses a greater risk: it inherits 2.7× more teacher-specific examples than soft distillation. Overall, we demonstrate that distillation can provide both improved generalization and reduced memorization risks compared to standard fine-tuning.",
+    "keywords": [
+      "knowledge distillation",
+      "training data memorization",
+      "language models",
+      "soft distillation",
+      "hard distillation",
+      "privacy risk",
+      "KL divergence"
+    ]
+  },
+  {
+    "abstract": "Knowledge distillation improves large language model (LLM) reasoning by compressing the knowledge of a teacher LLM to train smaller LLMs. On-policy distillation advances this approach by having the student sample its own trajectories while a teacher LLM provides dense token-level supervision, addressing the distribution mismatch between training and inference in off-policy distillation methods. However, on-policy distillation typically requires a separate, often larger, teacher LLM and does not explicitly leverage ground-truth solutions available in reasoning datasets. Inspired by the intuition that a sufficiently capable LLM can rationalize external privileged reasoning traces and teach its weaker self (i.e., the version without access to privileged information), we introduce On-Policy Self-Distillation (OPSD), a framework where a single model acts as both teacher and student by conditioning on different contexts. The teacher policy conditions on privileged information (e.g., verified reasoning traces) while the student policy sees only the question; training minimizes the per-token divergence between these distributions over the student’s own rollouts. We demonstrate the efficacy of our method on multiple mathematical reasoning benchmarks, achieving 8-12× token efficiency compared to reinforcement learning methods such as GRPO and superior performance over off-policy distillation methods. Code repo: https://github.com/siyan-zhao/OPSD.",
+    "keywords": [
+      "on-policy self-distillation",
+      "large language model reasoning",
+      "privileged information",
+      "token-level supervision",
+      "mathematical reasoning",
+      "GRPO",
+      "knowledge distillation"
+    ]
+  },
+  {
+    "abstract": "Vision language models (VLMs) have achieved remarkable success in broad visual understanding, yet they remain challenged by object-centric reasoning on rare objects due to the scarcity of such instances in pretraining data. While prior efforts alleviate this issue by retrieving additional data or introducing stronger vision encoders, these methods are still computationally intensive during fine-tuning VLMs and don’t fully exploit the original training data. In this paper, we introduce an efficient plug-and-play module that substantially improves VLMs’ reasoning over rare objects by refining visual tokens and enriching input text prompts, without VLMs fine-tuning. Specifically, we propose to learn multi-modal class embeddings for rare objects by leveraging prior knowledge from vision foundation models and synonym-augmented text descriptions, compensating for limited training examples. These embeddings refine the visual tokens in VLMs through a lightweight attentionbased enhancement module that improves fine-grained object details. In addition, we use the learned embeddings as object-aware detectors to generate informative hints, which are injected into the text prompts to help guide the VLM’s attention toward relevant image regions. Experiments on two benchmarks show consistent and substantial gains for pretrained VLMs in rare object recognition and reasoning. Further analysis reveals how our method strengthens the VLM’s ability to focus on and reason about rare objects.",
+    "keywords": [
+      "vision-language models",
+      "rare object reasoning",
+      "visual token refinement",
+      "multimodal class embeddings",
+      "object-aware prompts",
+      "plug-and-play module"
+    ]
+  },
+  {
+    "abstract": "Vision-Language Models (VLMs) face significant computational challenges in video processing due to massive data redundancy, which creates prohibitively long token sequences. To address this, we introduce Triage, a training-free, plugand-play framework that reframes video reasoning as a resource allocation problem via hierarchical visual budgeting. Its first stage, Frame-Level Budgeting, identifies keyframes by evaluating their visual dynamics and relevance, generating a strategic prior based on their importance scores. Guided by this prior, the second stage, Token-Level Budgeting, allocates tokens in two phases: it first secures high-relevance Core Tokens, followed by diverse Context Tokens selected with an efficient batched Maximal Marginal Relevance (MMR) algorithm. Extensive experiments demonstrate that Triage improves inference speed and reduces memory footprint, while maintaining or surpassing the performance of baselines and other methods on various video reasoning benchmarks.",
+    "keywords": [
+      "Vision-Language Models",
+      "Video Reasoning",
+      "Efficient Inference",
+      "Token Selection"
+    ]
+  },
+  {
+    "abstract": "Memory is critical for AI agents, yet the widely-adopted static memory, aiming to create readily available memory in advance, is inevitably subject to severe information loss. To address this limitation, we propose a novel framework called general agentic memory (GAM). GAM follows the principle of “just-in time (JIT) compilation” where it focuses on creating optimized contexts for its client at runtime while keeping only simple but useful memory during the offline stage. To this end, GAM employs a duo-design with the following components. 1) Memorizer, which highlights key historical information using a lightweight memory, while maintaining complete historical information within a universal page-store. 2) Researcher, which retrieves and integrates useful information from the page-store for its online request guided by the pre-constructed memory. This design allows GAM to effectively leverage the agentic capabilities and test-time scalability of frontier large language models (LLMs), while also facilitating end-to-end performance optimization through reinforcement learning. In our experimental study, we demonstrate that GAM achieves substantial improvement on various memory-grounded task completion scenarios against existing memory systems.",
+    "keywords": [
+      "agentic memory",
+      "deep research",
+      "just-in-time compilation",
+      "memory systems",
+      "page store",
+      "reinforcement learning",
+      "AI agents"
+    ]
+  },
+  {
+    "abstract": "We present the surprising finding that a language model’s reasoning capabilities can be improved by training on synthetic datasets of chain-of-thought (CoT) traces from more capable models, even when all of those traces lead to an incorrect final answer. Our experiments show this approach can yield better performance on reasoning tasks than training on human-annotated datasets. We hypothesize that two key factors explain this phenomenon: first, the distribution of synthetic data is inherently closer to the language model’s own distribution, making it more amenable to learning. Second, these ‘incorrect’ traces are often only partially flawed and contain valid reasoning steps from which the model can learn. To further test the first hypothesis, we use a language model to paraphrase human-annotated traces – shifting their distribution closer to the model’s own distribution – and show that this improves performance. For the second hypothesis, we introduce increasingly flawed CoT traces and study to what extent models are tolerant to these flaws. We demonstrate our findings across various reasoning domains like math, algorithmic reasoning and code generation using MATH, GSM8K, Countdown and MBPP datasets on various language models ranging from 1.5B to 9B across Qwen, Llama, and Gemma models. Our study shows that curating datasets that are closer to the model’s distribution is a critical aspect to consider. We also show that a correct final answer is not always a reliable indicator of a faithful reasoning process.",
+    "keywords": [
+      "chain-of-thought",
+      "synthetic reasoning data",
+      "incorrect reasoning traces",
+      "distribution matching",
+      "reasoning tasks",
+      "supervised fine-tuning",
+      "language models"
+    ]
+  },
+  {
+    "abstract": "We formulate long-context language modeling as a problem in continual learning rather than architecture design. Under this formulation, we only use a standard architecture – a Transformer with sliding-window attention. However, our model continues learning at test time via next-token prediction on the given context, compressing the context it reads into its weights. In addition, we improve the model’s initialization for learning at test time via meta-learning at training time. Overall, our method, a form of Test-Time Training (TTT), is End-to-End (E2E) both at test time (via next-token prediction) and training time (via meta-learning), in contrast to previous forms. We conduct extensive experiments with a focus on scaling properties. In particular, for 3B models trained with 164B tokens, our method (TTT-E2E) scales with context length in the same way as Transformer with full attention, while others, such as Mamba 2 and Gated DeltaNet, do not. However, similar to RNNs, TTT-E2E has constant inference latency regardless of context length, making it 2.7× faster than full attention for 128K context. Our code is publicly available.",
+    "keywords": [
+      "long-context language modeling",
+      "test-time training",
+      "continual learning",
+      "sliding-window attention",
+      "meta-learning",
+      "next-token prediction",
+      "TTT-E2E"
+    ]
+  },
+  {
+    "abstract": "Latent reasoning represents a new development in Transformer language models that has shown potential in compressing reasoning lengths compared to chain-of-thought reasoning. By directly passing the information-rich previous final latent state into the next sequence, latent reasoning removes the restriction to human language tokens as the medium for reasoning. We develop adaptive-length latent reasoning models and introduce a post-SFT reinforcement-learning methodology to optimize latent reasoning length by minimizing reasoning length while maintaining accuracy. This, in turn, further reduces compute usage and raises the bar on the compressive capabilities of latent reasoning models. Experiments on the Llama 3.2 1B model and the GSM8K-Aug dataset show a 52% drop in total reasoning length with no penalty to accuracy. In future work, we plan to extend to additional models and datasets, analyze relationships between training coefficients, experiment with architecture variations, and continue our knowledge distillation for latent reasoning SFT efforts. We make our code and pretrained weights available at https://github.com/apning/adaptive-latent-reasoning.",
+    "keywords": [
+      "latent reasoning",
+      "adaptive reasoning length",
+      "reinforcement learning",
+      "chain-of-thought",
+      "reasoning efficiency",
+      "knowledge distillation"
+    ]
+  },
+  {
+    "abstract": "Test-time reinforcement learning (TTRL) offers a label-free paradigm for adapting models using only synthetic signals at inference, but its success hinges on constructing reliable learning signals. Standard approaches such as majority voting often collapse to spurious yet popular answers. We introduce Self-Harmony, a framework built on a simple intuition: the correct answer should remain stable across both an original question and its paraphrase. Self-Harmony operationalizes this by employing a single model in two complementary roles: a Solver to produce answers and a Reframer to rephrase the input. Based on this, we further propose a pseudo-label method: instead of majority voting, it aggregates answer frequencies across these original and reframed views using the harmonic mean. This is a process that naturally selects for solutions stable under reframing, thereby avoiding the common trap of favoring view-dependent, spurious answers. Crucially, this requires no human supervision or auxiliary models. Across diverse reasoning benchmarks, Self-Harmony achieves state-of-the-art results at the label-free test-time setting, ranking first in 28 of 30 settings across multiple methods. Beyond accuracy, it demonstrates unprecedented robustness, with zero training failures in all experiments, underscoring its stability and reliability.",
+    "keywords": [
+      "test-time reinforcement learning",
+      "Self-Harmony",
+      "self-supervision",
+      "self-play",
+      "pseudo-labeling",
+      "harmonic mean",
+      "reasoning robustness"
+    ]
+  },
+  {
+    "abstract": "How can we use AI to discover a new state of the art for a scientific problem? Prior work in test-time scaling, such as AlphaEvolve, performs search by prompting a frozen LLM. We perform reinforcement learning at test time, so the LLM can continue to train, but now with experience specific to the test problem. This form of continual learning is quite special, because its goal is to produce one great solution rather than many good ones on average, and to solve this very problem rather than generalize to other problems. Therefore, our learning objective and search subroutine are designed to prioritize the most promising solutions. We call this method Test-Time Training to Discover (TTT-Discover). Following prior work, we focus on problems with continuous rewards. We report results for every problem we attempted, across mathematics, GPU kernel engineering, algorithm design, and biology. TTT-Discover sets the new state of the art in almost all of them: (i) Erdős’ minimum overlap problem and an autocorrelation inequality; (ii) a GPUMode kernel competition (up to 2× faster than prior art); (iii) past AtCoder algorithm competitions; and (iv) denoising problem in single-cell analysis. Our solutions are reviewed by experts or the organizers. All our results are achieved with an open model, OpenAI gpt-oss-120b, and can be reproduced with our publicly available code, in contrast to previous best results that required closed frontier models. Our test-time training runs are performed using Tinker, an API by Thinking Machines, with a cost of only a few hundred dollars per problem.",
+    "keywords": [
+      "test-time training",
+      "scientific discovery",
+      "reinforcement learning",
+      "continual learning",
+      "search",
+      "TTT-Discover",
+      "inference-time scaling",
+      "scientific problem solving"
+    ]
+  },
+  {
+    "abstract": "Typical reinforcement learning (RL) methods for LLM reasoning waste compute on hard problems, where correct on-policy traces are rare, policy gradients vanish, and learning stalls. To bootstrap more efficient RL, we consider reusing old sampling FLOPs (from prior inference or RL training) in the form of off-policy traces. Standard off-policy methods supervise against off-policy data, causing instabilities during RL optimization. We introduce PrefixRL, where we condition on the prefix of successful off-policy traces and run on-policy RL to complete them, side-stepping off-policy instabilities. PrefixRL boosts the learning signal on hard problems by modulating the difficulty of the problem through the off-policy prefix length. We prove that the PrefixRL objective is not only consistent with the standard RL objective but also more sample efficient. Empirically, we discover back-generalization: training only on prefixed problems generalizes to out-of-distribution unprefixed performance, with learned strategies often differing from those in the prefix. In our experiments, we source the off-policy traces by rejection sampling with the base model, creating a self-improvement loop. On hard reasoning problems, PrefixRL reaches the same training reward 2× faster than the strongest baseline (SFT on off-policy data then RL), even after accounting for the compute spent on the initial rejection sampling, and increases the final reward by 3×. The gains transfer to held-out benchmarks, and PrefixRL is still effective when off-policy traces are derived from a different model family, validating its flexibility in practical settings.",
+    "keywords": [
+      "reinforcement learning",
+      "off-policy prefixes",
+      "PrefixRL",
+      "LLM reasoning",
+      "sample efficiency",
+      "back-generalization",
+      "rejection sampling"
+    ]
+  }
+]

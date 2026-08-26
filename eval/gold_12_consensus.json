@@ -1,0 +1,195 @@
+{
+  "_desc": "LLM多轮一致性gold。consistency=N轮标签一致比例。≥0.8高置信,<0.8 ambiguous。",
+  "_rounds": 5,
+  "_temps": [
+    0.4,
+    0.5,
+    0.3,
+    0.6,
+    0.4
+  ],
+  "papers": [
+    {
+      "document_id": "EN_00001",
+      "pdf": 1,
+      "title": "AUTOREGRESSIVE ENTITY RETRIEVAL",
+      "labels_rounds": [
+        "实体检索",
+        "实体检索",
+        "实体检索",
+        "实体检索",
+        "实体检索"
+      ],
+      "gold": "实体检索",
+      "consistency": 1.0,
+      "confidence": "高"
+    },
+    {
+      "document_id": "EN_00002",
+      "pdf": 2,
+      "title": "SELF-HARMONY: LEARNING TO HARMONIZE SELF-SUPERVISION AND SELF-PLAY IN TEST-TIME REINFORCEMENT LEARNING",
+      "labels_rounds": [
+        "测试时强化学习",
+        "测试时强化学习",
+        "测试时强化学习",
+        "强化学习",
+        "测试时强化学习"
+      ],
+      "gold": "测试时强化学习",
+      "consistency": 0.8,
+      "confidence": "高"
+    },
+    {
+      "document_id": "EN_00003",
+      "pdf": 4,
+      "title": "Memex(RL): Scaling Long-Horizon LLM Agents via Indexed Experience Memory",
+      "labels_rounds": [
+        "强化学习",
+        "强化学习",
+        "强化学习",
+        "强化学习",
+        "强化学习"
+      ],
+      "gold": "强化学习",
+      "consistency": 1.0,
+      "confidence": "高"
+    },
+    {
+      "document_id": "EN_00004",
+      "pdf": 5,
+      "title": "Commentary: The Materials Project: A materials genome approach to accelerating materials innovation ",
+      "labels_rounds": [
+        "材料科学",
+        "材料科学",
+        "材料科学",
+        "材料科学",
+        "材料科学"
+      ],
+      "gold": "材料科学",
+      "consistency": 1.0,
+      "confidence": "高"
+    },
+    {
+      "document_id": "EN_00005",
+      "pdf": 6,
+      "title": "OPEN DATA SYNTHESIS FOR DEEP RESEARCH",
+      "labels_rounds": [
+        "合成数据",
+        "合成数据",
+        "合成数据",
+        "合成数据",
+        "合成数据"
+      ],
+      "gold": "合成数据",
+      "consistency": 1.0,
+      "confidence": "高"
+    },
+    {
+      "document_id": "EN_00006",
+      "pdf": 7,
+      "title": "Learning from Synthetic Data: Limitations of ERM\\*",
+      "labels_rounds": [
+        "合成数据",
+        "合成数据",
+        "合成数据",
+        "合成数据",
+        "合成数据"
+      ],
+      "gold": "合成数据",
+      "consistency": 1.0,
+      "confidence": "高"
+    },
+    {
+      "document_id": "EN_00007",
+      "pdf": 8,
+      "title": "COINS: SeMantiC Ids Enhanced COld Item RepresentatioN for Click-through Rate Prediction in E-commerce Search",
+      "labels_rounds": [
+        "冷启动推荐",
+        "冷启动推荐",
+        "冷启动推荐",
+        "冷启动推荐",
+        "冷启动推荐"
+      ],
+      "gold": "冷启动推荐",
+      "consistency": 1.0,
+      "confidence": "高"
+    },
+    {
+      "document_id": "EN_00008",
+      "pdf": 9,
+      "title": "When Reasoning Traces Become Performative: Step-Level Evidence that Chain-of-Thought Is an Imperfect Oversight Channel",
+      "labels_rounds": [
+        "思维链可解释性",
+        "思维链可解释性",
+        "思维链忠实性",
+        "思维链忠实性",
+        "思维链忠实性"
+      ],
+      "gold": "思维链忠实性",
+      "consistency": 0.6,
+      "confidence": "中"
+    },
+    {
+      "document_id": "EN_00009",
+      "pdf": 10,
+      "title": "Divide and Contrast: Learning Robust Temporal Features without Augmentation",
+      "labels_rounds": [
+        "对比学习",
+        "对比学习",
+        "对比学习",
+        "对比学习",
+        "对比学习"
+      ],
+      "gold": "对比学习",
+      "consistency": 1.0,
+      "confidence": "高"
+    },
+    {
+      "document_id": "EN_00010",
+      "pdf": 11,
+      "title": "Achieving Gold-Medal-Level Olympiad Reasoning via Simple and Unified Scaling",
+      "labels_rounds": [
+        "推理",
+        "推理",
+        "推理",
+        "推理",
+        "推理"
+      ],
+      "gold": "推理",
+      "consistency": 1.0,
+      "confidence": "高"
+    },
+    {
+      "document_id": "EN_00011",
+      "pdf": 12,
+      "title": "SHAPE OF THOUGHT: WHEN DISTRIBUTION MATTERS MORE THAN CORRECTNESS IN REASONING TASKS",
+      "labels_rounds": [
+        "合成数据",
+        "合成数据",
+        "合成数据",
+        "合成数据",
+        "合成数据"
+      ],
+      "gold": "合成数据",
+      "consistency": 1.0,
+      "confidence": "高"
+    },
+    {
+      "document_id": "EN_00012",
+      "pdf": 14,
+      "title": "First Logit Boosting: Visual Grounding Method to Mitigate Object Hallucination in Large Vision-Language Models",
+      "labels_rounds": [
+        "视觉定位",
+        "视觉定位",
+        "视觉定位",
+        "视觉定位",
+        "视觉定位"
+      ],
+      "gold": "视觉定位",
+      "consistency": 1.0,
+      "confidence": "高"
+    }
+  ],
+  "high_confidence_count": 11,
+  "ambiguous_count": 1
+}

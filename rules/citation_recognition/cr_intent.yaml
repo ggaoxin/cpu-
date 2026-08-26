@@ -1,0 +1,154 @@
+functional_item: 引用句识别工具
+name: 引用意图识别
+description: 从文献全文中规则抽取引用句→LLM判不确定句→批量判定引用意图→后置规则引擎校验调分（动态权重+冲突审核）。
+input_type: text
+engine_type: citation_recognition
+
+system_prompt: |
+  你是学术引用意图分析专家。对给定的引用句，判定作者引用该文献的目的。
+  引用意图仅三类：
+  - 用于背景介绍：铺垫领域现状、综述前人工作，如"Smith等(2020)首次提出X，为后续研究奠定基础"
+  - 用于引入研究方法：借用方法/工具/模型，如"本文采用Smith等(2020)提出的X方法"
+  - 用于结果比较：与本文结果对比，如"与Wang等(2022)的结果相比，本文方法提升了5%"
+  只输出JSON：{"data":{"results":[{"sentence":"引用句原文","intent":"用于背景介绍|用于引入研究方法|用于结果比较","confidence":0.9}]}}
+
+principles: |
+  - 引用句抽取用规则（引用标记模式匹配），规则没覆盖的找LLM判定。
+  - 意图判定看引用句本身+上下文（前后句）。
+  - LLM判完后，后置规则引擎校验调分（动态权重+冲突审核）。
+  - 本项目基于GLM API调用，不训练模型。
+
+# 引用句抽取规则库
+citation_patterns:
+  - "\\[\\s*\\d+(?:\\s*[-–,，]\\s*\\d+)*\\s*\\]"
+  - "<sup>\\s*\\[?\\d+\\]?\\s*</sup>"
+  - "<sub>\\s*\\[?\\d+\\]?\\s*</sub>"
+  - "\\([^)]*\\d{4}[^)]*\\)"
+  - "[\\w一-鿿]+等?\\(\\d{4}\\)"
+  - "\\w+\\s+et\\s+al\\.?.*?\\d{4}"
+  - "文献\\[\\s*[\\d,\\-\\s]+\\s*\\]"
+  - "文献\\[\\s*[A-Z]\\d+\\s*\\]"
+  - "\\w+等人?于\\d{4}年提出"
+
+citation_cues: "所述|报道|提出|发现|研究表明|先前研究|已有研究|根据.*?研究|参考.*?文献|引用|借鉴|沿用|基于.*?工作"
+
+exclude_patterns:
+  - "^(文章编号|中图分类号|文献标识码|doi|DOI|收稿日期|基金项目|作者简介|通信作者|关键词|Keywords|Abstract|摘要|作者|单位|地址|邮编)"
+  - "^\\d+\\s*$"
+  - "^\\d{4}-\\d{4}"
+
+exclude_address_patterns:
+  - "\\([^)]*[,，][^)]*\\d{6}\\)"
+  - "\\([^)]*(School of|Department of|University|Institute|College)[^)]*\\)"
+  - "\\([^)]*(大学|学院|研究所|医院|实验室)[^)]*\\d{5,}\\)"
+
+# 意图识别规则库（RuleLib兼容格式）
+pattern_rules:
+  # === 方法引入类规则 ===
+  - id: CR-INT-R001
+    layer: universal
+    scope: global
+    target_move: 用于引入研究方法
+    action: "+score"
+    level: soft
+    weight: 0.5
+    description: "含方法/工具借用词→用于引入研究方法"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["采用", "基于", "使用", "借鉴", "沿用", "引入.*方法", "引入.*模型", "利用", "借助"]
+    exclusion_conditions:
+      - kind: keyword
+        any_of: ["相比", "优于", "提升.*%", "与.*相比"]
+    stats: {}
+    fold_count: 0
+
+  # === 结果比较类规则 ===
+  - id: CR-INT-R002
+    layer: universal
+    scope: global
+    target_move: 用于结果比较
+    action: "+score"
+    level: soft
+    weight: 0.5
+    description: "含对比/提升词→用于结果比较"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["相比", "与.*相比", "对比", "优于", "提升.*%", "高于", "低于", "超过", "而.*提升", "相对于"]
+    stats: {}
+    fold_count: 0
+
+  # === 背景介绍类规则 ===
+  - id: CR-INT-R003
+    layer: universal
+    scope: global
+    target_move: 用于背景介绍
+    action: "+score"
+    level: advisory
+    weight: 0.3
+    description: "含背景/前人工作词→用于背景介绍"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["近年来", "首次", "提出", "奠定", "发展", "综述", "背景", "现状", "前期", "以往", "先前", "已有", "过去"]
+    exclusion_conditions:
+      - kind: keyword
+        any_of: ["采用", "基于", "使用", "借鉴", "相比", "优于", "提升.*%"]
+    stats: {}
+    fold_count: 0
+
+  # === 冲突调分（方法引入→背景介绍降级）===
+  - id: CR-INT-R004
+    layer: universal
+    scope: global
+    target_move: 用于引入研究方法
+    action: "-score"
+    level: strong
+    weight: 0.8
+    description: "LLM标方法引入但无方法借用词→惩罚"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["提出", "发展", "奠定", "首次", "综述", "现状", "背景"]
+    exclusion_conditions:
+      - kind: keyword
+        any_of: ["采用", "基于", "使用", "借鉴", "沿用", "利用", "借助"]
+    stats: {}
+    fold_count: 0
+
+  # === 冲突调分（结果比较→背景介绍降级）===
+  - id: CR-INT-R005
+    layer: universal
+    scope: global
+    target_move: 用于结果比较
+    action: "-score"
+    level: strong
+    weight: 0.8
+    description: "LLM标结果比较但无对比词→惩罚"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["提出", "发展", "奠定", "首次", "综述", "现状", "背景", "采用", "基于", "使用"]
+    exclusion_conditions:
+      - kind: keyword
+        any_of: ["相比", "与.*相比", "对比", "优于", "提升.*%", "高于", "低于", "超过"]
+    stats: {}
+    fold_count: 0
+
+dictionaries:
+  stopwords: []
+
+output_schema:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        type: object
+        properties:
+          sentence: {type: string, description: "引用句原文"}
+          citation_marker: {type: string, description: "引用标记"}
+          context_before: {type: string, description: "前一句"}
+          context_after: {type: string, description: "后一句"}
+          intent: {type: string, enum: [用于背景介绍, 用于引入研究方法, 用于结果比较]}
+          confidence: {type: number}
+        required: [sentence, intent, confidence]
+  required: [data]
+
+examples: []

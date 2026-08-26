@@ -1,0 +1,653 @@
+{
+  "summary": {
+    "n": 64,
+    "n_ok": 64,
+    "domain_acc": 0.938,
+    "clc_branch_acc": 0.984,
+    "clc_hier_acc": 0.625,
+    "clc_acc": 0.172,
+    "anti_hallucination_pass": 1.0
+  },
+  "records": [
+    {
+      "id": 1,
+      "pred_dom": "01",
+      "gold_dom": "01",
+      "pred_clc": "O241.6",
+      "gold_clc": "O241",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 2,
+      "pred_dom": "01",
+      "gold_dom": "01",
+      "pred_clc": "O221.7",
+      "gold_clc": "O22",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 3,
+      "pred_dom": "02",
+      "gold_dom": "02",
+      "pred_clc": "O357.3",
+      "gold_clc": "O357",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 4,
+      "pred_dom": "02",
+      "gold_dom": "02",
+      "pred_clc": "O322",
+      "gold_clc": "O322",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 5,
+      "pred_dom": "03",
+      "gold_dom": "03",
+      "pred_clc": "O482.52+3",
+      "gold_clc": "O472",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 6,
+      "pred_dom": "03",
+      "gold_dom": "03",
+      "pred_clc": "O436",
+      "gold_clc": "O436",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 7,
+      "pred_dom": "04",
+      "gold_dom": "04",
+      "pred_clc": "O643.12",
+      "gold_clc": "O644",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 8,
+      "pred_dom": "04",
+      "gold_dom": "04",
+      "pred_clc": "O611.4",
+      "gold_clc": "O621",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 9,
+      "pred_dom": "05",
+      "gold_dom": "05",
+      "pred_clc": "P14",
+      "gold_clc": "P15",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 10,
+      "pred_dom": "05",
+      "gold_dom": "05",
+      "pred_clc": "P15",
+      "gold_clc": "P15",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 11,
+      "pred_dom": "16",
+      "gold_dom": "06",
+      "pred_clc": "TE319",
+      "gold_clc": "P31",
+      "dom_correct": false,
+      "branch_correct": false,
+      "hier_correct": false
+    },
+    {
+      "id": 12,
+      "pred_dom": "06",
+      "gold_dom": "06",
+      "pred_clc": "P59",
+      "gold_clc": "P5",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 13,
+      "pred_dom": "07",
+      "gold_dom": "07",
+      "pred_clc": "P23",
+      "gold_clc": "P23",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 14,
+      "pred_dom": "07",
+      "gold_dom": "07",
+      "pred_clc": "P22",
+      "gold_clc": "P22",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 15,
+      "pred_dom": "08",
+      "gold_dom": "08",
+      "pred_clc": "P44",
+      "gold_clc": "P45",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 16,
+      "pred_dom": "08",
+      "gold_dom": "08",
+      "pred_clc": "P73",
+      "gold_clc": "P73",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 17,
+      "pred_dom": "09",
+      "gold_dom": "09",
+      "pred_clc": "Q945.78",
+      "gold_clc": "Q78",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 18,
+      "pred_dom": "09",
+      "gold_dom": "09",
+      "pred_clc": "Q933",
+      "gold_clc": "Q93",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 19,
+      "pred_dom": "10",
+      "gold_dom": "10",
+      "pred_clc": "R575.2",
+      "gold_clc": "R575",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 20,
+      "pred_dom": "10",
+      "gold_dom": "10",
+      "pred_clc": "R619",
+      "gold_clc": "R68",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 21,
+      "pred_dom": "11",
+      "gold_dom": "11",
+      "pred_clc": "R944.9",
+      "gold_clc": "R943",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 22,
+      "pred_dom": "11",
+      "gold_dom": "11",
+      "pred_clc": "R994.4",
+      "gold_clc": "R99",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 23,
+      "pred_dom": "12",
+      "gold_dom": "12",
+      "pred_clc": "S513",
+      "gold_clc": "S513",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 24,
+      "pred_dom": "12",
+      "gold_dom": "12",
+      "pred_clc": "S491",
+      "gold_clc": "S22",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 25,
+      "pred_dom": "13",
+      "gold_dom": "13",
+      "pred_clc": "S714.2",
+      "gold_clc": "S714",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 26,
+      "pred_dom": "13",
+      "gold_dom": "13",
+      "pred_clc": "S969.39",
+      "gold_clc": "S96",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 27,
+      "pred_dom": "17",
+      "gold_dom": "14",
+      "pred_clc": "TG142.72",
+      "gold_clc": "TG13",
+      "dom_correct": false,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 28,
+      "pred_dom": "20",
+      "gold_dom": "14",
+      "pred_clc": "TM914.4+2",
+      "gold_clc": "TM615",
+      "dom_correct": false,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 29,
+      "pred_dom": "15",
+      "gold_dom": "15",
+      "pred_clc": "TD324",
+      "gold_clc": "TD32",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 30,
+      "pred_dom": "15",
+      "gold_dom": "15",
+      "pred_clc": "TD923",
+      "gold_clc": "TD923",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 31,
+      "pred_dom": "16",
+      "gold_dom": "16",
+      "pred_clc": "TE357.1+1",
+      "gold_clc": "TE37",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 32,
+      "pred_dom": "16",
+      "gold_dom": "16",
+      "pred_clc": "TE832",
+      "gold_clc": "TE88",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 33,
+      "pred_dom": "17",
+      "gold_dom": "17",
+      "pred_clc": "TF777.1",
+      "gold_clc": "TF777",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 34,
+      "pred_dom": "17",
+      "gold_dom": "17",
+      "pred_clc": "TG457.19",
+      "gold_clc": "TG4",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 35,
+      "pred_dom": "18",
+      "gold_dom": "18",
+      "pred_clc": "TG659",
+      "gold_clc": "TG537",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 36,
+      "pred_dom": "18",
+      "gold_dom": "18",
+      "pred_clc": "TH165",
+      "gold_clc": "TH16",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 37,
+      "pred_dom": "19",
+      "gold_dom": "19",
+      "pred_clc": "TH741.1+3",
+      "gold_clc": "TH741",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 38,
+      "pred_dom": "19",
+      "gold_dom": "19",
+      "pred_clc": "TP212.2",
+      "gold_clc": "TP212",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 39,
+      "pred_dom": "20",
+      "gold_dom": "20",
+      "pred_clc": "TM911.47",
+      "gold_clc": "TM911",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 40,
+      "pred_dom": "22",
+      "gold_dom": "20",
+      "pred_clc": "TM732",
+      "gold_clc": "TM73",
+      "dom_correct": false,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 41,
+      "pred_dom": "21",
+      "gold_dom": "21",
+      "pred_clc": "TL364",
+      "gold_clc": "TL4",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 42,
+      "pred_dom": "21",
+      "gold_dom": "21",
+      "pred_clc": "TL942",
+      "gold_clc": "TL",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 43,
+      "pred_dom": "22",
+      "gold_dom": "22",
+      "pred_clc": "TM712",
+      "gold_clc": "TM712",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 44,
+      "pred_dom": "22",
+      "gold_dom": "22",
+      "pred_clc": "TM247",
+      "gold_clc": "TM21",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 45,
+      "pred_dom": "23",
+      "gold_dom": "23",
+      "pred_clc": "TN928",
+      "gold_clc": "TN92",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 46,
+      "pred_dom": "23",
+      "gold_dom": "23",
+      "pred_clc": "TN386",
+      "gold_clc": "TN386",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 47,
+      "pred_dom": "24",
+      "gold_dom": "24",
+      "pred_clc": "TP273",
+      "gold_clc": "TP13",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 48,
+      "pred_dom": "24",
+      "gold_dom": "24",
+      "pred_clc": "TP242.6",
+      "gold_clc": "TP24",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 49,
+      "pred_dom": "25",
+      "gold_dom": "25",
+      "pred_clc": "TP391.3",
+      "gold_clc": "TP18",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 50,
+      "pred_dom": "25",
+      "gold_dom": "25",
+      "pred_clc": "TP181",
+      "gold_clc": "TP18",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 51,
+      "pred_dom": "26",
+      "gold_dom": "26",
+      "pred_clc": "TQ052",
+      "gold_clc": "TQ03",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 52,
+      "pred_dom": "26",
+      "gold_dom": "26",
+      "pred_clc": "TQ426.94",
+      "gold_clc": "TQ42",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 53,
+      "pred_dom": "27",
+      "gold_dom": "27",
+      "pred_clc": "TS255",
+      "gold_clc": "TS2",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 54,
+      "pred_dom": "27",
+      "gold_dom": "27",
+      "pred_clc": "TS1",
+      "gold_clc": "TS1",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 55,
+      "pred_dom": "28",
+      "gold_dom": "28",
+      "pred_clc": "TU375.4",
+      "gold_clc": "TU37",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 56,
+      "pred_dom": "28",
+      "gold_dom": "28",
+      "pred_clc": "TU753.1",
+      "gold_clc": "TU47",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 57,
+      "pred_dom": "29",
+      "gold_dom": "29",
+      "pred_clc": "TV697.1+2",
+      "gold_clc": "TV62",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 58,
+      "pred_dom": "29",
+      "gold_dom": "29",
+      "pred_clc": "TV732.3",
+      "gold_clc": "TV7",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 59,
+      "pred_dom": "30",
+      "gold_dom": "30",
+      "pred_clc": "U491.2+62",
+      "gold_clc": "U49",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 60,
+      "pred_dom": "30",
+      "gold_dom": "30",
+      "pred_clc": "U448.13",
+      "gold_clc": "U44",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 61,
+      "pred_dom": "31",
+      "gold_dom": "31",
+      "pred_clc": "V414.19",
+      "gold_clc": "V22",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 62,
+      "pred_dom": "31",
+      "gold_dom": "31",
+      "pred_clc": "V448.22+4",
+      "gold_clc": "V47",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": false
+    },
+    {
+      "id": 63,
+      "pred_dom": "32",
+      "gold_dom": "32",
+      "pred_clc": "X703.1",
+      "gold_clc": "X70",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    },
+    {
+      "id": 64,
+      "pred_dom": "32",
+      "gold_dom": "32",
+      "pred_clc": "X932",
+      "gold_clc": "X9",
+      "dom_correct": true,
+      "branch_correct": true,
+      "hier_correct": true
+    }
+  ]
+}

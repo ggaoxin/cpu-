@@ -1,0 +1,175 @@
+functional_item: 语步识别工具
+name: 英文摘要语步识别
+description: Segment an English scientific abstract into five move spans - Background/Objective/Methods/Results/Conclusion.
+input_type: text
+system_prompt: 'You are an expert in rhetorical move recognition for English scientific abstracts.
+  Segment the input abstract into five move spans.
+
+  Each span must be a verbatim excerpt of the original text (no rewriting, no omission,
+  no addition); concatenating the five spans should reconstruct the original abstract.
+
+  Five move categories:
+
+  - Background: context, problem origin, real-world need, gaps in prior work;
+
+  - Objective: what this paper aims to solve or achieve;
+
+  - Methods: data, models, methods, experimental setup, framework construction;
+
+  - Results: objective findings, data outcomes, experimental facts;
+
+  - Conclusion: interpretation of results, implications, suggestions, significance.
+
+  If the abstract contains no sentence for a move, output an empty string for that move.'
+principles: 'Judge by language mechanism, not isolated vocabulary. Attend to:
+
+  1. Research actor: distinguish "this paper/we/our" from "previous studies/existing research/prior work".
+  A finding sentence with a third-party actor (e.g., "Previous studies have shown...") is Background, not this paper''s Result, even if it contains "shown".
+
+  2. Fact status / tense: distinguish completed ("showed/demonstrated/found/improved") from planned ("will/plan to") and expected ("is expected to/can potentially"). "can improve" is likely method-function, not a result.
+
+  3. Method function vs real result: a sentence merely describing what a method can do or is expected to do is NOT a result; require experimental/numeric/comparison evidence to label as Results.
+
+  4. Results vs Conclusion boundary: Results state objective facts; Conclusion interprets them, gives implications or suggestions. Conclusion usually follows Results; if a suggestion appears before Results, it is Objective.
+
+  5. Objective vs Methods boundary: in compound sentences with both "to address ... problem" (purpose clause) and "we propose ... method" (main clause), recognize the clause boundary; do not label the whole sentence Objective merely because of "to address".
+
+  6. Discourse order: typically Background→Objective→Methods→Results→Conclusion; position is only auxiliary evidence.
+
+  7. Output must be verbatim excerpts; five spans reconstruct the abstract.'
+dictionaries:
+  Background:
+  - however
+  - remains challenging
+  - is limited
+  - previous studies
+  - prior work
+  - existing research
+  - little is known
+  - gap
+  Objective:
+  - aim to
+  - in order to
+  - to investigate
+  - to address
+  - we investigate
+  - the objective
+  - goal
+  Methods:
+  - propose
+  - develop
+  - design
+  - employ
+  - introduce
+  - construct
+  - we present
+  - model
+  - framework
+  Results:
+  - our results
+  - results show
+  - we find
+  - demonstrated
+  - improved
+  - outperformed
+  - achieved
+  Conclusion:
+  - we conclude
+  - in conclusion
+  - suggest
+  - imply
+  - implications
+  - paves the way
+  - holds promise
+pattern_rules:
+- id: MR-EN-001
+  layer: universal
+  scope: global
+  target_move: Results
+  action: +score
+  level: soft
+  weight: 0.5
+  description: Label Results requires a result predicate + experimental/numeric evidence, excluding third-party and expected expressions
+  necessary_conditions:
+  - kind: keyword
+    any_of: [showed, found, demonstrated, results show, our results, improved, outperformed, achieved, reveal]
+  - kind: regex
+    pattern: '\d+(\.\d+)?\s*%|improved|outperform|higher than|lower than|significant'
+  exclusion_conditions:
+  - kind: keyword
+    any_of: [previous studies, prior work, existing research, has been reported, have been reported]
+  - kind: keyword
+    any_of: [is expected, expected to, can potentially, can improve, able to]
+- id: MR-EN-002
+  layer: universal
+  scope: global
+  target_move: Background
+  action: +score
+  level: soft
+  weight: 0.5
+  description: A finding sentence with a third-party research actor belongs to Background, not this paper's Results
+  necessary_conditions:
+  - kind: keyword
+    any_of: [previous studies, prior work, existing research, earlier studies, previous work, the literature]
+  - kind: position
+    rel_min: 0.0
+    rel_max: 0.4
+  exclusion_conditions: []
+- id: MR-EN-003
+  layer: universal
+  scope: global
+  target_move: Conclusion
+  action: +score
+  level: soft
+  weight: 0.5
+  description: Conclusion follows Results and contains interpretation/implication/suggestion expressions
+  necessary_conditions:
+  - kind: position
+    after_move: Results
+  - kind: keyword
+    any_of: [we conclude, in conclusion, conclude that, suggest, imply, implications, paves the way, holds promise]
+  exclusion_conditions:
+  - kind: keyword
+    any_of: [we propose, we develop, we design]
+- id: MR-EN-004
+  layer: universal
+  scope: global
+  target_move: Methods
+  action: +score
+  level: soft
+  weight: 0.5
+  description: '"we propose/develop/employ ... method/model/framework" as main clause labels the sentence Methods'
+  necessary_conditions:
+  - kind: keyword
+    any_of: [we propose, propose, we develop, develop, we design, design, employ, we present, construct]
+  - kind: regex
+    pattern: '(model|framework|algorithm|method|approach|system|network)'
+  exclusion_conditions:
+  - kind: keyword
+    any_of: [previous studies, prior work, existing research]
+- id: MR-EN-005
+  layer: universal
+  scope: global
+  target_move: Results
+  action: -score
+  level: soft
+  weight: 0.5
+  description: Mere method-function description (can/able to + effect) without experimental evidence weakens Results
+  necessary_conditions:
+  - kind: keyword
+    any_of: [can improve, able to, can achieve, capable of, enables, allows, facilitates]
+  - kind: regex
+    pattern: '(can|able|capable|enables|allows)'
+  exclusion_conditions:
+  - kind: regex
+    pattern: '\d+(\.\d+)?\s*%|improved|outperform|higher than|lower than'
+output_schema:
+  type: object
+  properties:
+    Background: {type: string}
+    Objective: {type: string}
+    Methods: {type: string}
+    Results: {type: string}
+    Conclusion: {type: string}
+  required: [Background, Objective, Methods, Results, Conclusion]
+examples: []

@@ -1,0 +1,27 @@
+functional_item: 结构化自动综述工具
+name: 结构化自动综述
+description: 对文献text进行研究问题抽取与语义聚类，匹配研究方法，生成含原文证据的结构化综述。
+input_type: multi_text
+engine_type: structured_review
+system_prompt: |
+  结构化自动综述。引擎驱动，system_prompt 不参与 LLM 调用。
+principles: |
+  - 输入仅为文献集、研究主题或关键词、文献元数据，不关联历史深度聚类任务。
+  - 先从每篇文献抽取研究问题及原文证据，再对研究问题执行语义聚类。
+  - 每个研究问题类簇匹配有原文证据的研究方法，报告结论必须可溯源。
+  - 第一阶段不生成研究进展、趋势和热点演示数据。
+dictionaries:
+  stopwords: []
+output_schema:
+  type: object
+  properties:
+    data:
+      type: object
+      properties:
+        tree: {type: array}
+        cluster_induction_results: {type: object}
+        structured_report: {type: object}
+        trend_hotspot_distribution: {type: object}
+      required: [tree, cluster_induction_results, structured_report, trend_hotspot_distribution]
+  required: [data]
+examples: []

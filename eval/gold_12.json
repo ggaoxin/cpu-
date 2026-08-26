@@ -1,0 +1,18 @@
+{
+  "_desc": "12篇论文gold标注(按MinerU正确解析的标题+领域手动标)。请求texts顺序=[1,2,4,5,6,7,8,9,10,11,12,14].pdf。主观标注,可修订。",
+  "_note": "EN_00004=5.pdf是材料学评论(非AI),混入作鲁棒性测试;真实场景常有跨域文献混入。",
+  "papers": [
+    {"document_id": "EN_00001", "title": "AUTOREGRESSIVE ENTITY RETRIEVAL",       "gold": "实体检索"},
+    {"document_id": "EN_00002", "title": "SELF-HARMONY: LEARNING TO HARMONIZE",  "gold": "强化学习"},
+    {"document_id": "EN_00003", "title": "Memex(RL): Scaling Long-Horizon LLM",  "gold": "强化学习"},
+    {"document_id": "EN_00004", "title": "Commentary: The Materials Project",    "gold": "材料科学"},
+    {"document_id": "EN_00005", "title": "OPEN DATA SYNTHESIS FOR DEEP RESEARCH","gold": "合成数据"},
+    {"document_id": "EN_00006", "title": "Learning from Synthetic Data",         "gold": "合成数据"},
+    {"document_id": "EN_00007", "title": "COINS: SeMantiC Ids Enhanced COld",    "gold": "推荐系统"},
+    {"document_id": "EN_00008", "title": "When Reasoning Traces Become Perform", "gold": "推理"},
+    {"document_id": "EN_00009", "title": "Divide and Contrast: Learning Robust","gold": "对比学习"},
+    {"document_id": "EN_00010", "title": "Achieving Gold-Medal-Level Olympiad",  "gold": "强化学习"},
+    {"document_id": "EN_00011", "title": "SHAPE OF THOUGHT: WHEN DISTRIBUTION",  "gold": "分布表征"},
+    {"document_id": "EN_00012", "title": "First Logit Boosting: Visual Ground",  "gold": "视觉定位"}
+  ]
+}

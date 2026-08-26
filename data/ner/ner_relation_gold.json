@@ -1,0 +1,68 @@
+[
+  {
+    "doc_id": "ch3",
+    "type": "ner_relation",
+    "entities": [
+      {
+        "canonical": "侯晓洁",
+        "type": "PERSON",
+        "variants": [
+          "侯晓洁",
+          "Hou Xiaojie"
+        ]
+      },
+      {
+        "canonical": "四川传媒学院",
+        "type": "ORGANIZATION",
+        "variants": [
+          "四川传媒学院",
+          "Sichuan University of Media and Communications"
+        ]
+      },
+      {
+        "canonical": "表演学院",
+        "type": "ORGANIZATION",
+        "variants": [
+          "表演学院",
+          "School of Performance"
+        ]
+      },
+      {
+        "canonical": "大数据与 AI 画像",
+        "type": "METHOD",
+        "variants": [
+          "大数据与 AI 画像",
+          "big data and AI portrait technologies"
+        ]
+      },
+      {
+        "canonical": "高校思想政治教育",
+        "type": "TOPIC",
+        "variants": [
+          "高校思想政治教育",
+          "思政教育"
+        ]
+      }
+    ],
+    "relations": [
+      {
+        "head": "侯晓洁",
+        "relation": "任职于",
+        "tail": "四川传媒学院",
+        "context": "侯晓洁(四川传媒学院 表演学院,成都 611745)"
+      },
+      {
+        "head": "大数据与 AI 画像",
+        "relation": "应用于",
+        "tail": "高校思想政治教育",
+        "context": "大数据与 AI 画像:高校思想政治教育"
+      },
+      {
+        "head": "表演学院",
+        "relation": "隶属",
+        "tail": "四川传媒学院",
+        "context": "四川传媒学院 表演学院"
+      }
+    ]
+  }
+]

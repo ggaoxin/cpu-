@@ -1,0 +1,13 @@
+{
+  "engine_version": "application-scenario-v3-core3",
+  "profile_name": "core3_domain_object_problem",
+  "facet_weights": {
+    "domain": 0.40,
+    "object": 0.35,
+    "problem": 0.25
+  },
+  "clustering_method": "core3_spectral_local_graph",
+  "sparse_affinity_weight": 0.0,
+  "graph_neighbors": "auto",
+  "selected_on": "validation_core3_fixed_k_and_louvain_auto_pending_final_codex_gold"
+}

@@ -1,0 +1,1633 @@
+[
+  {
+    "document_id": "ZH_0005",
+    "gold": "T47",
+    "pred": "T44",
+    "correct_id": "T42",
+    "reason": "文献为数字基础设施对城市空间结构影响的面板回归研究，非数字孪生/软件平台；属面板计量经济"
+  },
+  {
+    "document_id": "ZH_0040",
+    "gold": "T38",
+    "pred": "T35",
+    "correct_id": "T01",
+    "reason": "基于双向循环插补网络+Seq2Seq的时序数据修复属深度学习，非博弈/市场机制"
+  },
+  {
+    "document_id": "ZH_0049",
+    "gold": "T07",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "城乡居家养老服务设施空间配给均等性的GIS空间分析，非病例报告"
+  },
+  {
+    "document_id": "ZH_0054",
+    "gold": "T34",
+    "pred": "T49",
+    "correct_id": "T36",
+    "reason": "失步振荡中心定位方法属故障定位/保护算法，非聚类/关联规则"
+  },
+  {
+    "document_id": "ZH_0062",
+    "gold": "T06",
+    "pred": "T39",
+    "correct_id": "T37",
+    "reason": "需求侧资源自主被动组合响应策略+优化模型+二分搜索，属优化调度，非叙述性综述"
+  },
+  {
+    "document_id": "ZH_0086",
+    "gold": "T38",
+    "pred": "T37",
+    "correct_id": "T37",
+    "reason": "省间交易通道可用输电能力优化方法+双层求解，属优化调度/数学规划，无博弈论"
+  },
+  {
+    "document_id": "ZH_0098",
+    "gold": "T13",
+    "pred": "T01",
+    "correct_id": "T01",
+    "reason": "TCN-LSTM电能质量扰动分类属深度学习，非材料表征"
+  },
+  {
+    "document_id": "ZH_0101",
+    "gold": "T07",
+    "pred": "T44",
+    "correct_id": "T48",
+    "reason": "长三角科技型中小企业时空格局+核密度+热点分析属空间统计/GIS，非病例报告"
+  },
+  {
+    "document_id": "ZH_0117",
+    "gold": "T26",
+    "pred": "T49",
+    "correct_id": "T49",
+    "reason": "电氢耦合直流微网能量管理+级联式模糊控制属控制策略，非机器人/导航"
+  },
+  {
+    "document_id": "ZH_0121",
+    "gold": "T40",
+    "pred": "T36",
+    "correct_id": "T36",
+    "reason": "基于VMD的励磁涌流辨识属故障诊断/辨识，非电力系统建模/潮流"
+  },
+  {
+    "document_id": "ZH_0122",
+    "gold": "T13",
+    "pred": "T49",
+    "correct_id": "T49",
+    "reason": "微电网端口变换器自抗扰控制策略属控制策略，非材料表征"
+  },
+  {
+    "document_id": "ZH_0123",
+    "gold": "T34",
+    "pred": "T37",
+    "correct_id": "T37",
+    "reason": "综合能源系统参与电能量-备用市场随机优化调度+CVaR，属优化调度，非聚类"
+  },
+  {
+    "document_id": "ZH_0125",
+    "gold": "T23",
+    "pred": "T07",
+    "correct_id": "T06",
+    "reason": "数智时代教育思维/创生教育属叙述性综述/理论观点，非微生物培养"
+  },
+  {
+    "document_id": "ZH_0126",
+    "gold": "T10",
+    "pred": "T47",
+    "correct_id": "T06",
+    "reason": "芯片技术危与机的回顾属叙述性综述，非病理组织诊断"
+  },
+  {
+    "document_id": "ZH_0127",
+    "gold": "T13",
+    "pred": "T06",
+    "correct_id": "T06",
+    "reason": "粤港澳大湾区新材料发展现状与策略属综述，非材料表征"
+  },
+  {
+    "document_id": "ZH_0149",
+    "gold": "T19",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "中国城市公路可达性水平测度与时空变化属空间统计/GIS，非环境处理工艺"
+  },
+  {
+    "document_id": "ZH_0151",
+    "gold": "T42",
+    "pred": "T21",
+    "correct_id": "T06",
+    "reason": "中国经济地理思想史读后属叙述性综述，非面板回归"
+  },
+  {
+    "document_id": "ZH_0160",
+    "gold": "T37",
+    "pred": "T46",
+    "correct_id": "T42",
+    "reason": "数字经济赋能城市高质量发展机制与效应+面板+中介效应属面板回归，非优化调度"
+  },
+  {
+    "document_id": "ZH_0165",
+    "gold": "T11",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "中蒙俄高铁可达性及空间效应属空间统计/GIS，非成像/诊断检测"
+  },
+  {
+    "document_id": "ZH_0167",
+    "gold": "T02",
+    "pred": "T21",
+    "correct_id": "T46",
+    "reason": "乡村振兴与新型城镇化良性耦合的科学内涵/时代选择属理论机制/政策路径，非机器学习"
+  },
+  {
+    "document_id": "ZH_0175",
+    "gold": "T09",
+    "pred": "T37",
+    "correct_id": "T37",
+    "reason": "综合能源虚拟电厂随机低碳调度属优化调度，非组学测序"
+  },
+  {
+    "document_id": "ZH_0176",
+    "gold": "T17",
+    "pred": "T36",
+    "correct_id": "T36",
+    "reason": "光伏逆变器电流环控制参数辨识(基于故障恢复特征)属故障诊断/参数辨识，非工程器件/天线"
+  },
+  {
+    "document_id": "ZH_0180",
+    "gold": "T19",
+    "pred": "T39",
+    "correct_id": "T32",
+    "reason": "配电网通感算资源分配方法+适配性评估+DQN属工程系统设计/方案优化，非环境处理"
+  },
+  {
+    "document_id": "ZH_0197",
+    "gold": "T40",
+    "pred": "T39",
+    "correct_id": "T02",
+    "reason": "基于FHO-CatBoost的异常事件检测属经典机器学习，非电力系统建模"
+  },
+  {
+    "document_id": "ZH_0230",
+    "gold": "T14",
+    "pred": "T49",
+    "correct_id": "T32",
+    "reason": "基于光储协调电压自均衡的光伏直流汇集方案属工程系统设计/方案优化，非数值模拟/有限元"
+  },
+  {
+    "document_id": "ZH_0231",
+    "gold": "T49",
+    "pred": "T14",
+    "correct_id": "T36",
+    "reason": "基于LCC注入信号的永久性故障识别方案属故障诊断/保护，非控制策略"
+  },
+  {
+    "document_id": "ZH_0237",
+    "gold": "T07",
+    "pred": "T40",
+    "correct_id": "T14",
+    "reason": "变电站接地网雷电流阻性耦合仿真分析属数值模拟/仿真，非病例报告"
+  },
+  {
+    "document_id": "ZH_0240",
+    "gold": "T02",
+    "pred": "T40",
+    "correct_id": "T01",
+    "reason": "分支竞争Q网络+图卷积的紧急切负荷决策属深度学习/强化学习，非经典机器学习"
+  },
+  {
+    "document_id": "ZH_0244",
+    "gold": "T49",
+    "pred": "T40",
+    "correct_id": "T40",
+    "reason": "基于聚合电流的配电网短路故障计算与分析属电力系统建模/等值，非控制策略"
+  },
+  {
+    "document_id": "ZH_0249",
+    "gold": "T47",
+    "pred": "T49",
+    "correct_id": "T49",
+    "reason": "混合风电场频率电压支撑分布式自适应解耦控制属控制策略，非数字孪生/软件平台"
+  },
+  {
+    "document_id": "ZH_0250",
+    "gold": "T49",
+    "pred": "T14",
+    "correct_id": "T36",
+    "reason": "基于相角差余弦值奇异熵的单端量保护原理属故障诊断/保护，非控制策略"
+  },
+  {
+    "document_id": "ZH_0257",
+    "gold": "T29",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "科学开发地下空间资源激活城市经济属理论机制/政策路径，非野外采样/生态"
+  },
+  {
+    "document_id": "ZH_0258",
+    "gold": "T02",
+    "pred": "T23",
+    "correct_id": "T06",
+    "reason": "朱光亚科学家精神纪念文章属叙述性综述，非机器学习"
+  },
+  {
+    "document_id": "ZH_0259",
+    "gold": "T40",
+    "pred": "T45",
+    "correct_id": "T06",
+    "reason": "人工智能时代开源与闭源技术模式探讨属叙述性综述，非电力系统建模"
+  },
+  {
+    "document_id": "ZH_0263",
+    "gold": "T28",
+    "pred": "T06",
+    "correct_id": "T46",
+    "reason": "科研人员标识应用研究及对策建议属制度设计/政策路径，非综合研究方法"
+  },
+  {
+    "document_id": "ZH_0266",
+    "gold": "T12",
+    "pred": "T01",
+    "correct_id": "T01",
+    "reason": "电力设备红外图像超分辨率重建Transformer-GAN属深度学习，非材料合成"
+  },
+  {
+    "document_id": "ZH_0268",
+    "gold": "T12",
+    "pred": "T01",
+    "correct_id": "T36",
+    "reason": "基于行波全频带特征+CNN的故障行波波头标定属故障定位，非材料合成"
+  },
+  {
+    "document_id": "ZH_0279",
+    "gold": "T12",
+    "pred": "T13",
+    "correct_id": "T37",
+    "reason": "电力变压器群体预防性检修/退役计划协同优化属优化调度/数学规划，非材料合成"
+  },
+  {
+    "document_id": "ZH_0285",
+    "gold": "T39",
+    "pred": "T47",
+    "correct_id": "T06",
+    "reason": "智能算法安全内涵、科学问题与展望属叙述性综述/理论观点，非鲁棒/随机优化"
+  },
+  {
+    "document_id": "ZH_0286",
+    "gold": "T21",
+    "pred": "T41",
+    "correct_id": "T42",
+    "reason": "OFDI逆向技术溢出影响绿色全要素生产率的实证(SBM+ML指数)属面板回归/计量经济，非经济评价"
+  },
+  {
+    "document_id": "ZH_0288",
+    "gold": "T15",
+    "pred": "T07",
+    "correct_id": "T46",
+    "reason": "全国算力体系一体化建设五大问题及治理对策属理论机制/政策路径，非第一性原理"
+  },
+  {
+    "document_id": "ZH_0289",
+    "gold": "T08",
+    "pred": "T43",
+    "correct_id": "T46",
+    "reason": "中美欧泛数据主权竞争格局属制度/政策分析，非细胞分子实验"
+  },
+  {
+    "document_id": "ZH_0292",
+    "gold": "T38",
+    "pred": "T47",
+    "correct_id": "T06",
+    "reason": "畜禽养殖业数据应用展望和问题分析属叙述性综述，非博弈/市场机制"
+  },
+  {
+    "document_id": "ZH_0293",
+    "gold": "T26",
+    "pred": "T45",
+    "correct_id": "T06",
+    "reason": "中科院海洋所75年历史回顾属叙述性综述，非控制规划/机器人"
+  },
+  {
+    "document_id": "ZH_0294",
+    "gold": "T26",
+    "pred": "T45",
+    "correct_id": "T06",
+    "reason": "中科院数学事业发展及展望属叙述性综述，非控制规划/机器人"
+  },
+  {
+    "document_id": "ZH_0295",
+    "gold": "T13",
+    "pred": "T26",
+    "correct_id": "T06",
+    "reason": "长春光机所建院75周年回顾属叙述性综述，非材料表征"
+  },
+  {
+    "document_id": "ZH_0298",
+    "gold": "T13",
+    "pred": "T45",
+    "correct_id": "T46",
+    "reason": "构建数智安全新格局属理论机制/政策路径，非材料表征"
+  },
+  {
+    "document_id": "ZH_0299",
+    "gold": "T29",
+    "pred": "T07",
+    "correct_id": "T41",
+    "reason": "国家科技竞争力测度、演进与国际比较(三维测度框架)属指标体系/综合评价，非野外采样"
+  },
+  {
+    "document_id": "ZH_0300",
+    "gold": "T23",
+    "pred": "T06",
+    "correct_id": "T06",
+    "reason": "人胚胎来源细胞应用历史及监管进展属叙述性综述，非微生物培养"
+  },
+  {
+    "document_id": "ZH_0301",
+    "gold": "T29",
+    "pred": "T19",
+    "correct_id": "T46",
+    "reason": "中国耕地资源利用五化态势与治理对策属政策路径，非野外采样/生态"
+  },
+  {
+    "document_id": "ZH_0304",
+    "gold": "T24",
+    "pred": "T49",
+    "correct_id": "T49",
+    "reason": "基于直流侧电压等效补偿的光伏并网系统间谐波电流抑制策略属控制策略，非遗传关联/PCR"
+  },
+  {
+    "document_id": "ZH_0308",
+    "gold": "T29",
+    "pred": "T37",
+    "correct_id": "T37",
+    "reason": "水电站机组负荷降维优化分配中的时间尺度效应属优化调度，非野外采样"
+  },
+  {
+    "document_id": "ZH_0311",
+    "gold": "T40",
+    "pred": "T39",
+    "correct_id": "T37",
+    "reason": "考虑准线需求响应的高比例新能源电力系统调度优化属优化调度，非潮流/等值"
+  },
+  {
+    "document_id": "ZH_0325",
+    "gold": "T38",
+    "pred": "T06",
+    "correct_id": "T06",
+    "reason": "支持新型储能发展的国际政策与中国发展模式探讨属叙述性综述，非博弈/市场"
+  },
+  {
+    "document_id": "ZH_0335",
+    "gold": "T31",
+    "pred": "T37",
+    "correct_id": "T32",
+    "reason": "考虑应急电源功能的光储充放电站配置方法属工程系统设计/方案优化，非理化分析"
+  },
+  {
+    "document_id": "ZH_0349",
+    "gold": "T09",
+    "pred": "T40",
+    "correct_id": "T36",
+    "reason": "新能源并网变电站防孤岛技术(孤岛识别/联切策略)属故障诊断/保护，非组学测序"
+  },
+  {
+    "document_id": "ZH_0354",
+    "gold": "T39",
+    "pred": "T49",
+    "correct_id": "T49",
+    "reason": "永磁同步电机无模型超螺旋快速终端滑模控制属控制策略，非鲁棒/随机优化"
+  },
+  {
+    "document_id": "ZH_0356",
+    "gold": "T12",
+    "pred": "T17",
+    "correct_id": "T49",
+    "reason": "抑制间接矩阵变换器共模电压的调制策略属控制策略，非材料合成"
+  },
+  {
+    "document_id": "ZH_0369",
+    "gold": "T34",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "国家战略驱动的跨界地区治理重构属理论机制/政策路径，非聚类/关联规则"
+  },
+  {
+    "document_id": "ZH_0377",
+    "gold": "T13",
+    "pred": "T49",
+    "correct_id": "T49",
+    "reason": "并网逆变器新型锁相环设计及鲁棒性分析属控制策略，非材料表征"
+  },
+  {
+    "document_id": "ZH_0384",
+    "gold": "T15",
+    "pred": "T46",
+    "correct_id": "T48",
+    "reason": "全域视角下旅游廊道构建与网络体系评价(MCR+重力模型)属空间统计/GIS，非第一性原理"
+  },
+  {
+    "document_id": "ZH_0386",
+    "gold": "T41",
+    "pred": "T42",
+    "correct_id": "T42",
+    "reason": "城乡融合发展中政府与市场作用的空间分异+面板+门槛效应属面板回归，非指标体系"
+  },
+  {
+    "document_id": "ZH_0391",
+    "gold": "T31",
+    "pred": "T40",
+    "correct_id": "T49",
+    "reason": "独立同步电网新能源高渗透率频率稳定挑战与应对属控制策略/稳定性分析，非理化分析"
+  },
+  {
+    "document_id": "ZH_0393",
+    "gold": "T31",
+    "pred": "T41",
+    "correct_id": "T42",
+    "reason": "长江中上游承接东部产业转移的实证分析(产业梯度系数)属计量经济，非理化分析"
+  },
+  {
+    "document_id": "ZH_0396",
+    "gold": "T02",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "坚持创新驱动引领中国经济高质量发展属理论/政策，非机器学习"
+  },
+  {
+    "document_id": "ZH_0401",
+    "gold": "T23",
+    "pred": "T44",
+    "correct_id": "T48",
+    "reason": "长江中游城市群环境压力时空特征(EOF+GWR)属空间统计/GIS，非微生物培养"
+  },
+  {
+    "document_id": "ZH_0402",
+    "gold": "T10",
+    "pred": "T06",
+    "correct_id": "T06",
+    "reason": "国立科研机构形象资产管理体系规划与思考属叙述性综述，非病理组织诊断"
+  },
+  {
+    "document_id": "ZH_0405",
+    "gold": "T31",
+    "pred": "T45",
+    "correct_id": "T06",
+    "reason": "企业技术创新在世界科技强国建设中的地位和作用属叙述性综述，非理化分析"
+  },
+  {
+    "document_id": "ZH_0407",
+    "gold": "T02",
+    "pred": "T21",
+    "correct_id": "T41",
+    "reason": "一带一路沿线国家投资环境评价(评价体系+聚类+PCA)属指标体系/综合评价，非机器学习"
+  },
+  {
+    "document_id": "ZH_0411",
+    "gold": "T27",
+    "pred": "T48",
+    "correct_id": "T06",
+    "reason": "基于邓小平两个大局战略转换重塑中国经济地理属理论观点，非信号/图像处理"
+  },
+  {
+    "document_id": "ZH_0412",
+    "gold": "T25",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "国家历史文化名城地区空间变迁/土地利用研究属空间统计/GIS，非数据集/工具"
+  },
+  {
+    "document_id": "ZH_0413",
+    "gold": "T29",
+    "pred": "T41",
+    "correct_id": "T41",
+    "reason": "基于物质流分析的区域工业生态效率评价属指标体系/综合评价，非野外采样"
+  },
+  {
+    "document_id": "ZH_0415",
+    "gold": "T15",
+    "pred": "T14",
+    "correct_id": "T17",
+    "reason": "混合型相控开关在地面自动过分相中的应用属工程器件/原型设计，非第一性原理"
+  },
+  {
+    "document_id": "ZH_0418",
+    "gold": "T42",
+    "pred": "T41",
+    "correct_id": "T41",
+    "reason": "珠三角城市群战略实施以来的效率评价(DEA)属指标体系/综合评价(DEA)，非面板回归"
+  },
+  {
+    "document_id": "ZH_0419",
+    "gold": "T46",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "基于购买力平价的江苏省区域经济分异(基尼+MK+聚类)属空间统计，非理论机制/政策"
+  },
+  {
+    "document_id": "ZH_0423",
+    "gold": "T06",
+    "pred": "T42",
+    "correct_id": "T20",
+    "reason": "返乡农民工创业选择影响因素(5省465户调查+回归)属问卷调查/定性研究，非综述"
+  },
+  {
+    "document_id": "ZH_0424",
+    "gold": "T12",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "美日先进存储研究联合体发展路径与启示属政策路径，非材料合成"
+  },
+  {
+    "document_id": "ZH_0434",
+    "gold": "T35",
+    "pred": "T06",
+    "correct_id": "T06",
+    "reason": "我国分布式光伏发电现状与展望属叙述性综述，非时序预测"
+  },
+  {
+    "document_id": "ZH_0439",
+    "gold": "T23",
+    "pred": "T42",
+    "correct_id": "T42",
+    "reason": "高等教育和人才集聚投入对区域经济增长的共轭驱动(实证)属面板回归，非微生物培养"
+  },
+  {
+    "document_id": "ZH_0447",
+    "gold": "T21",
+    "pred": "T40",
+    "correct_id": "T30",
+    "reason": "基于场景构建的电压暂降特征量随机评估(短路概率)属风险评估，非经济评价"
+  },
+  {
+    "document_id": "ZH_0448",
+    "gold": "T21",
+    "pred": "T45",
+    "correct_id": "T06",
+    "reason": "世界文明格局演进与文化遗产保护战略属叙述性综述，非经济评价"
+  },
+  {
+    "document_id": "ZH_0449",
+    "gold": "T31",
+    "pred": "T45",
+    "correct_id": "T46",
+    "reason": "强化国家战略科技力量建设的思考属政策路径，非理化分析"
+  },
+  {
+    "document_id": "ZH_0450",
+    "gold": "T31",
+    "pred": "T38",
+    "correct_id": "T37",
+    "reason": "考虑碳排放的光储充一体站日前运行策略(优化模型)属优化调度，非理化分析"
+  },
+  {
+    "document_id": "ZH_0454",
+    "gold": "T28",
+    "pred": "T37",
+    "correct_id": "T37",
+    "reason": "基于改进旗鱼算法的综合能源系统能量管理(多目标优化)属优化调度，非综合方法"
+  },
+  {
+    "document_id": "ZH_0456",
+    "gold": "T14",
+    "pred": "T07",
+    "correct_id": "T35",
+    "reason": "中国中部六省碳排放趋势研究(预估模型+CO2FIX)属时序预测，非数值模拟/有限元"
+  },
+  {
+    "document_id": "ZH_0464",
+    "gold": "T36",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "西北地区生态保护与高质量发展协同推进的策略路径属政策路径，非故障诊断"
+  },
+  {
+    "document_id": "ZH_0467",
+    "gold": "T28",
+    "pred": "T45",
+    "correct_id": "T06",
+    "reason": "我国网络信息安全发展探讨属叙述性综述，非综合研究方法"
+  },
+  {
+    "document_id": "ZH_0469",
+    "gold": "T34",
+    "pred": "T17",
+    "correct_id": "T26",
+    "reason": "变电站二次测试智能语音控制(语音识别+嵌入式)属控制/自动化，非聚类"
+  },
+  {
+    "document_id": "ZH_0478",
+    "gold": "T45",
+    "pred": "T21",
+    "correct_id": "T46",
+    "reason": "文化区域经济协同发展机理研究属理论机制/政策路径，非文献计量"
+  },
+  {
+    "document_id": "ZH_0480",
+    "gold": "T25",
+    "pred": "T36",
+    "correct_id": "T36",
+    "reason": "基于5G授时的配网差动保护数据同步方案属故障诊断/保护，非数据集/工具"
+  },
+  {
+    "document_id": "ZH_0486",
+    "gold": "T12",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "我国新材料产业集群发展战略研究属政策路径，非材料合成"
+  },
+  {
+    "document_id": "ZH_0487",
+    "gold": "T23",
+    "pred": "T45",
+    "correct_id": "T46",
+    "reason": "中科院贵州水城科技扶贫实践与探讨属政策路径，非微生物培养"
+  },
+  {
+    "document_id": "ZH_0495",
+    "gold": "T29",
+    "pred": "T19",
+    "correct_id": "T46",
+    "reason": "我国耕地资源开发利用问题与整治对策属政策路径，非野外采样"
+  },
+  {
+    "document_id": "ZH_0497",
+    "gold": "T25",
+    "pred": "T06",
+    "correct_id": "T06",
+    "reason": "21世纪前期我国能源战略的若干问题属叙述性综述，非数据集/工具"
+  },
+  {
+    "document_id": "ZH_0499",
+    "gold": "T25",
+    "pred": "T40",
+    "correct_id": "T40",
+    "reason": "考虑风-储-直参与调频的电力系统频率特征定量分析(频率响应模型/传递函数)属电力系统建模，非数据集/工具"
+  },
+  {
+    "document_id": "ZH_0503",
+    "gold": "T20",
+    "pred": "T45",
+    "correct_id": "T06",
+    "reason": "国际科学教育发展对比研究属叙述性综述，非问卷调查/定性"
+  },
+  {
+    "document_id": "ZH_0505",
+    "gold": "T29",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "国土空间规划下城市收缩与复兴中的空间形态调整属空间统计/GIS，非野外采样"
+  },
+  {
+    "document_id": "ZH_0511",
+    "gold": "T36",
+    "pred": "T47",
+    "correct_id": "T47",
+    "reason": "适用于变压器保护的数字孪生建模技术主旨为数字孪生建模，属数字孪生/系统架构"
+  },
+  {
+    "document_id": "ZH_0515",
+    "gold": "T28",
+    "pred": "T42",
+    "correct_id": "T42",
+    "reason": "要素流动与生产率增长(偏离-份额法实证)属面板回归/计量，非综合方法"
+  },
+  {
+    "document_id": "ZH_0516",
+    "gold": "T20",
+    "pred": "T41",
+    "correct_id": "T32",
+    "reason": "物流快递自提柜选址及空间优化(集合覆盖模型+AHP)属工程系统设计/方案优化，非问卷调查"
+  },
+  {
+    "document_id": "ZH_0517",
+    "gold": "T23",
+    "pred": "T45",
+    "correct_id": "T06",
+    "reason": "中国科学技术发展应重视的几个问题属叙述性综述，非微生物培养"
+  },
+  {
+    "document_id": "ZH_0523",
+    "gold": "T10",
+    "pred": "T44",
+    "correct_id": "T48",
+    "reason": "珠三角城市群灾害易损性时空格局差异(贡献权重模型)属空间统计/GIS，非病理组织"
+  },
+  {
+    "document_id": "ZH_0528",
+    "gold": "T24",
+    "pred": "T21",
+    "correct_id": "T46",
+    "reason": "川西横断山脉高山峡谷区旅游特色化开发战略属政策路径，非遗传关联/PCR"
+  },
+  {
+    "document_id": "ZH_0531",
+    "gold": "T19",
+    "pred": "T41",
+    "correct_id": "T41",
+    "reason": "区域经济发展方式转变进程评价(PCA+AHP)属指标体系/综合评价，非环境处理"
+  },
+  {
+    "document_id": "ZH_0532",
+    "gold": "T11",
+    "pred": "T24",
+    "correct_id": "T06",
+    "reason": "空间科学对国家科技经济社会发展的作用属叙述性综述，非成像/诊断检测"
+  },
+  {
+    "document_id": "ZH_0537",
+    "gold": "T02",
+    "pred": "T41",
+    "correct_id": "T41",
+    "reason": "中部地区人文发展的生态效率评价(PCA+功效系数法)属指标体系/综合评价，非机器学习"
+  },
+  {
+    "document_id": "ZH_0543",
+    "gold": "T13",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "江苏粮食生产地域分化的耕地因素分解属空间统计，非材料表征"
+  },
+  {
+    "document_id": "ZH_0544",
+    "gold": "T25",
+    "pred": "T20",
+    "correct_id": "T26",
+    "reason": "基于多智能体建模的旅游交通方式跃迁仿真属控制规划/多智能体，非数据集/工具"
+  },
+  {
+    "document_id": "ZH_0554",
+    "gold": "T12",
+    "pred": "T45",
+    "correct_id": "T45",
+    "reason": "非晶合金材料发展趋势及启示属技术态势研判/综述，非材料合成"
+  },
+  {
+    "document_id": "ZH_0555",
+    "gold": "T13",
+    "pred": "T44",
+    "correct_id": "T48",
+    "reason": "西安市文化娱乐业空间结构图谱(POI+核密度+热点)属空间统计/GIS，非材料表征"
+  },
+  {
+    "document_id": "ZH_0556",
+    "gold": "T06",
+    "pred": "T21",
+    "correct_id": "T42",
+    "reason": "中国多维贫困动态分析(CFPS数据+多维贫困指数)属面板回归/计量，非综述"
+  },
+  {
+    "document_id": "ZH_0558",
+    "gold": "T44",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "大西安旅游圈旅游规模分布演变(基尼+首位度+空间特征)属空间统计/GIS，非耦合协调"
+  },
+  {
+    "document_id": "ZH_0560",
+    "gold": "T24",
+    "pred": "T45",
+    "correct_id": "T06",
+    "reason": "华为创新之路属叙述性综述，非遗传关联/PCR"
+  },
+  {
+    "document_id": "ZH_0563",
+    "gold": "T05",
+    "pred": "T37",
+    "correct_id": "T32",
+    "reason": "多跳中继宽带电力线通信网络OFDM跨层资源分配属工程系统设计/方案优化，非系统综述/Meta"
+  },
+  {
+    "document_id": "ZH_0567",
+    "gold": "T15",
+    "pred": "T14",
+    "correct_id": "T32",
+    "reason": "跟网型海上风电中频汇集柔直送出系统最优频率选择属工程系统设计/方案优化，非第一性原理"
+  },
+  {
+    "document_id": "ZH_0572",
+    "gold": "T46",
+    "pred": "T42",
+    "correct_id": "T48",
+    "reason": "江苏省区域经济差异格局演化(MK+聚类+逐步回归)属空间统计/GIS，非理论机制/政策"
+  },
+  {
+    "document_id": "ZH_0579",
+    "gold": "T13",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "城市群经济、多城市群与区域协调发展属理论机制/政策路径，非材料表征"
+  },
+  {
+    "document_id": "ZH_0582",
+    "gold": "T24",
+    "pred": "T23",
+    "correct_id": "T06",
+    "reason": "基因编辑技术进展与挑战属叙述性综述，非遗传关联/PCR"
+  },
+  {
+    "document_id": "ZH_0583",
+    "gold": "T29",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "城市化与生态环境协调发展调控机制属理论机制/政策路径，非野外采样"
+  },
+  {
+    "document_id": "ZH_0585",
+    "gold": "T18",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "长株潭试验区治理模式转型属理论机制/政策路径，非化学合成"
+  },
+  {
+    "document_id": "ZH_0595",
+    "gold": "T34",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "东北地区高质量发展战略路径研究属政策路径，非聚类"
+  },
+  {
+    "document_id": "ZH_0596",
+    "gold": "T19",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "资源型产业链演进治理与升级属理论机制/政策路径，非环境处理"
+  },
+  {
+    "document_id": "ZH_0597",
+    "gold": "T07",
+    "pred": "T21",
+    "correct_id": "T48",
+    "reason": "世界工业遗产地理产业分布及价值特征(统计分析)属空间统计/GIS，非病例报告"
+  },
+  {
+    "document_id": "ZH_0598",
+    "gold": "T10",
+    "pred": "T21",
+    "correct_id": "T06",
+    "reason": "当代中国人的文化认同属叙述性综述/理论观点，非病理组织"
+  },
+  {
+    "document_id": "ZH_0603",
+    "gold": "T45",
+    "pred": "T40",
+    "correct_id": "T40",
+    "reason": "风电调频补偿水锤效应的频率特性分析(数学模型+直流潮流)属电力系统建模，非文献计量"
+  },
+  {
+    "document_id": "ZH_0608",
+    "gold": "T19",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "黄河流域生态保护和高质量发展框架路径对策属政策路径，非环境处理"
+  },
+  {
+    "document_id": "ZH_0610",
+    "gold": "T21",
+    "pred": "T48",
+    "correct_id": "T42",
+    "reason": "中国区域经济增长条件趋同研究(稳态因子)属面板回归/计量，非经济评价"
+  },
+  {
+    "document_id": "ZH_0612",
+    "gold": "T31",
+    "pred": "T06",
+    "correct_id": "T46",
+    "reason": "数学研究的特征及资助对策属政策路径，非理化分析"
+  },
+  {
+    "document_id": "ZH_0617",
+    "gold": "T24",
+    "pred": "T42",
+    "correct_id": "T48",
+    "reason": "经济技术开发区建设对中国经济格局影响(地理加权回归)属空间统计/GIS，非遗传关联/PCR"
+  },
+  {
+    "document_id": "ZH_0619",
+    "gold": "T29",
+    "pred": "T21",
+    "correct_id": "T20",
+    "reason": "武陵源生态旅游者细分研究(抽样调查+集群分析)属问卷调查/定性研究，非野外采样"
+  },
+  {
+    "document_id": "ZH_0621",
+    "gold": "T37",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "基于网络关注度的湖南省居民旅游需求时空特征属空间统计/GIS，非优化调度"
+  },
+  {
+    "document_id": "ZH_0622",
+    "gold": "T45",
+    "pred": "T21",
+    "correct_id": "T06",
+    "reason": "评《区域经济协同发展研究》书评属叙述性综述，非文献计量"
+  },
+  {
+    "document_id": "ZH_0624",
+    "gold": "T18",
+    "pred": "T45",
+    "correct_id": "T06",
+    "reason": "科技发达国家国立科研机构改革发展观察属叙述性综述，非化学合成"
+  },
+  {
+    "document_id": "ZH_0632",
+    "gold": "T13",
+    "pred": "T47",
+    "correct_id": "T36",
+    "reason": "基于电流突变采样值轨迹特征的快速母线保护属故障诊断/保护，非材料表征"
+  },
+  {
+    "document_id": "ZH_0633",
+    "gold": "T29",
+    "pred": "T42",
+    "correct_id": "T48",
+    "reason": "SSM空间模型在珠三角制造业发展中应用属空间统计/GIS，非野外采样"
+  },
+  {
+    "document_id": "ZH_0643",
+    "gold": "T10",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "基于城乡统筹的公路交通建设模式与路径属政策路径，非病理组织"
+  },
+  {
+    "document_id": "ZH_0644",
+    "gold": "T43",
+    "pred": "T45",
+    "correct_id": "T46",
+    "reason": "国家创新体系发展演进分析属政策路径，非社会网络分析"
+  },
+  {
+    "document_id": "ZH_0648",
+    "gold": "T14",
+    "pred": "T45",
+    "correct_id": "T46",
+    "reason": "湖南物流产业集群系统发展研究属政策路径/规划，非数值模拟"
+  },
+  {
+    "document_id": "ZH_0649",
+    "gold": "T23",
+    "pred": "T12",
+    "correct_id": "T46",
+    "reason": "中科院微生物所马铃薯产业科技扶贫实践属政策路径，非微生物培养研究"
+  },
+  {
+    "document_id": "ZH_0654",
+    "gold": "T29",
+    "pred": "T21",
+    "correct_id": "T41",
+    "reason": "中国高原生态旅游发展潜力评价(评价体系)属指标体系/综合评价，非野外采样"
+  },
+  {
+    "document_id": "ZH_0657",
+    "gold": "T31",
+    "pred": "T42",
+    "correct_id": "T42",
+    "reason": "行政区划调整对住宅价格变化影响(Hedonic+多元回归)属面板回归/计量，非理化分析"
+  },
+  {
+    "document_id": "ZH_0660",
+    "gold": "T31",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "经济发达与欠发达地区土地利用结构演化比较(信息熵)属空间统计/GIS，非理化分析"
+  },
+  {
+    "document_id": "ZH_0662",
+    "gold": "T19",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "黄河三角洲农业高质量发展新模式属政策路径，非环境处理"
+  },
+  {
+    "document_id": "ZH_0680",
+    "gold": "T34",
+    "pred": "T21",
+    "correct_id": "T06",
+    "reason": "建构的世界经济地理格局-战后日本崛起属理论观点/综述，非聚类"
+  },
+  {
+    "document_id": "ZH_0682",
+    "gold": "T01",
+    "pred": "T34",
+    "correct_id": "T42",
+    "reason": "河南农用地集约利用对农民收入影响(协整+VAR+BP神经网络测算)主旨为计量经济，非深度学习"
+  },
+  {
+    "document_id": "ZH_0683",
+    "gold": "T18",
+    "pred": "T06",
+    "correct_id": "T06",
+    "reason": "疫情下关于分餐制的思考与对策建议属叙述性综述，非化学合成"
+  },
+  {
+    "document_id": "ZH_0692",
+    "gold": "T42",
+    "pred": "T48",
+    "correct_id": "T06",
+    "reason": "新自由主义与国家空间反思与启示属理论观点/综述，非面板回归"
+  },
+  {
+    "document_id": "ZH_0695",
+    "gold": "T34",
+    "pred": "T42",
+    "correct_id": "T06",
+    "reason": "单位制城市空间的社会生产研究属理论观点，非聚类"
+  },
+  {
+    "document_id": "ZH_0696",
+    "gold": "T13",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "中美欧内部数字治理格局比较属政策路径，非材料表征"
+  },
+  {
+    "document_id": "ZH_0697",
+    "gold": "T30",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "国际创新统计体系演化与国内发展属政策路径，非风险评估/空间统计"
+  },
+  {
+    "document_id": "ZH_0703",
+    "gold": "T13",
+    "pred": "T49",
+    "correct_id": "T06",
+    "reason": "支撑虚拟电厂互动的信息通信关键技术研究展望属叙述性综述，非材料表征"
+  },
+  {
+    "document_id": "ZH_0707",
+    "gold": "T29",
+    "pred": "T06",
+    "correct_id": "T06",
+    "reason": "美国科赫研究所融合科学实践与启示属叙述性综述，非野外采样"
+  },
+  {
+    "document_id": "ZH_0712",
+    "gold": "T24",
+    "pred": "T45",
+    "correct_id": "T46",
+    "reason": "我国国际科技合作政策演进研究属政策路径，非遗传关联/PCR"
+  },
+  {
+    "document_id": "ZH_0714",
+    "gold": "T34",
+    "pred": "T21",
+    "correct_id": "T46",
+    "reason": "藏区新型城镇化发展路径(SWOT+对比)属政策路径，非聚类"
+  },
+  {
+    "document_id": "ZH_0716",
+    "gold": "T35",
+    "pred": "T44",
+    "correct_id": "T06",
+    "reason": "评《城乡发展差异测度及其协调发展研究》书评属叙述性综述，非时序预测"
+  },
+  {
+    "document_id": "ZH_0718",
+    "gold": "T07",
+    "pred": "T39",
+    "correct_id": "T37",
+    "reason": "价格与激励需求响应下电动汽车负荷聚集商调度策略(多目标粒子群)属优化调度，非病例报告"
+  },
+  {
+    "document_id": "ZH_0719",
+    "gold": "T42",
+    "pred": "T21",
+    "correct_id": "T46",
+    "reason": "三业结合全面提振中国经济的逻辑与路径属理论机制/政策路径，非面板回归"
+  },
+  {
+    "document_id": "ZH_0724",
+    "gold": "T34",
+    "pred": "T07",
+    "correct_id": "T42",
+    "reason": "河南省产业结构演进与机理(偏离-份额分析)属计量经济，非聚类"
+  },
+  {
+    "document_id": "ZH_0726",
+    "gold": "T06",
+    "pred": "T29",
+    "correct_id": "T48",
+    "reason": "疏勒河绿洲土地利用变化及驱动力(遥感)属空间统计/GIS，非综述"
+  },
+  {
+    "document_id": "ZH_0727",
+    "gold": "T17",
+    "pred": "T41",
+    "correct_id": "T48",
+    "reason": "环鄱阳湖城市群城市规模结构演变(Zipf+分形)属空间统计/GIS，非工程器件"
+  },
+  {
+    "document_id": "ZH_0730",
+    "gold": "T31",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "区域财政横向均衡与改革发展属政策路径，非理化分析"
+  },
+  {
+    "document_id": "ZH_0731",
+    "gold": "T40",
+    "pred": "T38",
+    "correct_id": "T38",
+    "reason": "基于分时容量电价的新型电力现货市场设计属市场机制，非电力系统建模"
+  },
+  {
+    "document_id": "ZH_0732",
+    "gold": "T12",
+    "pred": "T07",
+    "correct_id": "T06",
+    "reason": "绿色设计案例分析属叙述性综述，非材料合成"
+  },
+  {
+    "document_id": "ZH_0733",
+    "gold": "T38",
+    "pred": "T07",
+    "correct_id": "T42",
+    "reason": "中国省际资本流动规模实证研究属计量经济，非博弈/市场机制"
+  },
+  {
+    "document_id": "ZH_0737",
+    "gold": "T18",
+    "pred": "T42",
+    "correct_id": "T48",
+    "reason": "中国化肥消费强度变化驱动效应时空差异(因素分解)属空间统计/GIS，非化学合成"
+  },
+  {
+    "document_id": "ZH_0741",
+    "gold": "T12",
+    "pred": "T45",
+    "correct_id": "T46",
+    "reason": "科技在应对重大突发公共卫生事件中统筹协同作用思考属政策路径，非材料合成"
+  },
+  {
+    "document_id": "ZH_0747",
+    "gold": "T12",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "河南省县域农民纯收入增长差异及演进格局(聚类)属空间统计/GIS，非材料合成"
+  },
+  {
+    "document_id": "ZH_0748",
+    "gold": "T12",
+    "pred": "T21",
+    "correct_id": "T42",
+    "reason": "张家界入境旅游流与居民收入增长考察(方程模型)属计量经济，非材料合成"
+  },
+  {
+    "document_id": "ZH_0749",
+    "gold": "T24",
+    "pred": "T45",
+    "correct_id": "T46",
+    "reason": "构建科技创新双循环新发展格局属政策路径，非遗传关联/PCR"
+  },
+  {
+    "document_id": "ZH_0754",
+    "gold": "T47",
+    "pred": "T29",
+    "correct_id": "T46",
+    "reason": "新疆煤化工发展中产业生态系统构建属政策路径，非数字孪生/软件平台"
+  },
+  {
+    "document_id": "ZH_0759",
+    "gold": "T12",
+    "pred": "T20",
+    "correct_id": "T20",
+    "reason": "广东虎门镇服装加工产业集群发展(实地调查)属定性研究，非材料合成"
+  },
+  {
+    "document_id": "ZH_0760",
+    "gold": "T40",
+    "pred": "T36",
+    "correct_id": "T36",
+    "reason": "基于暂态量的继电保护研究属故障诊断/保护，非电力系统建模"
+  },
+  {
+    "document_id": "ZH_0765",
+    "gold": "T10",
+    "pred": "T40",
+    "correct_id": "T14",
+    "reason": "退役锂离子动力电池储能系统风冷热管理仿真属数值模拟/仿真，非病理组织"
+  },
+  {
+    "document_id": "ZH_0769",
+    "gold": "T31",
+    "pred": "T41",
+    "correct_id": "T41",
+    "reason": "中国水资源效率区域差异及影响因素(超效率DEA-Tobit)属指标体系/综合评价，非理化分析"
+  },
+  {
+    "document_id": "ZH_0771",
+    "gold": "T07",
+    "pred": "T21",
+    "correct_id": "T06",
+    "reason": "2016年中国经济增长形势展望属叙述性综述，非病例报告"
+  },
+  {
+    "document_id": "ZH_0774",
+    "gold": "T24",
+    "pred": "T36",
+    "correct_id": "T36",
+    "reason": "基于反射系数谱积分的电缆缺陷诊断方法属故障诊断/定位，非遗传关联/PCR"
+  },
+  {
+    "document_id": "ZH_0781",
+    "gold": "T13",
+    "pred": "T48",
+    "correct_id": "T42",
+    "reason": "中国文化产业发展区域特征与成因(人口普查+计量检验)属面板回归/计量，非材料表征"
+  },
+  {
+    "document_id": "ZH_0790",
+    "gold": "T20",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "雄安新区建设可持续竞争力理想城市属理论机制/政策路径，非问卷调查"
+  },
+  {
+    "document_id": "ZH_0792",
+    "gold": "T46",
+    "pred": "T06",
+    "correct_id": "T48",
+    "reason": "基于村镇空间物-场模型的乡村聚落布局优化(引力模型)属空间统计/GIS，非综合方法"
+  },
+  {
+    "document_id": "ZH_0793",
+    "gold": "T05",
+    "pred": "T29",
+    "correct_id": "T06",
+    "reason": "以生态保护为前提开发开化旅游业属叙述性综述，非系统综述/Meta"
+  },
+  {
+    "document_id": "ZH_0800",
+    "gold": "T29",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "优化生态建设布局提升固碳能力的政策途径属政策路径，非野外采样"
+  },
+  {
+    "document_id": "ZH_0804",
+    "gold": "T07",
+    "pred": "T21",
+    "correct_id": "T06",
+    "reason": "平行哲学:智能产业与智慧经济本源属理论观点/综述，非病例报告"
+  },
+  {
+    "document_id": "ZH_0805",
+    "gold": "T17",
+    "pred": "T14",
+    "correct_id": "T14",
+    "reason": "集成排序网络的MMC实时仿真模型(RTDS+FPGA)属数值模拟/仿真，非工程器件/天线"
+  },
+  {
+    "document_id": "ZH_0812",
+    "gold": "T17",
+    "pred": "T41",
+    "correct_id": "T41",
+    "reason": "基于NRCA的中国省际能源利用评价属指标体系/综合评价，非工程器件"
+  },
+  {
+    "document_id": "ZH_0813",
+    "gold": "T31",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "长沙市土地利用结构熵值时序分析(信息熵)属空间统计/GIS，非理化分析"
+  },
+  {
+    "document_id": "ZH_0814",
+    "gold": "T49",
+    "pred": "T40",
+    "correct_id": "T30",
+    "reason": "特高压换流站系统地震易损性分析(失效概率模型)属风险评估，非控制策略"
+  },
+  {
+    "document_id": "ZH_0815",
+    "gold": "T19",
+    "pred": "T20",
+    "correct_id": "T38",
+    "reason": "景区经营权转让下旅游资源开发激励约束契约(委托代理)属博弈/市场机制，非环境处理"
+  },
+  {
+    "document_id": "ZH_0816",
+    "gold": "T10",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "时间距离视域下城市旅游经济联系测度与空间整合属空间统计/GIS，非病理组织"
+  },
+  {
+    "document_id": "ZH_0817",
+    "gold": "T30",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "中国世界地质公园空间分布特征与旅游发展对策属空间统计/GIS，非风险评估"
+  },
+  {
+    "document_id": "ZH_0823",
+    "gold": "T07",
+    "pred": "T42",
+    "correct_id": "T41",
+    "reason": "基于非期望产出的中国城市绿色发展效率及影响因素(SBM+Tobit)属指标体系/综合评价，非病例报告"
+  },
+  {
+    "document_id": "ZH_0835",
+    "gold": "T29",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "文化生态视角下产业集群演化与升级属理论机制/政策路径，非野外采样"
+  },
+  {
+    "document_id": "ZH_0838",
+    "gold": "T02",
+    "pred": "T48",
+    "correct_id": "T42",
+    "reason": "大湘南示范区承接转移的产业选择(梯度差异)属计量经济，非机器学习"
+  },
+  {
+    "document_id": "ZH_0839",
+    "gold": "T34",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "我国区域粮食安全演变1949-2008(人均粮食占有量)属空间统计/时序，非聚类"
+  },
+  {
+    "document_id": "ZH_0840",
+    "gold": "T40",
+    "pred": "T37",
+    "correct_id": "T37",
+    "reason": "考虑储氢物理特性的含氢区域综合能源系统中长期优化运行属优化调度，非潮流/等值"
+  },
+  {
+    "document_id": "ZH_0846",
+    "gold": "T49",
+    "pred": "T40",
+    "correct_id": "T36",
+    "reason": "基于电压突变量的差动保护同步方法属故障诊断/保护，非控制策略"
+  },
+  {
+    "document_id": "ZH_0849",
+    "gold": "T23",
+    "pred": "T45",
+    "correct_id": "T46",
+    "reason": "中国人才培养急需双重转型属政策路径，非微生物培养"
+  },
+  {
+    "document_id": "ZH_0859",
+    "gold": "T20",
+    "pred": "T34",
+    "correct_id": "T27",
+    "reason": "改进引力-斥力算法在配电网单线图自动生成中应用属信号/图像处理与算法优化，非问卷调查"
+  },
+  {
+    "document_id": "ZH_0860",
+    "gold": "T43",
+    "pred": "T06",
+    "correct_id": "T06",
+    "reason": "创新社会及其政策导向属理论观点/综述，非社会网络分析"
+  },
+  {
+    "document_id": "ZH_0863",
+    "gold": "T44",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "城市规模分布及演进特征(齐普夫+马尔可夫转移)属空间统计/GIS，非耦合协调"
+  },
+  {
+    "document_id": "ZH_0870",
+    "gold": "T31",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "武汉城市圈旅游流集聚扩散特征及路径(集聚扩散指数+聚类)属空间统计/GIS，非理化分析"
+  },
+  {
+    "document_id": "ZH_0872",
+    "gold": "T19",
+    "pred": "T20",
+    "correct_id": "T06",
+    "reason": "儒家思想视角下传统宗族聚落空间营造属叙述性综述，非环境处理"
+  },
+  {
+    "document_id": "ZH_0873",
+    "gold": "T18",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "中国入境旅游业对危机事件响应区域差异(时间序列+变异系数)属空间统计/GIS，非化学合成"
+  },
+  {
+    "document_id": "ZH_0877",
+    "gold": "T13",
+    "pred": "T20",
+    "correct_id": "T43",
+    "reason": "LED产业发展制约因素与对策(产业集群网络范式)属社会网络/复杂网络分析，非材料表征"
+  },
+  {
+    "document_id": "ZH_0880",
+    "gold": "T20",
+    "pred": "T45",
+    "correct_id": "T45",
+    "reason": "从关键指标看我国世界科技强国建设(国家创新指数报告)属文献计量/技术态势研判，非问卷调查"
+  },
+  {
+    "document_id": "ZH_0885",
+    "gold": "T02",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "西北地区主体功能区划方案(空间分析+PCA)属空间统计/GIS，非机器学习"
+  },
+  {
+    "document_id": "ZH_0886",
+    "gold": "T07",
+    "pred": "T42",
+    "correct_id": "T42",
+    "reason": "产品内分工视角下服务贸易竞争力影响因素(投入产出表实证)属计量经济，非病例报告"
+  },
+  {
+    "document_id": "ZH_0891",
+    "gold": "T31",
+    "pred": "T45",
+    "correct_id": "T46",
+    "reason": "关键核心技术突破规律探索与体系构建属政策路径，非理化分析"
+  },
+  {
+    "document_id": "ZH_0904",
+    "gold": "T15",
+    "pred": "T19",
+    "correct_id": "T46",
+    "reason": "中国稀土供需格局及平衡利用策略属政策路径，非第一性原理"
+  },
+  {
+    "document_id": "ZH_0910",
+    "gold": "T13",
+    "pred": "T42",
+    "correct_id": "T48",
+    "reason": "我国农业保险空间格局动态演变及收敛(Kernel密度+Markov+空间计量)属空间统计/GIS，非材料表征"
+  },
+  {
+    "document_id": "ZH_0912",
+    "gold": "T44",
+    "pred": "T45",
+    "correct_id": "T41",
+    "reason": "我国海洋经济区域特征分析及发展对策(指标分析+区域分类)属指标体系/综合评价，非耦合协调"
+  },
+  {
+    "document_id": "ZH_0915",
+    "gold": "T28",
+    "pred": "T42",
+    "correct_id": "T37",
+    "reason": "环首都流通圈物流供应链节点空间布局优化(CLRIP集成优化)属优化调度/数学规划，非综合方法"
+  },
+  {
+    "document_id": "ZH_0918",
+    "gold": "T17",
+    "pred": "T45",
+    "correct_id": "T06",
+    "reason": "2014年中国人文地理学术年会召开(会议报道)属叙述性综述，非工程器件"
+  },
+  {
+    "document_id": "ZH_0919",
+    "gold": "T07",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "2050中国全面建成世界科技创新强国属政策路径，非病例报告"
+  },
+  {
+    "document_id": "ZH_0920",
+    "gold": "T19",
+    "pred": "T45",
+    "correct_id": "T06",
+    "reason": "我国地球科学发展若干思考与建议属叙述性综述，非环境处理"
+  },
+  {
+    "document_id": "ZH_0922",
+    "gold": "T31",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "撤县设区对城市公共服务配置和空间布局影响(时空变化)属空间统计/GIS，非理化分析"
+  },
+  {
+    "document_id": "ZH_0926",
+    "gold": "T14",
+    "pred": "T40",
+    "correct_id": "T40",
+    "reason": "基于M3C的分频输电系统低频侧阻抗建模及稳定性判别属电力系统建模，非数值模拟/有限元"
+  },
+  {
+    "document_id": "ZH_0933",
+    "gold": "T14",
+    "pred": "T27",
+    "correct_id": "T36",
+    "reason": "适配柔直系统快速性及可靠性需求的雷击干扰识别方法(小波熵)属故障诊断/识别，非数值模拟"
+  },
+  {
+    "document_id": "ZH_0937",
+    "gold": "T41",
+    "pred": "T30",
+    "correct_id": "T30",
+    "reason": "计及主设备时变状态的变电站短时风险评估方法(比例风险模型)属风险评估，非指标体系"
+  },
+  {
+    "document_id": "ZH_0939",
+    "gold": "T06",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "西部快速城市化地区近20年土地利用变化及驱动因素(遥感)属空间统计/GIS，非综述"
+  },
+  {
+    "document_id": "ZH_0943",
+    "gold": "T34",
+    "pred": "T48",
+    "correct_id": "T42",
+    "reason": "湖南武陵山片区农民收入增长及演变县际差异(偏离-份额分析)属计量经济，非聚类"
+  },
+  {
+    "document_id": "ZH_0945",
+    "gold": "T12",
+    "pred": "T20",
+    "correct_id": "T48",
+    "reason": "上海苏州河沿岸创意活动地理空间及集聚属空间统计/GIS，非材料合成"
+  },
+  {
+    "document_id": "ZH_0953",
+    "gold": "T15",
+    "pred": "T40",
+    "correct_id": "T36",
+    "reason": "采用自补偿复合电流判据的变电站长段动力电缆漏电监测方法属故障诊断/监测，非第一性原理"
+  },
+  {
+    "document_id": "ZH_0958",
+    "gold": "T02",
+    "pred": "T07",
+    "correct_id": "T41",
+    "reason": "我国区域产业转移态势与承接竞争格局(主成分分析评价)属指标体系/综合评价，非机器学习"
+  },
+  {
+    "document_id": "ZH_0961",
+    "gold": "T07",
+    "pred": "T42",
+    "correct_id": "T42",
+    "reason": "我国生均教育经费支出省际差异及影响因素(基尼+核密度+面板模型)属面板回归/计量，非病例报告"
+  },
+  {
+    "document_id": "ZH_0969",
+    "gold": "T42",
+    "pred": "T41",
+    "correct_id": "T41",
+    "reason": "我国省域物流集群竞争力(GEM模型+熵权PCA+GIS)属指标体系/综合评价，非面板回归"
+  },
+  {
+    "document_id": "ZH_0978",
+    "gold": "T31",
+    "pred": "T48",
+    "correct_id": "T48",
+    "reason": "北京市城区住宅地价的时空变化规律(空间分析)属空间统计/GIS，非理化分析"
+  },
+  {
+    "document_id": "ZH_0981",
+    "gold": "T18",
+    "pred": "T46",
+    "correct_id": "T46",
+    "reason": "粤港澳共建环珠江口湾区经济研究属政策路径，非化学合成"
+  },
+  {
+    "document_id": "ZH_0982",
+    "gold": "T21",
+    "pred": "T45",
+    "correct_id": "T46",
+    "reason": "美国技术政策的演变属政策路径，非经济评价"
+  },
+  {
+    "document_id": "ZH_0983",
+    "gold": "T49",
+    "pred": "T48",
+    "correct_id": "T42",
+    "reason": "中国旅游服务出口地理集中度与出口不稳定性关系(方差分解模型实证)属计量经济，非控制策略"
+  },
+  {
+    "document_id": "ZH_0985",
+    "gold": "T19",
+    "pred": "T41",
+    "correct_id": "T41",
+    "reason": "中国五大城市群生态效率演变及影响因素(SBM+Tobit)属指标体系/综合评价，非环境处理"
+  },
+  {
+    "document_id": "ZH_0990",
+    "gold": "T33",
+    "pred": "T36",
+    "correct_id": "T32",
+    "reason": "特大城市两种高压配网典型接线可靠性比较属工程系统设计/方案优化，非生物行为/生理比较"
+  },
+  {
+    "document_id": "ZH_0995",
+    "gold": "T24",
+    "pred": "T46",
+    "correct_id": "T06",
+    "reason": "高通量作物表型监测:育种和精准农业发展加速器属叙述性综述，非遗传关联/PCR"
+  },
+  {
+    "document_id": "ZH_0996",
+    "gold": "T07",
+    "pred": "T30",
+    "correct_id": "T41",
+    "reason": "黑龙江省八五三农场高标准基本农田建设时序分析(综合质量评价)属指标体系/综合评价，非病例报告"
+  }
+]

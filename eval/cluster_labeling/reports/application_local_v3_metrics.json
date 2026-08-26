@@ -1,0 +1,445 @@
+{
+  "evaluation_contract": "manual_three_round_cluster_label_gold_v1",
+  "cluster_count": 16,
+  "metrics": {
+    "cluster_count": 16,
+    "acceptable_top1_accuracy": 0.0625,
+    "candidate_recall_at_5": 0.1875,
+    "required_concept_precision": 1.0,
+    "required_concept_recall": 0.65625,
+    "required_concept_f1": 0.792453,
+    "semantic_similarity_mean": 0.739234,
+    "semantic_pass_rate": 0.625,
+    "length_compliance_rate": 1.0,
+    "evidence_grounding_rate": 1.0,
+    "distinctiveness_pass_rate": 0.75,
+    "duplicate_label_rate": 0.0
+  },
+  "metrics_by_split": {
+    "development": {
+      "cluster_count": 12,
+      "acceptable_top1_accuracy": 0.083333,
+      "candidate_recall_at_5": 0.166667,
+      "required_concept_precision": 1.0,
+      "required_concept_recall": 0.625,
+      "required_concept_f1": 0.769231,
+      "semantic_similarity_mean": 0.737176,
+      "semantic_pass_rate": 0.583333,
+      "length_compliance_rate": 1.0,
+      "evidence_grounding_rate": 1.0,
+      "distinctiveness_pass_rate": 0.75,
+      "duplicate_label_rate": 0.0
+    },
+    "locked_test": {
+      "cluster_count": 4,
+      "acceptable_top1_accuracy": 0.0,
+      "candidate_recall_at_5": 0.25,
+      "required_concept_precision": 1.0,
+      "required_concept_recall": 0.75,
+      "required_concept_f1": 0.857143,
+      "semantic_similarity_mean": 0.745409,
+      "semantic_pass_rate": 0.75,
+      "length_compliance_rate": 1.0,
+      "evidence_grounding_rate": 1.0,
+      "distinctiveness_pass_rate": 0.75,
+      "duplicate_label_rate": 0.0
+    }
+  },
+  "rows": [
+    {
+      "cluster_id": "A-EN-01",
+      "split": "development",
+      "prediction": "tumor and cancer",
+      "gold_label": "Cancer diagnosis and treatment",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "cancer"
+      ],
+      "missing_required_concepts": [
+        "treatment"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.758952,
+      "semantic_pass": true,
+      "label_length": 3,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": false,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "A-EN-02",
+      "split": "development",
+      "prediction": "cardiac and Sudden cardiac death",
+      "gold_label": "Cardiovascular disease management",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "cardiovascular"
+      ],
+      "missing_required_concepts": [
+        "management"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.543151,
+      "semantic_pass": false,
+      "label_length": 5,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "A-EN-03",
+      "split": "development",
+      "prediction": "infection and covid-19",
+      "gold_label": "Infectious disease and COVID-19",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "infectious disease",
+        "COVID-19"
+      ],
+      "missing_required_concepts": [],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.690739,
+      "semantic_pass": false,
+      "label_length": 3,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 2,
+      "concept_fp": 0,
+      "concept_fn": 0
+    },
+    {
+      "cluster_id": "A-EN-04",
+      "split": "locked_test",
+      "prediction": "depression and brain",
+      "gold_label": "Neurological and mental disorders",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "neurological",
+        "mental disorders"
+      ],
+      "missing_required_concepts": [],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.546351,
+      "semantic_pass": false,
+      "label_length": 3,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 2,
+      "concept_fp": 0,
+      "concept_fn": 0
+    },
+    {
+      "cluster_id": "A-EN-05",
+      "split": "development",
+      "prediction": "solar cell storage",
+      "gold_label": "Renewable energy and energy storage",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "energy",
+        "storage"
+      ],
+      "missing_required_concepts": [],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.654275,
+      "semantic_pass": false,
+      "label_length": 3,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 2,
+      "concept_fp": 0,
+      "concept_fn": 0
+    },
+    {
+      "cluster_id": "A-EN-06",
+      "split": "development",
+      "prediction": "environmental conservation",
+      "gold_label": "Environmental pollution and conservation",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "conservation"
+      ],
+      "missing_required_concepts": [
+        "pollution"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.868747,
+      "semantic_pass": true,
+      "label_length": 2,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": false,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "A-EN-07",
+      "split": "development",
+      "prediction": "fish monitoring",
+      "gold_label": "Aquatic and veterinary health",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "aquatic"
+      ],
+      "missing_required_concepts": [
+        "veterinary"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.549078,
+      "semantic_pass": false,
+      "label_length": 2,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": false,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "A-EN-08",
+      "split": "locked_test",
+      "prediction": "surgical and surgery",
+      "gold_label": "Medical imaging and surgery",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "surgery"
+      ],
+      "missing_required_concepts": [
+        "medical imaging"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.754732,
+      "semantic_pass": true,
+      "label_length": 3,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "A-ZH-01",
+      "split": "development",
+      "prediction": "配电网规划",
+      "gold_label": "电力与综合能源系统",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "电力"
+      ],
+      "missing_required_concepts": [
+        "能源系统"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.621385,
+      "semantic_pass": false,
+      "label_length": 5,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "A-ZH-02",
+      "split": "development",
+      "prediction": "区域经济与共同富裕",
+      "gold_label": "区域经济与城镇化发展",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": true,
+      "matched_required_concepts": [
+        "区域经济"
+      ],
+      "missing_required_concepts": [
+        "城镇化"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.781456,
+      "semantic_pass": true,
+      "label_length": 9,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "A-ZH-03",
+      "split": "development",
+      "prediction": "旅游发展",
+      "gold_label": "旅游与文化遗产开发",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "旅游"
+      ],
+      "missing_required_concepts": [
+        "文化遗产"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.789951,
+      "semantic_pass": true,
+      "label_length": 4,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "A-ZH-04",
+      "split": "locked_test",
+      "prediction": "农业与粮食",
+      "gold_label": "农业农村与粮食安全",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "农业农村",
+        "粮食"
+      ],
+      "missing_required_concepts": [],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.846371,
+      "semantic_pass": true,
+      "label_length": 5,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 2,
+      "concept_fp": 0,
+      "concept_fn": 0
+    },
+    {
+      "cluster_id": "A-ZH-05",
+      "split": "development",
+      "prediction": "国土空间与城市更新",
+      "gold_label": "国土空间与城市更新",
+      "acceptable_top1": true,
+      "candidate_recall_at_5": true,
+      "matched_required_concepts": [
+        "国土空间",
+        "城市更新"
+      ],
+      "missing_required_concepts": [],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 1.0,
+      "semantic_pass": true,
+      "label_length": 9,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 2,
+      "concept_fp": 0,
+      "concept_fn": 0
+    },
+    {
+      "cluster_id": "A-ZH-06",
+      "split": "development",
+      "prediction": "制造业",
+      "gold_label": "制造业与智能制造发展",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "制造业"
+      ],
+      "missing_required_concepts": [
+        "智能制造"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.762497,
+      "semantic_pass": true,
+      "label_length": 3,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "A-ZH-07",
+      "split": "development",
+      "prediction": "医疗与公共卫生",
+      "gold_label": "公共卫生与养老服务",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": false,
+      "matched_required_concepts": [
+        "公共卫生"
+      ],
+      "missing_required_concepts": [
+        "养老服务"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.825879,
+      "semantic_pass": true,
+      "label_length": 7,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": true,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    },
+    {
+      "cluster_id": "A-ZH-08",
+      "split": "locked_test",
+      "prediction": "生态保护发展",
+      "gold_label": "生态保护与低碳发展",
+      "acceptable_top1": false,
+      "candidate_recall_at_5": true,
+      "matched_required_concepts": [
+        "生态保护"
+      ],
+      "missing_required_concepts": [
+        "低碳发展"
+      ],
+      "forbidden_concept_hits": [],
+      "semantic_similarity": 0.834182,
+      "semantic_pass": true,
+      "label_length": 6,
+      "label_length_limit": 12,
+      "length_compliant": true,
+      "evidence_grounded": true,
+      "distinctiveness_pass": false,
+      "concept_tp": 1,
+      "concept_fp": 0,
+      "concept_fn": 1
+    }
+  ]
+}

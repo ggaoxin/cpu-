@@ -1,0 +1,5345 @@
+{
+  "construction": {
+    "purpose": "manual_gold_source_only",
+    "production_topic_library": false,
+    "llm_used": false,
+    "selection_note": "Evaluation-only evidence selectors; never imported by production code."
+  },
+  "cluster_phrase_sets": [
+    {
+      "cluster_id": "A-ZH-01",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "配电网",
+          "frequency": 11,
+          "weight": 0.7975,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "电力系统",
+          "frequency": 5,
+          "weight": 0.6625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "风电",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "综合能源系统",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "新型电力系统",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "最小二乘法",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "二阶锥规划",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "分散式风电",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "双层优化重构",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "拓扑相似性",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "电热综合能源系统",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "海上风电制氢",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0017",
+          "title": "计及拓扑相似性的含分散式风电配网双层优化重构方法",
+          "matched_evidence": [
+            "配电网",
+            "风电"
+          ],
+          "keywords": [
+            "配电网",
+            "分散式风电",
+            "拓扑相似性",
+            "双层优化重构",
+            "二阶锥规划"
+          ]
+        },
+        {
+          "document_id": "zh_0218",
+          "title": "含海上风电制氢的综合能源系统分布鲁棒低碳优化运行",
+          "matched_evidence": [
+            "综合能源系统",
+            "风电"
+          ],
+          "keywords": [
+            "海上风电制氢",
+            "氢能多元利用",
+            "电热综合能源系统",
+            "凸松弛技术",
+            "分布鲁棒"
+          ]
+        },
+        {
+          "document_id": "zh_0883",
+          "title": "含大规模风电并网电力系统的关键线路综合辨识",
+          "matched_evidence": [
+            "电力系统",
+            "风电"
+          ],
+          "keywords": [
+            "风电并网",
+            "关键线路辨识",
+            "改进潮流熵",
+            "加权潮流介数",
+            "综合潮流指标"
+          ]
+        },
+        {
+          "document_id": "zh_0007",
+          "title": "面向新型电力系统的输电网与分布式变速抽水蓄能联合规划",
+          "matched_evidence": [
+            "电力系统"
+          ],
+          "keywords": [
+            "高比例新能源",
+            "变速抽水蓄能",
+            "输电网",
+            "联合规划"
+          ]
+        },
+        {
+          "document_id": "zh_0008",
+          "title": "含换流器型分布式电源配电网的不对称短路电流计算方法",
+          "matched_evidence": [
+            "配电网"
+          ],
+          "keywords": [
+            "配电网",
+            "不对称短路电流计算",
+            "换流器型分布式电源",
+            "控制原理",
+            "通用计算"
+          ]
+        },
+        {
+          "document_id": "zh_0011",
+          "title": "适应能源转型发展的输配电价动态激励机制研究",
+          "matched_evidence": [
+            "电力系统"
+          ],
+          "keywords": [
+            "新型电力系统",
+            "输配电价",
+            "数据包络分析",
+            "耦合协调",
+            "动态激励机制"
+          ]
+        },
+        {
+          "document_id": "zh_0018",
+          "title": "基于改进FCM和最小互信息算法的户变关系辨识方法",
+          "matched_evidence": [
+            "配电网"
+          ],
+          "keywords": [
+            "低压配电网",
+            "户变关系辨识",
+            "拓扑识别",
+            "电压相关性",
+            "互信息"
+          ]
+        },
+        {
+          "document_id": "zh_0019",
+          "title": "基于参数自修正的配电网故障定位数字孪生技术研究",
+          "matched_evidence": [
+            "配电网"
+          ],
+          "keywords": [
+            "数字孪生",
+            "故障定位",
+            "参数辨识",
+            "最小二乘法",
+            "正则化正交匹配追踪重构算法"
+          ]
+        },
+        {
+          "document_id": "zh_0027",
+          "title": "考虑大规模风光分层接入的配电网多层协调无功优化方法",
+          "matched_evidence": [
+            "配电网"
+          ],
+          "keywords": [
+            "配电网",
+            "无功优化",
+            "多层协调",
+            "数据驱动"
+          ]
+        },
+        {
+          "document_id": "zh_0031",
+          "title": "极端气象灾害下考虑MESS主动调控的配电网故障恢复策略",
+          "matched_evidence": [
+            "配电网"
+          ],
+          "keywords": [
+            "配电网",
+            "气象灾害",
+            "合环冲击电流",
+            "移动储能",
+            "故障恢复"
+          ]
+        },
+        {
+          "document_id": "zh_0036",
+          "title": "含储能接入的三相配电网分布式可再生能源可调度域建模与计算",
+          "matched_evidence": [
+            "配电网"
+          ],
+          "keywords": [
+            "可调度域",
+            "分布式可再生能源发电",
+            "配电网",
+            "三相不平衡",
+            "储能系统"
+          ]
+        },
+        {
+          "document_id": "zh_0037",
+          "title": "一种基于圆周运动轨迹方程的电力系统基波频率测量方法",
+          "matched_evidence": [
+            "电力系统"
+          ],
+          "keywords": [
+            "频率测量",
+            "旋转相量",
+            "圆周运动",
+            "最小二乘法"
+          ]
+        },
+        {
+          "document_id": "zh_0038",
+          "title": "计及(火用)效率的电-气-热综合能源系统多目标优化调度方法",
+          "matched_evidence": [
+            "综合能源系统"
+          ],
+          "keywords": [
+            "综合能源系统",
+            "多目标优化",
+            "(火用)效率",
+            "求解时间"
+          ]
+        },
+        {
+          "document_id": "zh_0039",
+          "title": "计及自适应阶梯碳势-碳价与供需双响应基于主从博弈的综合能源系统低碳经济调度",
+          "matched_evidence": [
+            "综合能源系统"
+          ],
+          "keywords": [
+            "综合能源系统",
+            "碳排放流",
+            "自适应阶梯碳势-碳价",
+            "供需双响应",
+            "主从博弈"
+          ]
+        },
+        {
+          "document_id": "zh_0054",
+          "title": "大规模风电接入场景下的失步振荡中心定位方法",
+          "matched_evidence": [
+            "风电"
+          ],
+          "keywords": [
+            "双馈风机",
+            "风电渗透率",
+            "等效阻抗",
+            "同步机组失步",
+            "节点电压频差",
+            "振荡中心定位"
+          ]
+        },
+        {
+          "document_id": "zh_0056",
+          "title": "考虑不可测T接负荷的配电网虚拟三端电流差动保护",
+          "matched_evidence": [
+            "配电网"
+          ],
+          "keywords": [
+            "电流差动保护",
+            "配电网",
+            "不可测T接负荷",
+            "虚拟支路",
+            "分布式电源"
+          ]
+        },
+        {
+          "document_id": "zh_0057",
+          "title": "基于多元暂态特征故障度的配电网单相接地选线方法",
+          "matched_evidence": [
+            "配电网"
+          ],
+          "keywords": [
+            "故障选线",
+            "基频移频",
+            "Copula函数",
+            "概率密度",
+            "多元暂态特征故障度"
+          ]
+        },
+        {
+          "document_id": "zh_0060",
+          "title": "适应新型电力系统发展的多元灵活资源优化调度建模和分析",
+          "matched_evidence": [
+            "电力系统"
+          ],
+          "keywords": [
+            "新型电力系统",
+            "多元灵活资源",
+            "优化调度",
+            "灵活调节能力"
+          ]
+        },
+        {
+          "document_id": "zh_0065",
+          "title": "计及电能量-备用耦合的配电网与光储充电站协调优化调度方法",
+          "matched_evidence": [
+            "配电网"
+          ],
+          "keywords": [
+            "光储充电站",
+            "协调优化",
+            "节点边际电价",
+            "不确定性"
+          ]
+        },
+        {
+          "document_id": "zh_0070",
+          "title": "考虑配电网灵活性不足风险的分布鲁棒低碳优化调度",
+          "matched_evidence": [
+            "配电网"
+          ],
+          "keywords": [
+            "智能储能软开关",
+            "灵活性资源",
+            "条件风险价值",
+            "Frank-Copula函数",
+            "分布鲁棒优化"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-ZH-02",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "区域经济",
+          "frequency": 7,
+          "weight": 0.7075,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "共同富裕",
+          "frequency": 6,
+          "weight": 0.685,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "经济增长",
+          "frequency": 6,
+          "weight": 0.685,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "城市群",
+          "frequency": 5,
+          "weight": 0.6625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "城镇化",
+          "frequency": 5,
+          "weight": 0.6625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "区域经济增长",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "高质量发展",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "新型城镇化",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "绿色发展",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "耦合协调",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "京津冀",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "门槛效应",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0026",
+          "title": "省域新型城镇化与共同富裕耦合协调水平的时空特征及其影响因素",
+          "matched_evidence": [
+            "共同富裕",
+            "城镇化"
+          ],
+          "keywords": [
+            "新型城镇化",
+            "共同富裕",
+            "耦合协调",
+            "空间集聚",
+            "科技",
+            "数字化",
+            "信贷"
+          ]
+        },
+        {
+          "document_id": "zh_0051",
+          "title": "长三角乡村旅游典型县新型城镇化与乡村共同富裕的共生演进的实证分析",
+          "matched_evidence": [
+            "共同富裕",
+            "城镇化"
+          ],
+          "keywords": [
+            "新型城镇化",
+            "乡村",
+            "共同富裕",
+            "城乡共生发展",
+            "共生演进",
+            "旅游",
+            "政府调控"
+          ]
+        },
+        {
+          "document_id": "zh_0079",
+          "title": "黄河流域绿色发展与共同富裕耦合协调水平变化及其影响因素",
+          "matched_evidence": [
+            "共同富裕",
+            "城镇化"
+          ],
+          "keywords": [
+            "绿色发展",
+            "共同富裕",
+            "耦合协调",
+            "科技创新",
+            "城镇化",
+            "黄河流域"
+          ]
+        },
+        {
+          "document_id": "zh_0439",
+          "title": "高等教育和人才集聚投入对区域经济增长的共轭驱动研究——以江苏、浙江两省为例",
+          "matched_evidence": [
+            "区域经济",
+            "经济增长"
+          ],
+          "keywords": [
+            "高等教育投入",
+            "人才集聚投入",
+            "共轭驱动",
+            "区域经济增长"
+          ]
+        },
+        {
+          "document_id": "zh_0610",
+          "title": "中国区域经济增长条件趋同研究",
+          "matched_evidence": [
+            "区域经济",
+            "经济增长"
+          ],
+          "keywords": [
+            "区域经济增长",
+            "条件趋同",
+            "稳态因子"
+          ]
+        },
+        {
+          "document_id": "zh_0671",
+          "title": "建筑业全要素生产率增长与区域经济增长的耦合效应分析",
+          "matched_evidence": [
+            "区域经济",
+            "经济增长"
+          ],
+          "keywords": [
+            "区域经济增长",
+            "建筑业",
+            "TFP增长",
+            "耦合度",
+            "增长方式"
+          ]
+        },
+        {
+          "document_id": "zh_0837",
+          "title": "技术要素集聚对我国区域经济增长差异的影响",
+          "matched_evidence": [
+            "区域经济",
+            "经济增长"
+          ],
+          "keywords": [
+            "技术要素",
+            "集聚",
+            "区域经济增长差异"
+          ]
+        },
+        {
+          "document_id": "zh_0905",
+          "title": "吉林省区域经济增长的趋同性研究",
+          "matched_evidence": [
+            "区域经济",
+            "经济增长"
+          ],
+          "keywords": [
+            "区域经济增长",
+            "趋同",
+            "β—趋同",
+            "δ—趋同",
+            "吉林省"
+          ]
+        },
+        {
+          "document_id": "zh_0934",
+          "title": "京津冀区域经济发展与资源环境的脱钩状态及驱动因素",
+          "matched_evidence": [
+            "区域经济",
+            "经济增长"
+          ],
+          "keywords": [
+            "经济增长",
+            "资源环境",
+            "脱钩状态",
+            "结构分解分析(SDA)",
+            "节能减排",
+            "绿色发展",
+            "京津冀"
+          ]
+        },
+        {
+          "document_id": "zh_0003",
+          "title": "三大城市群数字技术专利创新网络演化比较研究",
+          "matched_evidence": [
+            "城市群"
+          ],
+          "keywords": [
+            "数字技术专利",
+            "创新网络",
+            "多维邻近性",
+            "空间尺度",
+            "资本要素",
+            "长三角",
+            "珠三角",
+            "京津冀"
+          ]
+        },
+        {
+          "document_id": "zh_0004",
+          "title": "中国省域共同富裕水平测度、时空分异与障碍因素",
+          "matched_evidence": [
+            "共同富裕"
+          ],
+          "keywords": [
+            "共同富裕",
+            "时空分异",
+            "障碍因素",
+            "高质量发展"
+          ]
+        },
+        {
+          "document_id": "zh_0025",
+          "title": "黄河上游地区市域数字经济与绿色发展耦合协调度及提升路径",
+          "matched_evidence": [
+            "城市群"
+          ],
+          "keywords": [
+            "黄河上游地区",
+            "数字经济",
+            "绿色发展",
+            "耦合协调度",
+            "城市群与中心城市",
+            "基础设施",
+            "人才"
+          ]
+        },
+        {
+          "document_id": "zh_0069",
+          "title": "省域共同富裕水平测算及其时空演进",
+          "matched_evidence": [
+            "共同富裕"
+          ],
+          "keywords": [
+            "共同富裕",
+            "地区差距",
+            "高质量发展",
+            "中等收入群体",
+            "农民农村",
+            "评价指标体系",
+            "演进趋势"
+          ]
+        },
+        {
+          "document_id": "zh_0078",
+          "title": "浙江县域共同富裕的测度、评价及区域分异",
+          "matched_evidence": [
+            "共同富裕"
+          ],
+          "keywords": [
+            "共同富裕",
+            "富裕和共享",
+            "区域特征",
+            "经济发展水平",
+            "城乡差异",
+            "因县施策",
+            "高质量发展"
+          ]
+        },
+        {
+          "document_id": "zh_0080",
+          "title": "完善城乡融合发展体制机制研究",
+          "matched_evidence": [
+            "城镇化"
+          ],
+          "keywords": [
+            "城乡融合发展",
+            "体制机制",
+            "新型城镇化",
+            "乡村全面振兴",
+            "中国式现代化"
+          ]
+        },
+        {
+          "document_id": "zh_0082",
+          "title": "人工智能应用促进了长江经济带三大城市群的绿色创新吗？——基于“数字红利”和“数字鸿沟”视角",
+          "matched_evidence": [
+            "城市群"
+          ],
+          "keywords": [
+            "人工智能应用",
+            "绿色创新",
+            "倒U型曲线",
+            "空间溢出效应",
+            "衰减边界",
+            "城市群"
+          ]
+        },
+        {
+          "document_id": "zh_0083",
+          "title": "沿海三大城市群发挥高质量发展动力源作用的创新驱动机制",
+          "matched_evidence": [
+            "城市群"
+          ],
+          "keywords": [
+            "沿海三大城市群",
+            "高质量发展",
+            "动力源",
+            "创新驱动"
+          ]
+        },
+        {
+          "document_id": "zh_0133",
+          "title": "空间品质与区域价格水平——基于新空间经济学的分析",
+          "matched_evidence": [
+            "城镇化"
+          ],
+          "keywords": [
+            "空间品质“",
+            "品质”溢价",
+            "新空间经济学",
+            "价格水平",
+            "门槛效应",
+            "人才规模",
+            "城镇化"
+          ]
+        },
+        {
+          "document_id": "zh_0140",
+          "title": "碳中和目标下的长江中游城市群产业生态可持续性演化特征与影响机制",
+          "matched_evidence": [
+            "城市群"
+          ],
+          "keywords": [
+            "产业生态可持续性",
+            "碳平衡",
+            "长江中游城市群",
+            "匹配分区",
+            "门槛效应",
+            "能源效率",
+            "技术创新"
+          ]
+        },
+        {
+          "document_id": "zh_0141",
+          "title": "演化经济地理学的“需求转向”研究进展与展望",
+          "matched_evidence": [
+            "区域经济"
+          ],
+          "keywords": [
+            "演化经济地理学",
+            "需求侧视角",
+            "供给与需求",
+            "经济复杂度",
+            "区域经济韧性",
+            "研究展望"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-ZH-03",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "旅游",
+          "frequency": 20,
+          "weight": 1.0,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "景区",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "文化遗产",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "乡村旅游",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "高质量发展",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "乡村振兴",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "符号表征",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "空间特征",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "地名文化",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "街巷地名",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "旅游化利用",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "历史文化遗产",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0050",
+          "title": "符号视角下城市街巷地名的空间特征及旅游化利用——以沈阳市为例",
+          "matched_evidence": [
+            "旅游",
+            "文化遗产"
+          ],
+          "keywords": [
+            "街巷地名",
+            "空间特征",
+            "符号表征",
+            "旅游化利用",
+            "地名文化",
+            "历史文化遗产"
+          ]
+        },
+        {
+          "document_id": "zh_0362",
+          "title": "基于抖音数据的浙江省景区村庄网络关注度的空间分异及其影响因素",
+          "matched_evidence": [
+            "旅游",
+            "景区"
+          ],
+          "keywords": [
+            "景区村庄",
+            "网络关注度",
+            "乡村旅游",
+            "高质量发展",
+            "影响因素",
+            "抖音数据"
+          ]
+        },
+        {
+          "document_id": "zh_0433",
+          "title": "基于文化遗产视角的陵墓遗址旅游开发——以乾陵、西夏王陵和明十三陵为例",
+          "matched_evidence": [
+            "旅游",
+            "文化遗产"
+          ],
+          "keywords": [
+            "体验经济",
+            "文化遗产",
+            "旅游开发"
+          ]
+        },
+        {
+          "document_id": "zh_0437",
+          "title": "武陵源风景区旅游客流量时空变化与调控对策",
+          "matched_evidence": [
+            "旅游",
+            "景区"
+          ],
+          "keywords": [
+            "客流活动",
+            "特征",
+            "生态旅游承载力",
+            "武陵源风景区"
+          ]
+        },
+        {
+          "document_id": "zh_0815",
+          "title": "景区经营权转让下旅游资源开发激励约束契约设计",
+          "matched_evidence": [
+            "旅游",
+            "景区"
+          ],
+          "keywords": [
+            "委托代理",
+            "旅游资源开发",
+            "激励约束",
+            "道德风险"
+          ]
+        },
+        {
+          "document_id": "zh_0833",
+          "title": "景区智慧旅游设施的优化布局——以泉州古城为例",
+          "matched_evidence": [
+            "旅游",
+            "景区"
+          ],
+          "keywords": [
+            "旅游便利性",
+            "智慧旅游",
+            "布局",
+            "移动终端",
+            "候选兴趣点",
+            "旅游服务",
+            "科技创新"
+          ]
+        },
+        {
+          "document_id": "zh_0957",
+          "title": "符号化运作:世界文化遗产旅游地创新发展的路径选择——以湖北武当山为例",
+          "matched_evidence": [
+            "旅游",
+            "文化遗产"
+          ],
+          "keywords": [
+            "符号消费",
+            "符号化运作",
+            "世界文化遗产",
+            "遗产旅游地",
+            "创新发展",
+            "武当山"
+          ]
+        },
+        {
+          "document_id": "zh_0066",
+          "title": "基于行动者网络的生态旅游地多元主体冲突的演变及形成机制——以湖北省神农架为例",
+          "matched_evidence": [
+            "旅游"
+          ],
+          "keywords": [
+            "生态旅游",
+            "旅游地冲突",
+            "行动者网络理论",
+            "冲突演变",
+            "形成机制",
+            "多元主体"
+          ]
+        },
+        {
+          "document_id": "zh_0067",
+          "title": "旅游专业大学生乡村旅游创业意向的影响因素",
+          "matched_evidence": [
+            "旅游"
+          ],
+          "keywords": [
+            "乡村旅游",
+            "创业意向",
+            "创业榜样",
+            "个体创业特质",
+            "创业能力"
+          ]
+        },
+        {
+          "document_id": "zh_0081",
+          "title": "美丽中国目标下洞庭湖区旅游生态效率时空演化及其影响路径",
+          "matched_evidence": [
+            "旅游"
+          ],
+          "keywords": [
+            "旅游生态效率",
+            "动态QCA",
+            "技术创新",
+            "环境规制",
+            "旅游资源禀赋",
+            "美丽中国",
+            "洞庭湖区"
+          ]
+        },
+        {
+          "document_id": "zh_0099",
+          "title": "对外开放对粤港澳大湾区旅游业生态效率影响的空间效应",
+          "matched_evidence": [
+            "旅游"
+          ],
+          "keywords": [
+            "对外开放",
+            "旅游业生态效率",
+            "绿色转型",
+            "空间效应",
+            "国际合作",
+            "粤港澳大湾区"
+          ]
+        },
+        {
+          "document_id": "zh_0132",
+          "title": "区域旅游开发强度与生态系统功能的耦合协调及驱动机制",
+          "matched_evidence": [
+            "旅游"
+          ],
+          "keywords": [
+            "旅游开发强度",
+            "生态系统功能",
+            "交互响应",
+            "耦合协调",
+            "喀斯特生态旅游地",
+            "贵州"
+          ]
+        },
+        {
+          "document_id": "zh_0142",
+          "title": "中国陆地边境县域旅游资源活力空间错位及其影响因素",
+          "matched_evidence": [
+            "旅游"
+          ],
+          "keywords": [
+            "旅游资源活力",
+            "空间错位",
+            "边境旅游",
+            "多源数据",
+            "陆地边境县域"
+          ]
+        },
+        {
+          "document_id": "zh_0150",
+          "title": "廊道旅游地空间网络结构及其形成机制",
+          "matched_evidence": [
+            "旅游"
+          ],
+          "keywords": [
+            "廊道旅游地",
+            "空间网络结构",
+            "模体分析",
+            "民族文化",
+            "资源等级",
+            "乡村振兴",
+            "岭南文旅廊道"
+          ]
+        },
+        {
+          "document_id": "zh_0153",
+          "title": "旅游业高质量发展的多尺度空间解构与模拟评估",
+          "matched_evidence": [
+            "旅游"
+          ],
+          "keywords": [
+            "旅游业高质量发展",
+            "评估体系",
+            "政策导向",
+            "系统动力学模型",
+            "多尺度"
+          ]
+        },
+        {
+          "document_id": "zh_0169",
+          "title": "乡村旅游地回流劳动力的就业选择及其影响因素",
+          "matched_evidence": [
+            "旅游"
+          ],
+          "keywords": [
+            "乡村旅游地",
+            "回流劳动力",
+            "回流就业",
+            "旅游就业",
+            "住宿餐饮业",
+            "乡村振兴"
+          ]
+        },
+        {
+          "document_id": "zh_0361",
+          "title": "旅游市场、民生福祉与生态系统服务权衡协同关系研究——以张家界市为例",
+          "matched_evidence": [
+            "旅游"
+          ],
+          "keywords": [
+            "旅游市场",
+            "民生福祉",
+            "生态系统服务",
+            "权衡协同关系",
+            "张家界市"
+          ]
+        },
+        {
+          "document_id": "zh_0364",
+          "title": "长三角城市群旅游经济一体化形成机制与协同发展模式——基于联系网络视角",
+          "matched_evidence": [
+            "旅游"
+          ],
+          "keywords": [
+            "旅游经济一体化",
+            "旅游经济联系",
+            "网络结构",
+            "协同发展模式",
+            "长三角城市群"
+          ]
+        },
+        {
+          "document_id": "zh_0378",
+          "title": "业态分类视角下湖南省乡村旅游产业空间分布特征及影响机理",
+          "matched_evidence": [
+            "旅游"
+          ],
+          "keywords": [
+            "业态分类",
+            "乡村旅游产业",
+            "高质量发展",
+            "空间分布",
+            "湖南省"
+          ]
+        },
+        {
+          "document_id": "zh_0384",
+          "title": "全域视角下旅游廊道构建与网络体系评价——以渭南市为例",
+          "matched_evidence": [
+            "旅游"
+          ],
+          "keywords": [
+            "旅游廊道",
+            "旅游网络",
+            "旅游源地",
+            "文旅融合",
+            "渭南市"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-ZH-04",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "农业",
+          "frequency": 8,
+          "weight": 0.73,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "粮食",
+          "frequency": 7,
+          "weight": 0.7075,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "乡村振兴",
+          "frequency": 5,
+          "weight": 0.6625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "农村",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "耕地",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "粮食生产",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "城镇化",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "粮食安全",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "农村基础设施建设",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "障碍因子",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "时空演变",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "耦合协调",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0100",
+          "title": "省域农村基础设施建设与乡村振兴的耦合协调发展研究",
+          "matched_evidence": [
+            "乡村振兴",
+            "农村"
+          ],
+          "keywords": [
+            "农村基础设施建设",
+            "乡村振兴",
+            "耦合协调",
+            "时空演变",
+            "障碍因子"
+          ]
+        },
+        {
+          "document_id": "zh_0409",
+          "title": "辽宁省乡村多功能评价和演变特征分析",
+          "matched_evidence": [
+            "乡村振兴",
+            "粮食"
+          ],
+          "keywords": [
+            "乡村多功能",
+            "社会需求",
+            "乡村振兴战略",
+            "粮食生产",
+            "生态保育",
+            "工业化",
+            "城镇化"
+          ]
+        },
+        {
+          "document_id": "zh_0543",
+          "title": "江苏粮食生产地域分化的耕地因素分解",
+          "matched_evidence": [
+            "耕地",
+            "粮食"
+          ],
+          "keywords": [
+            "粮食生产",
+            "区域分化",
+            "耕地变化",
+            "因素分解"
+          ]
+        },
+        {
+          "document_id": "zh_0673",
+          "title": "加强土壤和产地环境管理  促进农业可持续发展",
+          "matched_evidence": [
+            "农业",
+            "耕地"
+          ],
+          "keywords": [
+            "土壤和产地环境",
+            "农业面源污染",
+            "耕地质量管理",
+            "农业可持续发展"
+          ]
+        },
+        {
+          "document_id": "zh_0740",
+          "title": "中国大豆生产格局变化及其影响因素",
+          "matched_evidence": [
+            "农业",
+            "粮食"
+          ],
+          "keywords": [
+            "大豆产区",
+            "粮食安全",
+            "产业集中度",
+            "农业机械化",
+            "农业保险",
+            "农业比较收益"
+          ]
+        },
+        {
+          "document_id": "zh_0755",
+          "title": "文旅融合导向下的乡村振兴发展机制与模式",
+          "matched_evidence": [
+            "农业",
+            "乡村振兴"
+          ],
+          "keywords": [
+            "文旅融合",
+            "乡村振兴",
+            "乡村地域系统",
+            "互馈机制",
+            "产业融合发展",
+            "休闲农业"
+          ]
+        },
+        {
+          "document_id": "zh_0001",
+          "title": "土地流转和社会化服务对农业全要素生产率的影响实证分析",
+          "matched_evidence": [
+            "农业"
+          ],
+          "keywords": [
+            "土地流转",
+            "农业社会化服务",
+            "农业全要素生产率",
+            "空间溢出效应"
+          ]
+        },
+        {
+          "document_id": "zh_0002",
+          "title": "江苏省宅基地退出影响因素及其分区治理",
+          "matched_evidence": [
+            "农村"
+          ],
+          "keywords": [
+            "宅基地",
+            "农户意愿",
+            "风险承载力",
+            "分区",
+            "农村保障机制",
+            "治理对策"
+          ]
+        },
+        {
+          "document_id": "zh_0137",
+          "title": "中部农区村域农民专业合作社时空分异及影响因素",
+          "matched_evidence": [
+            "农业"
+          ],
+          "keywords": [
+            "农民专业合作社",
+            "资源禀赋",
+            "地理区位",
+            "社会经济基础",
+            "村域",
+            "种植型",
+            "养殖型",
+            "农业服务型"
+          ]
+        },
+        {
+          "document_id": "zh_0152",
+          "title": "传统村落农户活性分异及其影响因素——以浙江省长濂村为例",
+          "matched_evidence": [
+            "乡村振兴"
+          ],
+          "keywords": [
+            "乡村振兴",
+            "村落有机体",
+            "细胞活性",
+            "农户",
+            "空间分异",
+            "数字乡村"
+          ]
+        },
+        {
+          "document_id": "zh_0167",
+          "title": "乡村振兴与新型城镇化良性耦合——中国式城乡现代化发展科学内涵与时代选择",
+          "matched_evidence": [
+            "乡村振兴"
+          ],
+          "keywords": [
+            "乡村振兴",
+            "新型城镇化",
+            "中国式城乡现代化",
+            "科学内涵",
+            "时代选择"
+          ]
+        },
+        {
+          "document_id": "zh_0172",
+          "title": "中国粮食生产韧性的时空格局及其影响因素",
+          "matched_evidence": [
+            "粮食"
+          ],
+          "keywords": [
+            "粮食生产韧性",
+            "空间格局",
+            "熵值法",
+            "地理探测器",
+            "影响因素"
+          ]
+        },
+        {
+          "document_id": "zh_0287",
+          "title": "大数据支撑现代农业产业高质量发展的内在逻辑与政策建议",
+          "matched_evidence": [
+            "农业"
+          ],
+          "keywords": [
+            "现代农业",
+            "数据要素",
+            "高质量发展",
+            "内在逻辑",
+            "政策建议"
+          ]
+        },
+        {
+          "document_id": "zh_0301",
+          "title": "中国耕地资源利用的“五化”态势与治理对策",
+          "matched_evidence": [
+            "耕地"
+          ],
+          "keywords": [
+            "耕地健康",
+            "非农化",
+            "非粮化",
+            "细碎化",
+            "边际化",
+            "生态退化"
+          ]
+        },
+        {
+          "document_id": "zh_0365",
+          "title": "土地出让价格对国土空间格局演变的作用机制与空间效应——以长三角地区为例",
+          "matched_evidence": [
+            "农业"
+          ],
+          "keywords": [
+            "土地出让价格",
+            "国土空间格局",
+            "建设用地",
+            "农业生产空间",
+            "生态服务空间",
+            "长三角地区"
+          ]
+        },
+        {
+          "document_id": "zh_0403",
+          "title": "城乡一体化发展背景下中国农村土地管理制度创新研究",
+          "matched_evidence": [
+            "农村"
+          ],
+          "keywords": [
+            "城乡一体化发展",
+            "农村土地管理",
+            "制度创新",
+            "Land-PPET框架",
+            "中国"
+          ]
+        },
+        {
+          "document_id": "zh_0416",
+          "title": "基于SD模型的中国西南水—能源—粮食纽带系统仿真模拟",
+          "matched_evidence": [
+            "粮食"
+          ],
+          "keywords": [
+            "水—能源—粮食纽带",
+            "情景仿真",
+            "权衡协同",
+            "水能资源",
+            "粮食生产",
+            "可持续发展",
+            "生态安全"
+          ]
+        },
+        {
+          "document_id": "zh_0446",
+          "title": "黄河下游水土匹配系数与粮食生产协调发展测度及影响因素",
+          "matched_evidence": [
+            "粮食"
+          ],
+          "keywords": [
+            "黄河流域",
+            "水土资源",
+            "粮食安全",
+            "城镇化",
+            "农林水投入",
+            "耦合协调度",
+            "空间计量"
+          ]
+        },
+        {
+          "document_id": "zh_0455",
+          "title": "青藏地区农牧企业区位特征变化及影响因素",
+          "matched_evidence": [
+            "农业"
+          ],
+          "keywords": [
+            "农业与畜牧业",
+            "企业区位",
+            "人口密度",
+            "高程",
+            "路网密度",
+            "空间集聚",
+            "青藏地区"
+          ]
+        },
+        {
+          "document_id": "zh_0466",
+          "title": "甘肃省粮食产量变化的驱动分析及趋势预测",
+          "matched_evidence": [
+            "粮食"
+          ],
+          "keywords": [
+            "粮食",
+            "小波分析",
+            "主成分分析",
+            "GM(1,1)模型",
+            "甘肃省"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-ZH-05",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "国土空间",
+          "frequency": 2,
+          "weight": 0.73,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "城市更新",
+          "frequency": 2,
+          "weight": 0.73,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "公共交通",
+          "frequency": 1,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "生态韧性",
+          "frequency": 2,
+          "weight": 0.73,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "国土空间演化",
+          "frequency": 1,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "生态修复",
+          "frequency": 1,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "研究进展",
+          "frequency": 1,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "人与自然和谐共生",
+          "frequency": 1,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "机理解析",
+          "frequency": 1,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "社会—自然过程耦合",
+          "frequency": 1,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "环长株潭城市群",
+          "frequency": 1,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "因子分析",
+          "frequency": 1,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 5,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0143",
+          "title": "国土空间生态韧性研究进展与前沿分析",
+          "matched_evidence": [
+            "国土空间"
+          ],
+          "keywords": [
+            "国土空间演化",
+            "生态韧性",
+            "生态修复",
+            "社会—自然过程耦合",
+            "机理解析",
+            "人与自然和谐共生",
+            "研究进展"
+          ]
+        },
+        {
+          "document_id": "zh_0168",
+          "title": "城市更新作用下生态韧性时空分异及其影响效应——以环长株潭城市群为例",
+          "matched_evidence": [
+            "城市更新"
+          ],
+          "keywords": [
+            "城市更新",
+            "生态韧性",
+            "环长株潭城市群",
+            "因子分析"
+          ]
+        },
+        {
+          "document_id": "zh_0257",
+          "title": "科学开发地下空间资源，激活城市经济高质量发展",
+          "matched_evidence": [
+            "城市更新"
+          ],
+          "keywords": [
+            "城市",
+            "地下空间",
+            "城市韧性",
+            "城市更新",
+            "综合体系"
+          ]
+        },
+        {
+          "document_id": "zh_0505",
+          "title": "国土空间规划下城市收缩与复兴中的空间形态调整",
+          "matched_evidence": [
+            "国土空间"
+          ],
+          "keywords": [
+            "国土空间规划",
+            "空间结构优化",
+            "收缩城市",
+            "城市复兴",
+            "城市形态",
+            "城镇开发边界",
+            "资源环境底线"
+          ]
+        },
+        {
+          "document_id": "zh_0847",
+          "title": "广州市地铁TOD站域的空间类型分异——基于“节点—场所—联系”耦合度模型的研究",
+          "matched_evidence": [
+            "公共交通"
+          ],
+          "keywords": [
+            "TOD站域",
+            "地铁“",
+            "节点—场所—联系”耦合度模型",
+            "空间效能评价",
+            "公共交通",
+            "圈层结构"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-ZH-06",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "制造业",
+          "frequency": 8,
+          "weight": 0.91,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "智能制造",
+          "frequency": 2,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "工业企业",
+          "frequency": 1,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "长三角地区",
+          "frequency": 2,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "产业集聚",
+          "frequency": 2,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "制造业拓展伙伴",
+          "frequency": 1,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "美国",
+          "frequency": 1,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "政策",
+          "frequency": 1,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "创新研究所",
+          "frequency": 1,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "国内大循环",
+          "frequency": 1,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "工业资本循环",
+          "frequency": 1,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "区域发展差距",
+          "frequency": 1,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 10,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0913",
+          "title": "美国智能制造的发展及启示",
+          "matched_evidence": [
+            "制造业",
+            "智能制造"
+          ],
+          "keywords": [
+            "美国",
+            "智能制造",
+            "制造业",
+            "创新研究所",
+            "制造业拓展伙伴",
+            "政策"
+          ]
+        },
+        {
+          "document_id": "zh_0024",
+          "title": "电信隐性转移支付对工业企业资本循环的影响",
+          "matched_evidence": [
+            "工业企业"
+          ],
+          "keywords": [
+            "电信隐性转移支付",
+            "工业资本循环",
+            "国内大循环",
+            "区域发展差距",
+            "新发展格局"
+          ]
+        },
+        {
+          "document_id": "zh_0101",
+          "title": "长三角地区科技型中小企业发展的时空格局及其影响因素",
+          "matched_evidence": [
+            "制造业"
+          ],
+          "keywords": [
+            "科技型中小企业",
+            "制造业",
+            "科技服务业",
+            "信息服务业",
+            "空间集聚",
+            "要素环境",
+            "长三角地区"
+          ]
+        },
+        {
+          "document_id": "zh_0162",
+          "title": "长三角地区智能设备制造业空间布局演化及影响因素",
+          "matched_evidence": [
+            "制造业"
+          ],
+          "keywords": [
+            "新质生产力",
+            "智能设备制造业",
+            "产业集聚",
+            "工业机器人",
+            "无人飞行器",
+            "创新水平",
+            "长三角地区"
+          ]
+        },
+        {
+          "document_id": "zh_0370",
+          "title": "长江中游城市群数智融合对制造业绿色转型的影响及空间效应",
+          "matched_evidence": [
+            "制造业"
+          ],
+          "keywords": [
+            "数智融合",
+            "制造业绿色转型",
+            "耦合协调度模型",
+            "空间杜宾模型",
+            "长江中游城市群"
+          ]
+        },
+        {
+          "document_id": "zh_0428",
+          "title": "江西省制造业产业集聚、地区专业化与经济增长实证研究",
+          "matched_evidence": [
+            "制造业"
+          ],
+          "keywords": [
+            "产业集聚",
+            "地区专业化",
+            "经济增长",
+            "制造业",
+            "江西"
+          ]
+        },
+        {
+          "document_id": "zh_0541",
+          "title": "中国机器人产业发展现状与展望",
+          "matched_evidence": [
+            "智能制造"
+          ],
+          "keywords": [
+            "机器人",
+            "智能制造",
+            "工业4.0"
+          ]
+        },
+        {
+          "document_id": "zh_0633",
+          "title": "SSM空间模型及其在珠三角制造业发展中的应用",
+          "matched_evidence": [
+            "制造业"
+          ],
+          "keywords": [
+            "制造业",
+            "空间相互作用",
+            "SSM空间模型",
+            "珠三角"
+          ]
+        },
+        {
+          "document_id": "zh_0706",
+          "title": "中国高端制造业的全球贸易网络格局及其影响因素分析",
+          "matched_evidence": [
+            "制造业"
+          ],
+          "keywords": [
+            "高端制造业",
+            "全球贸易网络格局",
+            "QAP分析",
+            "经济全球化",
+            "技术创新",
+            "产业升级"
+          ]
+        },
+        {
+          "document_id": "zh_0799",
+          "title": "粤港澳大湾区产业融合驱动全要素生产率增长研究——以制造业与生产性服务业融合为例",
+          "matched_evidence": [
+            "制造业"
+          ],
+          "keywords": [
+            "产业融合",
+            "生产性服务业",
+            "制造业",
+            "全要素生产率增长",
+            "粤港澳大湾区",
+            "地理探测器"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-ZH-07",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "医疗",
+          "frequency": 4,
+          "weight": 0.775,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "公共卫生",
+          "frequency": 3,
+          "weight": 0.71875,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "养老",
+          "frequency": 1,
+          "weight": 0.60625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "卫生健康",
+          "frequency": 1,
+          "weight": 0.60625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "照护",
+          "frequency": 1,
+          "weight": 0.60625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "空间适配",
+          "frequency": 1,
+          "weight": 0.60625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "医疗资源",
+          "frequency": 1,
+          "weight": 0.60625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "机构分级",
+          "frequency": 1,
+          "weight": 0.60625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "社会经济",
+          "frequency": 1,
+          "weight": 0.60625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "失能照护机构",
+          "frequency": 1,
+          "weight": 0.60625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "失能老年人",
+          "frequency": 1,
+          "weight": 0.60625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "均等化",
+          "frequency": 1,
+          "weight": 0.60625,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 8,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0164",
+          "title": "中国市域老年失能照护机构发展及其供需适配性",
+          "matched_evidence": [
+            "医疗",
+            "照护"
+          ],
+          "keywords": [
+            "失能老年人",
+            "失能照护机构",
+            "机构分级",
+            "空间适配",
+            "医疗资源",
+            "社会经济",
+            "中国"
+          ]
+        },
+        {
+          "document_id": "zh_0518",
+          "title": "中部地区公共卫生健康高质量发展研究",
+          "matched_evidence": [
+            "公共卫生",
+            "卫生健康"
+          ],
+          "keywords": [
+            "公共卫生健康保障",
+            "高质量发展",
+            "空间格局",
+            "中部地区",
+            "均等化"
+          ]
+        },
+        {
+          "document_id": "zh_0049",
+          "title": "城乡居家养老服务设施空间配给均等性研究——以苏州市为例",
+          "matched_evidence": [
+            "养老"
+          ],
+          "keywords": [
+            "老年人",
+            "居家养老",
+            "服务设施",
+            "供给与需求",
+            "空间可达性",
+            "均等性",
+            "城乡差异"
+          ]
+        },
+        {
+          "document_id": "zh_0410",
+          "title": "基于可达性的医疗服务功能空间分异特征及其服务强度研究——以河北省张家口市为例",
+          "matched_evidence": [
+            "医疗"
+          ],
+          "keywords": [
+            "医疗服务功能",
+            "服务强度",
+            "空间分异",
+            "可达性",
+            "张家口市"
+          ]
+        },
+        {
+          "document_id": "zh_0609",
+          "title": "中国农村公共服务供给质量时空格局及影响因素",
+          "matched_evidence": [
+            "医疗"
+          ],
+          "keywords": [
+            "农村公共服务供给质量",
+            "公共服务",
+            "教育文化",
+            "医疗卫生",
+            "社会保障",
+            "环保减灾",
+            "全局熵值法"
+          ]
+        },
+        {
+          "document_id": "zh_0741",
+          "title": "关于科技在应对重大突发公共卫生事件中发挥统筹协同作用的思考",
+          "matched_evidence": [
+            "公共卫生"
+          ],
+          "keywords": []
+        },
+        {
+          "document_id": "zh_0780",
+          "title": "加强我国公共卫生管理的若干建议",
+          "matched_evidence": [
+            "公共卫生"
+          ],
+          "keywords": [
+            "公共卫生",
+            "管理建议",
+            "新冠肺炎"
+          ]
+        },
+        {
+          "document_id": "zh_0922",
+          "title": "撤县(市)设区对城市公共服务配置和空间布局的影响与作用机理",
+          "matched_evidence": [
+            "医疗"
+          ],
+          "keywords": [
+            "撤县(市)设区",
+            "行政区划调整",
+            "城市公共服务",
+            "教育与医疗",
+            "公共服务均等化",
+            "杭州"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-ZH-08",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "生态保护",
+          "frequency": 5,
+          "weight": 0.6625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "碳中和",
+          "frequency": 5,
+          "weight": 0.6625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "绿色发展",
+          "frequency": 5,
+          "weight": 0.6625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "生态环境",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "污染",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "高质量发展",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "可持续发展",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "TOE框架",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "节能减排",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "低碳转型",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "数字经济",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "基于自然的解决方案",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0022",
+          "title": "“技术—组织—环境”视域下数字经济赋能低碳转型发展的路径",
+          "matched_evidence": [
+            "碳中和"
+          ],
+          "keywords": [
+            "数字经济",
+            "低碳转型",
+            "TOE框架",
+            "节能减排",
+            "碳中和"
+          ]
+        },
+        {
+          "document_id": "zh_0047",
+          "title": "基于自然的青藏高原一体化生态保护修复优化管理",
+          "matched_evidence": [
+            "生态保护"
+          ],
+          "keywords": [
+            "基于自然的解决方案",
+            "适应性管理",
+            "景观尺度",
+            "社区参与"
+          ]
+        },
+        {
+          "document_id": "zh_0296",
+          "title": "能源转型下的锂、钴、镍资源需求及回收潜力分析——基于电动汽车的视角",
+          "matched_evidence": [
+            "碳中和"
+          ],
+          "keywords": [
+            "碳中和",
+            "能源转型",
+            "资源安全",
+            "循环回收"
+          ]
+        },
+        {
+          "document_id": "zh_0366",
+          "title": "碳交易政策对高耗能企业碳排放强度的影响",
+          "matched_evidence": [
+            "绿色发展"
+          ],
+          "keywords": [
+            "高耗能企业",
+            "碳交易政策",
+            "碳排放",
+            "技术创新",
+            "绿色信贷",
+            "绿色发展"
+          ]
+        },
+        {
+          "document_id": "zh_0401",
+          "title": "长江中游城市群环境压力的时空特征——以工业SO2排放为例",
+          "matched_evidence": [
+            "绿色发展"
+          ],
+          "keywords": [
+            "绿色发展",
+            "减排",
+            "工业SO",
+            "排放量",
+            "自然正交函数",
+            "地理加权回归",
+            "长江中游城市群"
+          ]
+        },
+        {
+          "document_id": "zh_0413",
+          "title": "基于物质流分析的区域工业生态效率评价——以湖南省为例",
+          "matched_evidence": [
+            "绿色发展"
+          ],
+          "keywords": [
+            "绿色发展",
+            "工业物质流分析",
+            "工业生态效率",
+            "物质流结构分析",
+            "工业生态化评价"
+          ]
+        },
+        {
+          "document_id": "zh_0464",
+          "title": "西北地区生态保护与高质量发展协同推进的策略和路径",
+          "matched_evidence": [
+            "生态保护"
+          ],
+          "keywords": [
+            "西北地区",
+            "生态保护",
+            "高质量发展",
+            "协同推进",
+            "策略",
+            "路径",
+            "水安全保障体系"
+          ]
+        },
+        {
+          "document_id": "zh_0485",
+          "title": "产业链延伸与资源型城市演化研究——以安徽省铜陵市为例",
+          "matched_evidence": [
+            "生态环境"
+          ],
+          "keywords": [
+            "产业链延伸",
+            "资源型城市",
+            "资源开发",
+            "空间结构",
+            "生态环境"
+          ]
+        },
+        {
+          "document_id": "zh_0583",
+          "title": "城市化与生态环境协调发展的调控机制研究",
+          "matched_evidence": [
+            "生态环境"
+          ],
+          "keywords": [
+            "城市化",
+            "生态环境",
+            "协调发展",
+            "调控机制"
+          ]
+        },
+        {
+          "document_id": "zh_0593",
+          "title": "关于粤港澳大湾区一体化生态保护修复的思考与建议",
+          "matched_evidence": [
+            "生态保护"
+          ],
+          "keywords": [
+            "生态保护修复",
+            "系统观",
+            "整体观",
+            "协同观",
+            "粤港澳大湾区"
+          ]
+        },
+        {
+          "document_id": "zh_0605",
+          "title": "论我国畜牧业可持续发展",
+          "matched_evidence": [
+            "绿色发展"
+          ],
+          "keywords": [
+            "畜牧业",
+            "可持续发展",
+            "高质量",
+            "绿色发展"
+          ]
+        },
+        {
+          "document_id": "zh_0608",
+          "title": "黄河流域生态保护和高质量发展：框架、路径与对策",
+          "matched_evidence": [
+            "生态保护"
+          ],
+          "keywords": [
+            "高质量发展",
+            "生态保护",
+            "战略路径",
+            "黄河流域"
+          ]
+        },
+        {
+          "document_id": "zh_0637",
+          "title": "碳中和愿景下的能源变革",
+          "matched_evidence": [
+            "碳中和"
+          ],
+          "keywords": [
+            "碳中和",
+            "能源变革",
+            "电力零碳化",
+            "燃料零碳化"
+          ]
+        },
+        {
+          "document_id": "zh_0753",
+          "title": "城市用地扩张与生态环境保护的交互作用研究——以长株潭城市群为例",
+          "matched_evidence": [
+            "生态环境"
+          ],
+          "keywords": [
+            "城市群",
+            "城市用地扩张",
+            "生态环境保护",
+            "共生机制",
+            "交互作用",
+            "高质量发展"
+          ]
+        },
+        {
+          "document_id": "zh_0773",
+          "title": "污染企业迁移意愿的影响因素研究——以浙江省上虞市为例",
+          "matched_evidence": [
+            "污染"
+          ],
+          "keywords": [
+            "企业迁移",
+            "环境规制",
+            "“污染避难所”假说",
+            "企业规模"
+          ]
+        },
+        {
+          "document_id": "zh_0792",
+          "title": "碳中和目标下美国氢能战略转型及特征分析",
+          "matched_evidence": [
+            "碳中和"
+          ],
+          "keywords": [
+            "氢能战略",
+            "碳中和",
+            "全链条",
+            "加速商业化",
+            "技术储备"
+          ]
+        },
+        {
+          "document_id": "zh_0793",
+          "title": "以生态保护为前提开发开化旅游业",
+          "matched_evidence": [
+            "生态保护"
+          ],
+          "keywords": [
+            "旅游",
+            "生态保护",
+            "开发"
+          ]
+        },
+        {
+          "document_id": "zh_0800",
+          "title": "优化生态建设布局  提升固碳能力的政策途径",
+          "matched_evidence": [
+            "碳中和"
+          ],
+          "keywords": [
+            "碳中和",
+            "生态建设",
+            "生态布局",
+            "固碳能力",
+            "政策途径"
+          ]
+        },
+        {
+          "document_id": "zh_0823",
+          "title": "基于非期望产出的中国城市绿色发展效率及影响因素分析",
+          "matched_evidence": [
+            "绿色发展"
+          ],
+          "keywords": [
+            "绿色发展效率",
+            "非期望SBM模型",
+            "时空格局",
+            "投入产出分析",
+            "Tobit模型"
+          ]
+        },
+        {
+          "document_id": "zh_0831",
+          "title": "西藏地区可持续发展面临的主要生态环境问题及对策",
+          "matched_evidence": [
+            "生态环境"
+          ],
+          "keywords": [
+            "生态环境",
+            "保护与建设",
+            "可持续发展",
+            "西藏自治区"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-EN-01",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "cancer",
+          "frequency": 16,
+          "weight": 0.91,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "tumor",
+          "frequency": 7,
+          "weight": 0.7075,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "carcinoma",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "oncology",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Cervical cancer",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Prognosis",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "breast cancer",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Ovarian cancer",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "drug resistance",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "tumor-initiating cancer stem cells",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "functionalized nanoplatform",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "surface-enhanced Raman scattering",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "en_0069",
+          "title": "Nanoplatform to Investigate Tumor-Initiating Cancer Stem Cells: Breaking the Diagnostic Barrier",
+          "matched_evidence": [
+            "cancer",
+            "tumor"
+          ],
+          "keywords": [
+            "drug resistance",
+            "epigenetic changes",
+            "functionalized nanoplatform",
+            "surface-enhanced Raman scattering",
+            "tumor-initiating cancer stem cells"
+          ]
+        },
+        {
+          "document_id": "en_0077",
+          "title": "Cadherins, catenins and cell cycle regulators: Impact on survival in a Gynecologic Oncology Group phase II endometrial cancer trial",
+          "matched_evidence": [
+            "cancer",
+            "oncology"
+          ],
+          "keywords": [
+            "Cadherin",
+            "Catenin",
+            "Endometrial cancer",
+            "p120",
+            "p16",
+            "p53"
+          ]
+        },
+        {
+          "document_id": "en_0169",
+          "title": "Investigating Trends in the Quality of Reporting of Patient-Reported Outcomes in Oncology Over Time: Analysis of 631 Randomized Controlled Trials Published Between 2004 and 2019",
+          "matched_evidence": [
+            "cancer",
+            "oncology"
+          ],
+          "keywords": [
+            "cancer",
+            "clinical trial",
+            "patient-reported outcomes",
+            "quality of life",
+            "symptoms"
+          ]
+        },
+        {
+          "document_id": "en_0419",
+          "title": "The Glucocorticoid Receptor in Intestinal Epithelial Cells Alleviates Colitis and Associated Colorectal Cancer in Mice",
+          "matched_evidence": [
+            "cancer",
+            "tumor"
+          ],
+          "keywords": [
+            "Colon",
+            "Epithelial Barrier",
+            "Inflammation",
+            "Tumor"
+          ]
+        },
+        {
+          "document_id": "en_0496",
+          "title": "Mutation profiling of uterine cervical cancer patients treated with definitive radiotherapy",
+          "matched_evidence": [
+            "cancer",
+            "tumor"
+          ],
+          "keywords": [
+            "Cervical cancer",
+            "Definitive radiotherapy",
+            "Targeted therapy",
+            "Tumoral mutation profiles"
+          ]
+        },
+        {
+          "document_id": "en_0526",
+          "title": "Video-assisted thoracic surgery in the primary management of advanced ovarian carcinoma with moderate to large pleural effusions: A Memorial Sloan Kettering Cancer Center Team Ovary Study",
+          "matched_evidence": [
+            "cancer",
+            "carcinoma"
+          ],
+          "keywords": [
+            "Advanced ovarian carcinoma",
+            "Pleural disease",
+            "Pleural effusion",
+            "Primary debulking surgery"
+          ]
+        },
+        {
+          "document_id": "en_0549",
+          "title": "Tumor budding in cervical cancer as a prognostic factor and its possible role as an additional intermediate-risk factor",
+          "matched_evidence": [
+            "cancer",
+            "tumor"
+          ],
+          "keywords": [
+            "Cervical cancer",
+            "Intermediate-risk",
+            "Prognosis",
+            "Tumor budding"
+          ]
+        },
+        {
+          "document_id": "en_0625",
+          "title": "NIR-Driven Water Splitting H 2 Production Nanoplatform for H 2 -Mediated Cascade-Amplifying Synergetic Cancer Therapy",
+          "matched_evidence": [
+            "cancer",
+            "tumor"
+          ],
+          "keywords": [
+            "breast cancer",
+            "hydrogen therapy",
+            "synergetic therapy",
+            "tumor microenvironments"
+          ]
+        },
+        {
+          "document_id": "en_0705",
+          "title": "Evolving population-based statistics for rare epithelial ovarian cancers",
+          "matched_evidence": [
+            "cancer",
+            "tumor"
+          ],
+          "keywords": [
+            "Clear cell",
+            "Low-grade serous",
+            "Mucinous",
+            "Ovarian cancer",
+            "Rare tumor",
+            "Survival"
+          ]
+        },
+        {
+          "document_id": "en_0008",
+          "title": "Construction and validation of nomogram prognostic model for predicting survival in hepatoblastoma patients: a population-based study",
+          "matched_evidence": [
+            "cancer"
+          ],
+          "keywords": [
+            "Cancer-specific survival",
+            "Hepatoblastoma",
+            "Nomogram",
+            "Overall survival",
+            "Prognosis",
+            "SEER"
+          ]
+        },
+        {
+          "document_id": "en_0017",
+          "title": "Hematological, histomorphological, and immunohistochemical diagnosis of bilateral testicular Sertoli cell tumor in a Mongrel dog: a case history",
+          "matched_evidence": [
+            "tumor"
+          ],
+          "keywords": [
+            "Dog",
+            "Hematology",
+            "Histomorphology",
+            "Immunohistochemistry",
+            "Sertoli cell tumor"
+          ]
+        },
+        {
+          "document_id": "en_0019",
+          "title": "Targeted Liposomal Co-delivery of an Immunogenic Cell Death Inducer and a Toll-Like Receptor 4 Agonist for Enhanced Cancer Chemo-immunotherapy",
+          "matched_evidence": [
+            "cancer"
+          ],
+          "keywords": [
+            "cancer immunotherapy",
+            "folate receptor targeting",
+            "immunogenic cell death",
+            "liposome",
+            "TLR4 activation"
+          ]
+        },
+        {
+          "document_id": "en_0045",
+          "title": "Metastatic disease masquerading as small intestinal tumoural masses: two case reports and literature review",
+          "matched_evidence": [
+            "carcinoma"
+          ],
+          "keywords": [
+            "Choriocarcinoma",
+            "Intestines",
+            "Metastases",
+            "Polyps",
+            "Renal cell carcinoma"
+          ]
+        },
+        {
+          "document_id": "en_0058",
+          "title": "Steroid hormone receptors silence genes by a chromatin-targeted mechanism similar to those used for gene activation",
+          "matched_evidence": [
+            "cancer"
+          ],
+          "keywords": [
+            "breast cancer",
+            "chromatin remodelling",
+            "gene repression",
+            "histone H1",
+            "Progesterone receptor"
+          ]
+        },
+        {
+          "document_id": "en_0072",
+          "title": "Magnetic resonance imaging appearance of oxidized regenerated cellulose in breast cancer surgery",
+          "matched_evidence": [
+            "cancer"
+          ],
+          "keywords": [
+            "Absorbable implants",
+            "Breast-conserving surgery",
+            "Magnetic resonance imaging",
+            "Oncoplastic procedures",
+            "Oxidized regenerated cellulose"
+          ]
+        },
+        {
+          "document_id": "en_0073",
+          "title": "Human ovarian cancer cell morphology, motility, and proliferation are differentially influenced by autocrine TGFβ superfamily signalling",
+          "matched_evidence": [
+            "cancer"
+          ],
+          "keywords": [
+            "Activin",
+            "Bone morphogenetic protein",
+            "Epithelial-to-mesenchymal transition",
+            "Motility",
+            "Ovarian cancer",
+            "Transforming growth factor beta"
+          ]
+        },
+        {
+          "document_id": "en_0074",
+          "title": "Hypoxia-inducible factors in OSCC",
+          "matched_evidence": [
+            "carcinoma"
+          ],
+          "keywords": [
+            "HIF-1Î±",
+            "HIF-2Î±",
+            "Hypoxia",
+            "Hypoxia-inducible factors",
+            "Oral squamous cell carcinoma"
+          ]
+        },
+        {
+          "document_id": "en_0078",
+          "title": "One year follow-up of US-Guided radiofrequency ablation for low-risk papillary thyroid microcarcinoma: The first experience in Taiwan",
+          "matched_evidence": [
+            "carcinoma"
+          ],
+          "keywords": [
+            "Papillary thyroid microcarcinoma",
+            "Radiofrequency ablation",
+            "Ultrasound"
+          ]
+        },
+        {
+          "document_id": "en_0083",
+          "title": "Reevaluating the Evidence for Intensive Postoperative Extracolonic Surveillance for Nonmetastatic Colorectal Cancer",
+          "matched_evidence": [
+            "cancer"
+          ],
+          "keywords": [
+            "colorectal cancer",
+            "comparative effectiveness",
+            "extracolonic surveillance",
+            "metastasectomy",
+            "microsimulation model",
+            "postoperative"
+          ]
+        },
+        {
+          "document_id": "en_0086",
+          "title": "Career Development Needs Assessment in Cancer Prevention and Control: Focus on Research in Minority and International Settings",
+          "matched_evidence": [
+            "cancer"
+          ],
+          "keywords": [
+            "Cancer education",
+            "Disparities",
+            "Extramural training",
+            "Mentoring",
+            "Special populations"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-EN-02",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "cardiac",
+          "frequency": 13,
+          "weight": 0.8425,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "cardiovascular",
+          "frequency": 5,
+          "weight": 0.6625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "atrial fibrillation",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "heart",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Sudden cardiac death",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "pulmonary vein isolation",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "electrocardiogram",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "cardiovascular magnetic resonance",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Cardiac allograft rejection",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "echocardiography",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "natriuretic peptide",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "troponin",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "en_0036",
+          "title": "Cardiac transplantation: towards a new noninvasive approach of cardiac allograft rejection",
+          "matched_evidence": [
+            "cardiac",
+            "cardiovascular"
+          ],
+          "keywords": [
+            "Cardiac allograft rejection",
+            "cardiovascular magnetic resonance",
+            "echocardiography",
+            "electrocardiogram",
+            "natriuretic peptide",
+            "troponin"
+          ]
+        },
+        {
+          "document_id": "en_0161",
+          "title": "Age-related changes among 25 patients with congenital cardiac left-to-right shunts and irreversible plexogenic pulmonary arteriopathy",
+          "matched_evidence": [
+            "cardiac",
+            "heart"
+          ],
+          "keywords": [
+            "Congenital heart disease",
+            "Plexiform lesions",
+            "Plexogenic pulmonary arteriopathy",
+            "Pulmonary hypertension"
+          ]
+        },
+        {
+          "document_id": "en_0188",
+          "title": "The B-type natriuretic peptide of the Congo and Timneh grey parrot",
+          "matched_evidence": [
+            "cardiovascular",
+            "heart"
+          ],
+          "keywords": [
+            "Brain natriuretic peptide",
+            "Cardiovascular diseases",
+            "Heart",
+            "Psittacus"
+          ]
+        },
+        {
+          "document_id": "en_0325",
+          "title": "Cardiac resynchronization therapy in non-ischemic cardiomyopathy: a comparative non-randomized study of His Bundle pacing versus biventricular pacing",
+          "matched_evidence": [
+            "cardiac",
+            "heart"
+          ],
+          "keywords": [
+            "Cardiac resynchronization therapy",
+            "Heart failure",
+            "His bundle pacing",
+            "Left bundle branch block"
+          ]
+        },
+        {
+          "document_id": "en_0466",
+          "title": "The positive and negative cardiovascular effects of cannabis",
+          "matched_evidence": [
+            "cardiovascular",
+            "heart"
+          ],
+          "keywords": [
+            "Cannabidiol",
+            "cannabinoid",
+            "cannabis",
+            "cardiovascular disease",
+            "heart failure",
+            "marijuana",
+            "tetrahydrocannabinol"
+          ]
+        },
+        {
+          "document_id": "en_0664",
+          "title": "Cardiovascular effects of growth hormone (GH) treatment on GH-deficient adults: a meta-analysis update",
+          "matched_evidence": [
+            "cardiac",
+            "cardiovascular"
+          ],
+          "keywords": [
+            "Cardiac structure",
+            "Cardiovascular function",
+            "Echocardiography",
+            "GH treatment",
+            "Growth hormone deficiency"
+          ]
+        },
+        {
+          "document_id": "en_0009",
+          "title": "Determinants/Predictors of QT Abnormalities in Patients on Psychotropic Medications in a Nigerian Tertiary Hospital",
+          "matched_evidence": [
+            "cardiac"
+          ],
+          "keywords": [
+            "Psychotropic drugs",
+            "QTc",
+            "QTd",
+            "Sudden cardiac death",
+            "Ventricular repolarization"
+          ]
+        },
+        {
+          "document_id": "en_0016",
+          "title": "In-hospital cardiac arrest after STEMI: prevention strategies and post-arrest care",
+          "matched_evidence": [
+            "cardiac"
+          ],
+          "keywords": [
+            "acute coronary syndrome",
+            "acute myocardial infarction",
+            "Cardiac arrest",
+            "cardiac critical care",
+            "cardiogenic shock",
+            "percutaneous coronary intervention",
+            "ST-segment myocardial infarction"
+          ]
+        },
+        {
+          "document_id": "en_0020",
+          "title": "PTSD and mood disorders in implantable cardioverter defibrillator patients: is more psychological assessment needed?",
+          "matched_evidence": [
+            "cardiac"
+          ],
+          "keywords": [
+            "cardiac psychology",
+            "Implantable cardioverter-defibrillator",
+            "mood",
+            "patient management",
+            "post-traumatic stress disorder",
+            "psychological assessment"
+          ]
+        },
+        {
+          "document_id": "en_0037",
+          "title": "Impact of atrial fibrillation on platelet gene expression",
+          "matched_evidence": [
+            "atrial fibrillation"
+          ],
+          "keywords": [
+            "gene expression",
+            "platelets",
+            "pulmonary vein isolation",
+            "thrombosis"
+          ]
+        },
+        {
+          "document_id": "en_0061",
+          "title": "Anatomopathological changes of the cardiac conduction system in sudden cardiac death, particularly in infants: advances over the last 25 years",
+          "matched_evidence": [
+            "cardiac"
+          ],
+          "keywords": [
+            "Accessory pathways",
+            "Arrhythmias",
+            "Cardiac conduction system",
+            "Sudden cardiac death",
+            "Sudden infant death syndrome",
+            "Sudden intrauterine unexpected death syndrome"
+          ]
+        },
+        {
+          "document_id": "en_0070",
+          "title": "Sleep apnea and atrial fibrillation: challenges in clinical and translational research",
+          "matched_evidence": [
+            "atrial fibrillation"
+          ],
+          "keywords": [
+            "Atrial fibrillation",
+            "CPAP",
+            "polygraphy",
+            "pulmonary vein isolation",
+            "screening",
+            "sleep apnea"
+          ]
+        },
+        {
+          "document_id": "en_0075",
+          "title": "Variation of left ventricular outflow tract velocity and global end-diastolic volume index reliably predict fluid responsiveness in cardiac surgery patients",
+          "matched_evidence": [
+            "cardiac"
+          ],
+          "keywords": [
+            "Fluid responsiveness",
+            "Global end-diastolic volume index",
+            "Monitoring",
+            "Preload",
+            "Pulse pressure variation",
+            "Stroke volume variation",
+            "Velocity time integral"
+          ]
+        },
+        {
+          "document_id": "en_0088",
+          "title": "Ventilator-associated pneumonia is an important risk factor for mortality after major cardiac surgery",
+          "matched_evidence": [
+            "cardiac"
+          ],
+          "keywords": [
+            "Cardiac surgery",
+            "Cardiopulmonary bypass",
+            "In-hospital mortality",
+            "Nosocomial pneumonia",
+            "Risk factors",
+            "Ventilator-associated pneumonia"
+          ]
+        },
+        {
+          "document_id": "en_0143",
+          "title": "The impact of height on recurrence after index catheter ablation of paroxysmal atrial fibrillation",
+          "matched_evidence": [
+            "atrial fibrillation"
+          ],
+          "keywords": [
+            "Catheter ablation",
+            "Height",
+            "Left atrium dimensions",
+            "Paroxysmal atrial fibrillation",
+            "Sex"
+          ]
+        },
+        {
+          "document_id": "en_0162",
+          "title": "Perioperative risk and antiplatelet management in patients undergoing non-cardiac surgery within 1 year of PCI",
+          "matched_evidence": [
+            "cardiac"
+          ],
+          "keywords": [
+            "Ahrombosis",
+            "Antiplatelet therapy",
+            "Bleeding",
+            "Non-cardiac surgery",
+            "PCI"
+          ]
+        },
+        {
+          "document_id": "en_0164",
+          "title": "Primary cardiac osteosarcoma with recurrent episodes and unusual patterns of metastatic spread",
+          "matched_evidence": [
+            "cardiac"
+          ],
+          "keywords": [
+            "Cardiac",
+            "Neoplasm",
+            "Osteosarcoma"
+          ]
+        },
+        {
+          "document_id": "en_0178",
+          "title": "Pharmacologic Inhibition of Pain Response to Incomplete Vascular Occlusion Blunts Cardiovascular Preconditioning Response",
+          "matched_evidence": [
+            "cardiovascular"
+          ],
+          "keywords": [
+            "Cardioprotection",
+            "IR",
+            "Pain",
+            "RIPC"
+          ]
+        },
+        {
+          "document_id": "en_0284",
+          "title": "Optimization of regularization of attenuation and scatter-corrected /sup 99m/Tc cardiac SPECT studies for defect detection using hybrid images",
+          "matched_evidence": [
+            "cardiac"
+          ],
+          "keywords": [
+            "Attenuation correction",
+            "Iterative reconstruction",
+            "ROC observer studies",
+            "Scatter correction"
+          ]
+        },
+        {
+          "document_id": "en_0288",
+          "title": "Differences in D-dimer blood concentration in atrial fibrillation patients with left atrial thrombus or severe left atrial spontaneous echo contrast",
+          "matched_evidence": [
+            "atrial fibrillation"
+          ],
+          "keywords": [
+            "Atrial fibrillation",
+            "D-dimer",
+            "Left atrial spontaneous echo contrast",
+            "Thrombus"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-EN-03",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "covid-19",
+          "frequency": 12,
+          "weight": 0.82,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "virus",
+          "frequency": 11,
+          "weight": 0.7975,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "infection",
+          "frequency": 9,
+          "weight": 0.7525,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "bacterial",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "infectious",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Pulmonary embolism",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Mortality",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Thrombosis",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Coronavirus infections",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Heparin",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "magnetic guidance",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "nanoworms",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "en_0606",
+          "title": "The association between treatment with heparin and survival in patients with Covid-19",
+          "matched_evidence": [
+            "covid-19",
+            "infection",
+            "virus"
+          ],
+          "keywords": [
+            "Coronavirus infections",
+            "Covid-19",
+            "Heparin",
+            "Mortality",
+            "Pulmonary embolism",
+            "Thrombosis"
+          ]
+        },
+        {
+          "document_id": "en_0265",
+          "title": "Magnetically Guided Nanoworms for Precise Delivery to Enhance In Situ Production of Nitric Oxide to Combat Focal Bacterial Infection In Vivo",
+          "matched_evidence": [
+            "infection",
+            "bacterial"
+          ],
+          "keywords": [
+            "magnetic guidance",
+            "nanoworms",
+            "nitric oxide",
+            "photothermal therapy",
+            "targeted delivery"
+          ]
+        },
+        {
+          "document_id": "en_0269",
+          "title": "Molecular diagnosis and therapy for Plasmodium ovale infection of a returned traveler from East Africa",
+          "matched_evidence": [
+            "infection",
+            "virus"
+          ],
+          "keywords": [
+            "Coronavirus disease",
+            "Malaria",
+            "Plasmodium ovale",
+            "Relapses"
+          ]
+        },
+        {
+          "document_id": "en_0352",
+          "title": "ST-segment elevation in patients with COVID-19: a systematic review",
+          "matched_evidence": [
+            "covid-19",
+            "virus"
+          ],
+          "keywords": [
+            "Coronavirus disease 2019",
+            "Myocardial infarction",
+            "ST-segment elevation myocardial infarction",
+            "Systematic review"
+          ]
+        },
+        {
+          "document_id": "en_0359",
+          "title": "How Should the World Pay for a Coronavirus Disease (COVID-19) Vaccine?",
+          "matched_evidence": [
+            "covid-19",
+            "virus"
+          ],
+          "keywords": [
+            "Advance Market Commitment",
+            "COVID-19",
+            "global health",
+            "vaccines",
+            "value-based pricing"
+          ]
+        },
+        {
+          "document_id": "en_0431",
+          "title": "Changes in pediatric seizure-related emergency department attendances during COVID-19 – A territory-wide observational study",
+          "matched_evidence": [
+            "covid-19",
+            "infection"
+          ],
+          "keywords": [
+            "COVID19",
+            "Epilepsy",
+            "Febrile seizures",
+            "Medical help seek-behaviour",
+            "Respiratory tract infections"
+          ]
+        },
+        {
+          "document_id": "en_0472",
+          "title": "Pulmonary pathology of infection by SARS-CoV-2, what we have learnt through post-mortem studies and pathophysiological considerations",
+          "matched_evidence": [
+            "covid-19",
+            "infection"
+          ],
+          "keywords": [
+            "autopsy",
+            "COVID-19",
+            "pathophysiology",
+            "post-mortem",
+            "pulmonary pathology",
+            "SARS-CoV-2"
+          ]
+        },
+        {
+          "document_id": "en_0495",
+          "title": "Baseline chest X-ray in coronavirus disease 19 (COVID-19) patients: association with clinical and laboratory data",
+          "matched_evidence": [
+            "covid-19",
+            "virus"
+          ],
+          "keywords": [
+            "Chest X-ray",
+            "Coronavirus disease 2019 (COVID-19)",
+            "Laboratory test",
+            "Real-time reverse transcriptase-polymerase reaction chain test (RT-PCR)",
+            "Sensitivity",
+            "Severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2)"
+          ]
+        },
+        {
+          "document_id": "en_0631",
+          "title": "What Does the COVID-19 Pandemic Mean for Rheumatology Patients?",
+          "matched_evidence": [
+            "covid-19",
+            "virus"
+          ],
+          "keywords": [
+            "Coronavirus",
+            "COVID-19",
+            "Drug shortages",
+            "Pandemic",
+            "Rheumatologists",
+            "Rheumatology"
+          ]
+        },
+        {
+          "document_id": "en_0810",
+          "title": "Efficacy and safety of glecaprevir/pibrentasvir for chronic hepatitis C virus genotypes 1–6 infection: A systematic review and meta-analysis",
+          "matched_evidence": [
+            "infection",
+            "virus"
+          ],
+          "keywords": [
+            "Combination therapy",
+            "Glecaprevir/pibrentasvir",
+            "Hepatitis C virus",
+            "Sustained virological response"
+          ]
+        },
+        {
+          "document_id": "en_0855",
+          "title": "Comparative study on hemato-biochemical alterations and selected acute phase protein response in native sheep experimentally infected with bluetongue virus serotypes 10 and 24",
+          "matched_evidence": [
+            "infection",
+            "virus"
+          ],
+          "keywords": [
+            "Acute phase response",
+            "BTV-10 serotype",
+            "BTV-24 serotype",
+            "Experimental infection",
+            "Hematology",
+            "Serum biochemistry"
+          ]
+        },
+        {
+          "document_id": "en_0880",
+          "title": "HIV post-exposure prophylaxis in the Emergency Department: a perspective from Singapore",
+          "matched_evidence": [
+            "infectious",
+            "virus"
+          ],
+          "keywords": [
+            "emergency",
+            "Human immunodeficiency virus",
+            "infectious disease",
+            "post-exposure prophylaxis"
+          ]
+        },
+        {
+          "document_id": "en_0972",
+          "title": "Current practices in the management of adenovirus infection in allogeneic hematopoietic stem cell transplant recipients in Europe: The AdVance study",
+          "matched_evidence": [
+            "infection",
+            "virus"
+          ],
+          "keywords": [
+            "adenoviridae",
+            "antiviral agents",
+            "DNA viruses",
+            "infection control",
+            "transplantation",
+            "virus diseases"
+          ]
+        },
+        {
+          "document_id": "en_0095",
+          "title": "A study of the effects of delayed patient presentation on cutaneous SCC progression",
+          "matched_evidence": [
+            "covid-19"
+          ],
+          "keywords": [
+            "cohort study",
+            "COVID-19",
+            "excision margins",
+            "healthcare delivery",
+            "Skin cancer",
+            "squamous cell",
+            "time to treatment"
+          ]
+        },
+        {
+          "document_id": "en_0118",
+          "title": "Role of CT angiography in detecting acute pulmonary embolism associated with COVID-19 pneumonia",
+          "matched_evidence": [
+            "covid-19"
+          ],
+          "keywords": [
+            "ARDS",
+            "COVID-19",
+            "CT angiography",
+            "Pulmonary embolism"
+          ]
+        },
+        {
+          "document_id": "en_0159",
+          "title": "Fossil fuels, climate change, and the COVID-19 crisis: pathways for a just and green post-pandemic recovery",
+          "matched_evidence": [
+            "covid-19"
+          ],
+          "keywords": [
+            "carbon curse",
+            "climate change",
+            "COVID-19",
+            "green transition",
+            "just transition",
+            "resource curse"
+          ]
+        },
+        {
+          "document_id": "en_0177",
+          "title": "An Outbreak of SARS-CoV-2 Infections Among People Living with HIV and its Successful Containment—Taiwan, May to August 2021",
+          "matched_evidence": [
+            "infection"
+          ],
+          "keywords": [
+            "Coinfection",
+            "Digital technology",
+            "Prevention and control"
+          ]
+        },
+        {
+          "document_id": "en_0190",
+          "title": "Changes in the presentation of newly diagnosed type 1 diabetes in children during the COVID-19 pandemic in a tertiary center in Southern Turkey",
+          "matched_evidence": [
+            "covid-19"
+          ],
+          "keywords": [
+            "COVID-19 pandemic",
+            "diabetic ketoacidosis",
+            "type 1 diabetes mellitus"
+          ]
+        },
+        {
+          "document_id": "en_0195",
+          "title": "Harmonized D-dimer levels upon admission for prognosis of COVID-19 severity: Results from a Spanish multicenter registry (BIOCOVID-Spain study)",
+          "matched_evidence": [
+            "covid-19"
+          ],
+          "keywords": [
+            "COVID-19",
+            "D-dimer",
+            "Harmonization",
+            "Mortality",
+            "Prognosis"
+          ]
+        },
+        {
+          "document_id": "en_0210",
+          "title": "Zinc-Embedded Polyamide Fabrics Inactivate SARS-CoV-2 and Influenza A Virus",
+          "matched_evidence": [
+            "virus"
+          ],
+          "keywords": [
+            "absorption",
+            "coronavirus",
+            "face mask",
+            "influenza",
+            "zinc"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-EN-04",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "brain",
+          "frequency": 9,
+          "weight": 0.7525,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "depression",
+          "frequency": 5,
+          "weight": 0.6625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "alzheimer",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "schizophrenia",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "neurological",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Drug repurposing",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "COVID-19",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Network biology",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Neurologic comorbidity",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Hub genes",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Disease-gene interaction",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Tauopathy",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "en_0401",
+          "title": "Brain Disease Network Analysis to Elucidate the Neurological Manifestations of COVID-19",
+          "matched_evidence": [
+            "neurological",
+            "brain"
+          ],
+          "keywords": [
+            "COVID-19",
+            "Disease-gene interaction",
+            "Drug repurposing",
+            "Hub genes",
+            "Network biology",
+            "Neurologic comorbidity"
+          ]
+        },
+        {
+          "document_id": "en_0756",
+          "title": "Gold Nanoparticles Treatment Reverses Brain Damage in Alzheimer’s Disease Model",
+          "matched_evidence": [
+            "alzheimer",
+            "brain"
+          ],
+          "keywords": [
+            "Cognition function",
+            "Mitochondria function",
+            "Neuroinflammation",
+            "Oxidative stress",
+            "Tauopathy"
+          ]
+        },
+        {
+          "document_id": "en_0917",
+          "title": "Pathological Alterations of Tau in Alzheimer’s Disease and 3xTg-AD Mouse Brains",
+          "matched_evidence": [
+            "alzheimer",
+            "brain"
+          ],
+          "keywords": [
+            "3xTg-AD mice",
+            "Alzheimer’s disease",
+            "Phosphorylation",
+            "Prion-like properties",
+            "Tau",
+            "Truncation"
+          ]
+        },
+        {
+          "document_id": "en_0065",
+          "title": "The Interaction of TXNIP and AFq1 Genes Increases the Susceptibility of Schizophrenia",
+          "matched_evidence": [
+            "schizophrenia"
+          ],
+          "keywords": [
+            "AFq1",
+            "Interaction",
+            "Schizophrenia",
+            "TXNIP"
+          ]
+        },
+        {
+          "document_id": "en_0067",
+          "title": "Small molecule NPT-440-1 inhibits ionic flux through Aβ 1-42 pores: Implications for Alzheimer's disease therapeutics",
+          "matched_evidence": [
+            "alzheimer"
+          ],
+          "keywords": [
+            "Alzheimer's disease",
+            "Amyloid beta peptide",
+            "Amyloid pore",
+            "Atomic force microscopy",
+            "Bilayer electrophysiology",
+            "Calcium",
+            "Small molecule"
+          ]
+        },
+        {
+          "document_id": "en_0081",
+          "title": "Duloxetine in the treatment of binge eating disorder with depressive disorders: A placebo-controlled trial",
+          "matched_evidence": [
+            "depression"
+          ],
+          "keywords": [
+            "binge eating disorder",
+            "depression",
+            "duloxetine",
+            "longitudinal analysis",
+            "obesity"
+          ]
+        },
+        {
+          "document_id": "en_0085",
+          "title": "An association between high birth weight and schizophrenia in a Finnish schizophrenia family study sample",
+          "matched_evidence": [
+            "schizophrenia"
+          ],
+          "keywords": [
+            "Birth weight",
+            "Obstetric complications",
+            "Primary psychotic disorder",
+            "Schizophrenia"
+          ]
+        },
+        {
+          "document_id": "en_0091",
+          "title": "Joint-Tissue Integrative Analysis Identified Hundreds of Schizophrenia Risk Genes",
+          "matched_evidence": [
+            "schizophrenia"
+          ],
+          "keywords": [
+            "Gene expression",
+            "Integrative analysis",
+            "Risk genes",
+            "Schizophrenia"
+          ]
+        },
+        {
+          "document_id": "en_0100",
+          "title": "No influence of PTGS2 polymorphisms on response and remission to antidepressants in major depression",
+          "matched_evidence": [
+            "depression"
+          ],
+          "keywords": [
+            "Major depressive disorder",
+            "PTGS2",
+            "Response"
+          ]
+        },
+        {
+          "document_id": "en_0124",
+          "title": "Anticipatory and consummatory components of the experience of pleasure in schizophrenia: Cross-cultural validation and extension",
+          "matched_evidence": [
+            "schizophrenia"
+          ],
+          "keywords": [
+            "Anhedonia",
+            "Chinese",
+            "Schizophrenia"
+          ]
+        },
+        {
+          "document_id": "en_0144",
+          "title": "Association between depression and survival or disease recurrence in patients with head and neck cancer enrolled in a depression prevention trial",
+          "matched_evidence": [
+            "depression"
+          ],
+          "keywords": [
+            "Cancer",
+            "Depression",
+            "Head and neck",
+            "Prognosis",
+            "Survival"
+          ]
+        },
+        {
+          "document_id": "en_0163",
+          "title": "Reference Values and Psychometric Properties of the Quality of Life After Traumatic Brain Injury-Overall Scale in Italy, The Netherlands, and the United Kingdom",
+          "matched_evidence": [
+            "brain"
+          ],
+          "keywords": [
+            "HRQoL",
+            "measurement invariance",
+            "QOLIBRI-OS",
+            "reference values",
+            "TBI"
+          ]
+        },
+        {
+          "document_id": "en_0200",
+          "title": "Three-dimensional deep learning with spatial erasing for unsupervised anomaly segmentation in brain MRI",
+          "matched_evidence": [
+            "brain"
+          ],
+          "keywords": [
+            "3D autoencoder",
+            "Anomaly",
+            "Brain MRI",
+            "Segmentation",
+            "Unsupervised"
+          ]
+        },
+        {
+          "document_id": "en_0221",
+          "title": "Pharmacokinetics and brain σ1 receptor occupancy of MR309, a selective σ1 receptor antagonist",
+          "matched_evidence": [
+            "brain"
+          ],
+          "keywords": [
+            "brain",
+            "MR309",
+            "neuropathy",
+            "pharmacokinetic",
+            "positron emission tomography",
+            "sigma receptor"
+          ]
+        },
+        {
+          "document_id": "en_0236",
+          "title": "MyD88 Deficiency, but Not Gut Microbiota Depletion, Is Sufficient to Modulate the Blood–Brain Barrier Function in the Mediobasal Hypothalamus",
+          "matched_evidence": [
+            "brain"
+          ],
+          "keywords": [
+            "Bloodâbrain barrier",
+            "Circumventricular organs",
+            "Gut microbiota",
+            "Hypothalamus",
+            "MyD88",
+            "Tight junction proteins"
+          ]
+        },
+        {
+          "document_id": "en_0255",
+          "title": "Vagusnervstimulation bei schwer zu behandelnden Depressionen",
+          "matched_evidence": [
+            "depression"
+          ],
+          "keywords": [
+            "Adjuvant procedure",
+            "Long-term effect",
+            "Mechanism of action",
+            "Neuromodulatory network",
+            "Neurostimulation"
+          ]
+        },
+        {
+          "document_id": "en_0312",
+          "title": "Role of lncRNAs in the Development of Ischemic Stroke and Their Therapeutic Potential",
+          "matched_evidence": [
+            "brain"
+          ],
+          "keywords": [
+            "Brain injury",
+            "Ischemia/reperfusion",
+            "Ischemic stroke",
+            "LncRNA",
+            "Recovery"
+          ]
+        },
+        {
+          "document_id": "en_0395",
+          "title": "Sex, racial differences and healthy aging in normative reference ranges on diastolic function in Ethnic Asians: 2016 ASE guideline revisited",
+          "matched_evidence": [
+            "brain"
+          ],
+          "keywords": [
+            "American Society of echocardiography (ASE)",
+            "Diastolic dysfunction (DD)",
+            "Ethnic asians",
+            "Heart failure (HF)",
+            "N-terminal pro-brain natriuretic peptide (NT-proBNP)"
+          ]
+        },
+        {
+          "document_id": "en_0481",
+          "title": "Cost-Effectiveness of Different Formats for Delivery of Cognitive Behavioral Therapy for Depression: A Systematic Review Based Economic Model",
+          "matched_evidence": [
+            "depression"
+          ],
+          "keywords": [
+            "cognitive behavioral therapy",
+            "cost-effectiveness",
+            "decision-analytic model",
+            "depression"
+          ]
+        },
+        {
+          "document_id": "en_0487",
+          "title": "Electrochemical Biosensor Based on Polyelectrolyte Complexes with Dendrimer for the Determination of Reversible Inhibitors of Acetylcholinesterase",
+          "matched_evidence": [
+            "alzheimer"
+          ],
+          "keywords": [
+            "Acetylcholinesterase biosensor",
+            "Alzheimerâu0080u0099s disease",
+            "dendrimers",
+            "polyelectrolyte complex",
+            "reversible inhibition"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-EN-05",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "solar cell",
+          "frequency": 5,
+          "weight": 0.7,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "battery",
+          "frequency": 4,
+          "weight": 0.67,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "electrocatalyst",
+          "frequency": 2,
+          "weight": 0.61,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "energy storage",
+          "frequency": 2,
+          "weight": 0.61,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "hydrogen generation",
+          "frequency": 2,
+          "weight": 0.61,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "TCO-free",
+          "frequency": 1,
+          "weight": 0.58,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "perovskite/TOPCon tandem solar cells",
+          "frequency": 1,
+          "weight": 0.58,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "oxidation",
+          "frequency": 1,
+          "weight": 0.58,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "titanium silicide",
+          "frequency": 1,
+          "weight": 0.58,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "recombination layer",
+          "frequency": 1,
+          "weight": 0.58,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Kuo, Cheng-Chien",
+          "frequency": 1,
+          "weight": 0.58,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "microgrid",
+          "frequency": 1,
+          "weight": 0.58,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 15,
+      "evidence_documents": [
+        {
+          "document_id": "en_0001",
+          "title": "Titanium Silicide: A Promising Candidate of Recombination Layer for Perovskite/Tunnel Oxide Passivated Contact Silicon Two-Terminal Tandem Solar Cells",
+          "matched_evidence": [
+            "solar cell"
+          ],
+          "keywords": [
+            "oxidation",
+            "perovskite/TOPCon tandem solar cells",
+            "recombination layer",
+            "TCO-free",
+            "titanium silicide"
+          ]
+        },
+        {
+          "document_id": "en_0021",
+          "title": "Component, design, and prospects of self-consistent energy systems for transport infrastructures",
+          "matched_evidence": [
+            "energy storage"
+          ],
+          "keywords": [
+            "architecture",
+            "energy storage",
+            "Kuo, Cheng-Chien",
+            "Liu, Lei",
+            "microgrid",
+            "Renewable energy",
+            "traffic constraint"
+          ]
+        },
+        {
+          "document_id": "en_0066",
+          "title": "Effect of sputtering power on properties and photovoltaic performance of CIGS thin film solar cells",
+          "matched_evidence": [
+            "solar cell"
+          ],
+          "keywords": [
+            "CIGS thin film",
+            "DC magnetron sputtering",
+            "Jâu0080u0093V characteristics",
+            "Raman spectroscopy"
+          ]
+        },
+        {
+          "document_id": "en_0131",
+          "title": "Different Morphology Dependence for Efficient Indoor Organic Photovoltaics: The Role of the Leakage Current and Recombination Losses",
+          "matched_evidence": [
+            "solar cell"
+          ],
+          "keywords": [
+            "indoor organic solar cells",
+            "leakage current",
+            "morphology reoptimization",
+            "performance",
+            "recombination loss"
+          ]
+        },
+        {
+          "document_id": "en_0132",
+          "title": "Reactivity and Potential Profile across the Electrochemical LiCoO 2 –Li 3 PS 4 Interface Probed by Operando X-ray Photoelectron Spectroscopy",
+          "matched_evidence": [
+            "battery"
+          ],
+          "keywords": [
+            "all-solid-state battery",
+            "interface",
+            "LCO",
+            "LPS",
+            "operando",
+            "post-mortem",
+            "XPEEM",
+            "XPS"
+          ]
+        },
+        {
+          "document_id": "en_0199",
+          "title": "Supramolecular Anchoring Strategy for Facile Production of Ruthenium Nanoparticles Embedded in N-Doped Mesoporous Carbon Nanospheres for Efficient Hydrogen Generation",
+          "matched_evidence": [
+            "hydrogen generation"
+          ],
+          "keywords": [
+            "expanded mesoporous structure",
+            "hydrogen evolution reaction",
+            "strong electronic coupling",
+            "superior performance",
+            "supramolecular anchoring strategy"
+          ]
+        },
+        {
+          "document_id": "en_0341",
+          "title": "Porous Graphitic Carbons Containing Nitrogen by Structuration of Chitosan with Pluronic P123",
+          "matched_evidence": [
+            "hydrogen generation"
+          ],
+          "keywords": [
+            "chitosan pyrolysis",
+            "graphitic carbons",
+            "photocatalytic hydrogen generation",
+            "Pluronic 123",
+            "soft structuration"
+          ]
+        },
+        {
+          "document_id": "en_0532",
+          "title": "Plasmon-enhanced organic and perovskite solar cells with metal nanoparticles",
+          "matched_evidence": [
+            "solar cell"
+          ],
+          "keywords": [
+            "Metal nanoparticles",
+            "Organic solar cells",
+            "Perovskite solar cells",
+            "Plasmonics"
+          ]
+        },
+        {
+          "document_id": "en_0533",
+          "title": "Vitamin B 12 on Graphene for Highly Efficient CO 2 Electroreduction",
+          "matched_evidence": [
+            "electrocatalyst"
+          ],
+          "keywords": [
+            "carbon dioxide",
+            "cobalt",
+            "electrocatalyst",
+            "graphene",
+            "vitamin B<sub>12</sub>"
+          ]
+        },
+        {
+          "document_id": "en_0602",
+          "title": "Solid Electrolytes for Li–S Batteries: Solid Solutions of Poly(ethylene oxide) with Li x PON- and Li x SiPON-Based Polymers",
+          "matched_evidence": [
+            "battery"
+          ],
+          "keywords": [
+            "LiPON",
+            "lithium-sulfur battery",
+            "PEO",
+            "polymer electrolyte",
+            "polymer precursors"
+          ]
+        },
+        {
+          "document_id": "en_0667",
+          "title": "Quantifying Diffusion through Interfaces of Lithium-Ion Battery Active Materials",
+          "matched_evidence": [
+            "battery"
+          ],
+          "keywords": [
+            "ab initio simulations",
+            "cyclic voltammetry",
+            "LiFePO<sub>4</sub>",
+            "lithium-ion batteries",
+            "muon spin spectroscopy",
+            "solid-state diffusion"
+          ]
+        },
+        {
+          "document_id": "en_0684",
+          "title": "Hierarchical Porous Carbon Arising from Metal–Organic Framework-Encapsulated Bacteria and Its Energy Storage Potential",
+          "matched_evidence": [
+            "energy storage"
+          ],
+          "keywords": [
+            "bacteria",
+            "biomimetic mineralization",
+            "carbonization",
+            "hierarchical porous carbon",
+            "metal-organic frameworks",
+            "supercapacitor"
+          ]
+        },
+        {
+          "document_id": "en_0699",
+          "title": "Synthesis of V-doped In 2 O 3 Nanocrystals via Digestive-Ripening Process and Their Electrocatalytic Properties in CO 2 Reduction Reaction",
+          "matched_evidence": [
+            "electrocatalyst"
+          ],
+          "keywords": [
+            "carbon dioxide reduction",
+            "digestive-ripening",
+            "dopant",
+            "electrocatalyst",
+            "indium oxide",
+            "nanocrystal"
+          ]
+        },
+        {
+          "document_id": "en_0765",
+          "title": "Tuning Methylammonium Iodide Amount in Organolead Halide Perovskite Materials by Post-Treatment for High-Efficiency Solar Cells",
+          "matched_evidence": [
+            "solar cell"
+          ],
+          "keywords": [
+            "ion composition",
+            "performance enhancement",
+            "perovskite solar cells",
+            "surface treatment",
+            "trap density"
+          ]
+        },
+        {
+          "document_id": "en_0803",
+          "title": "Polyethylene Glycol–Na + Interface of Vanadium Hexacyanoferrate Cathode for Highly Stable Rechargeable Aqueous Sodium-Ion Battery",
+          "matched_evidence": [
+            "battery"
+          ],
+          "keywords": [
+            "Aqueous rechargeable sodium-ion battery",
+            "Solid electrolyte interphase",
+            "Solid-state NMR",
+            "Vanadium hexacyanoferrate"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-EN-06",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "environmental",
+          "frequency": 7,
+          "weight": 0.7075,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "pollution",
+          "frequency": 7,
+          "weight": 0.7075,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "heavy metals",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "climate change",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "conservation",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Oxidative damage",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "8-OHdG",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Biomonitoring",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "MDA",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "biological conservation",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "monitoring",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "environmental DNA",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "en_0158",
+          "title": "Assessing oxidative stress resulting from environmental exposure to metals (Oids) in a middle Eastern population",
+          "matched_evidence": [
+            "environmental",
+            "heavy metals"
+          ],
+          "keywords": [
+            "8-OHdG",
+            "Biomonitoring",
+            "Heavy metals",
+            "MDA",
+            "Oxidative damage"
+          ]
+        },
+        {
+          "document_id": "en_0250",
+          "title": "A noninvasive eDNA tool for detecting sea lamprey larvae in river sediments: Analytical validation and field testing in a low‐abundance ecosystem",
+          "matched_evidence": [
+            "environmental",
+            "conservation"
+          ],
+          "keywords": [
+            "biological conservation",
+            "environmental DNA",
+            "freshwater ecology",
+            "monitoring",
+            "sea lamprey"
+          ]
+        },
+        {
+          "document_id": "en_0676",
+          "title": "Rainfall reduction increases insect herbivory in tropical herb communities",
+          "matched_evidence": [
+            "climate change",
+            "environmental"
+          ],
+          "keywords": [
+            "aridity",
+            "Caatinga",
+            "climate change",
+            "dry forest",
+            "environmental gradient",
+            "folivory",
+            "plant–insect interaction",
+            "precipitation"
+          ]
+        },
+        {
+          "document_id": "en_0090",
+          "title": "Spatial distribution, pollution level, and health risk of Pb in the finer dust of residential areas: a case study of Xi'an, northwest China",
+          "matched_evidence": [
+            "pollution"
+          ],
+          "keywords": [
+            "Dust",
+            "Geodetector",
+            "Health risk",
+            "Pb",
+            "Residential area",
+            "Spatial distribution"
+          ]
+        },
+        {
+          "document_id": "en_0155",
+          "title": "Contamination level, source identification and health risk evaluation of potentially toxic elements (PTEs) in groundwater of an industrial city in eastern India",
+          "matched_evidence": [
+            "pollution"
+          ],
+          "keywords": [
+            "Geospatial techniques",
+            "Groundwater quality",
+            "Health risk assessment",
+            "Multivariate analysis",
+            "Pollution indices",
+            "Potentially toxic elements (PTEs)"
+          ]
+        },
+        {
+          "document_id": "en_0171",
+          "title": "Influence of the products of biomass combustion processes on air quality and cancer risk assessment in rural environmental (Spain)",
+          "matched_evidence": [
+            "environmental"
+          ],
+          "keywords": [
+            "Biomass",
+            "Cancer risk",
+            "PM<sub>10</sub>-bound PAHs",
+            "Rural environment",
+            "Sources apportionment"
+          ]
+        },
+        {
+          "document_id": "en_0192",
+          "title": "Transitional metal chalcogenide nanostructures for remediation and energy: a review",
+          "matched_evidence": [
+            "environmental"
+          ],
+          "keywords": [
+            "Environmental applications",
+            "Nanocomposite",
+            "Transition metal chalcogenide",
+            "Water treatment"
+          ]
+        },
+        {
+          "document_id": "en_0229",
+          "title": "Migration and abiotic transformation of estrone (E1) and estrone-3-sulfate (E1-3S) during soil column transport",
+          "matched_evidence": [
+            "pollution"
+          ],
+          "keywords": [
+            "Abiotic transformation",
+            "Estrone",
+            "Estrone-3-sulfate",
+            "Leaching",
+            "Pollution risk"
+          ]
+        },
+        {
+          "document_id": "en_0233",
+          "title": "Accumulation risk and source apportionment of heavy metals in different types of farmland in a typical farming area of northern China",
+          "matched_evidence": [
+            "heavy metals"
+          ],
+          "keywords": [
+            "Agricultural soil",
+            "Heavy metals",
+            "Land use types",
+            "Risk assessment",
+            "Source apportionment"
+          ]
+        },
+        {
+          "document_id": "en_0241",
+          "title": "OECD Case Studies of Integrated Regional and Strategic Impact Assessment: What Does ‘Integration’ Look Like in Practice?",
+          "matched_evidence": [
+            "environmental"
+          ],
+          "keywords": [
+            "Environmental impact assessment",
+            "Integrated impact assessment",
+            "Land-use planning",
+            "Regional environmental assessment",
+            "Strategic environmental assessment"
+          ]
+        },
+        {
+          "document_id": "en_0319",
+          "title": "Assessment and abatement of the eco-risk caused by mine spoils in the dry subtropical climate",
+          "matched_evidence": [
+            "pollution"
+          ],
+          "keywords": [
+            "Air pollution",
+            "Debris flow",
+            "Land reclamation",
+            "Marl",
+            "Mine dumps",
+            "Mine rehabilitation"
+          ]
+        },
+        {
+          "document_id": "en_0324",
+          "title": "Chronic exposition to ozone induces cardiac antioxidant response and overexpression of either mitochondrial fision protein DRP1 and hipertrophyc-related proteins",
+          "matched_evidence": [
+            "pollution"
+          ],
+          "keywords": [
+            "Cardiac hypertrophy",
+            "Mitochondrial dynamics",
+            "Oxidative stress",
+            "Ozone toxicity",
+            "Pollution"
+          ]
+        },
+        {
+          "document_id": "en_0349",
+          "title": "Fundamentals, synthesis, characterization and environmental applications of layered double hydroxides: a review",
+          "matched_evidence": [
+            "environmental"
+          ],
+          "keywords": [
+            "Adsorbent",
+            "Catalyst",
+            "Catalytic environmental applications",
+            "CO2",
+            "Layered double hydroxides",
+            "Pollutants",
+            "Synthesis"
+          ]
+        },
+        {
+          "document_id": "en_0356",
+          "title": "Biochar production, activation and adsorptive applications: a review",
+          "matched_evidence": [
+            "heavy metals"
+          ],
+          "keywords": [
+            "Activated carbon",
+            "Adsorption",
+            "Biochar",
+            "Dyes",
+            "Heavy metals",
+            "Pharmaceuticals",
+            "Soil amendment"
+          ]
+        },
+        {
+          "document_id": "en_0449",
+          "title": "Capture and Release Recyclable Dimethylaminomethyl-Calixarene Functional Cloths for Point-of-Use Removal of Highly Toxic Chromium Water Pollutants",
+          "matched_evidence": [
+            "pollution"
+          ],
+          "keywords": [
+            "calixarene",
+            "chromium(VI) pollution",
+            "functional surface",
+            "plasmachemical",
+            "recyclable",
+            "water filtration"
+          ]
+        },
+        {
+          "document_id": "en_0453",
+          "title": "Synthesis of Sensitive and Robust Lignin Capped Silver Nanoparticles for the Determination of Cobalt(II), Chromium(III), and Manganese(II) Ions by Colorimetry and Manganese(II) Ions by Surface-Enhanced Raman Scattering (SERS) in Aqueous Media",
+          "matched_evidence": [
+            "heavy metals"
+          ],
+          "keywords": [
+            "Colorimetric detection",
+            "heavy metals",
+            "lignin-functionalized silver nanoparticles (L-AgNPs)",
+            "surface-enhanced Raman scattering (SERS)"
+          ]
+        },
+        {
+          "document_id": "en_0460",
+          "title": "Use of Local Ecological Knowledge to Detect Declines in Mammal Abundance in Kogyae Strict Nature Reserve, Ghana",
+          "matched_evidence": [
+            "conservation"
+          ],
+          "keywords": [
+            "Conservation",
+            "Kogyae strict nature reserve",
+            "Law enforcement",
+            "Local ecological knowledge"
+          ]
+        },
+        {
+          "document_id": "en_0467",
+          "title": "Adapting to climate change: gaps and strategies for Central Asia",
+          "matched_evidence": [
+            "climate change"
+          ],
+          "keywords": [
+            "Adaptation",
+            "Funding",
+            "Gaps",
+            "Measures",
+            "Policy",
+            "Strategies"
+          ]
+        },
+        {
+          "document_id": "en_0513",
+          "title": "Emissions trading in the development model of Colombia",
+          "matched_evidence": [
+            "climate change"
+          ],
+          "keywords": [
+            "climate Change",
+            "Colombia",
+            "Emissions trading",
+            "general equilibrium model",
+            "mitigation"
+          ]
+        },
+        {
+          "document_id": "en_0528",
+          "title": "Molybdenum Disulfide-Wrapped Carbon Nanotube-Reduced Graphene Oxide (CNT/MoS 2 -rGO) Nanohybrids for Excellent and Fast Removal of Electromagnetic Interference Pollution",
+          "matched_evidence": [
+            "pollution"
+          ],
+          "keywords": [
+            "dielectric loss",
+            "electromagnetic interference",
+            "electron hopping",
+            "graphene",
+            "hybrid material"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-EN-07",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "fish",
+          "frequency": 16,
+          "weight": 0.91,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "zebrafish",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "bovine",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "canine",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "crayfish",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "tilapia",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "veterinary",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Monitoring",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "apoptosis",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "colon cancer",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "1,2,4-Triazine derivative",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Retinal development",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "en_0380",
+          "title": "Exploration of novel heterofused 1,2,4-triazine derivative in colorectal cancer",
+          "matched_evidence": [
+            "fish",
+            "zebrafish"
+          ],
+          "keywords": [
+            "1,2,4-Triazine derivative",
+            "apoptosis",
+            "colon cancer",
+            "zebrafish"
+          ]
+        },
+        {
+          "document_id": "en_0517",
+          "title": "Toxicity evaluation of triphenyltin in zebrafish larvae by embryonic malformation, retinal development, and GH/IGF axis",
+          "matched_evidence": [
+            "fish",
+            "zebrafish"
+          ],
+          "keywords": [
+            "Developmental toxicity",
+            "Organotin",
+            "Retinal development",
+            "Zebrafish"
+          ]
+        },
+        {
+          "document_id": "en_0525",
+          "title": "Activin A affects feeding by promoting the inner diameter and muscle development of the pharynx and oesophagus in zebrafish ( Danio rerio ) larvae",
+          "matched_evidence": [
+            "fish",
+            "zebrafish"
+          ],
+          "keywords": [
+            "activin A",
+            "development",
+            "feeding",
+            "pharynx and oesophagus",
+            "zebrafish"
+          ]
+        },
+        {
+          "document_id": "en_0587",
+          "title": "Post-mortem surveillance of bovine tuberculosis in Ireland: herd-level variation in the probability of herds disclosed with lesions at routine slaughter to have skin test reactors at follow-up test",
+          "matched_evidence": [
+            "veterinary",
+            "bovine"
+          ],
+          "keywords": [
+            "Bovine tuberculosis",
+            "Disease control",
+            "Evidence-based policy",
+            "Veterinary epidemiology"
+          ]
+        },
+        {
+          "document_id": "en_0743",
+          "title": "Biochemical and total hemocyte count profiles of long-clawed crayfish (Astacus leptodactylus) as a reference interval in southern Iran",
+          "matched_evidence": [
+            "fish",
+            "crayfish"
+          ],
+          "keywords": [
+            "Astacus leptodactylus",
+            "Biochemical analysis",
+            "Crayfish",
+            "Hemolymph"
+          ]
+        },
+        {
+          "document_id": "en_0882",
+          "title": "Disruption of miR-18a Alters Proliferation, Photoreceptor Replacement Kinetics, Inflammatory Signaling, and Microglia/Macrophage Numbers During Retinal Regeneration in Zebrafish",
+          "matched_evidence": [
+            "fish",
+            "zebrafish"
+          ],
+          "keywords": [
+            "CNS",
+            "Microglia",
+            "MÃ¼ller glia",
+            "Neurogenesis",
+            "Neuroinflammation",
+            "Stem cells"
+          ]
+        },
+        {
+          "document_id": "en_0002",
+          "title": "Effects of a multi-strain Bacillus probiotic on the intestinal microbiome, haemato-immunology, and growth performance of Nile tilapia",
+          "matched_evidence": [
+            "tilapia"
+          ],
+          "keywords": [
+            "α-diversity",
+            "Aeromonas",
+            "Haematology",
+            "Immunology",
+            "Metagenomics",
+            "Microbiology"
+          ]
+        },
+        {
+          "document_id": "en_0133",
+          "title": "Exogenous cortisol and red light irradiation affect reproductive parameters in the goldfish Carassius auratus",
+          "matched_evidence": [
+            "fish"
+          ],
+          "keywords": [
+            "Aquaculture",
+            "Cortisol",
+            "Hormone",
+            "Red light irradiation",
+            "Reproduction"
+          ]
+        },
+        {
+          "document_id": "en_0264",
+          "title": "Effect of 1 mg/kg oral prednisolone on biochemical analytes in ten dogs: a cross-over study",
+          "matched_evidence": [
+            "canine"
+          ],
+          "keywords": [
+            "Biochemistry",
+            "Canine",
+            "Glucocorticoids",
+            "Laboratory analysis"
+          ]
+        },
+        {
+          "document_id": "en_0308",
+          "title": "Effects of pesticides on Chelon labrosus (Risso, 1827) evaluated by enzymatic activities along the north eastern Sicilian coastlines (Italy)",
+          "matched_evidence": [
+            "fish"
+          ],
+          "keywords": [
+            "Acetylcholinesterase",
+            "butyrylcholinesterase",
+            "fish Chelon labrosus",
+            "insecticides",
+            "Milazzo Gulf"
+          ]
+        },
+        {
+          "document_id": "en_0542",
+          "title": "Fish biodiversity of Saint Peter and Saint Paulʼs Archipelago , Mid‐Atlantic Ridge, Brazil: new records and a species database",
+          "matched_evidence": [
+            "fish"
+          ],
+          "keywords": [
+            "Brazil; BRUVs; closed-circuit rebreather; deep sea; disphotic; endemism; fishing; mesophotic; pelagic; reef fish; remote island; submersible"
+          ]
+        },
+        {
+          "document_id": "en_0555",
+          "title": "Fish species in estuaries – from partial association to complete dependency",
+          "matched_evidence": [
+            "fish"
+          ],
+          "keywords": [
+            "estuarine dependency",
+            "estuarine species",
+            "estuary-associated species",
+            "fish life cycles"
+          ]
+        },
+        {
+          "document_id": "en_0556",
+          "title": "An impact and adaptation assessment of changing coastal fishing grounds and fishery industry under global change",
+          "matched_evidence": [
+            "fish"
+          ],
+          "keywords": [
+            "Climate change",
+            "Fish species composition",
+            "Global change",
+            "Liman cold current (LC)",
+            "Sea of Japan",
+            "Sea surface temperature (SST)",
+            "Set-net",
+            "Small- and medium-sized fish",
+            "Toyama Bay",
+            "Tsushima warm current (TWC)"
+          ]
+        },
+        {
+          "document_id": "en_0575",
+          "title": "Spotted wolffish (Anarhichas minor) sperm cryopreservation in 5-mL cryovials",
+          "matched_evidence": [
+            "fish"
+          ],
+          "keywords": [
+            "Cryotubes",
+            "Sperm cryopreservation",
+            "Sperm motility",
+            "Spotted wolffish"
+          ]
+        },
+        {
+          "document_id": "en_0578",
+          "title": "Identification of the Nrf2 in the fathead minnow muscle cell line: role for a regulation in response to H2O2 induced the oxidative stress in fish cell",
+          "matched_evidence": [
+            "fish"
+          ],
+          "keywords": [
+            "Fathead minnow muscle cell line",
+            "Gene clone",
+            "Nrf2",
+            "Oxidative stress",
+            "siRNA"
+          ]
+        },
+        {
+          "document_id": "en_0586",
+          "title": "Thermal effects on red muscle contractile performance in deep-diving, large-bodied fishes",
+          "matched_evidence": [
+            "fish"
+          ],
+          "keywords": [
+            "Bigeye thresher shark",
+            "Contractile mechanics",
+            "Highly migratory fishes",
+            "Red muscle",
+            "Swordfish",
+            "Temperature",
+            "Work loop"
+          ]
+        },
+        {
+          "document_id": "en_0610",
+          "title": "1,25(OH)D vitamin D promotes NOS2 expression in response to bacterial and viral PAMPs in primary bovine salivary gland fibroblasts",
+          "matched_evidence": [
+            "bovine"
+          ],
+          "keywords": [
+            "1,25(OH)D vitamin D",
+            "Antimicrobial peptides",
+            "Innate immune response",
+            "iNOS",
+            "Primary bovine fibroblast culture",
+            "Submandibular gland"
+          ]
+        },
+        {
+          "document_id": "en_0640",
+          "title": "Relevanz von Schlüsselreizen, im Besonderen Licht und Akustik, zur Auffindbarkeit von Fischaufstiegen",
+          "matched_evidence": [
+            "fish"
+          ],
+          "keywords": [
+            "Fish pass",
+            "Key stimuli",
+            "Monitoring",
+            "Penalized regression",
+            "Phonotaxis",
+            "Phototaxis"
+          ]
+        },
+        {
+          "document_id": "en_0645",
+          "title": "Oral shelling within an adaptive radiation of pupfishes: Testing the adaptive function of a novel nasal protrusion and behavioural preference",
+          "matched_evidence": [
+            "fish"
+          ],
+          "keywords": [
+            "adaptive radiation",
+            "craniofacial",
+            "durophagy",
+            "foraging",
+            "novelty",
+            "performance",
+            "speciation"
+          ]
+        },
+        {
+          "document_id": "en_0646",
+          "title": "Hydroakustik zur Analyse von Fischbeständen und Fischverhalten – Fallstudien aus Österreich",
+          "matched_evidence": [
+            "fish"
+          ],
+          "keywords": [
+            "ARIS",
+            "DIDSON",
+            "EK15",
+            "EK60",
+            "Fish behaviour",
+            "Fish biomass",
+            "Fish detection",
+            "Hydroacoustic",
+            "Monitoring"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "A-EN-08",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "surgery",
+          "frequency": 17,
+          "weight": 0.9325,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "surgical",
+          "frequency": 7,
+          "weight": 0.7075,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "mri",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "ultrasound",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Neurosurgery",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Shape sensing",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Intra-operative ultrasound",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Medical robotics",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Robotic-assisted surgery",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Gastroesophageal reflux",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Hiatal hernia",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Laparoscopic bariatric surgery",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "en_0004",
+          "title": "Autonomous control of an ultrasound probe for intra-operative ultrasonography using vision-based shape sensing of pneumatically attachable flexible rails",
+          "matched_evidence": [
+            "ultrasound",
+            "surgery"
+          ],
+          "keywords": [
+            "Intra-operative ultrasound",
+            "Medical robotics",
+            "Robotic-assisted surgery",
+            "Shape sensing"
+          ]
+        },
+        {
+          "document_id": "en_0146",
+          "title": "Preoperative measurement of the hiatal surface with MDCT: impact on surgical planning",
+          "matched_evidence": [
+            "surgical",
+            "surgery"
+          ],
+          "keywords": [
+            "Diaphragm",
+            "Esophageal hiatus",
+            "Gastroesophageal reflux",
+            "Hiatal hernia",
+            "Laparoscopic bariatric surgery",
+            "Multidetector computed tomography"
+          ]
+        },
+        {
+          "document_id": "en_0166",
+          "title": "Surgical, histological, and immunohistochemical approach to spontaneous malignant mammary tumor in a fancy rat (Rattus norvegicus domestica): a case report",
+          "matched_evidence": [
+            "surgical",
+            "surgery"
+          ],
+          "keywords": [
+            "Domestic rat",
+            "Histopathology",
+            "Immunohistochemistry",
+            "Mammary tumor",
+            "Surgery"
+          ]
+        },
+        {
+          "document_id": "en_0318",
+          "title": "Visual display for surgical targeting: concepts and usability study",
+          "matched_evidence": [
+            "surgical",
+            "surgery"
+          ],
+          "keywords": [
+            "Electromagnetic tracking",
+            "Image-guided surgery",
+            "Surgical targeting",
+            "Usability study",
+            "Visual guidance"
+          ]
+        },
+        {
+          "document_id": "en_0441",
+          "title": "Real-time vessel segmentation and reconstruction for virtual fixtures for an active handheld microneurosurgical instrument",
+          "matched_evidence": [
+            "surgical",
+            "surgery"
+          ],
+          "keywords": [
+            "Handheld robotic tools",
+            "Neurosurgery",
+            "Real-time intra-operative vessel segmentation",
+            "Robot-assisted surgery",
+            "Virtual fixture control"
+          ]
+        },
+        {
+          "document_id": "en_0670",
+          "title": "Clinical course of sinus node dysfunction after thoracoscopic surgery for atrial fibrillation—analysis of the Atrial Fibrillation Ablation and Autonomic Modulation via Thoracoscopic Surgery (AFACT) study",
+          "matched_evidence": [
+            "surgical",
+            "surgery"
+          ],
+          "keywords": [
+            "Atrial fibrosis",
+            "Ganglion plexus",
+            "Pulmonary vein isolation",
+            "Surgical ablation",
+            "Thoracoscopic surgery"
+          ]
+        },
+        {
+          "document_id": "en_0089",
+          "title": "Neoadjuvant therapy for pancreatic cancer",
+          "matched_evidence": [
+            "surgery"
+          ],
+          "keywords": [
+            "Chemotherapy",
+            "Neoadjuvant therapy",
+            "Pancreas",
+            "Pancreatic cancer",
+            "Surgery"
+          ]
+        },
+        {
+          "document_id": "en_0093",
+          "title": "A combination of laparoscopic approach and ERAS pathway optimizes outcomes and cost for adrenalectomy",
+          "matched_evidence": [
+            "surgery"
+          ],
+          "keywords": [
+            "Enhanced recovery after surgery (ERAS)",
+            "Laparoscopic adrenal resection",
+            "Length of hospital stay",
+            "Primary aldosteronism"
+          ]
+        },
+        {
+          "document_id": "en_0097",
+          "title": "Fully endoscopic endonasal approach for the treatment of intrasellar arachnoid cysts",
+          "matched_evidence": [
+            "surgery"
+          ],
+          "keywords": [
+            "Arachnoid cysts",
+            "Cyst obliteration",
+            "Endonasal approach",
+            "Endoscopic surgery",
+            "Intrasellar cyst",
+            "Skull base"
+          ]
+        },
+        {
+          "document_id": "en_0109",
+          "title": "Surgical outcomes of medically failed prolactinomas: a systematic review and meta-analysis",
+          "matched_evidence": [
+            "surgical"
+          ],
+          "keywords": [
+            "Cabergoline resistant",
+            "Dopamine Agonist (DA) resistant",
+            "Dopamine Agonist intolerant",
+            "Medically Failed Prolactinoma",
+            "Prolactinoma"
+          ]
+        },
+        {
+          "document_id": "en_0123",
+          "title": "„Ein zu internationaler Berühmtheit gelangter Forscher und Arzt“: Otfrid Foerster (1873–1941) als Nobelpreiskandidat",
+          "matched_evidence": [
+            "surgery"
+          ],
+          "keywords": [
+            "Awards",
+            "Excellence",
+            "Germany",
+            "Neurology",
+            "Neurosurgery"
+          ]
+        },
+        {
+          "document_id": "en_0153",
+          "title": "MR imaging findings of musculoskeletal involvement in microscopic polyangiitis: a comparison with inflammatory myopathy",
+          "matched_evidence": [
+            "mri"
+          ],
+          "keywords": [
+            "Inflammatory myopathy",
+            "Microscopic polyangiitis",
+            "MRI",
+            "Musculoskeletal abnormalities",
+            "STIR"
+          ]
+        },
+        {
+          "document_id": "en_0218",
+          "title": "A multicentre study of the relationship between abdominal flap and mastectomy weights in immediate unilateral free flap breast reconstruction and the effect of adjuvant radiotherapy",
+          "matched_evidence": [
+            "surgery"
+          ],
+          "keywords": [
+            "Breast radiotherapy",
+            "Breast symmetry",
+            "Contralateral balancing surgery",
+            "Flap weights",
+            "Immediate breast reconstruction",
+            "Ipsilateral revision surgery"
+          ]
+        },
+        {
+          "document_id": "en_0220",
+          "title": "Effect of hyaluronate-based bioresorbable membrane (Seprafilm) on outcomes of abdominal surgery: a meta-analysis and trial sequential analysis of randomised controlled trials",
+          "matched_evidence": [
+            "surgery"
+          ],
+          "keywords": [
+            "Anti-adhesion barrier",
+            "Seprafilm",
+            "Small bowel obstruction"
+          ]
+        },
+        {
+          "document_id": "en_0246",
+          "title": "Long-term safety of gamma knife radiosurgery (SRS) for acromegaly",
+          "matched_evidence": [
+            "surgery"
+          ],
+          "keywords": [
+            "Acromegaly",
+            "Complications",
+            "Fractionated radiotherapy",
+            "Hypopituitarism",
+            "Morbidity",
+            "Mortality",
+            "Pituitary adenoma",
+            "Radiation",
+            "Radiosurgery",
+            "Safety",
+            "Stroke",
+            "Transient ischaemic attacks"
+          ]
+        },
+        {
+          "document_id": "en_0253",
+          "title": "Systematic review of prospective studies focused on regionalization of care in surgical oncology",
+          "matched_evidence": [
+            "surgical"
+          ],
+          "keywords": [
+            "Centralization",
+            "Prospective",
+            "Regionalization",
+            "Surgical oncology",
+            "Systematic review"
+          ]
+        },
+        {
+          "document_id": "en_0286",
+          "title": "Impact of intraoperative magnetic resonance imaging on gross total resection, extent of resection, and residual tumor volume in pituitary surgery: systematic review and meta-analysis",
+          "matched_evidence": [
+            "surgery"
+          ],
+          "keywords": [
+            "Adenoma",
+            "Extent of resection",
+            "Gross total resection",
+            "Imaging",
+            "Intraoperative magnetic resonance imaging",
+            "Pituitary"
+          ]
+        },
+        {
+          "document_id": "en_0300",
+          "title": "Robotic hepatectomy and biliary reconstruction for perihilar cholangiocarcinoma: a pioneer western case series",
+          "matched_evidence": [
+            "surgery"
+          ],
+          "keywords": [
+            "Cholangiocarcinoma",
+            "Learning curve",
+            "Major liver resection",
+            "Robotic surgery"
+          ]
+        },
+        {
+          "document_id": "en_0307",
+          "title": "Laparoscopic splenectomy as a definitive management option for high-grade traumatic splenic injury when non operative management is not feasible or failed: a 5-year experience from a level one trauma center with minimally invasive surgery expertise",
+          "matched_evidence": [
+            "surgery"
+          ],
+          "keywords": [
+            "Abdominal trauma",
+            "Acute care surgery",
+            "Angio-embolization",
+            "Blunt abdominal trauma",
+            "Emergency laparoscopy",
+            "Hemodynamic stability",
+            "Laparoscopic splenectomy",
+            "Minimally invasive trauma surgery",
+            "Non-operative management",
+            "Penetrating abdominal trauma",
+            "Trauma center",
+            "Trauma laparoscopy",
+            "Trauma surgery"
+          ]
+        },
+        {
+          "document_id": "en_0313",
+          "title": "Laparoscopic augmented reality registration for oncological resection site repair",
+          "matched_evidence": [
+            "surgery"
+          ],
+          "keywords": [
+            "Augmented reality",
+            "Laparoscopic surgery",
+            "Partial nephrectomy",
+            "Registration"
+          ]
+        }
+      ]
+    }
+  ],
+  "axis": "application",
+  "dataset": {
+    "chinese_source_documents": 1000,
+    "english_source_documents": 1000
+  }
+}

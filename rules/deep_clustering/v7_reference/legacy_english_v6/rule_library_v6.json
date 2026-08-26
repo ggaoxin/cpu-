@@ -1,0 +1,21 @@
+{
+  "version": "6.0",
+  "strategy": "semantic prototype + calibrated discriminative model + boundary rule evidence",
+  "technical_boundary_pairs": [
+    ["T12", "T13", "contribution synthesis verbs vs characterization-only evidence"],
+    ["T22", "T08", "whole-animal intervention vs cell/in-vitro experiment"],
+    ["T09", "T24", "high-throughput omics vs targeted PCR/genotyping"],
+    ["T17", "T14", "fabricated/measured prototype vs simulation-only"],
+    ["T03", "T11", "clinical outcome/cohort question vs diagnostic technique contribution"],
+    ["T07", "T10", "case-report design vs pathology-focused multi-sample study"],
+    ["T18", "T12", "catalytic reaction contribution vs general material preparation"]
+  ],
+  "application_boundary_pairs": [
+    ["A01-A08", "A09", "disease objective vs imaging/device contribution"],
+    ["A06", "A11", "human digestive disease vs veterinary/aquaculture subject"],
+    ["A16", "A17", "semiconductor/optoelectronic device vs antenna/waveguide/photonics"],
+    ["A15", "A19", "material system vs machinery/equipment"],
+    ["A21", "A15", "catalytic conversion task vs generic material study"],
+    ["A29", "A03", "drug delivery platform vs cancer clinical outcome"]
+  ]
+}

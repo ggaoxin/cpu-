@@ -1,0 +1,236 @@
+functional_item: 语步识别工具
+name: 中文摘要语步识别
+description: 从中文科技文献摘要中将其划分为研究背景/研究目的/研究方法/研究结果/研究结论五个语步段。
+input_type: text
+system_prompt: '你是中文科技文献摘要语步识别专家。请将输入的中文论文摘要划分为五个语步段，
+
+  每段必须是原文的逐字摘录，不得改写、不得遗漏、不得新增，五段拼接后应能还原原摘要。
+
+  五个语步类别：
+
+  - 研究背景：交代问题来源、现实需求、已有研究不足等铺垫性内容；
+
+  - 研究目的：阐明本文要解决什么问题、达成什么目标；
+
+  - 研究方法：描述采用的数据、模型、方法、实验手段、框架构建；
+
+  - 研究结果：陈述客观发现、数据结果、实验结论性事实；
+
+  - 研究结论：对结果的升华判断、对策建议、理论/实践意义。
+
+  若摘要不含某语步，该语步输出空字符串。'
+principles: '判定时以"语言机制"而非"个别词汇"为依据，关注以下维度：
+
+  1. 研究主体：区分"本文/本研究/所提模型"与"已有研究/相关文献/其他学者"。含"已有研究表明"的句子通常属背景，即使出现"表明"也不判为本文结果。
+
+  2. 事实状态：区分"已完成"（结果表明、实验发现、提高了、获得了）与"计划/目的"（拟采用、旨在、计划、有望、预期）及"能力描述"（能够提高、可以增强、用于改善）。"能够提高"未必是结果，可能只是方法功能描述。
+
+  3. 方法功能 vs 真实结果：仅描述方法能够产生的效果或预期效果时，不判为本文结果；需有实验、数据、与基线比较或统计显著性等完成性事实支撑，才判为研究结果。
+
+  4. 结果与结论边界：结果是客观发现的事实陈述；结论是对结果的升华判断、对策建议或意义展望。结论通常排在结果之后；若"提出对策/建议"出现在结果之前，归研究目的而非结论。
+
+  5. 目的与方法边界：当"针对…问题"与"本文提出…方法/模型/框架"同时出现时，应识别复合句的语步边界——"针对…问题"为目的性从句，"本文提出…"为方法主句；不要因含"针对"就把整句判为目的。
+
+  6. 篇章顺序：通常遵循"背景→目的→方法→结果→结论"；位置仅作辅助证据，不能单独决定标签。
+
+  7. 输出须为原文逐字摘录，五段拼接还原原摘要。'
+dictionaries:
+  研究背景:
+  - 近年来
+  - 随着
+  - 目前
+  - 现有方法
+  - 然而
+  - 仍存在
+  - 已有研究
+  - 相关文献
+  研究目的:
+  - 旨在
+  - 为了
+  - 针对
+  - 目的是
+  - 致力于
+  - 以期
+  研究方法:
+  - 提出
+  - 构建
+  - 设计
+  - 采用
+  - 引入
+  - 利用
+  - 构建
+  - 建立
+  研究结果:
+  - 实验结果表明
+  - 结果显示
+  - 结果表明
+  - 优于
+  - 提高了
+  - 降低了
+  - 发现
+  研究结论:
+  - 说明
+  - 证明
+  - 具有重要意义
+  - 具有应用价值
+  - 可为
+  - 据此
+  - 综上
+  - 建议
+pattern_rules:
+- id: MR-ZH-001
+  layer: universal
+  scope: global
+  target_move: 研究结果
+  action: +score
+  level: soft
+  weight: 0.5
+  description: 判"研究结果"需本文研究主体 + 结果谓语 + 完成性事实证据，且排除已有研究与预测性表达
+  necessary_conditions:
+  - kind: feature
+    dim: research_actor
+    in:
+    - current_study
+  - kind: keyword
+    any_of:
+    - 表明
+    - 显示
+    - 发现
+    - 提高
+    - 降低
+    - 优于
+  - kind: feature
+    dim: evidence_type
+    in:
+    - experiment
+    - numeric
+    - comparison
+  exclusion_conditions:
+  - kind: feature
+    dim: research_actor
+    in:
+    - third_party
+  - kind: feature
+    dim: fact_status
+    in:
+    - planned
+    - expected
+    - hypothetical
+  evidence_dims:
+  - research_actor
+  - evidence_type
+  - fact_status
+  fold_count: 2
+- id: MR-ZH-002
+  layer: universal
+  scope: global
+  target_move: 研究背景
+  action: +score
+  level: soft
+  weight: 0.5
+  description: 含第三方研究主体（已有研究/相关文献）的发现句属背景，不属本文结果
+  necessary_conditions:
+  - kind: feature
+    dim: research_actor
+    in:
+    - third_party
+  evidence_dims:
+  - research_actor
+  - evidence_type
+  fold_count: 2
+- id: MR-ZH-003
+  layer: universal
+  scope: global
+  target_move: 研究结论
+  action: +score
+  level: soft
+  weight: 0.5
+  description: 结论须排在结果之后，含对策/建议/意义升华表达
+  necessary_conditions:
+  - kind: position
+    after_move: 研究结果
+  - kind: keyword
+    any_of:
+    - 据此
+    - 综上
+    - 建议
+    - 应
+    - 需要
+    - 具有重要意义
+    - 具有应用价值
+  exclusion_conditions:
+  - kind: keyword
+    any_of:
+    - 提出方法
+    - 提出模型
+    - 提出框架
+  evidence_dims:
+  - discourse_position
+  - action_type
+  fold_count: 2
+- id: MR-ZH-004
+  layer: universal
+  scope: global
+  target_move: 研究方法
+  action: +score
+  level: soft
+  weight: 0.5
+  description: 复合句中"针对…问题"为目的从句、"本文提出…方法/模型/框架"为方法主句时，整句判方法
+  necessary_conditions:
+  - kind: keyword
+    any_of:
+    - 提出方法
+    - 提出模型
+    - 提出框架
+    - 构建模型
+    - 设计方法
+  evidence_dims:
+  - clause_role
+  - action_type
+  fold_count: 2
+- id: MR-ZH-005
+  layer: universal
+  scope: global
+  target_move: 研究结果
+  action: -score
+  level: soft
+  weight: 0.5
+  description: 仅方法功能描述（能够/可以+效果）且无实验数据证据时，削弱"结果"判定
+  necessary_conditions:
+  - kind: keyword
+    any_of:
+    - 能够提高
+    - 可以增强
+    - 用于改善
+    - 能够有效
+  exclusion_conditions:
+  - kind: feature
+    dim: evidence_type
+    in:
+    - experiment
+    - numeric
+    - comparison
+  evidence_dims:
+  - fact_status
+  - evidence_type
+  fold_count: 2
+output_schema:
+  type: object
+  properties:
+    研究背景:
+      type: string
+    研究目的:
+      type: string
+    研究方法:
+      type: string
+    研究结果:
+      type: string
+    研究结论:
+      type: string
+  required:
+  - 研究背景
+  - 研究目的
+  - 研究方法
+  - 研究结果
+  - 研究结论
+examples: []

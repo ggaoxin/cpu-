@@ -1,0 +1,6 @@
+{
+  "documents": 1000,
+  "mode": "hybrid_semisupervised_boundary_rules",
+  "calibration_file": "/mnt/data/topicfusion_new_experiment/gold_high_confidence_498.csv",
+  "random_state": 20260802
+}

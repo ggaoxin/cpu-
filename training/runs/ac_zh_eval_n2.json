@@ -1,0 +1,53 @@
+{
+  "summary": {
+    "n": 2,
+    "n_ok": 2,
+    "top_k": 20,
+    "main_acc": 0.5,
+    "main_top_acc": 1.0,
+    "main_or_aux_hit": 0.5,
+    "aux_match": 0.0,
+    "aux_gold_count": 2,
+    "inter_acc": 0.0,
+    "inter_precision": 0.0,
+    "inter_recall": 0.0,
+    "inter_f1": 0.0,
+    "anti_hallucination_pass": 1.0
+  },
+  "records": [
+    {
+      "sample_id": 1,
+      "pred_main": "F299.21",
+      "gold_main": "F291.1",
+      "pred_aux": [
+        "F124"
+      ],
+      "gold_aux": [
+        "F124.7"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": false,
+      "top_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献核心研究我国省域新型城镇化与共同富裕的耦合协调水平及其时空演化特征。新型城镇化属于城市与市政经济范畴，主分类选 F299.21（城镇形成与发展）最契合其研究核心与空间分析方法。共同富裕属于中国经济建设与发展的宏观目标，作为次要核心主题，辅助分类选 F124（经济建设和发展）。两者同属经济大类，不构成跨一级大类的交叉学科。"
+    },
+    {
+      "sample_id": 2,
+      "pred_main": "F320.1",
+      "gold_main": "F320.1",
+      "pred_aux": [
+        "F303.2"
+      ],
+      "gold_aux": [
+        "F49"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": true,
+      "top_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献从经济学视角探讨大数据支撑中国现代农业产业高质量发展的内在逻辑并提出政策建议，核心属于中国农业经济的现代化道路与模式研究，故主分类选 F320.1。文献深入分析了大数据及智能算法等农业技术对生产函数的影响，作为次要主题，辅以 F303.2 农业技术发展与技术革新。研究核心始终聚焦农业经济领域，大数据仅为手段与要素，不构成跨一级大类的交叉学科。"
+    }
+  ]
+}

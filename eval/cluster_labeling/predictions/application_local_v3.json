@@ -1,0 +1,728 @@
+{
+  "labels": [
+    {
+      "cluster_id": "A-ZH-01",
+      "label": "配电网规划",
+      "candidate_labels": [
+        "配电网规划",
+        "配电网",
+        "配电网与电力系统",
+        "电力系统与配电网",
+        "配电网与综合能源系统"
+      ],
+      "evidence_terms": [
+        "配电网",
+        "二阶锥规划"
+      ],
+      "language": "zh",
+      "confidence": 0.78733,
+      "distinctiveness": 0.814946,
+      "coverage": 0.680287,
+      "evidence_support": 0.66208,
+      "generation_method": "evidence_task_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-ZH-01",
+        "before_label": "配电网规划",
+        "after_label": "配电网规划",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.814946,
+        "after_distinctiveness": 0.814946,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "A-ZH-02",
+      "label": "区域经济与共同富裕",
+      "candidate_labels": [
+        "区域经济与共同富裕",
+        "区域经济发展",
+        "区域经济",
+        "区域经济与经济增长",
+        "经济增长与区域经济"
+      ],
+      "evidence_terms": [
+        "区域经济",
+        "共同富裕"
+      ],
+      "language": "zh",
+      "confidence": 0.766956,
+      "distinctiveness": 0.7886,
+      "coverage": 0.747009,
+      "evidence_support": 0.62,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-ZH-02",
+        "before_label": "区域经济发展",
+        "after_label": "区域经济与共同富裕",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.697828,
+        "after_distinctiveness": 0.7886,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "A-ZH-03",
+      "label": "旅游发展",
+      "candidate_labels": [
+        "旅游发展",
+        "旅游表征",
+        "旅游",
+        "乡村振兴与旅游",
+        "旅游与文化遗产"
+      ],
+      "evidence_terms": [
+        "旅游",
+        "高质量发展"
+      ],
+      "language": "zh",
+      "confidence": 0.786019,
+      "distinctiveness": 0.768009,
+      "coverage": 0.72374,
+      "evidence_support": 0.602441,
+      "generation_method": "evidence_task_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-ZH-03",
+        "before_label": "旅游发展",
+        "after_label": "旅游发展",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.768009,
+        "after_distinctiveness": 0.768009,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "A-ZH-04",
+      "label": "农业与粮食",
+      "candidate_labels": [
+        "农业与粮食",
+        "粮食与农业",
+        "农业粮食",
+        "农业",
+        "农业与粮食生产"
+      ],
+      "evidence_terms": [
+        "农业",
+        "粮食"
+      ],
+      "language": "zh",
+      "confidence": 0.755584,
+      "distinctiveness": 0.836408,
+      "coverage": 0.717172,
+      "evidence_support": 0.572065,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-ZH-04",
+        "before_label": "农业与粮食",
+        "after_label": "农业与粮食",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.836408,
+        "after_distinctiveness": 0.836408,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "A-ZH-05",
+      "label": "国土空间与城市更新",
+      "candidate_labels": [
+        "国土空间与城市更新",
+        "城市更新与国土空间",
+        "国土空间",
+        "国土空间与生态韧性",
+        "生态韧性与国土空间"
+      ],
+      "evidence_terms": [
+        "国土空间",
+        "城市更新"
+      ],
+      "language": "zh",
+      "confidence": 0.775886,
+      "distinctiveness": 0.809736,
+      "coverage": 0.751998,
+      "evidence_support": 0.621829,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-ZH-05",
+        "before_label": "国土空间与城市更新",
+        "after_label": "国土空间与城市更新",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.809736,
+        "after_distinctiveness": 0.809736,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "A-ZH-06",
+      "label": "制造业",
+      "candidate_labels": [
+        "制造业",
+        "制造业与智能制造",
+        "智能制造与制造业",
+        "制造业拓展伙伴与制造业",
+        "制造业与制造业拓展伙伴"
+      ],
+      "evidence_terms": [
+        "制造业"
+      ],
+      "language": "zh",
+      "confidence": 0.787612,
+      "distinctiveness": 0.828317,
+      "coverage": 0.802887,
+      "evidence_support": 0.739765,
+      "generation_method": "extractive_phrase",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-ZH-06",
+        "before_label": "制造业",
+        "after_label": "制造业",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.828317,
+        "after_distinctiveness": 0.828317,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "A-ZH-07",
+      "label": "医疗与公共卫生",
+      "candidate_labels": [
+        "医疗与公共卫生",
+        "公共卫生与医疗",
+        "医疗公共卫生",
+        "医疗",
+        "医疗与医疗资源"
+      ],
+      "evidence_terms": [
+        "医疗",
+        "公共卫生"
+      ],
+      "language": "zh",
+      "confidence": 0.755878,
+      "distinctiveness": 0.76427,
+      "coverage": 0.73692,
+      "evidence_support": 0.654005,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-ZH-07",
+        "before_label": "医疗与公共卫生",
+        "after_label": "医疗与公共卫生",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.76427,
+        "after_distinctiveness": 0.76427,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "A-ZH-08",
+      "label": "生态保护发展",
+      "candidate_labels": [
+        "生态保护发展",
+        "碳中和与生态保护",
+        "生态保护与碳中和",
+        "生态保护",
+        "碳中和发展"
+      ],
+      "evidence_terms": [
+        "生态保护",
+        "绿色发展",
+        "高质量发展",
+        "可持续发展"
+      ],
+      "language": "zh",
+      "confidence": 0.860247,
+      "distinctiveness": 0.729214,
+      "coverage": 0.753542,
+      "evidence_support": 0.793355,
+      "generation_method": "evidence_task_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-ZH-08",
+        "before_label": "生态保护发展",
+        "after_label": "生态保护发展",
+        "changed": false,
+        "reason": "最高综合评分候选",
+        "before_distinctiveness": 0.729214,
+        "after_distinctiveness": 0.729214,
+        "threshold_passed": false
+      }
+    },
+    {
+      "cluster_id": "A-EN-01",
+      "label": "tumor and cancer",
+      "candidate_labels": [
+        "tumor and cancer",
+        "cancer and Cervical cancer",
+        "Cervical cancer and cancer",
+        "Ovarian cancer and cancer",
+        "breast cancer and cancer"
+      ],
+      "evidence_terms": [
+        "cancer",
+        "tumor"
+      ],
+      "language": "en",
+      "confidence": 0.750773,
+      "distinctiveness": 0.723981,
+      "coverage": 0.789461,
+      "evidence_support": 0.647011,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-EN-01",
+        "before_label": "tumor and cancer",
+        "after_label": "tumor and cancer",
+        "changed": false,
+        "reason": "最高综合评分候选",
+        "before_distinctiveness": 0.723981,
+        "after_distinctiveness": 0.723981,
+        "threshold_passed": false
+      }
+    },
+    {
+      "cluster_id": "A-EN-02",
+      "label": "cardiac and Sudden cardiac death",
+      "candidate_labels": [
+        "cardiac and Sudden cardiac death",
+        "Sudden cardiac death and cardiac",
+        "cardiovascular and cardiac",
+        "atrial fibrillation and cardiac",
+        "heart and cardiac"
+      ],
+      "evidence_terms": [
+        "cardiac",
+        "Sudden cardiac death"
+      ],
+      "language": "en",
+      "confidence": 0.762877,
+      "distinctiveness": 0.836772,
+      "coverage": 0.800518,
+      "evidence_support": 0.8451,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-EN-02",
+        "before_label": "cardiac and Sudden cardiac death",
+        "after_label": "cardiac and Sudden cardiac death",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.836772,
+        "after_distinctiveness": 0.836772,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "A-EN-03",
+      "label": "infection and covid-19",
+      "candidate_labels": [
+        "infection and covid-19",
+        "virus and covid-19",
+        "covid-19 virus",
+        "covid-19 infection",
+        "infection and virus"
+      ],
+      "evidence_terms": [
+        "covid-19",
+        "infection"
+      ],
+      "language": "en",
+      "confidence": 0.768724,
+      "distinctiveness": 0.771282,
+      "coverage": 0.781859,
+      "evidence_support": 0.650377,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-EN-03",
+        "before_label": "virus and covid-19",
+        "after_label": "infection and covid-19",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.687029,
+        "after_distinctiveness": 0.771282,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "A-EN-04",
+      "label": "depression and brain",
+      "candidate_labels": [
+        "depression and brain",
+        "alzheimer and brain",
+        "schizophrenia and brain",
+        "brain depression",
+        "brain alzheimer"
+      ],
+      "evidence_terms": [
+        "brain",
+        "depression"
+      ],
+      "language": "en",
+      "confidence": 0.759191,
+      "distinctiveness": 0.802429,
+      "coverage": 0.764852,
+      "evidence_support": 0.650454,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-EN-04",
+        "before_label": "depression and brain",
+        "after_label": "depression and brain",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.802429,
+        "after_distinctiveness": 0.802429,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "A-EN-05",
+      "label": "solar cell storage",
+      "candidate_labels": [
+        "solar cell storage",
+        "solar cell",
+        "battery and solar cell",
+        "solar cell and perovskite/TOPCon tandem solar cells",
+        "perovskite/TOPCon tandem solar cells and solar cell"
+      ],
+      "evidence_terms": [
+        "solar cell",
+        "energy storage"
+      ],
+      "language": "en",
+      "confidence": 0.817894,
+      "distinctiveness": 0.84093,
+      "coverage": 0.759818,
+      "evidence_support": 0.708456,
+      "generation_method": "evidence_task_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-EN-05",
+        "before_label": "solar cell storage",
+        "after_label": "solar cell storage",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.84093,
+        "after_distinctiveness": 0.84093,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "A-EN-06",
+      "label": "environmental conservation",
+      "candidate_labels": [
+        "environmental conservation",
+        "environmental monitoring",
+        "pollution and environmental",
+        "heavy metals and environmental",
+        "environmental pollution"
+      ],
+      "evidence_terms": [
+        "environmental",
+        "conservation"
+      ],
+      "language": "en",
+      "confidence": 0.795857,
+      "distinctiveness": 0.685224,
+      "coverage": 0.759603,
+      "evidence_support": 0.662681,
+      "generation_method": "evidence_task_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-EN-06",
+        "before_label": "environmental conservation",
+        "after_label": "environmental conservation",
+        "changed": false,
+        "reason": "最高综合评分候选",
+        "before_distinctiveness": 0.685224,
+        "after_distinctiveness": 0.685224,
+        "threshold_passed": false
+      }
+    },
+    {
+      "cluster_id": "A-EN-07",
+      "label": "fish monitoring",
+      "candidate_labels": [
+        "fish monitoring",
+        "fish and zebrafish",
+        "zebrafish and fish",
+        "canine and fish",
+        "bovine and fish"
+      ],
+      "evidence_terms": [
+        "fish",
+        "Monitoring"
+      ],
+      "language": "en",
+      "confidence": 0.798924,
+      "distinctiveness": 0.739017,
+      "coverage": 0.759375,
+      "evidence_support": 0.646601,
+      "generation_method": "evidence_task_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-EN-07",
+        "before_label": "fish monitoring",
+        "after_label": "fish monitoring",
+        "changed": false,
+        "reason": "最高综合评分候选",
+        "before_distinctiveness": 0.739017,
+        "after_distinctiveness": 0.739017,
+        "threshold_passed": false
+      }
+    },
+    {
+      "cluster_id": "A-EN-08",
+      "label": "surgical and surgery",
+      "candidate_labels": [
+        "surgical and surgery",
+        "surgery surgical",
+        "ultrasound and surgery",
+        "Intra-operative ultrasound and surgery",
+        "surgery and Neurosurgery"
+      ],
+      "evidence_terms": [
+        "surgery",
+        "surgical"
+      ],
+      "language": "en",
+      "confidence": 0.758317,
+      "distinctiveness": 0.783741,
+      "coverage": 0.80583,
+      "evidence_support": 0.650692,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "A-EN-08",
+        "before_label": "surgical and surgery",
+        "after_label": "surgical and surgery",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.783741,
+        "after_distinctiveness": 0.783741,
+        "threshold_passed": true
+      }
+    }
+  ],
+  "generation_report": {
+    "engine_version": "cluster-label-evidence-v2",
+    "input_type": "cluster_phrase_sets",
+    "run_mode": "batch",
+    "cluster_count": 16,
+    "generated_label_count": 16,
+    "language_distribution": {
+      "en": 8,
+      "zh": 8
+    },
+    "parameters": {
+      "label_length_limit": 12,
+      "language_type": "auto",
+      "distinctiveness_threshold": 0.75,
+      "candidate_count": 5
+    },
+    "stages": [
+      "phrase_cleaning_and_normalization",
+      "frequency_ngram_and_cooccurrence_candidates",
+      "evidence_grounded_candidate_scoring",
+      "cross_cluster_differentiation",
+      "global_label_selection"
+    ],
+    "topic_library_used": false,
+    "llm_used": false,
+    "llm_assigns_cluster_membership": false,
+    "llm_failures": [],
+    "rejected_candidate_count": 0,
+    "optimized_label_count": 2,
+    "distinctiveness_pass_count": 12,
+    "average_confidence": 0.780504,
+    "average_distinctiveness": 0.78268,
+    "average_coverage": 0.758429
+  },
+  "label_differentiation_optimization": {
+    "threshold": 0.75,
+    "optimized_count": 2,
+    "passed_count": 12,
+    "failed_count": 4,
+    "items": [
+      {
+        "cluster_id": "A-ZH-01",
+        "before_label": "配电网规划",
+        "after_label": "配电网规划",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.814946,
+        "after_distinctiveness": 0.814946,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "A-ZH-02",
+        "before_label": "区域经济发展",
+        "after_label": "区域经济与共同富裕",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.697828,
+        "after_distinctiveness": 0.7886,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "A-ZH-03",
+        "before_label": "旅游发展",
+        "after_label": "旅游发展",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.768009,
+        "after_distinctiveness": 0.768009,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "A-ZH-04",
+        "before_label": "农业与粮食",
+        "after_label": "农业与粮食",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.836408,
+        "after_distinctiveness": 0.836408,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "A-ZH-05",
+        "before_label": "国土空间与城市更新",
+        "after_label": "国土空间与城市更新",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.809736,
+        "after_distinctiveness": 0.809736,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "A-ZH-06",
+        "before_label": "制造业",
+        "after_label": "制造业",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.828317,
+        "after_distinctiveness": 0.828317,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "A-ZH-07",
+        "before_label": "医疗与公共卫生",
+        "after_label": "医疗与公共卫生",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.76427,
+        "after_distinctiveness": 0.76427,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "A-ZH-08",
+        "before_label": "生态保护发展",
+        "after_label": "生态保护发展",
+        "changed": false,
+        "reason": "最高综合评分候选",
+        "before_distinctiveness": 0.729214,
+        "after_distinctiveness": 0.729214,
+        "threshold_passed": false
+      },
+      {
+        "cluster_id": "A-EN-01",
+        "before_label": "tumor and cancer",
+        "after_label": "tumor and cancer",
+        "changed": false,
+        "reason": "最高综合评分候选",
+        "before_distinctiveness": 0.723981,
+        "after_distinctiveness": 0.723981,
+        "threshold_passed": false
+      },
+      {
+        "cluster_id": "A-EN-02",
+        "before_label": "cardiac and Sudden cardiac death",
+        "after_label": "cardiac and Sudden cardiac death",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.836772,
+        "after_distinctiveness": 0.836772,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "A-EN-03",
+        "before_label": "virus and covid-19",
+        "after_label": "infection and covid-19",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.687029,
+        "after_distinctiveness": 0.771282,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "A-EN-04",
+        "before_label": "depression and brain",
+        "after_label": "depression and brain",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.802429,
+        "after_distinctiveness": 0.802429,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "A-EN-05",
+        "before_label": "solar cell storage",
+        "after_label": "solar cell storage",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.84093,
+        "after_distinctiveness": 0.84093,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "A-EN-06",
+        "before_label": "environmental conservation",
+        "after_label": "environmental conservation",
+        "changed": false,
+        "reason": "最高综合评分候选",
+        "before_distinctiveness": 0.685224,
+        "after_distinctiveness": 0.685224,
+        "threshold_passed": false
+      },
+      {
+        "cluster_id": "A-EN-07",
+        "before_label": "fish monitoring",
+        "after_label": "fish monitoring",
+        "changed": false,
+        "reason": "最高综合评分候选",
+        "before_distinctiveness": 0.739017,
+        "after_distinctiveness": 0.739017,
+        "threshold_passed": false
+      },
+      {
+        "cluster_id": "A-EN-08",
+        "before_label": "surgical and surgery",
+        "after_label": "surgical and surgery",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.783741,
+        "after_distinctiveness": 0.783741,
+        "threshold_passed": true
+      }
+    ]
+  },
+  "experiment_source": {
+    "phrase_set_file": "eval\\cluster_labeling\\gold_sources\\application_gold_sources.json",
+    "axis": "application",
+    "dataset": {
+      "chinese_source_documents": 1000,
+      "english_source_documents": 1000
+    },
+    "deep_clustering_quality": null
+  }
+}

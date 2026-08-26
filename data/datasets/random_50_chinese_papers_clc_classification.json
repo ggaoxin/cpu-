@@ -1,0 +1,6181 @@
+[
+  {
+    "sample_id": 1,
+    "ch_name": "省域新型城镇化与共同富裕耦合协调水平的时空特征及其影响因素",
+    "ch_abstract": "新型城镇化是我国实现共同富裕的必经之路。文章采用极差法、熵值法等构建指标体系，运用ArcGIS和SDM等方法，从时间和空间维度对我国31个省份2011—2020年新型城镇化与共同富裕耦合协调的空间演化与影响因素展开了分析。研究发现：(1)整体上我国新型城镇化与共同富裕的耦合协调度逐年上升，但仍存在提升空间，且区域差异较为明显。(2)东部地区的耦合协调度明显高于全国水平，中部地区与全国水平较为接近，西部地区低于其他地区，但耦合协调水平逐步提升，与其他区域的差距正在缩小。(3)新型城镇化与共同富裕的耦合协调度存在明显的空间集聚效应，集聚效应逐年增加。(4)科技支出水平、数字化水平、机械化水平、信贷水平等对我国新型城镇化与共同富裕耦合协调发展有着不同程度的影响，其中科技支出水平的影响最大。分区域来看，无论是直接效应还是间接效应抑或是总效应，其对东部地区耦合协调度的影响比中西部大。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "新型城镇化"
+      },
+      {
+        "en_name": "",
+        "ch_name": "共同富裕"
+      },
+      {
+        "en_name": "",
+        "ch_name": "耦合协调"
+      },
+      {
+        "en_name": "",
+        "ch_name": "空间集聚"
+      },
+      {
+        "en_name": "",
+        "ch_name": "科技"
+      },
+      {
+        "en_name": "",
+        "ch_name": "数字化"
+      },
+      {
+        "en_name": "",
+        "ch_name": "信贷"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F291.1",
+        "clc_name": "城市发展道路、城市化",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F291 城镇的形成与发展 > F291.1 城市发展道路、城市化",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F291",
+          "F291.1"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城镇的形成与发展",
+          "城市发展道路、城市化"
+        ],
+        "rag_entry_id": 2907,
+        "rank": 1
+      },
+      {
+        "clc_code": "F124.7",
+        "clc_name": "国民收入、国民财富",
+        "classification_path": "F 经济 > F1 世界各国经济概况、经济史、经济地理 > F12 中国经济 > F124 经济建设和发展 > F124.7 国民收入、国民财富",
+        "path_codes": [
+          "F",
+          "F1",
+          "F12",
+          "F124",
+          "F124.7"
+        ],
+        "path_names": [
+          "经济",
+          "世界各国经济概况、经济史、经济地理",
+          "中国经济",
+          "经济建设和发展",
+          "国民收入、国民财富"
+        ],
+        "rag_entry_id": 2619,
+        "rank": 2
+      },
+      {
+        "clc_code": "F061.5",
+        "clc_name": "区域经济学",
+        "classification_path": "F 经济 > F0 经济学 > F06 经济学分支科学 > F061.5 区域经济学",
+        "path_codes": [
+          "F",
+          "F0",
+          "F06",
+          "F061.5"
+        ],
+        "path_names": [
+          "经济",
+          "经济学",
+          "经济学分支科学",
+          "区域经济学"
+        ],
+        "rag_entry_id": 2481,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F291.1",
+      "clc_name": "城市发展道路、城市化",
+      "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F291 城镇的形成与发展 > F291.1 城市发展道路、城市化",
+      "path_codes": [
+        "F",
+        "F2",
+        "F29",
+        "F291",
+        "F291.1"
+      ],
+      "path_names": [
+        "经济",
+        "经济计划与管理",
+        "城市与市政经济",
+        "城镇的形成与发展",
+        "城市发展道路、城市化"
+      ],
+      "rag_entry_id": 2907
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "F124.7",
+        "clc_name": "国民收入、国民财富",
+        "classification_path": "F 经济 > F1 世界各国经济概况、经济史、经济地理 > F12 中国经济 > F124 经济建设和发展 > F124.7 国民收入、国民财富",
+        "path_codes": [
+          "F",
+          "F1",
+          "F12",
+          "F124",
+          "F124.7"
+        ],
+        "path_names": [
+          "经济",
+          "世界各国经济概况、经济史、经济地理",
+          "中国经济",
+          "经济建设和发展",
+          "国民收入、国民财富"
+        ],
+        "rag_entry_id": 2619
+      }
+    ],
+    "selection_reason": "研究核心是省域新型城镇化与共同富裕的耦合关系，主场景属于城市化，财富分配议题作为辅助主题。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 2,
+    "ch_name": "大数据支撑现代农业产业高质量发展的内在逻辑与政策建议",
+    "ch_abstract": "厘清大数据支撑现代农业生产的内在逻辑，有助于培育和发展农业新质生产力。从经济学视角出发，本文提出大数据在现代农业生产中的作用主要体现在2个层面：提升农业传统生产函数的全要素生产率；改变农业生产的要素禀赋结构，形成新的农业生产函数。基于此，大数据支撑现代农业生产的实现形式可以概括为提升现代农业技术效率、优化农业生产配置效率，以及推动农业深度转型升级，从而形成新的生产范式。根据大数据支撑现代农业发展的逻辑分析，以及我国农业大数据发展现状，文章提出3点建议，以供决策参考：（1）建立农业数据标准化体系，以确保不同来源的数据能够有效整合与分析；（2）推动数据中台等数据基础设施建设，打通涉农数据流通渠道，构建健全的数据共享机制，促进政府、科研机构、企业与农民之间的数据流通；（3）推动农业智能算法模型的联合攻关，引导社会算力资源向农业领域适度倾斜，提高农业大数据分析能力，建立现代农业决策支持系统。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "现代农业"
+      },
+      {
+        "en_name": "",
+        "ch_name": "数据要素"
+      },
+      {
+        "en_name": "",
+        "ch_name": "高质量发展"
+      },
+      {
+        "en_name": "",
+        "ch_name": "内在逻辑"
+      },
+      {
+        "en_name": "",
+        "ch_name": "政策建议"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F320.1",
+        "clc_name": "农业现代化道路、模式",
+        "classification_path": "F 经济 > F3 农业经济 > F32 中国农业经济 > F320 方针政策及其阐述 > F320.1 农业现代化道路、模式",
+        "path_codes": [
+          "F",
+          "F3",
+          "F32",
+          "F320",
+          "F320.1"
+        ],
+        "path_names": [
+          "经济",
+          "农业经济",
+          "中国农业经济",
+          "方针政策及其阐述",
+          "农业现代化道路、模式"
+        ],
+        "rag_entry_id": 3018,
+        "rank": 1
+      },
+      {
+        "clc_code": "F303.3",
+        "clc_name": "农业现代化建设",
+        "classification_path": "F 经济 > F3 农业经济 > F30 农业经济理论 > F303 农业建设与发展 > F303.3 农业现代化建设",
+        "path_codes": [
+          "F",
+          "F3",
+          "F30",
+          "F303",
+          "F303.3"
+        ],
+        "path_names": [
+          "经济",
+          "农业经济",
+          "农业经济理论",
+          "农业建设与发展",
+          "农业现代化建设"
+        ],
+        "rag_entry_id": 2962,
+        "rank": 2
+      },
+      {
+        "clc_code": "F49",
+        "clc_name": "信息产业经济（总论）",
+        "classification_path": "F 经济 > F4 工业经济 > F49 信息产业经济（总论）",
+        "path_codes": [
+          "F",
+          "F4",
+          "F49"
+        ],
+        "path_names": [
+          "经济",
+          "工业经济",
+          "信息产业经济（总论）"
+        ],
+        "rag_entry_id": 3264,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F320.1",
+      "clc_name": "农业现代化道路、模式",
+      "classification_path": "F 经济 > F3 农业经济 > F32 中国农业经济 > F320 方针政策及其阐述 > F320.1 农业现代化道路、模式",
+      "path_codes": [
+        "F",
+        "F3",
+        "F32",
+        "F320",
+        "F320.1"
+      ],
+      "path_names": [
+        "经济",
+        "农业经济",
+        "中国农业经济",
+        "方针政策及其阐述",
+        "农业现代化道路、模式"
+      ],
+      "rag_entry_id": 3018
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "F49",
+        "clc_name": "信息产业经济（总论）",
+        "classification_path": "F 经济 > F4 工业经济 > F49 信息产业经济（总论）",
+        "path_codes": [
+          "F",
+          "F4",
+          "F49"
+        ],
+        "path_names": [
+          "经济",
+          "工业经济",
+          "信息产业经济（总论）"
+        ],
+        "rag_entry_id": 3264
+      }
+    ],
+    "selection_reason": "应用场景是中国农业现代化与高质量发展，大数据和数据要素属于支撑性信息技术经济主题。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 3,
+    "ch_name": "科技创新城市的功能内涵、评价体系及判定标准",
+    "ch_abstract": "针对我国对创新型城市概念、内涵和分类上的理解不足,借助城市经济基础和城市功能的相关理论,阐明了城市功能、科技创新与创新型城市建设的关系,在解释了城市科技创新功能的概念、内涵和表现方式的基础上,重点从城市经济活动的基本部分与非基本部分两个方面入手,构建了城市科技创新功能的评价指标体系,提出了科技创新城市的概念内涵,并初步设定了科技创新城市的界定标准及相关参数。其研究结果为推动创新型城市的理论研究,也为创新型城市的具体发展模式和未来路径选择提供一种参考。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "城市功能"
+      },
+      {
+        "en_name": "",
+        "ch_name": "科技创新功能"
+      },
+      {
+        "en_name": "",
+        "ch_name": "科技创新城市"
+      },
+      {
+        "en_name": "",
+        "ch_name": "评价指标体系"
+      },
+      {
+        "en_name": "",
+        "ch_name": "判定标准"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F290",
+        "clc_name": "城市经济理论",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F290 城市经济理论",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F290"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城市经济理论"
+        ],
+        "rag_entry_id": 2905,
+        "rank": 1
+      },
+      {
+        "clc_code": "G301",
+        "clc_name": "科学学",
+        "classification_path": "G 文化、科学、教育、体育 > G2 信息与知识传播 > G27 档案学、档案事业 > G301 科学学",
+        "path_codes": [
+          "G",
+          "G2",
+          "G27",
+          "G301"
+        ],
+        "path_names": [
+          "文化、科学、教育、体育",
+          "信息与知识传播",
+          "档案学、档案事业",
+          "科学学"
+        ],
+        "rag_entry_id": 4311,
+        "rank": 2
+      },
+      {
+        "clc_code": "F291.1",
+        "clc_name": "城市发展道路、城市化",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F291 城镇的形成与发展 > F291.1 城市发展道路、城市化",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F291",
+          "F291.1"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城镇的形成与发展",
+          "城市发展道路、城市化"
+        ],
+        "rag_entry_id": 2907,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F290",
+      "clc_name": "城市经济理论",
+      "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F290 城市经济理论",
+      "path_codes": [
+        "F",
+        "F2",
+        "F29",
+        "F290"
+      ],
+      "path_names": [
+        "经济",
+        "经济计划与管理",
+        "城市与市政经济",
+        "城市经济理论"
+      ],
+      "rag_entry_id": 2905
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "G301",
+        "clc_name": "科学学",
+        "classification_path": "G 文化、科学、教育、体育 > G2 信息与知识传播 > G27 档案学、档案事业 > G301 科学学",
+        "path_codes": [
+          "G",
+          "G2",
+          "G27",
+          "G301"
+        ],
+        "path_names": [
+          "文化、科学、教育、体育",
+          "信息与知识传播",
+          "档案学、档案事业",
+          "科学学"
+        ],
+        "rag_entry_id": 4311
+      }
+    ],
+    "selection_reason": "论文研究城市科技创新功能、评价体系和城市判定标准，主体是城市经济理论，科学创新研究为辅助。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 4,
+    "ch_name": "基于聚合电流的高比例分布式电源接入配电网短路故障计算与分析",
+    "ch_abstract": "分布式电源数量多、接入点分散，故障期间输出特性取决于其低电压穿越控制策略，导致推导配电网短路故障电流、电压解析表达式困难，也难以解释故障电流电压变化机理和变化规律。针对这些难点问题，提出了一种基于聚合电流的高比例分布式电源接入配电网短路故障计算与分析方法。首先，该方法根据分布式电源并网位置对测量支路短路电流的不同影响，将分布式电源按照位置分类并聚合，利用道路矩阵形成节点阻抗矩阵进而确定聚合位置。然后，推导基于聚合短路电流的短路故障电流、电压计算的解析表达式。进一步，根据聚合短路电流和解析表达式从机理上分析分布式电源接入对故障电流、电压的影响，探讨故障电流、电压随聚合短路电流的变化规律。最后，通过算例验证了所提故障计算与分析方法的正确性。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "分布式电源"
+      },
+      {
+        "en_name": "",
+        "ch_name": "故障分析方法"
+      },
+      {
+        "en_name": "",
+        "ch_name": "聚合短路电流"
+      },
+      {
+        "en_name": "",
+        "ch_name": "故障规律"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "TM13",
+        "clc_name": "电路理论",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM1 电工基础理论 > TM13 电路理论",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM1",
+          "TM13"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "电工基础理论",
+          "电路理论"
+        ],
+        "rag_entry_id": 9569,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM4",
+        "clc_name": "变压器、变流器及电抗器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM4 变压器、变流器及电抗器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM4"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "变压器、变流器及电抗器"
+        ],
+        "rag_entry_id": 9574,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "研究对象是分布式电源接入配电网后的短路故障计算，直接归入电力网及电力系统；所用计算方法属于该工程问题内部方法，不单列辅分类。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 5,
+    "ch_name": "基于敏感气温空间分布的度夏度冬日最大负荷预测与应用研究",
+    "ch_abstract": "随着电气化率的提升，新型电力系统“双高双峰”特性愈发明显，准确预测度冬度夏日最大负荷对电力平衡安排、迎峰保电保供的重要性也更加突出。采用负荷分解理论，提出了基于敏感气温空间分布的夏季和冬季日最大负荷预测方法。利用社会发展因素，建立基础负荷与国内生产总值(gross domestic product,GDP)、居民消费价格指数(consumer price index,CPI)关联模型，为基础负荷的估算提供更客观、严谨的理论依据。根据各区域电网负荷占比识别重点分区，采用M-K(Mann-Kendall)检验确定分区敏感气温并统计各分区温变负荷范围，结合聚类分析方法构建分档位温变负荷预测模型。以国家电网有限公司经营区2021年度冬度夏日最大负荷预测为例，预测结果相比ARIMA(autoregressive integrated moving average)时序预测法、支持向量回归法(support vector regression,SVR)的结果更具优势。结合2022年度夏日最大负荷预测算例，进一步验证了所提方法和模型的有效性。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "日最大负荷预测"
+      },
+      {
+        "en_name": "",
+        "ch_name": "基础负荷"
+      },
+      {
+        "en_name": "",
+        "ch_name": "温变负荷"
+      },
+      {
+        "en_name": "",
+        "ch_name": "敏感气温空间分布"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "TP181",
+        "clc_name": "自动推理、机器学习",
+        "classification_path": "T 工业技术 > TP 自动化技术、计算机技术 > TP1 自动化基础理论 > TP18 人工智能理论 > TP181 自动推理、机器学习",
+        "path_codes": [
+          "T",
+          "TP",
+          "TP1",
+          "TP18",
+          "TP181"
+        ],
+        "path_names": [
+          "工业技术",
+          "自动化技术、计算机技术",
+          "自动化基础理论",
+          "人工智能理论",
+          "自动推理、机器学习"
+        ],
+        "rag_entry_id": 9647,
+        "rank": 2
+      },
+      {
+        "clc_code": "F201",
+        "clc_name": "经济预测",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F20 国民经济管理 > F201 经济预测",
+        "path_codes": [
+          "F",
+          "F2",
+          "F20",
+          "F201"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "国民经济管理",
+          "经济预测"
+        ],
+        "rag_entry_id": 2650,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "TP181",
+        "clc_name": "自动推理、机器学习",
+        "classification_path": "T 工业技术 > TP 自动化技术、计算机技术 > TP1 自动化基础理论 > TP18 人工智能理论 > TP181 自动推理、机器学习",
+        "path_codes": [
+          "T",
+          "TP",
+          "TP1",
+          "TP18",
+          "TP181"
+        ],
+        "path_names": [
+          "工业技术",
+          "自动化技术、计算机技术",
+          "自动化基础理论",
+          "人工智能理论",
+          "自动推理、机器学习"
+        ],
+        "rag_entry_id": 9647
+      }
+    ],
+    "selection_reason": "主任务是电力系统日最大负荷预测，聚类、支持向量回归等机器学习方法构成辅助学科。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 6,
+    "ch_name": "考虑不同优化指标的双有源桥变换器全局优化控制",
+    "ch_abstract": "双有源桥(dual-active-bridge, DAB)变换器在能量双向传输的场合扮演着关键的角色，其中单移相控制是其最典型的控制方式。然而，当DAB变换器的输入电压和输出电压不匹配时会产生较大的回流功率，同时会增大电流应力，轻载时无法实现全部开关管的零电压开通(zero-voltage-switching, ZVS)。针对传统单移相控制在电压不匹配运行时效率降低的问题，提出一种基于双重移相(dual-phase-shift, DPS)控制的全功率范围内保证全部开关管实现ZVS的最小回流功率优化策略，以提高变换器在宽电压调节比下的效率。首先，综合考虑功率的传输特性、电压调节比以及最小回流功率、最小电流应力、全ZVS三者之间的耦合关系，研究全部开关管实现ZVS的功率范围。然后，根据给定的约束条件，通过分段优化的方法，得到全局最优解。最后，搭建实验平台验证所提优化策略在电压不匹配运行条件下可以使DAB变换器的全部开关管在全功率范围内均能实现ZVS，同时减小了回流功率。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "双有源桥变换器"
+      },
+      {
+        "en_name": "",
+        "ch_name": "回流功率"
+      },
+      {
+        "en_name": "",
+        "ch_name": "电流应力"
+      },
+      {
+        "en_name": "",
+        "ch_name": "软开关"
+      },
+      {
+        "en_name": "",
+        "ch_name": "双重移相控制"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM4",
+        "clc_name": "变压器、变流器及电抗器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM4 变压器、变流器及电抗器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM4"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "变压器、变流器及电抗器"
+        ],
+        "rag_entry_id": 9574,
+        "rank": 1
+      },
+      {
+        "clc_code": "O224",
+        "clc_name": "最优化的数学理论",
+        "classification_path": "O 数理科学和化学 > O1 数学 > O22 运筹学 > O224 最优化的数学理论",
+        "path_codes": [
+          "O",
+          "O1",
+          "O22",
+          "O224"
+        ],
+        "path_names": [
+          "数理科学和化学",
+          "数学",
+          "运筹学",
+          "最优化的数学理论"
+        ],
+        "rag_entry_id": 6202,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM13",
+        "clc_name": "电路理论",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM1 电工基础理论 > TM13 电路理论",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM1",
+          "TM13"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "电工基础理论",
+          "电路理论"
+        ],
+        "rag_entry_id": 9569,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM4",
+      "clc_name": "变压器、变流器及电抗器",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM4 变压器、变流器及电抗器",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM4"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "变压器、变流器及电抗器"
+      ],
+      "rag_entry_id": 9574
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "研究对象是双有源桥变换器及其控制，优化只是控制设计手段，主分类归变压器、变流器及电抗器。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 7,
+    "ch_name": "基于联盟合作博弈的风电数据定价方法",
+    "ch_abstract": " 为发挥风电数据价值并给企业带来额外收益，提出一种基于联盟合作博弈模型的风电数据定价方法。首先，提出一种考虑第三方监管的风电数据交易流程与风电数据定价思路。其次，通过数据交易获取邻近场站数据，使用向量自回归模型提高风电预测精度，从而在电力市场交易中降低不平衡成本，提高风电场整体发电利润，体现所交易数据的整体价值。然后，将数据交易前后产生的超额利润(即使用交易数据后的发电利润增加值)，以联盟合作博弈的方式分配给数据售卖方作为交易数据的定价结果，实现数据价值的定量衡量。最后，考虑风电时空特性通过最大化数据价值确定数据交易对象，实现风电数据的合理定价。算例分析结果表明，所提方法能够提升风电预测精度、增加风场发电利润，并实现风电数据定价的公平性与合理性。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "电力数据交易"
+      },
+      {
+        "en_name": "",
+        "ch_name": "数据定价"
+      },
+      {
+        "en_name": "",
+        "ch_name": "风电预测"
+      },
+      {
+        "en_name": "",
+        "ch_name": "电力市场"
+      },
+      {
+        "en_name": "",
+        "ch_name": "合作博弈"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F407.2",
+        "clc_name": "能源工业、动力工业",
+        "classification_path": "F 经济 > F4 工业经济 > F40 工业经济理论 > F407 工业部门经济 > F407.2 能源工业、动力工业",
+        "path_codes": [
+          "F",
+          "F4",
+          "F40",
+          "F407",
+          "F407.2"
+        ],
+        "path_names": [
+          "经济",
+          "工业经济",
+          "工业经济理论",
+          "工业部门经济",
+          "能源工业、动力工业"
+        ],
+        "rag_entry_id": 3148,
+        "rank": 1
+      },
+      {
+        "clc_code": "F224.32",
+        "clc_name": "博弈论",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F22 经济计算、经济数学方法 > F224 经济数学方法 > F224.3 运筹学在经济中的应用 > F224.32 博弈论",
+        "path_codes": [
+          "F",
+          "F2",
+          "F22",
+          "F224",
+          "F224.3",
+          "F224.32"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "经济计算、经济数学方法",
+          "经济数学方法",
+          "运筹学在经济中的应用",
+          "博弈论"
+        ],
+        "rag_entry_id": 2692,
+        "rank": 2
+      },
+      {
+        "clc_code": "F49",
+        "clc_name": "信息产业经济（总论）",
+        "classification_path": "F 经济 > F4 工业经济 > F49 信息产业经济（总论）",
+        "path_codes": [
+          "F",
+          "F4",
+          "F49"
+        ],
+        "path_names": [
+          "经济",
+          "工业经济",
+          "信息产业经济（总论）"
+        ],
+        "rag_entry_id": 3264,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F407.2",
+      "clc_name": "能源工业、动力工业",
+      "classification_path": "F 经济 > F4 工业经济 > F40 工业经济理论 > F407 工业部门经济 > F407.2 能源工业、动力工业",
+      "path_codes": [
+        "F",
+        "F4",
+        "F40",
+        "F407",
+        "F407.2"
+      ],
+      "path_names": [
+        "经济",
+        "工业经济",
+        "工业经济理论",
+        "工业部门经济",
+        "能源工业、动力工业"
+      ],
+      "rag_entry_id": 3148
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "F224.32",
+        "clc_name": "博弈论",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F22 经济计算、经济数学方法 > F224 经济数学方法 > F224.3 运筹学在经济中的应用 > F224.32 博弈论",
+        "path_codes": [
+          "F",
+          "F2",
+          "F22",
+          "F224",
+          "F224.3",
+          "F224.32"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "经济计算、经济数学方法",
+          "经济数学方法",
+          "运筹学在经济中的应用",
+          "博弈论"
+        ],
+        "rag_entry_id": 2692
+      }
+    ],
+    "selection_reason": "研究目标是风电数据在电力市场中的经济定价，能源动力工业经济为主，合作博弈为辅助方法。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 8,
+    "ch_name": "基于DS-LCC拓扑抗偏移性的建模与优化",
+    "ch_abstract": "针对无线电能传输(WPT)系统中线圈偏移导致功率及效率波动问题，提出基于双边LCC(DS-LCC)拓扑WPT系统的改进模型。首先，对该模型进行传输特性分析，推导出不同横向偏移条件下线圈互感与传输特性间对应的函数式。其次，引入归一化方法并确定偏移后线圈匝数与耦合强度及线圈内阻的线性关系。在上述基础上通过对系统进行参数优化设计，实现特定横向偏移范围内系统输出功率和传输效率抗偏移性的提升。最后，搭建一台100 W的实验样机对理论分析进行验证。结果显示在0～20 cm的横向偏移范围内系统的输出功率始终高于80 W，传输效率始终高于70%。",
+    "keywords": [
+      {
+        "en_name": "DS-LCC",
+        "ch_name": ""
+      },
+      {
+        "en_name": "",
+        "ch_name": "抗偏移性"
+      },
+      {
+        "en_name": "",
+        "ch_name": "横向偏移"
+      },
+      {
+        "en_name": "",
+        "ch_name": "归一化方法"
+      },
+      {
+        "en_name": "",
+        "ch_name": "无线电能传输"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM13",
+        "clc_name": "电路理论",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM1 电工基础理论 > TM13 电路理论",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM1",
+          "TM13"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "电工基础理论",
+          "电路理论"
+        ],
+        "rag_entry_id": 9569,
+        "rank": 1
+      },
+      {
+        "clc_code": "O441.3",
+        "clc_name": "电磁感应",
+        "classification_path": "O 数理科学和化学 > O4 物理学 > O44 电磁学、电动力学 > O441 电磁学 > O441.3 电磁感应",
+        "path_codes": [
+          "O",
+          "O4",
+          "O44",
+          "O441",
+          "O441.3"
+        ],
+        "path_names": [
+          "数理科学和化学",
+          "物理学",
+          "电磁学、电动力学",
+          "电磁学",
+          "电磁感应"
+        ],
+        "rag_entry_id": 6518,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM4",
+        "clc_name": "变压器、变流器及电抗器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM4 变压器、变流器及电抗器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM4"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "变压器、变流器及电抗器"
+        ],
+        "rag_entry_id": 9574,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM13",
+      "clc_name": "电路理论",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM1 电工基础理论 > TM13 电路理论",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM1",
+        "TM13"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "电工基础理论",
+        "电路理论"
+      ],
+      "rag_entry_id": 9569
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "DS-LCC无线电能传输拓扑的建模与参数优化以电路理论为核心，电磁感应条目仅作为候选参考，不另列辅分类。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 9,
+    "ch_name": "基于改进GMM-CNN-GRU混合的非侵入式负荷监测方法研究",
+    "ch_abstract": "为挖掘用户侧节能减排潜力，对用户用电行为进行精细化分析和管理，提升电能利用效率，提出了一种基于高斯混合模型聚类和深度神经网络相结合的非侵入式负荷监测方法。首先，针对同一电器常出现功率相近但运行状态不一致问题，利用高斯混合模型聚类算法中“软分类”和类簇灵活的优势，对负荷工作状态进行精细分类，形成负荷用电设备实际运行情况的负荷状态特征库。其次，针对常见的应用于非侵入式负荷监测模型的深度神经网络在多标签分类时存在识别精度低等问题，提出卷积神经网络与门控循环单元混合的深度神经网络模型。最后，综合考虑外部环境数据对家庭用户用能习惯的影响，在AMPds2数据集上开展验证分析，并与其他模型进行对比。结果表明，所提的非侵入式负荷监测模型具有较高的准确性。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "非侵入式负荷监测与分解"
+      },
+      {
+        "en_name": "",
+        "ch_name": "高斯混合模型聚类"
+      },
+      {
+        "en_name": "",
+        "ch_name": "卷积神经网络"
+      },
+      {
+        "en_name": "",
+        "ch_name": "门控循环单元"
+      },
+      {
+        "en_name": "",
+        "ch_name": "深度学习"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM93",
+        "clc_name": "电气测量技术及仪器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM8 高电压技术 > TM93 电气测量技术及仪器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM8",
+          "TM93"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "高电压技术",
+          "电气测量技术及仪器"
+        ],
+        "rag_entry_id": 9594,
+        "rank": 1
+      },
+      {
+        "clc_code": "TP183",
+        "clc_name": "人工神经网络与计算",
+        "classification_path": "T 工业技术 > TP 自动化技术、计算机技术 > TP1 自动化基础理论 > TP18 人工智能理论 > TP183 人工神经网络与计算",
+        "path_codes": [
+          "T",
+          "TP",
+          "TP1",
+          "TP18",
+          "TP183"
+        ],
+        "path_names": [
+          "工业技术",
+          "自动化技术、计算机技术",
+          "自动化基础理论",
+          "人工智能理论",
+          "人工神经网络与计算"
+        ],
+        "rag_entry_id": 9649,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM92",
+        "clc_name": "电气化、电能应用",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM8 高电压技术 > TM92 电气化、电能应用",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM8",
+          "TM92"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "高电压技术",
+          "电气化、电能应用"
+        ],
+        "rag_entry_id": 9580,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "TM93",
+      "clc_name": "电气测量技术及仪器",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM8 高电压技术 > TM93 电气测量技术及仪器",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM8",
+        "TM93"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "高电压技术",
+        "电气测量技术及仪器"
+      ],
+      "rag_entry_id": 9594
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "TP183",
+        "clc_name": "人工神经网络与计算",
+        "classification_path": "T 工业技术 > TP 自动化技术、计算机技术 > TP1 自动化基础理论 > TP18 人工智能理论 > TP183 人工神经网络与计算",
+        "path_codes": [
+          "T",
+          "TP",
+          "TP1",
+          "TP18",
+          "TP183"
+        ],
+        "path_names": [
+          "工业技术",
+          "自动化技术、计算机技术",
+          "自动化基础理论",
+          "人工智能理论",
+          "人工神经网络与计算"
+        ],
+        "rag_entry_id": 9649
+      }
+    ],
+    "selection_reason": "应用场景是用户侧电力负荷监测，卷积神经网络与GRU属于辅助人工神经网络方法。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 10,
+    "ch_name": "海运服务贸易网络结构演变与各国角色识别",
+    "ch_abstract": "海运服务是实现贸易流通和经济全球化的纽带，准确辨析世界各国在海运服务贸易中的实际地位，对促进贸易良性循环和海运业稳定发展，量化识别海运服务贸易的格局及特征具有现实意义。文章利用社会网络方法，探究了全球海运服务贸易网络的拓扑特征和演化规律。研究发现：(1)从网络结构特征演变看，样本期内网络密度由0.143增长到0.241，海运服务贸易网络趋于复杂化稠密化，具有核心边缘层级结构、小世界性和极化特征，而无标度性不明显；度和强度的Pearson相关系数分别在-0.4780～-0.3930及-0.0206～-0.0155之间，海运服务贸易网络是典型异配网络；GCX、F8X、FKX 3种模体在各年出现频次均较高，出口结构和互惠结构是海运服务贸易的重要模式，高度集中化贸易模式则并不突出。(2)从各国网络地位和承担角色看，美国、德国、日本等核心国家在网络中具有绝对引领作用，南亚为贸易低值集聚区，空间上呈现以欧洲、亚洲、北美为主导的格局；中国、印度的节点度中心性逐渐提高，新兴经济体网络地位明显增强；新加坡是海运服务贸易枢纽中心，德国和美国是海运服务贸易的重要输出国，日本、英国和泰国倾向于承担进口发起国角色，中国作为核心国和中间节点起着重要的传输作用。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "海运服务贸易"
+      },
+      {
+        "en_name": "",
+        "ch_name": "社会网络分析"
+      },
+      {
+        "en_name": "",
+        "ch_name": "出口结构"
+      },
+      {
+        "en_name": "",
+        "ch_name": "网络模体"
+      },
+      {
+        "en_name": "",
+        "ch_name": "层级结构"
+      },
+      {
+        "en_name": "",
+        "ch_name": "贸易匹配"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F550",
+        "clc_name": "水路运输经济理论",
+        "classification_path": "F 经济 > F5 交通运输经济 > F55 水路运输经济 > F550 水路运输经济理论",
+        "path_codes": [
+          "F",
+          "F5",
+          "F55",
+          "F550"
+        ],
+        "path_names": [
+          "经济",
+          "交通运输经济",
+          "水路运输经济",
+          "水路运输经济理论"
+        ],
+        "rag_entry_id": 3376,
+        "rank": 1
+      },
+      {
+        "clc_code": "F740.2",
+        "clc_name": "世界市场",
+        "classification_path": "F 经济 > F7 贸易经济 > F74 国际贸易 > F740 国际贸易理论与方法 > F740.2 世界市场",
+        "path_codes": [
+          "F",
+          "F7",
+          "F74",
+          "F740",
+          "F740.2"
+        ],
+        "path_names": [
+          "经济",
+          "贸易经济",
+          "国际贸易",
+          "国际贸易理论与方法",
+          "世界市场"
+        ],
+        "rag_entry_id": 3641,
+        "rank": 2
+      },
+      {
+        "clc_code": "F55",
+        "clc_name": "水路运输经济",
+        "classification_path": "F 经济 > F5 交通运输经济 > F55 水路运输经济",
+        "path_codes": [
+          "F",
+          "F5",
+          "F55"
+        ],
+        "path_names": [
+          "经济",
+          "交通运输经济",
+          "水路运输经济"
+        ],
+        "rag_entry_id": 3375,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F550",
+      "clc_name": "水路运输经济理论",
+      "classification_path": "F 经济 > F5 交通运输经济 > F55 水路运输经济 > F550 水路运输经济理论",
+      "path_codes": [
+        "F",
+        "F5",
+        "F55",
+        "F550"
+      ],
+      "path_names": [
+        "经济",
+        "交通运输经济",
+        "水路运输经济",
+        "水路运输经济理论"
+      ],
+      "rag_entry_id": 3376
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "F740.2",
+        "clc_name": "世界市场",
+        "classification_path": "F 经济 > F7 贸易经济 > F74 国际贸易 > F740 国际贸易理论与方法 > F740.2 世界市场",
+        "path_codes": [
+          "F",
+          "F7",
+          "F74",
+          "F740",
+          "F740.2"
+        ],
+        "path_names": [
+          "经济",
+          "贸易经济",
+          "国际贸易",
+          "国际贸易理论与方法",
+          "世界市场"
+        ],
+        "rag_entry_id": 3641
+      }
+    ],
+    "selection_reason": "论文研究海运服务贸易网络，主场景是水路运输经济，国际贸易世界市场为辅助主题。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 11,
+    "ch_name": "大运河江浙段沿线城市文旅消费水平时空特征与影响路径研究",
+    "ch_abstract": "推进文旅融合发展和提升人民生活品质是大运河国家文化公园建设的内在要求和重要目标，大运河沿线城市文旅消费水平的研究为其提供理论依据与实践路径。文章以中国大运河江浙段13个城市为研究区域，从文旅消费环境、文旅消费能力、文旅消费支出和文旅消费满意度4个维度构建文旅消费水平评价指标体系，运用数理统计、模糊集定性比较分析等方法，系统探究了大运河江浙段沿线城市文旅消费水平的时空特征与影响路径。研究发现：(1)大运河江浙段沿线城市文旅消费水平呈现波动性增长态势，其中浙江段消费水平相对较高，苏州和杭州市是文旅消费水平的2个核心，江浙段沿线城市差异逐年减缓。(2)大运河江浙段沿线城市文旅消费水平的4个维度具有明显时空分异性，其中时序上文旅消费能力指数逐年增长，文旅消费满意度变动幅度较小；空间上文旅消费环境指数差异最大，而文旅消费支出和文旅消费满意度地区差异相对较小。(3)从构建“供给—需求—政策”的文旅消费组态影响因素模型分析看，文旅消费水平受资源产品基础、服务设施水平、经济收入水平、文化教育水平和政府支持引导5个变量的组态影响，高文旅消费水平组态路径可分为环境供给驱动型、内在需求驱动型和供需多元联动型。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "文旅消费水平"
+      },
+      {
+        "en_name": "",
+        "ch_name": "文旅资源"
+      },
+      {
+        "en_name": "",
+        "ch_name": "文旅融合"
+      },
+      {
+        "en_name": "",
+        "ch_name": "组态影响"
+      },
+      {
+        "en_name": "",
+        "ch_name": "大运河江浙段"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F590.8",
+        "clc_name": "旅游市场",
+        "classification_path": "F 经济 > F5 交通运输经济 > F59 旅游经济 > F590 旅游经济理论与方法 > F590.8 旅游市场",
+        "path_codes": [
+          "F",
+          "F5",
+          "F59",
+          "F590",
+          "F590.8"
+        ],
+        "path_names": [
+          "经济",
+          "交通运输经济",
+          "旅游经济",
+          "旅游经济理论与方法",
+          "旅游市场"
+        ],
+        "rag_entry_id": 3462,
+        "rank": 1
+      },
+      {
+        "clc_code": "F592.7",
+        "clc_name": "地方旅游事业",
+        "classification_path": "F 经济 > F5 交通运输经济 > F59 旅游经济 > F592 中国旅游事业 > F592.7 地方旅游事业",
+        "path_codes": [
+          "F",
+          "F5",
+          "F59",
+          "F592",
+          "F592.7"
+        ],
+        "path_names": [
+          "经济",
+          "交通运输经济",
+          "旅游经济",
+          "中国旅游事业",
+          "地方旅游事业"
+        ],
+        "rag_entry_id": 3471,
+        "rank": 2
+      },
+      {
+        "clc_code": "F126.1",
+        "clc_name": "人民消费水平、结构",
+        "classification_path": "F 经济 > F1 世界各国经济概况、经济史、经济地理 > F12 中国经济 > F126 人民生活状况 > F126.1 人民消费水平、结构",
+        "path_codes": [
+          "F",
+          "F1",
+          "F12",
+          "F126",
+          "F126.1"
+        ],
+        "path_names": [
+          "经济",
+          "世界各国经济概况、经济史、经济地理",
+          "中国经济",
+          "人民生活状况",
+          "人民消费水平、结构"
+        ],
+        "rag_entry_id": 2629,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F590.8",
+      "clc_name": "旅游市场",
+      "classification_path": "F 经济 > F5 交通运输经济 > F59 旅游经济 > F590 旅游经济理论与方法 > F590.8 旅游市场",
+      "path_codes": [
+        "F",
+        "F5",
+        "F59",
+        "F590",
+        "F590.8"
+      ],
+      "path_names": [
+        "经济",
+        "交通运输经济",
+        "旅游经济",
+        "旅游经济理论与方法",
+        "旅游市场"
+      ],
+      "rag_entry_id": 3462
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "F126.1",
+        "clc_name": "人民消费水平、结构",
+        "classification_path": "F 经济 > F1 世界各国经济概况、经济史、经济地理 > F12 中国经济 > F126 人民生活状况 > F126.1 人民消费水平、结构",
+        "path_codes": [
+          "F",
+          "F1",
+          "F12",
+          "F126",
+          "F126.1"
+        ],
+        "path_names": [
+          "经济",
+          "世界各国经济概况、经济史、经济地理",
+          "中国经济",
+          "人民生活状况",
+          "人民消费水平、结构"
+        ],
+        "rag_entry_id": 2629
+      }
+    ],
+    "selection_reason": "研究核心是文旅消费水平及其影响路径，属于旅游市场，居民消费结构为辅助主题。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 12,
+    "ch_name": "乡村旅游发展对农户生计的影响——以秦岭北麓乡村旅游地为例",
+    "ch_abstract": "选取秦岭北麓四个不同旅游发展阶段景区,采用半结构性访谈方法对景区周边农户进行问卷调查,根据英国国际发展署(DFID)可持续生计分析框架设计农户生计资本评价指标体系,采用熵值法确定指标权重。基于农户分类,对乡村旅游影响下六种不同生计类型农户的家庭特征、生计策略和生计资本进行对比分析。最后提出提高农户可持续生计的对策建议。主要结论包括:1乡村旅游深刻改变了农户传统的生计组合模式,农户生计方式发生变迁和重构,传统单一的生计方式趋于多样化;2在乡村旅游的影响下,当地农业生产功能衰退,大量传统生计农户向新型生计(旅游经营和务工结合)农户转化,形成六种不同理性偏好共存的生计模式;3乡村旅游发展改变了农户的生计资本储量和组合形式,改善了农户原有的生计环境。总体而言,当地农户生计资本规模有限,且不同类型农户生计资本的差异显著,传统生计型农户生计资本储量和生计活动多样性均明显低于旅游参与型农户。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "可持续生计"
+      },
+      {
+        "en_name": "",
+        "ch_name": "乡村旅游"
+      },
+      {
+        "en_name": "",
+        "ch_name": "农户生计"
+      },
+      {
+        "en_name": "",
+        "ch_name": "秦岭北麓"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F590.7",
+        "clc_name": "各类型旅游",
+        "classification_path": "F 经济 > F5 交通运输经济 > F59 旅游经济 > F590 旅游经济理论与方法 > F590.7 各类型旅游",
+        "path_codes": [
+          "F",
+          "F5",
+          "F59",
+          "F590",
+          "F590.7"
+        ],
+        "path_names": [
+          "经济",
+          "交通运输经济",
+          "旅游经济",
+          "旅游经济理论与方法",
+          "各类型旅游"
+        ],
+        "rag_entry_id": 3461,
+        "rank": 1
+      },
+      {
+        "clc_code": "F592.7",
+        "clc_name": "地方旅游事业",
+        "classification_path": "F 经济 > F5 交通运输经济 > F59 旅游经济 > F592 中国旅游事业 > F592.7 地方旅游事业",
+        "path_codes": [
+          "F",
+          "F5",
+          "F59",
+          "F592",
+          "F592.7"
+        ],
+        "path_names": [
+          "经济",
+          "交通运输经济",
+          "旅游经济",
+          "中国旅游事业",
+          "地方旅游事业"
+        ],
+        "rag_entry_id": 3471,
+        "rank": 2
+      },
+      {
+        "clc_code": "F323.8",
+        "clc_name": "农业收入与分配",
+        "classification_path": "F 经济 > F3 农业经济 > F32 中国农业经济 > F323 农业经济建设与发展 > F323.8 农业收入与分配",
+        "path_codes": [
+          "F",
+          "F3",
+          "F32",
+          "F323",
+          "F323.8"
+        ],
+        "path_names": [
+          "经济",
+          "农业经济",
+          "中国农业经济",
+          "农业经济建设与发展",
+          "农业收入与分配"
+        ],
+        "rag_entry_id": 3052,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F590.7",
+      "clc_name": "各类型旅游",
+      "classification_path": "F 经济 > F5 交通运输经济 > F59 旅游经济 > F590 旅游经济理论与方法 > F590.7 各类型旅游",
+      "path_codes": [
+        "F",
+        "F5",
+        "F59",
+        "F590",
+        "F590.7"
+      ],
+      "path_names": [
+        "经济",
+        "交通运输经济",
+        "旅游经济",
+        "旅游经济理论与方法",
+        "各类型旅游"
+      ],
+      "rag_entry_id": 3461
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "F323.8",
+        "clc_name": "农业收入与分配",
+        "classification_path": "F 经济 > F3 农业经济 > F32 中国农业经济 > F323 农业经济建设与发展 > F323.8 农业收入与分配",
+        "path_codes": [
+          "F",
+          "F3",
+          "F32",
+          "F323",
+          "F323.8"
+        ],
+        "path_names": [
+          "经济",
+          "农业经济",
+          "中国农业经济",
+          "农业经济建设与发展",
+          "农业收入与分配"
+        ],
+        "rag_entry_id": 3052
+      }
+    ],
+    "selection_reason": "主场景是乡村旅游，研究结果落到农户生计与收入，农业收入分配作为辅助分类。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 13,
+    "ch_name": "符号化运作:世界文化遗产旅游地创新发展的路径选择——以湖北武当山为例",
+    "ch_abstract": "在符号消费背景下,符号化运作是世界文化遗产旅游地创新发展的路径选择。在对世界文化遗产旅游符号内涵解读的基础上,构建了符号化运作的模式。符号化运作过程一般有六个步骤、三个方面。六个步骤即调查了解遗产旅游者的符号价值→挖掘遗产旅游地的符号价值→耦合旅游者和旅游地的符号价值→选择合适载体展示符号价值→选择合适媒介传播符号价值→实现旅游者与旅游地的符号互动;三个方面即符号生产、符号营销、符号消费。从长远来看,这一符号化运作过程又是一个循环反复的过程。选择典型案例地武当山为研究对象,对符号化运作模式的具体实施进行了探讨,可为其他世界文化遗产旅游地提供参考。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "符号消费"
+      },
+      {
+        "en_name": "",
+        "ch_name": "符号化运作"
+      },
+      {
+        "en_name": "",
+        "ch_name": "世界文化遗产"
+      },
+      {
+        "en_name": "",
+        "ch_name": "遗产旅游地"
+      },
+      {
+        "en_name": "",
+        "ch_name": "创新发展"
+      },
+      {
+        "en_name": "",
+        "ch_name": "武当山"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F590.7",
+        "clc_name": "各类型旅游",
+        "classification_path": "F 经济 > F5 交通运输经济 > F59 旅游经济 > F590 旅游经济理论与方法 > F590.7 各类型旅游",
+        "path_codes": [
+          "F",
+          "F5",
+          "F59",
+          "F590",
+          "F590.7"
+        ],
+        "path_names": [
+          "经济",
+          "交通运输经济",
+          "旅游经济",
+          "旅游经济理论与方法",
+          "各类型旅游"
+        ],
+        "rag_entry_id": 3461,
+        "rank": 1
+      },
+      {
+        "clc_code": "K928.7",
+        "clc_name": "名胜古迹",
+        "classification_path": "K 历史、地理 > K9 地理 > K92 中国地理 > K928 专类地理 > K928.7 名胜古迹",
+        "path_codes": [
+          "K",
+          "K9",
+          "K92",
+          "K928",
+          "K928.7"
+        ],
+        "path_names": [
+          "历史、地理",
+          "地理",
+          "中国地理",
+          "专类地理",
+          "名胜古迹"
+        ],
+        "rag_entry_id": 5879,
+        "rank": 2
+      },
+      {
+        "clc_code": "F590.3",
+        "clc_name": "旅游事业建设与发展",
+        "classification_path": "F 经济 > F5 交通运输经济 > F59 旅游经济 > F590 旅游经济理论与方法 > F590.3 旅游事业建设与发展",
+        "path_codes": [
+          "F",
+          "F5",
+          "F59",
+          "F590",
+          "F590.3"
+        ],
+        "path_names": [
+          "经济",
+          "交通运输经济",
+          "旅游经济",
+          "旅游经济理论与方法",
+          "旅游事业建设与发展"
+        ],
+        "rag_entry_id": 3456,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F590.7",
+      "clc_name": "各类型旅游",
+      "classification_path": "F 经济 > F5 交通运输经济 > F59 旅游经济 > F590 旅游经济理论与方法 > F590.7 各类型旅游",
+      "path_codes": [
+        "F",
+        "F5",
+        "F59",
+        "F590",
+        "F590.7"
+      ],
+      "path_names": [
+        "经济",
+        "交通运输经济",
+        "旅游经济",
+        "旅游经济理论与方法",
+        "各类型旅游"
+      ],
+      "rag_entry_id": 3461
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "K928.7",
+        "clc_name": "名胜古迹",
+        "classification_path": "K 历史、地理 > K9 地理 > K92 中国地理 > K928 专类地理 > K928.7 名胜古迹",
+        "path_codes": [
+          "K",
+          "K9",
+          "K92",
+          "K928",
+          "K928.7"
+        ],
+        "path_names": [
+          "历史、地理",
+          "地理",
+          "中国地理",
+          "专类地理",
+          "名胜古迹"
+        ],
+        "rag_entry_id": 5879
+      }
+    ],
+    "selection_reason": "研究目标是世界文化遗产旅游地的创新发展，旅游类型为主，名胜古迹资源为辅助。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 14,
+    "ch_name": "辽宁城市化进程中土地利用结构效率测评分析",
+    "ch_abstract": "利用数据包络分析方法(DEA),以城市化水平相对较高的辽宁省为样本,选取2000和2009年辽宁省14个地市的土地利用结构数据和相关指标,对辽宁省土地利用结构效率进行了系统测评。结果表明,在辽宁快速城市化过程中,土地利用结构效率现状不理想,尤其是工业用地结构效率低于农业用地结构效率。在分析影响辽宁省土地利用结构效率相关因素的基础上,对如何优化辽宁省土地利用结构、提高土地利用结构效率设计了一条可行的路径。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "土地利用结构"
+      },
+      {
+        "en_name": "",
+        "ch_name": "城市化"
+      },
+      {
+        "en_name": "",
+        "ch_name": "效率"
+      },
+      {
+        "en_name": "DEA",
+        "ch_name": ""
+      },
+      {
+        "en_name": "",
+        "ch_name": "辽宁"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F293.2",
+        "clc_name": "城市土地开发与利用",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F293 城市经济管理 > F293.2 城市土地开发与利用",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F293",
+          "F293.2"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城市经济管理",
+          "城市土地开发与利用"
+        ],
+        "rag_entry_id": 2912,
+        "rank": 1
+      },
+      {
+        "clc_code": "F301.2",
+        "clc_name": "土地管理、规划及利用",
+        "classification_path": "F 经济 > F3 农业经济 > F30 农业经济理论 > F301 土地经济学 > F301.2 土地管理、规划及利用",
+        "path_codes": [
+          "F",
+          "F3",
+          "F30",
+          "F301",
+          "F301.2"
+        ],
+        "path_names": [
+          "经济",
+          "农业经济",
+          "农业经济理论",
+          "土地经济学",
+          "土地管理、规划及利用"
+        ],
+        "rag_entry_id": 2943,
+        "rank": 2
+      },
+      {
+        "clc_code": "F224.0",
+        "clc_name": "数量经济学",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F22 经济计算、经济数学方法 > F224 经济数学方法 > F224.0 数量经济学",
+        "path_codes": [
+          "F",
+          "F2",
+          "F22",
+          "F224",
+          "F224.0"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "经济计算、经济数学方法",
+          "经济数学方法",
+          "数量经济学"
+        ],
+        "rag_entry_id": 2685,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "F293.2",
+      "clc_name": "城市土地开发与利用",
+      "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F293 城市经济管理 > F293.2 城市土地开发与利用",
+      "path_codes": [
+        "F",
+        "F2",
+        "F29",
+        "F293",
+        "F293.2"
+      ],
+      "path_names": [
+        "经济",
+        "经济计划与管理",
+        "城市与市政经济",
+        "城市经济管理",
+        "城市土地开发与利用"
+      ],
+      "rag_entry_id": 2912
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "论文聚焦城市化进程中的城市土地利用结构效率，DEA属于评价工具，不改变城市土地利用这一主分类。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 15,
+    "ch_name": "计及拓扑相似性的含分散式风电配网双层优化重构方法",
+    "ch_abstract": "高比例风电接入背景下，配网优化重构是缓解弃风、失负荷问题的一种有效手段。多对象优化重构作为非凸非线性优化问题，同时含大量离散变量求解难度较大，为此建立了基于拓扑相似性的含高比例分散式风电配网双层交互式优化重构模型。模型设计了支路复介数相似度评价指标，来衡量所有辐射状拓扑的相似度，再将相似网络进行聚类，形成了重构层的树状解空间。重构层以分段/联络开关状态为决策变量优化网络拓扑结构，并传输至调度层；调度层以分散式风电出力、储能运行状态、无功补偿装置功率及需求响应量为决策变量，进行配电网有功无功协同优化调度，以确定各对象最优运行状态并反馈到重构层，两层不断交互迭代得出最终策略。为适应该模型提出了一种剪枝和声搜索算法，其中和声库从树枝切换到枝内的过程，提高了重构层网络重构的求解效率。采用IEEE 33节点系统仿真测试，验证了所提方法在提升系统电压安全性、降低系统运行成本方面的优越性。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "配电网"
+      },
+      {
+        "en_name": "",
+        "ch_name": "分散式风电"
+      },
+      {
+        "en_name": "",
+        "ch_name": "拓扑相似性"
+      },
+      {
+        "en_name": "",
+        "ch_name": "双层优化重构"
+      },
+      {
+        "en_name": "",
+        "ch_name": "二阶锥规划"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "O224",
+        "clc_name": "最优化的数学理论",
+        "classification_path": "O 数理科学和化学 > O1 数学 > O22 运筹学 > O224 最优化的数学理论",
+        "path_codes": [
+          "O",
+          "O1",
+          "O22",
+          "O224"
+        ],
+        "path_names": [
+          "数理科学和化学",
+          "数学",
+          "运筹学",
+          "最优化的数学理论"
+        ],
+        "rag_entry_id": 6202,
+        "rank": 2
+      },
+      {
+        "clc_code": "O221.2",
+        "clc_name": "非线性规划",
+        "classification_path": "O 数理科学和化学 > O1 数学 > O22 运筹学 > O221 规划论（数学规划） > O221.2 非线性规划",
+        "path_codes": [
+          "O",
+          "O1",
+          "O22",
+          "O221",
+          "O221.2"
+        ],
+        "path_names": [
+          "数理科学和化学",
+          "数学",
+          "运筹学",
+          "规划论（数学规划）",
+          "非线性规划"
+        ],
+        "rag_entry_id": 6194,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "研究对象是含分散式风电的配电网优化重构，优化算法属于电力系统研究内部手段，不单列辅分类。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 16,
+    "ch_name": "都市圈中观视角下的协同创新演化研究综述",
+    "ch_abstract": "随着创新模式逐渐趋于创新要素集成化和行为主体协同化,协同创新成为重要的研究领域。文章综述了技术创新的演化轨迹和都市圈创新理论的发展脉络,从协同理论视角梳理和分析了都市圈协同创新的发展轨迹,重点从协同创新的阻制、协同要素构成、协同创新模式、协同程度测度、协同创新效应等方面探讨了其最新的研究动态和进展;最后,在评述已有研究的基础上提出了今后的研究重点和发展趋势。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "协同创新"
+      },
+      {
+        "en_name": "",
+        "ch_name": "都市圈"
+      },
+      {
+        "en_name": "",
+        "ch_name": "述评"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "G301",
+        "clc_name": "科学学",
+        "classification_path": "G 文化、科学、教育、体育 > G2 信息与知识传播 > G27 档案学、档案事业 > G301 科学学",
+        "path_codes": [
+          "G",
+          "G2",
+          "G27",
+          "G301"
+        ],
+        "path_names": [
+          "文化、科学、教育、体育",
+          "信息与知识传播",
+          "档案学、档案事业",
+          "科学学"
+        ],
+        "rag_entry_id": 4311,
+        "rank": 1
+      },
+      {
+        "clc_code": "F061.5",
+        "clc_name": "区域经济学",
+        "classification_path": "F 经济 > F0 经济学 > F06 经济学分支科学 > F061.5 区域经济学",
+        "path_codes": [
+          "F",
+          "F0",
+          "F06",
+          "F061.5"
+        ],
+        "path_names": [
+          "经济",
+          "经济学",
+          "经济学分支科学",
+          "区域经济学"
+        ],
+        "rag_entry_id": 2481,
+        "rank": 2
+      },
+      {
+        "clc_code": "F290",
+        "clc_name": "城市经济理论",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F290 城市经济理论",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F290"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城市经济理论"
+        ],
+        "rag_entry_id": 2905,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "G301",
+      "clc_name": "科学学",
+      "classification_path": "G 文化、科学、教育、体育 > G2 信息与知识传播 > G27 档案学、档案事业 > G301 科学学",
+      "path_codes": [
+        "G",
+        "G2",
+        "G27",
+        "G301"
+      ],
+      "path_names": [
+        "文化、科学、教育、体育",
+        "信息与知识传播",
+        "档案学、档案事业",
+        "科学学"
+      ],
+      "rag_entry_id": 4311
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "F061.5",
+        "clc_name": "区域经济学",
+        "classification_path": "F 经济 > F0 经济学 > F06 经济学分支科学 > F061.5 区域经济学",
+        "path_codes": [
+          "F",
+          "F0",
+          "F06",
+          "F061.5"
+        ],
+        "path_names": [
+          "经济",
+          "经济学",
+          "经济学分支科学",
+          "区域经济学"
+        ],
+        "rag_entry_id": 2481
+      }
+    ],
+    "selection_reason": "研究主题是协同创新理论与演化，都市圈区域经济是其应用空间。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 17,
+    "ch_name": "基于时域阻抗法的35 kV配电线路相间短路故障测距",
+    "ch_abstract": "为了解决35 kV高压配电网因感知量测手段不足和分支线路复杂性引起的故障测距难题，提出一种基于单端信息的时域阻抗法。首先，针对35 kV有分支线路配电网的相间短路故障特性，建立了基于单端信息的故障测距模型，并由故障后故障回路时域微分方程构成测距方程。然后，将测距方程中的故障距离、分支电流和过渡电阻作为未知参数，采用列文伯格-马夸尔特算法(Levenberg-Marquardt algorithm, LMA)进行非线性求解。并通过逐次搜索方法，依次对线路各区段和分支进行故障定位，确定故障所在位置。最后，利用PSCAD搭建35 kV电网模型，通过算例验证所提算法的可靠性和准确性。此方法只需要变电站出口测量的相电流和相电压作为输入，无需增加额外设备，就能够实现故障距离的精确计算和故障分支的有效识别。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "时域阻抗法"
+      },
+      {
+        "en_name": "35 kV配电线路",
+        "ch_name": ""
+      },
+      {
+        "en_name": "",
+        "ch_name": "单端信息"
+      },
+      {
+        "en_name": "",
+        "ch_name": "故障测距"
+      },
+      {
+        "en_name": "",
+        "ch_name": "阻尼最小二乘法"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "TM13",
+        "clc_name": "电路理论",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM1 电工基础理论 > TM13 电路理论",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM1",
+          "TM13"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "电工基础理论",
+          "电路理论"
+        ],
+        "rag_entry_id": 9569,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM93",
+        "clc_name": "电气测量技术及仪器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM8 高电压技术 > TM93 电气测量技术及仪器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM8",
+          "TM93"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "高电压技术",
+          "电气测量技术及仪器"
+        ],
+        "rag_entry_id": 9594,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "研究35 kV配电线路相间短路故障测距，主体属于配电工程和电力系统故障分析。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 18,
+    "ch_name": "厦漳泉传统商业街更新与发展研究",
+    "ch_abstract": "本文以厦门、漳州、泉州为例 ,探讨了闽南传统商业街的更新与发展。文章首先简要介绍了三地传统商业街形成年代、分布范围、建筑特色及风格 ;其次 ,分析三地传统商业街的现状与存在问题 ;最后 ,提出三地传统商业街更新发展的思路及应采取的对策",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "厦门"
+      },
+      {
+        "en_name": "",
+        "ch_name": "漳州"
+      },
+      {
+        "en_name": "",
+        "ch_name": "泉州"
+      },
+      {
+        "en_name": "",
+        "ch_name": "传统商业街"
+      },
+      {
+        "en_name": "",
+        "ch_name": "更新发展"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TU984",
+        "clc_name": "城市规划",
+        "classification_path": "T 工业技术 > TU 建筑学 > TU9 地下建筑 > TU98 区域规划、城乡规划 > TU984 城市规划",
+        "path_codes": [
+          "T",
+          "TU",
+          "TU9",
+          "TU98",
+          "TU984"
+        ],
+        "path_names": [
+          "工业技术",
+          "建筑学",
+          "地下建筑",
+          "区域规划、城乡规划",
+          "城市规划"
+        ],
+        "rag_entry_id": 11776,
+        "rank": 1
+      },
+      {
+        "clc_code": "F713.581",
+        "clc_name": "城市市场",
+        "classification_path": "F 经济 > F7 贸易经济 > F71 国内贸易经济 > F713 商品流通与市场 > F713.5 市场 > F713.58 各种市场 > F713.581 城市市场",
+        "path_codes": [
+          "F",
+          "F7",
+          "F71",
+          "F713",
+          "F713.5",
+          "F713.58",
+          "F713.581"
+        ],
+        "path_names": [
+          "经济",
+          "贸易经济",
+          "国内贸易经济",
+          "商品流通与市场",
+          "市场",
+          "各种市场",
+          "城市市场"
+        ],
+        "rag_entry_id": 3564,
+        "rank": 2
+      },
+      {
+        "clc_code": "F293.2",
+        "clc_name": "城市土地开发与利用",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F293 城市经济管理 > F293.2 城市土地开发与利用",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F293",
+          "F293.2"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城市经济管理",
+          "城市土地开发与利用"
+        ],
+        "rag_entry_id": 2912,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "TU984",
+      "clc_name": "城市规划",
+      "classification_path": "T 工业技术 > TU 建筑学 > TU9 地下建筑 > TU98 区域规划、城乡规划 > TU984 城市规划",
+      "path_codes": [
+        "T",
+        "TU",
+        "TU9",
+        "TU98",
+        "TU984"
+      ],
+      "path_names": [
+        "工业技术",
+        "建筑学",
+        "地下建筑",
+        "区域规划、城乡规划",
+        "城市规划"
+      ],
+      "rag_entry_id": 11776
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "F713.581",
+        "clc_name": "城市市场",
+        "classification_path": "F 经济 > F7 贸易经济 > F71 国内贸易经济 > F713 商品流通与市场 > F713.5 市场 > F713.58 各种市场 > F713.581 城市市场",
+        "path_codes": [
+          "F",
+          "F7",
+          "F71",
+          "F713",
+          "F713.5",
+          "F713.58",
+          "F713.581"
+        ],
+        "path_names": [
+          "经济",
+          "贸易经济",
+          "国内贸易经济",
+          "商品流通与市场",
+          "市场",
+          "各种市场",
+          "城市市场"
+        ],
+        "rag_entry_id": 3564
+      }
+    ],
+    "selection_reason": "研究传统商业街更新与发展，城市规划建设为主，城市商业市场为辅助。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 19,
+    "ch_name": "知识产权保护促进了服务业内部结构优化吗？——基于复杂网络视角",
+    "ch_abstract": "文章构建中国省级服务业内部结构优化和知识产权保护的空间关联网络,并基于复杂网络分析法,实证检验知识产权保护与服务业内部结构优化空间关联的关系。结果表明:(1)中国各省份服务业内部结构优化与知识产权保护空间关联网络分别存在107和142个空间关联渠道,其网络通达性和稳定性较好。(2)东部省份在网络中的中心地位明显,且在网络中起到的\"桥梁\"作用更大。(3)基于QAP相关和回归分析发现:知识产权保护以及地理位置邻接对服务业内部结构优化的空间关联和空间溢出有显著的正向影响,知识密集型服务业的增长具有\"近水楼台先得月\"的效应。(4)知识产权保护空间关联、地理邻接及人均GDP、制造业结构升级、信息化水平的空间差异可共同解释82.09%的服务业内部结构优化空间关联。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "知识产权保护"
+      },
+      {
+        "en_name": "",
+        "ch_name": "服务业内部结构"
+      },
+      {
+        "en_name": "",
+        "ch_name": "复杂网络"
+      },
+      {
+        "en_name": "",
+        "ch_name": "空间关联"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F719",
+        "clc_name": "服务业",
+        "classification_path": "F 经济 > F7 贸易经济 > F71 国内贸易经济 > F719 服务业",
+        "path_codes": [
+          "F",
+          "F7",
+          "F71",
+          "F719"
+        ],
+        "path_names": [
+          "经济",
+          "贸易经济",
+          "国内贸易经济",
+          "服务业"
+        ],
+        "rag_entry_id": 3597,
+        "rank": 1
+      },
+      {
+        "clc_code": "D923.4",
+        "clc_name": "知识产权",
+        "classification_path": "D 政治、法律 > D9 法律 > D92 中国法律 > D923 民法 > D923.4 知识产权",
+        "path_codes": [
+          "D",
+          "D9",
+          "D92",
+          "D923",
+          "D923.4"
+        ],
+        "path_names": [
+          "政治、法律",
+          "法律",
+          "中国法律",
+          "民法",
+          "知识产权"
+        ],
+        "rag_entry_id": 1845,
+        "rank": 2
+      },
+      {
+        "clc_code": "F121.3",
+        "clc_name": "产业结构",
+        "classification_path": "F 经济 > F1 世界各国经济概况、经济史、经济地理 > F12 中国经济 > F121 社会经济结构与体制 > F121.3 产业结构",
+        "path_codes": [
+          "F",
+          "F1",
+          "F12",
+          "F121",
+          "F121.3"
+        ],
+        "path_names": [
+          "经济",
+          "世界各国经济概况、经济史、经济地理",
+          "中国经济",
+          "社会经济结构与体制",
+          "产业结构"
+        ],
+        "rag_entry_id": 2588,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F719",
+      "clc_name": "服务业",
+      "classification_path": "F 经济 > F7 贸易经济 > F71 国内贸易经济 > F719 服务业",
+      "path_codes": [
+        "F",
+        "F7",
+        "F71",
+        "F719"
+      ],
+      "path_names": [
+        "经济",
+        "贸易经济",
+        "国内贸易经济",
+        "服务业"
+      ],
+      "rag_entry_id": 3597
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "D923.4",
+        "clc_name": "知识产权",
+        "classification_path": "D 政治、法律 > D9 法律 > D92 中国法律 > D923 民法 > D923.4 知识产权",
+        "path_codes": [
+          "D",
+          "D9",
+          "D92",
+          "D923",
+          "D923.4"
+        ],
+        "path_names": [
+          "政治、法律",
+          "法律",
+          "中国法律",
+          "民法",
+          "知识产权"
+        ],
+        "rag_entry_id": 1845
+      }
+    ],
+    "selection_reason": "研究落点是服务业内部结构优化，知识产权保护是解释变量和辅助法律主题。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 20,
+    "ch_name": "基于相角差余弦值奇异熵的远海风电交流汇集线路单端量保护原理",
+    "ch_abstract": "海上风电柔直送出系统两侧电力电子设备均采用负序抑制控制策略。交流汇集线路故障时，两侧故障电流相角和幅值都发生较大变化，使传统工频量距离保护可靠性降低。为此，首先阐述了海上风电交流汇集系统结构，并分析负序抑制策略实现方法。其次，考虑电容电流分析传统距离保护适应性，并分析不同故障下相电流与其超前相电流相角差值余弦值的变化情况。在此基础上，利用Hankel矩阵反映特征量突变程度，提出一种基于相角差余弦值奇异熵的交流汇集线路单端量保护原理。最后，基于PSCAD/EMTDC搭建海上风电系统模型，分析并验证所提保护方案的有效性。结果表明，所提保护方案动作灵敏，可靠性高，能耐受20 dB噪声和100Ω过渡电阻。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "采样算法"
+      },
+      {
+        "en_name": "",
+        "ch_name": "单端量保护"
+      },
+      {
+        "en_name": "",
+        "ch_name": "奇异熵"
+      },
+      {
+        "en_name": "",
+        "ch_name": "接地故障"
+      },
+      {
+        "en_name": "",
+        "ch_name": "海上风电"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "TM93",
+        "clc_name": "电气测量技术及仪器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM8 高电压技术 > TM93 电气测量技术及仪器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM8",
+          "TM93"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "高电压技术",
+          "电气测量技术及仪器"
+        ],
+        "rag_entry_id": 9594,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM13",
+        "clc_name": "电路理论",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM1 电工基础理论 > TM13 电路理论",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM1",
+          "TM13"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "电工基础理论",
+          "电路理论"
+        ],
+        "rag_entry_id": 9569,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "论文提出远海风电交流汇集线路保护原理，属于输配电工程和电力系统保护。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 21,
+    "ch_name": "基于供需理论的土地征收补偿研究——以湖北省为例",
+    "ch_abstract": "土地征收补偿问题是保障农民利益、维护社会稳定的一个关键问题。文章基于经济学的供给和需求理论以湖北省为例探讨征地补偿标准,通过从供给角度的农地总价值测算和需求角度的农地功能价值测算,得出征地补偿的参考值。研究结果表明:基于供给角度测算的湖北省农地总价值为80—150万元/hm2,以此作为征地补偿的上限值;基于需求角度测算的湖北省农地功能价值为27.7—85.93万元/hm2,为征地补偿的合理值,二者均远高于目前执行的征地补偿标准。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "征地补偿"
+      },
+      {
+        "en_name": "",
+        "ch_name": "供需理论"
+      },
+      {
+        "en_name": "",
+        "ch_name": "湖北省"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F301.0",
+        "clc_name": "土地政策",
+        "classification_path": "F 经济 > F3 农业经济 > F30 农业经济理论 > F301 土地经济学 > F301.0 土地政策",
+        "path_codes": [
+          "F",
+          "F3",
+          "F30",
+          "F301",
+          "F301.0"
+        ],
+        "path_names": [
+          "经济",
+          "农业经济",
+          "农业经济理论",
+          "土地经济学",
+          "土地政策"
+        ],
+        "rag_entry_id": 2939,
+        "rank": 1
+      },
+      {
+        "clc_code": "D922.3",
+        "clc_name": "土地法",
+        "classification_path": "D 政治、法律 > D9 法律 > D92 中国法律 > D921 国家法、宪法 > D922.3 土地法",
+        "path_codes": [
+          "D",
+          "D9",
+          "D92",
+          "D921",
+          "D922.3"
+        ],
+        "path_names": [
+          "政治、法律",
+          "法律",
+          "中国法律",
+          "国家法、宪法",
+          "土地法"
+        ],
+        "rag_entry_id": 1808,
+        "rank": 2
+      },
+      {
+        "clc_code": "F713.52",
+        "clc_name": "市场供需关系",
+        "classification_path": "F 经济 > F7 贸易经济 > F71 国内贸易经济 > F713 商品流通与市场 > F713.5 市场 > F713.52 市场供需关系",
+        "path_codes": [
+          "F",
+          "F7",
+          "F71",
+          "F713",
+          "F713.5",
+          "F713.52"
+        ],
+        "path_names": [
+          "经济",
+          "贸易经济",
+          "国内贸易经济",
+          "商品流通与市场",
+          "市场",
+          "市场供需关系"
+        ],
+        "rag_entry_id": 3558,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F301.0",
+      "clc_name": "土地政策",
+      "classification_path": "F 经济 > F3 农业经济 > F30 农业经济理论 > F301 土地经济学 > F301.0 土地政策",
+      "path_codes": [
+        "F",
+        "F3",
+        "F30",
+        "F301",
+        "F301.0"
+      ],
+      "path_names": [
+        "经济",
+        "农业经济",
+        "农业经济理论",
+        "土地经济学",
+        "土地政策"
+      ],
+      "rag_entry_id": 2939
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "D922.3",
+        "clc_name": "土地法",
+        "classification_path": "D 政治、法律 > D9 法律 > D92 中国法律 > D921 国家法、宪法 > D922.3 土地法",
+        "path_codes": [
+          "D",
+          "D9",
+          "D92",
+          "D921",
+          "D922.3"
+        ],
+        "path_names": [
+          "政治、法律",
+          "法律",
+          "中国法律",
+          "国家法、宪法",
+          "土地法"
+        ],
+        "rag_entry_id": 1808
+      }
+    ],
+    "selection_reason": "论文研究土地征收补偿标准，主体是土地政策与土地经济，土地法为辅助。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 22,
+    "ch_name": "附加储能的直驱型风电机组的构网型控制与小信号稳定性分析",
+    "ch_abstract": "为使风电具备常规电源的惯量支撑、一次调频功能，面向直流侧附加储能的直驱型风电机组，提出一种构网型控制架构。然后，根据“频域模态分析法”，给出计及机侧、网侧以及储能变换器动态交互作用的小信号稳定裕度量化方法。在此基础上，采用“复功率系数法”揭示动态交互机理，对比依靠风轮动能、电池储能2种惯量支撑方式对机组稳定性的影响规律。研究结果表明，储能变换器的下垂控制不仅可实现一次调频，还能够引入正阻尼、增强风电机组的小信号稳定性；利用风轮动能提供惯量支撑会引入负阻尼，而依靠储能实现惯量支撑可以引入正阻尼。最后，为进一步增强附加储能的构网型风电机组的稳定性，提出一种主动阻尼控制策略。搭建了基于PSCAD/EMTDC的仿真模型，验证了所提控制方法的可行性以及理论分析的正确性。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "直驱型风电机组"
+      },
+      {
+        "en_name": "",
+        "ch_name": "构网型控制"
+      },
+      {
+        "en_name": "",
+        "ch_name": "交互稳定性"
+      },
+      {
+        "en_name": "",
+        "ch_name": "储能"
+      },
+      {
+        "en_name": "",
+        "ch_name": "一次调频"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM6",
+        "clc_name": "发电、发电厂",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM6 发电、发电厂",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM6"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "发电、发电厂"
+        ],
+        "rag_entry_id": 9576,
+        "rank": 1
+      },
+      {
+        "clc_code": "TM4",
+        "clc_name": "变压器、变流器及电抗器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM4 变压器、变流器及电抗器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM4"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "变压器、变流器及电抗器"
+        ],
+        "rag_entry_id": 9574,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM6",
+      "clc_name": "发电、发电厂",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM6 发电、发电厂",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM6"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "发电、发电厂"
+      ],
+      "rag_entry_id": 9576
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "研究对象是附加储能的直驱型风电机组，主分类归发电、发电厂；变换器与储能控制属于同一电力工程体系。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 23,
+    "ch_name": "适用于含新能源交流电网继电保护整定计算的故障计算方法研究",
+    "ch_abstract": " 基于阻抗矩阵的故障计算方法以其计算量小、适用于局部求解等特性，在交流电网继电保护整定计算中得到了广泛应用。新能源的大范围接入改变了整定计算中故障计算的局部性特征，增加了故障计算所需内存、降低了故障计算效率。针对这一问题，该文基于含新能源的故障计算公式，根据新能源对故障节点的影响因素，提出了适用于含新能源交流电网继电保护整定计算的故障计算方法。首先，从网络结构方面，筛选对故障电气量具有强影响的新能源，构建初始计算域；其次，从新能源输出方面对初始计算域进一步增补和修正；最后，经过逐层外扩，形成最终计算域。在保证工程所需计算精度的同时，降低了矩阵元素使用率，减少了故障计算的计算量，提高了计算效率。在IEEE39节点、IEEE118节点系统中验证了该方法的准确度和计算效率。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "阻抗矩阵"
+      },
+      {
+        "en_name": "",
+        "ch_name": "新能源"
+      },
+      {
+        "en_name": "",
+        "ch_name": "故障计算"
+      },
+      {
+        "en_name": "",
+        "ch_name": "逐层外扩"
+      },
+      {
+        "en_name": "",
+        "ch_name": "计算效率"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "TM13",
+        "clc_name": "电路理论",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM1 电工基础理论 > TM13 电路理论",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM1",
+          "TM13"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "电工基础理论",
+          "电路理论"
+        ],
+        "rag_entry_id": 9569,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM93",
+        "clc_name": "电气测量技术及仪器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM8 高电压技术 > TM93 电气测量技术及仪器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM8",
+          "TM93"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "高电压技术",
+          "电气测量技术及仪器"
+        ],
+        "rag_entry_id": 9594,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "研究含新能源交流电网的故障计算及继电保护整定，主体属于电力网及电力系统。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 24,
+    "ch_name": "基于自组织理论的湖南旅游系统演化分析",
+    "ch_abstract": "因子分析和灰色关联分析的结果表明:湖南省旅游系统综合发展水平总体不高,系统内部协同效应不强,系统循环利用率低,短期内难以实现整体\"突变\";只有充分发挥政府协调机制作用,提高区域和部门的协同发展效应,创建湖南旅游系统可持续循环发展模式,加快旅游产业和信息产业融合步伐,才能促进湖南旅游系统结构与功能的提升,实现组织层次的跃迁。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "自组织理论"
+      },
+      {
+        "en_name": "",
+        "ch_name": "旅游系统"
+      },
+      {
+        "en_name": "",
+        "ch_name": "系统演化"
+      },
+      {
+        "en_name": "",
+        "ch_name": "湖南省"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F592.7",
+        "clc_name": "地方旅游事业",
+        "classification_path": "F 经济 > F5 交通运输经济 > F59 旅游经济 > F592 中国旅游事业 > F592.7 地方旅游事业",
+        "path_codes": [
+          "F",
+          "F5",
+          "F59",
+          "F592",
+          "F592.7"
+        ],
+        "path_names": [
+          "经济",
+          "交通运输经济",
+          "旅游经济",
+          "中国旅游事业",
+          "地方旅游事业"
+        ],
+        "rag_entry_id": 3471,
+        "rank": 1
+      },
+      {
+        "clc_code": "O415.3",
+        "clc_name": "耗散结构与自组织",
+        "classification_path": "O 数理科学和化学 > O4 物理学 > O41 理论物理学 > O415 非线性物理学 > O415.3 耗散结构与自组织",
+        "path_codes": [
+          "O",
+          "O4",
+          "O41",
+          "O415",
+          "O415.3"
+        ],
+        "path_names": [
+          "数理科学和化学",
+          "物理学",
+          "理论物理学",
+          "非线性物理学",
+          "耗散结构与自组织"
+        ],
+        "rag_entry_id": 6438,
+        "rank": 2
+      },
+      {
+        "clc_code": "F590.3",
+        "clc_name": "旅游事业建设与发展",
+        "classification_path": "F 经济 > F5 交通运输经济 > F59 旅游经济 > F590 旅游经济理论与方法 > F590.3 旅游事业建设与发展",
+        "path_codes": [
+          "F",
+          "F5",
+          "F59",
+          "F590",
+          "F590.3"
+        ],
+        "path_names": [
+          "经济",
+          "交通运输经济",
+          "旅游经济",
+          "旅游经济理论与方法",
+          "旅游事业建设与发展"
+        ],
+        "rag_entry_id": 3456,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F592.7",
+      "clc_name": "地方旅游事业",
+      "classification_path": "F 经济 > F5 交通运输经济 > F59 旅游经济 > F592 中国旅游事业 > F592.7 地方旅游事业",
+      "path_codes": [
+        "F",
+        "F5",
+        "F59",
+        "F592",
+        "F592.7"
+      ],
+      "path_names": [
+        "经济",
+        "交通运输经济",
+        "旅游经济",
+        "中国旅游事业",
+        "地方旅游事业"
+      ],
+      "rag_entry_id": 3471
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "O415.3",
+        "clc_name": "耗散结构与自组织",
+        "classification_path": "O 数理科学和化学 > O4 物理学 > O41 理论物理学 > O415 非线性物理学 > O415.3 耗散结构与自组织",
+        "path_codes": [
+          "O",
+          "O4",
+          "O41",
+          "O415",
+          "O415.3"
+        ],
+        "path_names": [
+          "数理科学和化学",
+          "物理学",
+          "理论物理学",
+          "非线性物理学",
+          "耗散结构与自组织"
+        ],
+        "rag_entry_id": 6438
+      }
+    ],
+    "selection_reason": "研究湖南地方旅游系统演化，地方旅游事业为主，自组织理论为辅助方法。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 25,
+    "ch_name": "柔性直流换流站供电无源交流线路电压单环控制策略研究",
+    "ch_abstract": "高比例新能源经柔性直流并网送出时无源交流线路空载加压是必不可少的环节，换流站闭环运行控制存在谐振失稳风险。针对该应用场景，提出了一种具备故障限压限流和谐振抑制能力的电压单环控制策略。首先，在考虑换流站链路延时的基础上，采用常规电压单环控制方式，分析了该场景下诱发谐振失稳的关键因素。其次，考虑故障限压限流和谐振抑制需求，提出了电压前馈和电流前馈补偿控制策略，推导了故障电流与电压单环控制器限幅和电流前馈补偿等效直流增益之间的数学关系。再次，以抑制谐振为目标，从不同频率段实现了前馈补偿器参数选择范围的解析计算和优化设计。最后，采用电磁暂态仿真模型验证所给控制策略和参数解析计算与优化设计的有效性。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "无源交流线路"
+      },
+      {
+        "en_name": "",
+        "ch_name": "柔性直流输电"
+      },
+      {
+        "en_name": "",
+        "ch_name": "电压单环"
+      },
+      {
+        "en_name": "",
+        "ch_name": "谐振振荡"
+      },
+      {
+        "en_name": "",
+        "ch_name": "补偿控制"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "TM4",
+        "clc_name": "变压器、变流器及电抗器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM4 变压器、变流器及电抗器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM4"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "变压器、变流器及电抗器"
+        ],
+        "rag_entry_id": 9574,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM13",
+        "clc_name": "电路理论",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM1 电工基础理论 > TM13 电路理论",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM1",
+          "TM13"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "电工基础理论",
+          "电路理论"
+        ],
+        "rag_entry_id": 9569,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "主场景是柔性直流输电换流站向无源交流线路供电，换流器控制属于该输电系统内部技术。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 26,
+    "ch_name": "环鄱阳湖城市群城市规模结构演变特征",
+    "ch_abstract": "湖域地区日益城市化并进而演化为复杂的环湖城市群空间网络化现象,已成为世界性的一个普遍趋势。以环鄱阳湖城市群为例,运用城市规模分布的结构分析方法和非参数检验对其城市规模演变特征与规律进行深入揭示。研究表明:①环湖城市群首位城市影响较大,中间城市出现严重断层现象,中小城市数量多且处于较低水平发展,区域经济发展水平相对落后。②环湖区整体城市化水平得到较快发展,中小城市晋升为大城市速度加快,首位城市与其他城市间差距呈现缩小趋势,但短期内各规模城市之间转型比较困难,首位城市依然占主导地位。③城市规模分布接近Zipf的理想分布状态,具有比较明显的分形特征,同时能较好拟合β>1时的双帕累托对数正态分布曲线,各个规模等级城市数量比例较合理。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "城市规模结构"
+      },
+      {
+        "en_name": "",
+        "ch_name": "非参数检验"
+      },
+      {
+        "en_name": "",
+        "ch_name": "分形模型"
+      },
+      {
+        "en_name": "",
+        "ch_name": "双帕累托分布模型"
+      },
+      {
+        "en_name": "",
+        "ch_name": "环鄱阳湖城市群"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F291.1",
+        "clc_name": "城市发展道路、城市化",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F291 城镇的形成与发展 > F291.1 城市发展道路、城市化",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F291",
+          "F291.1"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城镇的形成与发展",
+          "城市发展道路、城市化"
+        ],
+        "rag_entry_id": 2907,
+        "rank": 1
+      },
+      {
+        "clc_code": "F061.5",
+        "clc_name": "区域经济学",
+        "classification_path": "F 经济 > F0 经济学 > F06 经济学分支科学 > F061.5 区域经济学",
+        "path_codes": [
+          "F",
+          "F0",
+          "F06",
+          "F061.5"
+        ],
+        "path_names": [
+          "经济",
+          "经济学",
+          "经济学分支科学",
+          "区域经济学"
+        ],
+        "rag_entry_id": 2481,
+        "rank": 2
+      },
+      {
+        "clc_code": "F290",
+        "clc_name": "城市经济理论",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F290 城市经济理论",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F290"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城市经济理论"
+        ],
+        "rag_entry_id": 2905,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "F291.1",
+      "clc_name": "城市发展道路、城市化",
+      "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F291 城镇的形成与发展 > F291.1 城市发展道路、城市化",
+      "path_codes": [
+        "F",
+        "F2",
+        "F29",
+        "F291",
+        "F291.1"
+      ],
+      "path_names": [
+        "经济",
+        "经济计划与管理",
+        "城市与市政经济",
+        "城镇的形成与发展",
+        "城市发展道路、城市化"
+      ],
+      "rag_entry_id": 2907
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "研究城市群规模结构及城市化演变，主分类归城市发展道路与城市化。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 27,
+    "ch_name": "省级区域规划实施评估方法和机制探究",
+    "ch_abstract": "省级区域规划是国家和地方发展和空间规划体系中的重要组成部分。在我国建立更加有效的区域协调发展新机制的实践中,探究我国省级区域规划实施评估中存在的问题,研究和建立更加有效的省级区域规划实施评估的内容、方法和机制,对于进一步落实好省级政府的责任和义务,更好全面、有效实施好省级区域规划具有重要推动作用。文章提出了我国省级区域规划实施评估存在的问题、评估的方法、评估的内容和指标体系,并提出了具体建立更加有效的省级区域规划实施评估机制的建议和设想。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "区域规划"
+      },
+      {
+        "en_name": "",
+        "ch_name": "实施评估"
+      },
+      {
+        "en_name": "",
+        "ch_name": "发展规划"
+      },
+      {
+        "en_name": "",
+        "ch_name": "政策建议"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F207",
+        "clc_name": "生产布局和区域经济管理",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F20 国民经济管理 > F207 生产布局和区域经济管理",
+        "path_codes": [
+          "F",
+          "F2",
+          "F20",
+          "F207"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "国民经济管理",
+          "生产布局和区域经济管理"
+        ],
+        "rag_entry_id": 2657,
+        "rank": 1
+      },
+      {
+        "clc_code": "TU98",
+        "clc_name": "区域规划、城乡规划",
+        "classification_path": "T 工业技术 > TU 建筑学 > TU9 地下建筑 > TU98 区域规划、城乡规划",
+        "path_codes": [
+          "T",
+          "TU",
+          "TU9",
+          "TU98"
+        ],
+        "path_names": [
+          "工业技术",
+          "建筑学",
+          "地下建筑",
+          "区域规划、城乡规划"
+        ],
+        "rag_entry_id": 11775,
+        "rank": 2
+      },
+      {
+        "clc_code": "F123.8",
+        "clc_name": "专题规划",
+        "classification_path": "F 经济 > F1 世界各国经济概况、经济史、经济地理 > F12 中国经济 > F123 国民经济计划和管理 > F123.8 专题规划",
+        "path_codes": [
+          "F",
+          "F1",
+          "F12",
+          "F123",
+          "F123.8"
+        ],
+        "path_names": [
+          "经济",
+          "世界各国经济概况、经济史、经济地理",
+          "中国经济",
+          "国民经济计划和管理",
+          "专题规划"
+        ],
+        "rag_entry_id": 2611,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F207",
+      "clc_name": "生产布局和区域经济管理",
+      "classification_path": "F 经济 > F2 经济计划与管理 > F20 国民经济管理 > F207 生产布局和区域经济管理",
+      "path_codes": [
+        "F",
+        "F2",
+        "F20",
+        "F207"
+      ],
+      "path_names": [
+        "经济",
+        "经济计划与管理",
+        "国民经济管理",
+        "生产布局和区域经济管理"
+      ],
+      "rag_entry_id": 2657
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "TU98",
+        "clc_name": "区域规划、城乡规划",
+        "classification_path": "T 工业技术 > TU 建筑学 > TU9 地下建筑 > TU98 区域规划、城乡规划",
+        "path_codes": [
+          "T",
+          "TU",
+          "TU9",
+          "TU98"
+        ],
+        "path_names": [
+          "工业技术",
+          "建筑学",
+          "地下建筑",
+          "区域规划、城乡规划"
+        ],
+        "rag_entry_id": 11775
+      }
+    ],
+    "selection_reason": "论文关注省级区域规划的实施评估与管理机制，区域经济管理为主，区域规划为辅助。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 28,
+    "ch_name": "意愿调查法在我国遗产资源价值评价领域的应用与研究进展",
+    "ch_abstract": "从中国知网选取97篇相关论文作为样本,从研究领域、主要发表期刊、所属学科、具体研究内容、研究过程、关键技术等方面进行了统计分析,对使用CVM在遗产价值评价方面的研究进行了梳理、述评,并对当前研究中存在的问题进行评析,旨在明晰CVM在遗产资源价值评价中的研究现状及发展进程。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "意愿调查法(CVM)"
+      },
+      {
+        "en_name": "",
+        "ch_name": "遗产资源"
+      },
+      {
+        "en_name": "",
+        "ch_name": "价值评价"
+      },
+      {
+        "en_name": "",
+        "ch_name": "研究进展"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "K928.7",
+        "clc_name": "名胜古迹",
+        "classification_path": "K 历史、地理 > K9 地理 > K92 中国地理 > K928 专类地理 > K928.7 名胜古迹",
+        "path_codes": [
+          "K",
+          "K9",
+          "K92",
+          "K928",
+          "K928.7"
+        ],
+        "path_names": [
+          "历史、地理",
+          "地理",
+          "中国地理",
+          "专类地理",
+          "名胜古迹"
+        ],
+        "rag_entry_id": 5879,
+        "rank": 1
+      },
+      {
+        "clc_code": "F224.5",
+        "clc_name": "费用效益分析（成本-效益分析）",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F22 经济计算、经济数学方法 > F224 经济数学方法 > F224.5 费用效益分析（成本-效益分析）",
+        "path_codes": [
+          "F",
+          "F2",
+          "F22",
+          "F224",
+          "F224.5"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "经济计算、经济数学方法",
+          "经济数学方法",
+          "费用效益分析（成本-效益分析）"
+        ],
+        "rag_entry_id": 2695,
+        "rank": 2
+      },
+      {
+        "clc_code": "F590.7",
+        "clc_name": "各类型旅游",
+        "classification_path": "F 经济 > F5 交通运输经济 > F59 旅游经济 > F590 旅游经济理论与方法 > F590.7 各类型旅游",
+        "path_codes": [
+          "F",
+          "F5",
+          "F59",
+          "F590",
+          "F590.7"
+        ],
+        "path_names": [
+          "经济",
+          "交通运输经济",
+          "旅游经济",
+          "旅游经济理论与方法",
+          "各类型旅游"
+        ],
+        "rag_entry_id": 3461,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "K928.7",
+      "clc_name": "名胜古迹",
+      "classification_path": "K 历史、地理 > K9 地理 > K92 中国地理 > K928 专类地理 > K928.7 名胜古迹",
+      "path_codes": [
+        "K",
+        "K9",
+        "K92",
+        "K928",
+        "K928.7"
+      ],
+      "path_names": [
+        "历史、地理",
+        "地理",
+        "中国地理",
+        "专类地理",
+        "名胜古迹"
+      ],
+      "rag_entry_id": 5879
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "F224.5",
+        "clc_name": "费用效益分析（成本-效益分析）",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F22 经济计算、经济数学方法 > F224 经济数学方法 > F224.5 费用效益分析（成本-效益分析）",
+        "path_codes": [
+          "F",
+          "F2",
+          "F22",
+          "F224",
+          "F224.5"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "经济计算、经济数学方法",
+          "经济数学方法",
+          "费用效益分析（成本-效益分析）"
+        ],
+        "rag_entry_id": 2695
+      }
+    ],
+    "selection_reason": "研究对象是遗产资源价值评价，名胜古迹资源为主，费用效益评价方法为辅助。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 29,
+    "ch_name": "一种新型超导直流故障限流器",
+    "ch_abstract": "与用于交流系统或双极直流系统的限流器不同,用于多端柔性直流系统的故障限流装置应能够在短路故障发生初期有效抑制故障电流的快速上升,避免在线路断路器动作之前换流器桥臂闭锁。针对这一性能要求提出了一种专门用于多端柔性直流电网中的新型超导故障限流器的基本结构和工作原理,并制作了原理验证样机。通过对原理验证样机开展的一系列实验,证明了设计结构与原理的可行性。实验结果也充分展示了这类限流器的功能特性,如其能充分利用铁芯的最大磁导率在短路故障发生的几个毫秒内实现最大限流感抗,从而有效抑制故障早期的短路电流上升率。此外,可以通过对超导隔离环组数量的调整,设定限流器的限流阈值,灵活适应不同直流系统的限流需求。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "超导"
+      },
+      {
+        "en_name": "",
+        "ch_name": "限流器"
+      },
+      {
+        "en_name": "",
+        "ch_name": "直流电网"
+      },
+      {
+        "en_name": "",
+        "ch_name": "限流阈值"
+      },
+      {
+        "en_name": "",
+        "ch_name": "短路故障"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM5",
+        "clc_name": "电器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM5 电器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM5"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "电器"
+        ],
+        "rag_entry_id": 9575,
+        "rank": 1
+      },
+      {
+        "clc_code": "O511",
+        "clc_name": "超导电性",
+        "classification_path": "O 数理科学和化学 > O4 物理学 > O51 低温物理学 > O511 超导电性",
+        "path_codes": [
+          "O",
+          "O4",
+          "O51",
+          "O511"
+        ],
+        "path_names": [
+          "数理科学和化学",
+          "物理学",
+          "低温物理学",
+          "超导电性"
+        ],
+        "rag_entry_id": 6585,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "TM5",
+      "clc_name": "电器",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM5 电器",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM5"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "电器"
+      ],
+      "rag_entry_id": 9575
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "O511",
+        "clc_name": "超导电性",
+        "classification_path": "O 数理科学和化学 > O4 物理学 > O51 低温物理学 > O511 超导电性",
+        "path_codes": [
+          "O",
+          "O4",
+          "O51",
+          "O511"
+        ],
+        "path_names": [
+          "数理科学和化学",
+          "物理学",
+          "低温物理学",
+          "超导电性"
+        ],
+        "rag_entry_id": 6585
+      }
+    ],
+    "selection_reason": "研究成果是直流电网故障限流电器，电器装置为主，超导电性为辅助物理学科。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 30,
+    "ch_name": "人工智能时代的开源与闭源技术模式探讨",
+    "ch_abstract": "文章阐述了人工智能时代开源与闭源两种技术模式在技术创新和生态系统建设中的优势与不足，讨论了两种技术模式当前存在的一些前沿争议，提出了一些破局的基本思路，为推动人工智能技术健康发展提供借鉴。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "开源大模型"
+      },
+      {
+        "en_name": "",
+        "ch_name": "闭源大模型"
+      },
+      {
+        "en_name": "",
+        "ch_name": "技术创新"
+      },
+      {
+        "en_name": "",
+        "ch_name": "人工智能监管"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TP18",
+        "clc_name": "人工智能理论",
+        "classification_path": "T 工业技术 > TP 自动化技术、计算机技术 > TP1 自动化基础理论 > TP18 人工智能理论",
+        "path_codes": [
+          "T",
+          "TP",
+          "TP1",
+          "TP18"
+        ],
+        "path_names": [
+          "工业技术",
+          "自动化技术、计算机技术",
+          "自动化基础理论",
+          "人工智能理论"
+        ],
+        "rag_entry_id": 9646,
+        "rank": 1
+      },
+      {
+        "clc_code": "G301",
+        "clc_name": "科学学",
+        "classification_path": "G 文化、科学、教育、体育 > G2 信息与知识传播 > G27 档案学、档案事业 > G301 科学学",
+        "path_codes": [
+          "G",
+          "G2",
+          "G27",
+          "G301"
+        ],
+        "path_names": [
+          "文化、科学、教育、体育",
+          "信息与知识传播",
+          "档案学、档案事业",
+          "科学学"
+        ],
+        "rag_entry_id": 4311,
+        "rank": 2
+      },
+      {
+        "clc_code": "G322.0",
+        "clc_name": "方针政策及其阐述",
+        "classification_path": "G 文化、科学、教育、体育 > G2 信息与知识传播 > G32 世界各国科学研究事业 > G322 中国 > G322.0 方针政策及其阐述",
+        "path_codes": [
+          "G",
+          "G2",
+          "G32",
+          "G322",
+          "G322.0"
+        ],
+        "path_names": [
+          "文化、科学、教育、体育",
+          "信息与知识传播",
+          "世界各国科学研究事业",
+          "中国",
+          "方针政策及其阐述"
+        ],
+        "rag_entry_id": 4336,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "TP18",
+      "clc_name": "人工智能理论",
+      "classification_path": "T 工业技术 > TP 自动化技术、计算机技术 > TP1 自动化基础理论 > TP18 人工智能理论",
+      "path_codes": [
+        "T",
+        "TP",
+        "TP1",
+        "TP18"
+      ],
+      "path_names": [
+        "工业技术",
+        "自动化技术、计算机技术",
+        "自动化基础理论",
+        "人工智能理论"
+      ],
+      "rag_entry_id": 9646
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "G301",
+        "clc_name": "科学学",
+        "classification_path": "G 文化、科学、教育、体育 > G2 信息与知识传播 > G27 档案学、档案事业 > G301 科学学",
+        "path_codes": [
+          "G",
+          "G2",
+          "G27",
+          "G301"
+        ],
+        "path_names": [
+          "文化、科学、教育、体育",
+          "信息与知识传播",
+          "档案学、档案事业",
+          "科学学"
+        ],
+        "rag_entry_id": 4311
+      }
+    ],
+    "selection_reason": "讨论对象是人工智能技术的开源与闭源模式，人工智能理论为主，科技创新研究为辅助。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 31,
+    "ch_name": "青藏地区农牧企业区位特征变化及影响因素",
+    "ch_abstract": "农牧企业作为农牧业空间的载体和市场主体，其区位特征与影响因素识别对优化高原农牧业布局、保护生态安全具有重要意义。基于2011、2021年的农牧企业数据，采用核密度估计与空间自相关分析青海、西藏的农牧企业空间格局演变，引入逐步回归模型从市域和县域尺度探究其影响因素。研究发现：(1)青藏农牧企业2011—2021年迅速增长，始终呈集聚分布态势，集中于西藏“一江两河”和青海“湟水谷地”“黄河谷地”地区。(2)2011、2021年青藏农牧企业均有显著的空间集聚性和依赖性。时序演变上，青藏农牧企业的空间集聚程度和依赖性减弱，呈现空间扩散趋势。(3)青藏农牧企业分布影响因子的作用强度因尺度而异，市域尺度上人口密度对其分布有显著正向影响；县域尺度上第一产业增加值、在校中学生数、人口密度、路网密度、高程、区域GDP等6个因素均呈现正向作用。(4)采用地理加权回归分析农牧企业分布影响因素在县域尺度空间作用差异，发现路网密度和在校中学生数对全部县域农牧企业分布均呈正向影响，而高程均呈负向影响；人口密度的影响在青海中东部县不明显甚至呈现负向，在西藏及青海中西部县呈正向，尤以西藏东南及西北部正向作用显著。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "农业与畜牧业"
+      },
+      {
+        "en_name": "",
+        "ch_name": "企业区位"
+      },
+      {
+        "en_name": "",
+        "ch_name": "人口密度"
+      },
+      {
+        "en_name": "",
+        "ch_name": "高程"
+      },
+      {
+        "en_name": "",
+        "ch_name": "路网密度"
+      },
+      {
+        "en_name": "",
+        "ch_name": "空间集聚"
+      },
+      {
+        "en_name": "",
+        "ch_name": "青藏地区"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F323.1",
+        "clc_name": "农业区域规划与生产布局",
+        "classification_path": "F 经济 > F3 农业经济 > F32 中国农业经济 > F323 农业经济建设与发展 > F323.1 农业区域规划与生产布局",
+        "path_codes": [
+          "F",
+          "F3",
+          "F32",
+          "F323",
+          "F323.1"
+        ],
+        "path_names": [
+          "经济",
+          "农业经济",
+          "中国农业经济",
+          "农业经济建设与发展",
+          "农业区域规划与生产布局"
+        ],
+        "rag_entry_id": 3038,
+        "rank": 1
+      },
+      {
+        "clc_code": "F306",
+        "clc_name": "农业企业经营与管理",
+        "classification_path": "F 经济 > F3 农业经济 > F30 农业经济理论 > F306 农业企业经营与管理",
+        "path_codes": [
+          "F",
+          "F3",
+          "F30",
+          "F306"
+        ],
+        "path_names": [
+          "经济",
+          "农业经济",
+          "农业经济理论",
+          "农业企业经营与管理"
+        ],
+        "rag_entry_id": 2973,
+        "rank": 2
+      },
+      {
+        "clc_code": "F061.5",
+        "clc_name": "区域经济学",
+        "classification_path": "F 经济 > F0 经济学 > F06 经济学分支科学 > F061.5 区域经济学",
+        "path_codes": [
+          "F",
+          "F0",
+          "F06",
+          "F061.5"
+        ],
+        "path_names": [
+          "经济",
+          "经济学",
+          "经济学分支科学",
+          "区域经济学"
+        ],
+        "rag_entry_id": 2481,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F323.1",
+      "clc_name": "农业区域规划与生产布局",
+      "classification_path": "F 经济 > F3 农业经济 > F32 中国农业经济 > F323 农业经济建设与发展 > F323.1 农业区域规划与生产布局",
+      "path_codes": [
+        "F",
+        "F3",
+        "F32",
+        "F323",
+        "F323.1"
+      ],
+      "path_names": [
+        "经济",
+        "农业经济",
+        "中国农业经济",
+        "农业经济建设与发展",
+        "农业区域规划与生产布局"
+      ],
+      "rag_entry_id": 3038
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "F061.5",
+        "clc_name": "区域经济学",
+        "classification_path": "F 经济 > F0 经济学 > F06 经济学分支科学 > F061.5 区域经济学",
+        "path_codes": [
+          "F",
+          "F0",
+          "F06",
+          "F061.5"
+        ],
+        "path_names": [
+          "经济",
+          "经济学",
+          "经济学分支科学",
+          "区域经济学"
+        ],
+        "rag_entry_id": 2481
+      }
+    ],
+    "selection_reason": "研究农牧企业空间区位与布局，农业区域规划和生产布局为主，区域经济分析为辅助。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 32,
+    "ch_name": "基于虚拟电池模型的外逼近闵可夫斯基热泵负荷调节可行域聚合方法",
+    "ch_abstract": " 温控负荷(temperaturecontrolloads,TCLs)灵活性可行域的有效量化和聚合是其响应电价与调控信号的前提。由于TCLs能量在时间上耦合，且设备调节特性和物理参数各异，具有较高异质性，现有聚合方法面临计算复杂度高、适配性差等问题。该文基于极端场景法建立了通用虚拟电池(virtual battery,VB)模型，即通过一套标准电池参数描述资源灵活性，其通用形式使得聚合可行域可以按一定规则线性求和获得。在此基础上，提出一种基于虚拟电池模型的外逼近闵可夫斯基聚合方法，并从数学上不失一般性地对不同异质性设备聚合的有效性进行了证明与推广。最后，提出了考虑系统灵活性供需平衡的负荷聚合商日前优化调度模型。算例结果表明，所提温控负荷可行域聚合方法在提高了外逼近精度的同时保证了较高的计算效率。相比传统模型，所提聚合模型有着更好的优化性能。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "温控负荷"
+      },
+      {
+        "en_name": "",
+        "ch_name": "需求侧灵活性"
+      },
+      {
+        "en_name": "",
+        "ch_name": "虚拟电池模型"
+      },
+      {
+        "en_name": "",
+        "ch_name": "外逼近闵可夫斯基求和"
+      },
+      {
+        "en_name": "",
+        "ch_name": "可行域聚合"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM924",
+        "clc_name": "电热",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM8 高电压技术 > TM92 电气化、电能应用 > TM924 电热",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM8",
+          "TM92",
+          "TM924"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "高电压技术",
+          "电气化、电能应用",
+          "电热"
+        ],
+        "rag_entry_id": 9584,
+        "rank": 1
+      },
+      {
+        "clc_code": "O224",
+        "clc_name": "最优化的数学理论",
+        "classification_path": "O 数理科学和化学 > O1 数学 > O22 运筹学 > O224 最优化的数学理论",
+        "path_codes": [
+          "O",
+          "O1",
+          "O22",
+          "O224"
+        ],
+        "path_names": [
+          "数理科学和化学",
+          "数学",
+          "运筹学",
+          "最优化的数学理论"
+        ],
+        "rag_entry_id": 6202,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM92",
+        "clc_name": "电气化、电能应用",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM8 高电压技术 > TM92 电气化、电能应用",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM8",
+          "TM92"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "高电压技术",
+          "电气化、电能应用"
+        ],
+        "rag_entry_id": 9580,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM924",
+      "clc_name": "电热",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM8 高电压技术 > TM92 电气化、电能应用 > TM924 电热",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM8",
+        "TM92",
+        "TM924"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "高电压技术",
+        "电气化、电能应用",
+        "电热"
+      ],
+      "rag_entry_id": 9584
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "应用场景是热泵温控负荷调节，聚合与优化属于电热负荷研究内部方法，不另列辅分类。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 33,
+    "ch_name": "城市化与生态环境协调发展的调控机制研究",
+    "ch_abstract": "通过诠释城市化与生态环境相互作用内涵、形式以及特征,提出了两者协调发展的调控机制。以东北地区为例,探讨了城市化与生态环境相互作用是在产业、规划、社会、政策等多种调控机制的共同作用下协调发展的。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "城市化"
+      },
+      {
+        "en_name": "",
+        "ch_name": "生态环境"
+      },
+      {
+        "en_name": "",
+        "ch_name": "协调发展"
+      },
+      {
+        "en_name": "",
+        "ch_name": "调控机制"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F291.1",
+        "clc_name": "城市发展道路、城市化",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F291 城镇的形成与发展 > F291.1 城市发展道路、城市化",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F291",
+          "F291.1"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城镇的形成与发展",
+          "城市发展道路、城市化"
+        ],
+        "rag_entry_id": 2907,
+        "rank": 1
+      },
+      {
+        "clc_code": "X22",
+        "clc_name": "环境与发展",
+        "classification_path": "X 环境科学、安全科学 > X2 环境保护管理 > X22 环境与发展",
+        "path_codes": [
+          "X",
+          "X2",
+          "X22"
+        ],
+        "path_names": [
+          "环境科学、安全科学",
+          "环境保护管理",
+          "环境与发展"
+        ],
+        "rag_entry_id": 12250,
+        "rank": 2
+      },
+      {
+        "clc_code": "F061.5",
+        "clc_name": "区域经济学",
+        "classification_path": "F 经济 > F0 经济学 > F06 经济学分支科学 > F061.5 区域经济学",
+        "path_codes": [
+          "F",
+          "F0",
+          "F06",
+          "F061.5"
+        ],
+        "path_names": [
+          "经济",
+          "经济学",
+          "经济学分支科学",
+          "区域经济学"
+        ],
+        "rag_entry_id": 2481,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F291.1",
+      "clc_name": "城市发展道路、城市化",
+      "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F291 城镇的形成与发展 > F291.1 城市发展道路、城市化",
+      "path_codes": [
+        "F",
+        "F2",
+        "F29",
+        "F291",
+        "F291.1"
+      ],
+      "path_names": [
+        "经济",
+        "经济计划与管理",
+        "城市与市政经济",
+        "城镇的形成与发展",
+        "城市发展道路、城市化"
+      ],
+      "rag_entry_id": 2907
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "X22",
+        "clc_name": "环境与发展",
+        "classification_path": "X 环境科学、安全科学 > X2 环境保护管理 > X22 环境与发展",
+        "path_codes": [
+          "X",
+          "X2",
+          "X22"
+        ],
+        "path_names": [
+          "环境科学、安全科学",
+          "环境保护管理",
+          "环境与发展"
+        ],
+        "rag_entry_id": 12250
+      }
+    ],
+    "selection_reason": "主研究对象是城市化过程，生态环境协调发展属于辅助环境学科。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 34,
+    "ch_name": "基于QQ群网络的东北地区城市联系特征与层级结构",
+    "ch_abstract": "基于腾讯QQ群视角,查找联系两个城市的QQ群,利用社会网络分析法研究东北地区城市网络联系特征和层级结构。研究表明:①东北城市QQ群联系网络密度为63.81%,大部分城市之间存在QQ群联系。②从城市联系对象看,沈阳、大连等4个城市联系特征为全体伙伴型,大庆、锦州等10个城市属于众多伙伴型,齐齐哈尔、四平等15个城市为普通伙伴型,伊春、白山等5个城市则是寡少伙伴型。③从QQ群联系总量看,东北地区城市具有明显层级结构。沈阳为大区中心城市,是东北地区的中心;七台河等4个城市为地方边缘城市,其他城市层级介于之间,分属另外5个层级。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "城市网络"
+      },
+      {
+        "en_name": "",
+        "ch_name": "信息流"
+      },
+      {
+        "en_name": "",
+        "ch_name": "网络时代"
+      },
+      {
+        "en_name": "",
+        "ch_name": "QQ群"
+      },
+      {
+        "en_name": "",
+        "ch_name": "社会网络分析"
+      },
+      {
+        "en_name": "",
+        "ch_name": "东北地区"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F290",
+        "clc_name": "城市经济理论",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F290 城市经济理论",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F290"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城市经济理论"
+        ],
+        "rag_entry_id": 2905,
+        "rank": 1
+      },
+      {
+        "clc_code": "C912.81",
+        "clc_name": "城市社会学",
+        "classification_path": "C 社会科学总论 > C8 统计学 > C91 社会学 > C912 社会结构和社会关系 > C912.8 地区社会学 > C912.81 城市社会学",
+        "path_codes": [
+          "C",
+          "C8",
+          "C91",
+          "C912",
+          "C912.8",
+          "C912.81"
+        ],
+        "path_names": [
+          "社会科学总论",
+          "统计学",
+          "社会学",
+          "社会结构和社会关系",
+          "地区社会学",
+          "城市社会学"
+        ],
+        "rag_entry_id": 986,
+        "rank": 2
+      },
+      {
+        "clc_code": "TP393",
+        "clc_name": "计算机网络",
+        "classification_path": "T 工业技术 > TP 自动化技术、计算机技术 > TP3 计算技术、计算机技术 > TP39 计算机的应用 > TP393 计算机网络",
+        "path_codes": [
+          "T",
+          "TP",
+          "TP3",
+          "TP39",
+          "TP393"
+        ],
+        "path_names": [
+          "工业技术",
+          "自动化技术、计算机技术",
+          "计算技术、计算机技术",
+          "计算机的应用",
+          "计算机网络"
+        ],
+        "rag_entry_id": 9728,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F290",
+      "clc_name": "城市经济理论",
+      "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F290 城市经济理论",
+      "path_codes": [
+        "F",
+        "F2",
+        "F29",
+        "F290"
+      ],
+      "path_names": [
+        "经济",
+        "经济计划与管理",
+        "城市与市政经济",
+        "城市经济理论"
+      ],
+      "rag_entry_id": 2905
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "C912.81",
+        "clc_name": "城市社会学",
+        "classification_path": "C 社会科学总论 > C8 统计学 > C91 社会学 > C912 社会结构和社会关系 > C912.8 地区社会学 > C912.81 城市社会学",
+        "path_codes": [
+          "C",
+          "C8",
+          "C91",
+          "C912",
+          "C912.8",
+          "C912.81"
+        ],
+        "path_names": [
+          "社会科学总论",
+          "统计学",
+          "社会学",
+          "社会结构和社会关系",
+          "地区社会学",
+          "城市社会学"
+        ],
+        "rag_entry_id": 986
+      }
+    ],
+    "selection_reason": "研究东北城市联系与层级结构，城市经济理论为主，城市社会网络关系为辅助。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 35,
+    "ch_name": "基于基频调制电流源换流器的中频分布式远海风电直流输电系统",
+    "ch_abstract": "基频调制主动换相型电流源换流器(fundamental frequency modulation-based current source converter,FFM-CSC)无需子模块电容，且不需要大量无功补偿装置和滤波器组，有望成为远海风电直流送出的更优选择。然而现有FFM-CSC远海风电送出方案存在以下不足：1）海上汇集频率为工频，轻型化效果有限；2）集中送出时，一旦海上汇集系统发生故障，交流电压无法建立；3）电流源换流器(current source converter,CSC)与风电机组协同控制交流电压需要大量通信。对此，提出一种基于FFM-CSC的中频分布式远海风电直流输电系统，介绍其拓扑结构和数学模型；接着，提出了无需通信的海上CSC与风电场群协调控制交流电压策略；同时，针对风电场群风速不同造成的直流过电压问题提出双端直流电压协同控制；针对海上汇集系统故障提出一种双端CSC协同旁通与风机耗能装置相配合的故障穿越策略；最后，在PSCAD中对方案进行仿真验证，结果验证了基于FFM-CSC的中频分布式远海风电直流输电系统及其控制策略的有效性。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "远海风电"
+      },
+      {
+        "en_name": "",
+        "ch_name": "电流源换流器"
+      },
+      {
+        "en_name": "",
+        "ch_name": "中频分布式"
+      },
+      {
+        "en_name": "",
+        "ch_name": "自同步"
+      },
+      {
+        "en_name": "",
+        "ch_name": "协同旁通"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "TM4",
+        "clc_name": "变压器、变流器及电抗器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM4 变压器、变流器及电抗器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM4"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "变压器、变流器及电抗器"
+        ],
+        "rag_entry_id": 9574,
+        "rank": 2
+      },
+      {
+        "clc_code": "TK83",
+        "clc_name": "风力机械和设备",
+        "classification_path": "T 工业技术 > TK 能源与动力工程 > TK8 风能、风力机械 > TK83 风力机械和设备",
+        "path_codes": [
+          "T",
+          "TK",
+          "TK8",
+          "TK83"
+        ],
+        "path_names": [
+          "工业技术",
+          "能源与动力工程",
+          "风能、风力机械",
+          "风力机械和设备"
+        ],
+        "rag_entry_id": 9494,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "主场景是远海风电直流输电系统，换流器属于该系统的核心设备但不另列跨学科辅分类。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 36,
+    "ch_name": "湖南武陵山片区农民收入增长及演变特征的县际差异",
+    "ch_abstract": "以湖南武陵山片区37县市区为样本,应用偏离—份额分析法对各县市区2000—2011年农民收入增长及其演变特征进行了探讨。研究发现,湖南武陵山片区农民收入水平整体低于全国平均水平且差距扩大,但收入结构的演变趋势与全国大体一致;少数市辖区、县级市及经济发达县市农民收入增长较快,在四种增长类型中,快速增长和滞后增长型县市区较少,而结构优势和竞争优势推动型县市区较多;相对于2000—2006年,2006—2011年湖南武陵山片区各县市区农民收入增速明显加快,且收入水平和收入结构分异、差距扩大趋势更加明显,除快速增长型以外,其他三种类型的县市区在空间上趋于同类集聚;工资性收入、财产性收入增长差异对各县市区收入增长差异的贡献较大。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "农民收入"
+      },
+      {
+        "en_name": "",
+        "ch_name": "演变特征"
+      },
+      {
+        "en_name": "",
+        "ch_name": "县际差异"
+      },
+      {
+        "en_name": "",
+        "ch_name": "湖南武陵山片区"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F323.8",
+        "clc_name": "农业收入与分配",
+        "classification_path": "F 经济 > F3 农业经济 > F32 中国农业经济 > F323 农业经济建设与发展 > F323.8 农业收入与分配",
+        "path_codes": [
+          "F",
+          "F3",
+          "F32",
+          "F323",
+          "F323.8"
+        ],
+        "path_names": [
+          "经济",
+          "农业经济",
+          "中国农业经济",
+          "农业经济建设与发展",
+          "农业收入与分配"
+        ],
+        "rag_entry_id": 3052,
+        "rank": 1
+      },
+      {
+        "clc_code": "F126.2",
+        "clc_name": "人民收入与家计调查",
+        "classification_path": "F 经济 > F1 世界各国经济概况、经济史、经济地理 > F12 中国经济 > F126 人民生活状况 > F126.2 人民收入与家计调查",
+        "path_codes": [
+          "F",
+          "F1",
+          "F12",
+          "F126",
+          "F126.2"
+        ],
+        "path_names": [
+          "经济",
+          "世界各国经济概况、经济史、经济地理",
+          "中国经济",
+          "人民生活状况",
+          "人民收入与家计调查"
+        ],
+        "rag_entry_id": 2630,
+        "rank": 2
+      },
+      {
+        "clc_code": "F061.5",
+        "clc_name": "区域经济学",
+        "classification_path": "F 经济 > F0 经济学 > F06 经济学分支科学 > F061.5 区域经济学",
+        "path_codes": [
+          "F",
+          "F0",
+          "F06",
+          "F061.5"
+        ],
+        "path_names": [
+          "经济",
+          "经济学",
+          "经济学分支科学",
+          "区域经济学"
+        ],
+        "rag_entry_id": 2481,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "F323.8",
+      "clc_name": "农业收入与分配",
+      "classification_path": "F 经济 > F3 农业经济 > F32 中国农业经济 > F323 农业经济建设与发展 > F323.8 农业收入与分配",
+      "path_codes": [
+        "F",
+        "F3",
+        "F32",
+        "F323",
+        "F323.8"
+      ],
+      "path_names": [
+        "经济",
+        "农业经济",
+        "中国农业经济",
+        "农业经济建设与发展",
+        "农业收入与分配"
+      ],
+      "rag_entry_id": 3052
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "研究核心是农民收入增长及县际差异，归入农业收入与分配。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 37,
+    "ch_name": "基于谐波检测的调相机失磁保护研究",
+    "ch_abstract": "首先对现有的调相机失磁保护进行分析，结果表明在系统低电压工况下调相机发生部分失磁故障，现有的失磁保护不能可靠动作，保护存在死区。通过研究调相机失磁后的励磁电流变化规律，得出调相机发生失磁故障后气隙合成磁势中含有高次谐波分量，将在定子绕组中产生对应的谐波电流。在此基础上，提出了一种基于谐波检测的调相机失磁保护方法。利用定子绕组中偶次谐波电流含量构建新的失磁保护策略，解决了系统低电压工况下失磁保护不能识别部分失磁故障的问题。最后，通过PSCAD/EMTDC建立了带有调相机的扎鲁特-青州±800 kV特高压直流输电模型，仿真结果验证了该方案的可行性。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "调相机"
+      },
+      {
+        "en_name": "",
+        "ch_name": "失磁保护"
+      },
+      {
+        "en_name": "",
+        "ch_name": "部分失磁"
+      },
+      {
+        "en_name": "",
+        "ch_name": "偶次谐波"
+      },
+      {
+        "en_name": "",
+        "ch_name": "谐波检测"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM3",
+        "clc_name": "电机",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM3 电机",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM3"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "电机"
+        ],
+        "rag_entry_id": 9573,
+        "rank": 1
+      },
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM93",
+        "clc_name": "电气测量技术及仪器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM8 高电压技术 > TM93 电气测量技术及仪器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM8",
+          "TM93"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "高电压技术",
+          "电气测量技术及仪器"
+        ],
+        "rag_entry_id": 9594,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM3",
+      "clc_name": "电机",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM3 电机",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM3"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "电机"
+      ],
+      "rag_entry_id": 9573
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "研究对象是调相机失磁保护，主分类归电机；保护分析仍属于电工技术体系。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 38,
+    "ch_name": "基于协同发展的长三角城市群空间格局研究",
+    "ch_abstract": "利用协同发展的相关理论,从长三角22城市之间的经济能级、经济联系以及产业协同发展三个方面对长三角城市群的空间格局进行研究,并提出了建设性的评论。研究发现,长三角区域正在逐渐从单一中心向多中心化模式转变,基本形成以上海为核心的圈层和以苏州、杭州、宁波、无锡、南京为次核心的多核心圈层结构,总体上可划分为上海凝聚团、南京凝聚团和杭甬凝聚团三大凝聚子团。研究认为,通过组团式协同实现\"多中心\"的城市空间格局是未来长三角城市群发展的必然趋势,助推整个城市群系统向更为有序的宏观自组织结构演化。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "城市群"
+      },
+      {
+        "en_name": "",
+        "ch_name": "协同发展"
+      },
+      {
+        "en_name": "",
+        "ch_name": "空间格局"
+      },
+      {
+        "en_name": "",
+        "ch_name": "长三角"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F061.5",
+        "clc_name": "区域经济学",
+        "classification_path": "F 经济 > F0 经济学 > F06 经济学分支科学 > F061.5 区域经济学",
+        "path_codes": [
+          "F",
+          "F0",
+          "F06",
+          "F061.5"
+        ],
+        "path_names": [
+          "经济",
+          "经济学",
+          "经济学分支科学",
+          "区域经济学"
+        ],
+        "rag_entry_id": 2481,
+        "rank": 1
+      },
+      {
+        "clc_code": "F291.1",
+        "clc_name": "城市发展道路、城市化",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F291 城镇的形成与发展 > F291.1 城市发展道路、城市化",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F291",
+          "F291.1"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城镇的形成与发展",
+          "城市发展道路、城市化"
+        ],
+        "rag_entry_id": 2907,
+        "rank": 2
+      },
+      {
+        "clc_code": "F290",
+        "clc_name": "城市经济理论",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F290 城市经济理论",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F290"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城市经济理论"
+        ],
+        "rag_entry_id": 2905,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "F061.5",
+      "clc_name": "区域经济学",
+      "classification_path": "F 经济 > F0 经济学 > F06 经济学分支科学 > F061.5 区域经济学",
+      "path_codes": [
+        "F",
+        "F0",
+        "F06",
+        "F061.5"
+      ],
+      "path_names": [
+        "经济",
+        "经济学",
+        "经济学分支科学",
+        "区域经济学"
+      ],
+      "rag_entry_id": 2481
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "研究长三角城市群协同发展的空间格局，主分类归区域经济学。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 39,
+    "ch_name": "黄河上游地区市域数字经济与绿色发展耦合协调度及提升路径",
+    "ch_abstract": "“数字中国”与“美丽中国”建设背景下，解析数字经济与绿色发展的耦合协调关系是推进区域高质量发展的重要议题。文章以黄河上游17个地级市为研究区，基于熵权法、耦合协调度模型与障碍度模型，剖析2010—2019年数字经济与绿色发展耦合协调关系时空演变特征及障碍因子，进而提炼不同类型区数字经济与绿色发展耦合协调发展的提升路径。结果表明：(1)研究期内耦合协调度呈“V”字形态势，形成北部优于中、南部的空间格局，且多中心趋势明显。(2)影响数字经济与绿色发展2个子系统耦合协调发展的突出问题集中于产业基础设施建设、技术与人才的投入以及对人民生活和环境的影响。(3)研究区耦合协调发展类型区可划分为高数字化—高绿色化区（H-H型）、高数字化—低绿色化区（H-L型）、低数字化—高绿色化区（L-H型）、低数字化—低绿色化区（L-L型）4类。(4)H-H型应以城市群或中心城市为发展核心，H-L型应以主导产业转型升级为目标导向，L-H型应以健全数字经济产业基础为发展手段，L-L型应以吸引外部投资与承接产业转移为发展关键。",
+    "keywords": [
+      {
+        "en_name": "The upper reaches of the Yellow River",
+        "ch_name": "黄河上游地区"
+      },
+      {
+        "en_name": "digital economy",
+        "ch_name": "数字经济"
+      },
+      {
+        "en_name": "green development",
+        "ch_name": "绿色发展"
+      },
+      {
+        "en_name": "Coupling coordination degree",
+        "ch_name": "耦合协调度"
+      },
+      {
+        "en_name": "Urban agglomeration and central city",
+        "ch_name": "城市群与中心城市"
+      },
+      {
+        "en_name": "infrastructure",
+        "ch_name": "基础设施"
+      },
+      {
+        "en_name": "Talent",
+        "ch_name": "人才"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F061.5",
+        "clc_name": "区域经济学",
+        "classification_path": "F 经济 > F0 经济学 > F06 经济学分支科学 > F061.5 区域经济学",
+        "path_codes": [
+          "F",
+          "F0",
+          "F06",
+          "F061.5"
+        ],
+        "path_names": [
+          "经济",
+          "经济学",
+          "经济学分支科学",
+          "区域经济学"
+        ],
+        "rag_entry_id": 2481,
+        "rank": 1
+      },
+      {
+        "clc_code": "X22",
+        "clc_name": "环境与发展",
+        "classification_path": "X 环境科学、安全科学 > X2 环境保护管理 > X22 环境与发展",
+        "path_codes": [
+          "X",
+          "X2",
+          "X22"
+        ],
+        "path_names": [
+          "环境科学、安全科学",
+          "环境保护管理",
+          "环境与发展"
+        ],
+        "rag_entry_id": 12250,
+        "rank": 2
+      },
+      {
+        "clc_code": "F49",
+        "clc_name": "信息产业经济（总论）",
+        "classification_path": "F 经济 > F4 工业经济 > F49 信息产业经济（总论）",
+        "path_codes": [
+          "F",
+          "F4",
+          "F49"
+        ],
+        "path_names": [
+          "经济",
+          "工业经济",
+          "信息产业经济（总论）"
+        ],
+        "rag_entry_id": 3264,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F061.5",
+      "clc_name": "区域经济学",
+      "classification_path": "F 经济 > F0 经济学 > F06 经济学分支科学 > F061.5 区域经济学",
+      "path_codes": [
+        "F",
+        "F0",
+        "F06",
+        "F061.5"
+      ],
+      "path_names": [
+        "经济",
+        "经济学",
+        "经济学分支科学",
+        "区域经济学"
+      ],
+      "rag_entry_id": 2481
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "X22",
+        "clc_name": "环境与发展",
+        "classification_path": "X 环境科学、安全科学 > X2 环境保护管理 > X22 环境与发展",
+        "path_codes": [
+          "X",
+          "X2",
+          "X22"
+        ],
+        "path_names": [
+          "环境科学、安全科学",
+          "环境保护管理",
+          "环境与发展"
+        ],
+        "rag_entry_id": 12250
+      }
+    ],
+    "selection_reason": "研究黄河上游城市数字经济与绿色发展的区域耦合，区域经济为主，环境与发展为辅助。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 40,
+    "ch_name": "面向区域调频辅助服务市场的南方电网统一调频控制区设计与策略优化",
+    "ch_abstract": "为深入贯彻落实电力体制改革要求，南方电网公司积极推动南方区域调频辅助服务市场建设。设计了面向区域调频辅助服务市场的南方电网统一调频控制架构，通过技术和管理手段相结合，解决了区域电网多调度机构自动发电控制(automaticgenerationcontrol,AGC)协调控制、与区域调频市场衔接、电网运行调峰调频解耦、省区间联络线控制等问题。为兼顾电网运行安全与市场公平，对统一调频控制策略及参数进行了优化，以满足大扰动下电网频率恢复的控制要求。运行结果表明，面向区域调频辅助服务市场的统一调频控制模式可有效提高电网的频率质量，加快大扰动下电网频率的恢复速度，能够充分发挥南方电网大平台对调频资源的优化配置作用。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "区域调频辅助服务市场"
+      },
+      {
+        "en_name": "",
+        "ch_name": "统一调频控制"
+      },
+      {
+        "en_name": "",
+        "ch_name": "AGC协调控制"
+      },
+      {
+        "en_name": "",
+        "ch_name": "调峰调频解耦"
+      },
+      {
+        "en_name": "",
+        "ch_name": "省区间联络线控制"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "F407.2",
+        "clc_name": "能源工业、动力工业",
+        "classification_path": "F 经济 > F4 工业经济 > F40 工业经济理论 > F407 工业部门经济 > F407.2 能源工业、动力工业",
+        "path_codes": [
+          "F",
+          "F4",
+          "F40",
+          "F407",
+          "F407.2"
+        ],
+        "path_names": [
+          "经济",
+          "工业经济",
+          "工业经济理论",
+          "工业部门经济",
+          "能源工业、动力工业"
+        ],
+        "rag_entry_id": 3148,
+        "rank": 2
+      },
+      {
+        "clc_code": "F206",
+        "clc_name": "能源管理",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F20 国民经济管理 > F206 能源管理",
+        "path_codes": [
+          "F",
+          "F2",
+          "F20",
+          "F206"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "国民经济管理",
+          "能源管理"
+        ],
+        "rag_entry_id": 2656,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "F407.2",
+        "clc_name": "能源工业、动力工业",
+        "classification_path": "F 经济 > F4 工业经济 > F40 工业经济理论 > F407 工业部门经济 > F407.2 能源工业、动力工业",
+        "path_codes": [
+          "F",
+          "F4",
+          "F40",
+          "F407",
+          "F407.2"
+        ],
+        "path_names": [
+          "经济",
+          "工业经济",
+          "工业经济理论",
+          "工业部门经济",
+          "能源工业、动力工业"
+        ],
+        "rag_entry_id": 3148
+      }
+    ],
+    "selection_reason": "主任务是区域电网统一调频控制，调频辅助服务市场属于能源工业经济辅助主题。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 41,
+    "ch_name": "MMC-HVDC输电系统中高频阻抗建模及谐振机理分析",
+    "ch_abstract": "目前对基于模块化多电平换流器的高压直流(modular multilevelconverterbasedhighvoltagedirectcurrent,MMC-HVDC)输电系统的中高频谐振机理尚缺乏系统性的研究，因此，基于分块化阻抗建模方法和谐波阻抗分析法系统地揭示了MMC-HVDC输电系统的中高频谐振机理。首先，基于分块化阻抗建模方法，将MMC-HVDC输电系统进行分块，通过对交直流系统电路及MMC控制系统的分析，分别建立了MMC交、直流侧等效阻抗模型，同时根据线路的分布参数特性建立了输电线路阻抗模型，形成了MMC-HVDC输电系统等效模型；其次，通过研究控制环节和参数对MMC等效阻抗的影响，获得了主要的影响因素；然后将谐振分为有源谐振和无源谐振，从而系统地揭示了MMC-HVDC输电系统的谐振机理；最后，通过仿真验证了所建模型及谐振分析方法的有效性和正确性。分析及仿真结果表明：在中高频段，MMC直流侧系统仅可发生有源谐振，谐振频率主要与直流线路参数有关；MMC交流侧系统可发生无源和有源谐振，无源谐振主要受MMC交流侧阻抗负阻尼特性的影响，而有源谐振与MMC和电网参数均相关。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "模块化多电平换流器"
+      },
+      {
+        "en_name": "",
+        "ch_name": "中高频谐振"
+      },
+      {
+        "en_name": "",
+        "ch_name": "分块阻抗建模"
+      },
+      {
+        "en_name": "",
+        "ch_name": "阻抗分析法"
+      },
+      {
+        "en_name": "",
+        "ch_name": "谐振机理"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "TM4",
+        "clc_name": "变压器、变流器及电抗器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM4 变压器、变流器及电抗器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM4"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "变压器、变流器及电抗器"
+        ],
+        "rag_entry_id": 9574,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM13",
+        "clc_name": "电路理论",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM1 电工基础理论 > TM13 电路理论",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM1",
+          "TM13"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "电工基础理论",
+          "电路理论"
+        ],
+        "rag_entry_id": 9569,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "研究MMC-HVDC输电系统的阻抗和谐振机理，主分类归输配电工程、电力网及电力系统。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 42,
+    "ch_name": "基于DBSCAN的智能变电站交流采样异常实时识别算法",
+    "ch_abstract": "新一代智能变电站使用采集执行单元统一采样，后续设备都将依赖此装置数据，因此该装置采样环节产生的异常数据会影响变电站保护、测控等多个系统的正常运行。如何高效地识别这些异常数据是电力系统采样中至关重要的部分，也是智能变电站安全性和稳定性的基础。传统的异常数据检测方法主要设计用于处理低采样率场景下偶尔出现的异常采样点。随着智能变电站采样率的提高和电磁干扰问题的加剧，采样时连续多个采样点同时异常成为普遍现象。这使得原有识别算法准确率降低，而未被识别的异常数据可能会造成后续测控装置精度降低甚至保护装置误动。针对传统检测方法的不足，提出基于密度的噪声空间聚类(density-basedspatialclusteringof applications with noise, DBSCAN)算法的交流采样异常数据识别实时算法。该算法利用异常数据与正常数据的空间密度差异，有效区分出密度较低的异常采样点，从而实现智能变电站异常采样数据的识别。相比于传统方法，所提方法在采样异常数据识别上具有更准确的结果。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "智能变电站"
+      },
+      {
+        "en_name": "",
+        "ch_name": "采样"
+      },
+      {
+        "en_name": "",
+        "ch_name": "异常数据"
+      },
+      {
+        "en_name": "DBSCAN算法",
+        "ch_name": ""
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM93",
+        "clc_name": "电气测量技术及仪器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM8 高电压技术 > TM93 电气测量技术及仪器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM8",
+          "TM93"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "高电压技术",
+          "电气测量技术及仪器"
+        ],
+        "rag_entry_id": 9594,
+        "rank": 1
+      },
+      {
+        "clc_code": "TP181",
+        "clc_name": "自动推理、机器学习",
+        "classification_path": "T 工业技术 > TP 自动化技术、计算机技术 > TP1 自动化基础理论 > TP18 人工智能理论 > TP181 自动推理、机器学习",
+        "path_codes": [
+          "T",
+          "TP",
+          "TP1",
+          "TP18",
+          "TP181"
+        ],
+        "path_names": [
+          "工业技术",
+          "自动化技术、计算机技术",
+          "自动化基础理论",
+          "人工智能理论",
+          "自动推理、机器学习"
+        ],
+        "rag_entry_id": 9647,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "TM93",
+      "clc_name": "电气测量技术及仪器",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM8 高电压技术 > TM93 电气测量技术及仪器",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM8",
+        "TM93"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "高电压技术",
+        "电气测量技术及仪器"
+      ],
+      "rag_entry_id": 9594
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "TP181",
+        "clc_name": "自动推理、机器学习",
+        "classification_path": "T 工业技术 > TP 自动化技术、计算机技术 > TP1 自动化基础理论 > TP18 人工智能理论 > TP181 自动推理、机器学习",
+        "path_codes": [
+          "T",
+          "TP",
+          "TP1",
+          "TP18",
+          "TP181"
+        ],
+        "path_names": [
+          "工业技术",
+          "自动化技术、计算机技术",
+          "自动化基础理论",
+          "人工智能理论",
+          "自动推理、机器学习"
+        ],
+        "rag_entry_id": 9647
+      }
+    ],
+    "selection_reason": "主场景是智能变电站交流采样异常识别，DBSCAN聚类为辅助机器学习方法。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 43,
+    "ch_name": "西部河谷城市空间结构对碳排放量的影响",
+    "ch_abstract": "科学认知城市空间结构对碳排放的影响，对明晰城市碳减排路径具有重要意义。文章选择组团结构鲜明的34个西部河谷城市为研究对象，采用2010—2020年的多元经济社会数据，在解析其碳排放量与空间结构分布特征的基础上，借助固定效应多元回归分析模型探究城市空间结构对碳排放量的影响。研究发现：(1)城市碳排放总量和均量均呈现出南北高而中间低的分布格局，11年间总量与均量变化的差异性均较大。(2)基于空间集中与集聚指数可将城市空间结构划分为4种类型，11年内大部分城市的空间结构相对保持稳定，但其空间分布具有明显的地域差异性。(3)案例对比、基准回归和稳健检验分析均表明，紧凑（多中心）空间结构有利于降低西部河谷城市的碳排放总量、人均碳排放量和地均碳排放量。但异质性检验分析得出，紧凑型空间结构仅有利于西南河谷城市和用地规模中等城市的碳减排，紧凑多中心空间结构仅有利于人口规模小的城市降低碳排放量。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "城市空间结构"
+      },
+      {
+        "en_name": "",
+        "ch_name": "碳排放量"
+      },
+      {
+        "en_name": "",
+        "ch_name": "集聚"
+      },
+      {
+        "en_name": "",
+        "ch_name": "紧凑多中心空间结构"
+      },
+      {
+        "en_name": "",
+        "ch_name": "人口规模"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "F290",
+        "clc_name": "城市经济理论",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F290 城市经济理论",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F290"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城市经济理论"
+        ],
+        "rag_entry_id": 2905,
+        "rank": 1
+      },
+      {
+        "clc_code": "X22",
+        "clc_name": "环境与发展",
+        "classification_path": "X 环境科学、安全科学 > X2 环境保护管理 > X22 环境与发展",
+        "path_codes": [
+          "X",
+          "X2",
+          "X22"
+        ],
+        "path_names": [
+          "环境科学、安全科学",
+          "环境保护管理",
+          "环境与发展"
+        ],
+        "rag_entry_id": 12250,
+        "rank": 2
+      },
+      {
+        "clc_code": "F291.1",
+        "clc_name": "城市发展道路、城市化",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F291 城镇的形成与发展 > F291.1 城市发展道路、城市化",
+        "path_codes": [
+          "F",
+          "F2",
+          "F29",
+          "F291",
+          "F291.1"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "城市与市政经济",
+          "城镇的形成与发展",
+          "城市发展道路、城市化"
+        ],
+        "rag_entry_id": 2907,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "F290",
+      "clc_name": "城市经济理论",
+      "classification_path": "F 经济 > F2 经济计划与管理 > F29 城市与市政经济 > F290 城市经济理论",
+      "path_codes": [
+        "F",
+        "F2",
+        "F29",
+        "F290"
+      ],
+      "path_names": [
+        "经济",
+        "经济计划与管理",
+        "城市与市政经济",
+        "城市经济理论"
+      ],
+      "rag_entry_id": 2905
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "X22",
+        "clc_name": "环境与发展",
+        "classification_path": "X 环境科学、安全科学 > X2 环境保护管理 > X22 环境与发展",
+        "path_codes": [
+          "X",
+          "X2",
+          "X22"
+        ],
+        "path_names": [
+          "环境科学、安全科学",
+          "环境保护管理",
+          "环境与发展"
+        ],
+        "rag_entry_id": 12250
+      }
+    ],
+    "selection_reason": "研究城市空间结构及其碳排放效应，城市经济理论为主，环境与发展为辅助。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 44,
+    "ch_name": "生态工业园区述评",
+    "ch_abstract": "生态工业园区 (EIP)是 2 1世纪新兴的工业组织模式 ,自提出后受到学术界和实业界的广泛关注。它强调园区成员的联系、合作和参与 ,通过物质、能量、信息等交流形成各成员相互受益的网络 ,并最终实现经济、社会和环境的协调共进。本文对EIP的理念和方法进行分析和述评 ,并提出我国工业组织改革的建议。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "生态工业园区"
+      },
+      {
+        "en_name": "",
+        "ch_name": "废物流动"
+      },
+      {
+        "en_name": "",
+        "ch_name": "网络"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "X38",
+        "clc_name": "环境与清洁生产（无污染技术）",
+        "classification_path": "X 环境科学、安全科学 > X3 环境综合研究 > X38 环境与清洁生产（无污染技术）",
+        "path_codes": [
+          "X",
+          "X3",
+          "X38"
+        ],
+        "path_names": [
+          "环境科学、安全科学",
+          "环境综合研究",
+          "环境与清洁生产（无污染技术）"
+        ],
+        "rag_entry_id": 12259,
+        "rank": 1
+      },
+      {
+        "clc_code": "F403.3",
+        "clc_name": "工业生产布局与资源利用",
+        "classification_path": "F 经济 > F4 工业经济 > F40 工业经济理论 > F403 工业建设与发展 > F403.3 工业生产布局与资源利用",
+        "path_codes": [
+          "F",
+          "F4",
+          "F40",
+          "F403",
+          "F403.3"
+        ],
+        "path_names": [
+          "经济",
+          "工业经济",
+          "工业经济理论",
+          "工业建设与发展",
+          "工业生产布局与资源利用"
+        ],
+        "rag_entry_id": 3116,
+        "rank": 2
+      },
+      {
+        "clc_code": "F424.1",
+        "clc_name": "工业区域规划与生产布局",
+        "classification_path": "F 经济 > F4 工业经济 > F42 中国工业经济 > F424 工业建设与发展 > F424.1 工业区域规划与生产布局",
+        "path_codes": [
+          "F",
+          "F4",
+          "F42",
+          "F424",
+          "F424.1"
+        ],
+        "path_names": [
+          "经济",
+          "工业经济",
+          "中国工业经济",
+          "工业建设与发展",
+          "工业区域规划与生产布局"
+        ],
+        "rag_entry_id": 3247,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "X38",
+      "clc_name": "环境与清洁生产（无污染技术）",
+      "classification_path": "X 环境科学、安全科学 > X3 环境综合研究 > X38 环境与清洁生产（无污染技术）",
+      "path_codes": [
+        "X",
+        "X3",
+        "X38"
+      ],
+      "path_names": [
+        "环境科学、安全科学",
+        "环境综合研究",
+        "环境与清洁生产（无污染技术）"
+      ],
+      "rag_entry_id": 12259
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "F403.3",
+        "clc_name": "工业生产布局与资源利用",
+        "classification_path": "F 经济 > F4 工业经济 > F40 工业经济理论 > F403 工业建设与发展 > F403.3 工业生产布局与资源利用",
+        "path_codes": [
+          "F",
+          "F4",
+          "F40",
+          "F403",
+          "F403.3"
+        ],
+        "path_names": [
+          "经济",
+          "工业经济",
+          "工业经济理论",
+          "工业建设与发展",
+          "工业生产布局与资源利用"
+        ],
+        "rag_entry_id": 3116
+      }
+    ],
+    "selection_reason": "生态工业园强调工业系统的资源循环与清洁生产，环境与清洁生产为主，工业布局组织为辅助。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 45,
+    "ch_name": "非晶合金材料发展趋势及启示",
+    "ch_abstract": "金属材料的发展与人类文明和进步息息相关。非晶合金材料是一类原子结构长程无序，具有独特优异性能的新型金属材料。近年来，非晶合金材料的研发、相关科学问题的研究、在高新技术领域的应用得到快速发展，并对金属材料的设计和研发、结构材料、绿色节能材料、磁性材料、催化材料、信息材料等领域产生深刻的影响。为此，文章在回顾非晶合金材料研究和研发历史过程的基础上，分析了当前其学科的前沿科学问题、发展方向，以及我国在该领域发展的问题、机遇和挑战，并提出相应的启示和建议，以期为加快新金属材料的发展，特别是在高新技术领域的应用提供管窥之见。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "非晶合金材料"
+      },
+      {
+        "en_name": "",
+        "ch_name": "进展"
+      },
+      {
+        "en_name": "",
+        "ch_name": "科学问题"
+      },
+      {
+        "en_name": "",
+        "ch_name": "应用"
+      },
+      {
+        "en_name": "",
+        "ch_name": "启示"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TG13",
+        "clc_name": "合金学与各种性质合金",
+        "classification_path": "T 工业技术 > TG 金属学与金属工艺 > TG1 金属学与热处理 > TG13 合金学与各种性质合金",
+        "path_codes": [
+          "T",
+          "TG",
+          "TG1",
+          "TG13"
+        ],
+        "path_names": [
+          "工业技术",
+          "金属学与金属工艺",
+          "金属学与热处理",
+          "合金学与各种性质合金"
+        ],
+        "rag_entry_id": 9281,
+        "rank": 1
+      },
+      {
+        "clc_code": "TB31",
+        "clc_name": "金属材料",
+        "classification_path": "T 工业技术 > TB 一般工业技术 > TB3 工程材料学 > TB31 金属材料",
+        "path_codes": [
+          "T",
+          "TB",
+          "TB3",
+          "TB31"
+        ],
+        "path_names": [
+          "工业技术",
+          "一般工业技术",
+          "工程材料学",
+          "金属材料"
+        ],
+        "rag_entry_id": 7891,
+        "rank": 2
+      },
+      {
+        "clc_code": "TB303",
+        "clc_name": "材料结构及物理性质",
+        "classification_path": "T 工业技术 > TB 一般工业技术 > TB3 工程材料学 > TB303 材料结构及物理性质",
+        "path_codes": [
+          "T",
+          "TB",
+          "TB3",
+          "TB303"
+        ],
+        "path_names": [
+          "工业技术",
+          "一般工业技术",
+          "工程材料学",
+          "材料结构及物理性质"
+        ],
+        "rag_entry_id": 7888,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TG13",
+      "clc_name": "合金学与各种性质合金",
+      "classification_path": "T 工业技术 > TG 金属学与金属工艺 > TG1 金属学与热处理 > TG13 合金学与各种性质合金",
+      "path_codes": [
+        "T",
+        "TG",
+        "TG1",
+        "TG13"
+      ],
+      "path_names": [
+        "工业技术",
+        "金属学与金属工艺",
+        "金属学与热处理",
+        "合金学与各种性质合金"
+      ],
+      "rag_entry_id": 9281
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "研究非晶合金材料的科学问题、发展和应用，主分类归合金学与各种性质合金。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 46,
+    "ch_name": "直流微电网多源并联自主均流控制策略",
+    "ch_abstract": "实现微源间负荷电流的精确分配及母线电压的无差调节是直流微电网重要的控制目标,但由于线路阻抗及低速通信的存在,传统下垂控制很难同时满足均流及稳定性的要求。提出一种基于低频低幅值交流信号注入的多源并联自主均流控制策略,在各变流器直流输出上注入交流小信号,并使其频率与输出直流电流产生频率–电流下垂特性,利用产生的无功功率环流调节各变流器输出直流电压,进而在反馈机制下,实现多变流器间的并联控制及负荷电流的精确分配;在此基础上,利用限幅及负阻抗环节,提出一种改进的母线电压补偿方法,进一步降低了由于线路阻抗造成的电压跌落,该方法无需互联通信线,无需改变硬件结构,易于实现;最后利用小信号建模,分析了控制策略的稳定性和动态性能。仿真和实验验证了所提方法的可行性和有效性。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "直流微电网"
+      },
+      {
+        "en_name": "",
+        "ch_name": "均流控制"
+      },
+      {
+        "en_name": "",
+        "ch_name": "注入交流电压"
+      },
+      {
+        "en_name": "",
+        "ch_name": "母线电压调节"
+      },
+      {
+        "en_name": "",
+        "ch_name": "虚拟负阻抗"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "TM4",
+        "clc_name": "变压器、变流器及电抗器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM4 变压器、变流器及电抗器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM4"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "变压器、变流器及电抗器"
+        ],
+        "rag_entry_id": 9574,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM13",
+        "clc_name": "电路理论",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM1 电工基础理论 > TM13 电路理论",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM1",
+          "TM13"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "电工基础理论",
+          "电路理论"
+        ],
+        "rag_entry_id": 9569,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "研究直流微电网多源并联控制，主分类归输配电工程、电力网及电力系统。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 47,
+    "ch_name": "科技工作者创造了中国科技发展70年的辉煌",
+    "ch_abstract": "世界上任何创举,人永远是主导性的第一要素。中国科技发展70年的辉煌也不例外,它正是一代又一代中国科技工作者前赴后继、不懈奋斗的结果。早期回国的许多爱国科学家中,如:李四光,为新中国脱掉了贫油国的帽子;赵忠尧、王淦昌奠定和开拓了中国的核科学;华罗庚开辟了中国近代数学;王应睐领导组织了新中国科学家领先合成蛋白质和核酸。新中国成立前后,以钱学森、郭永怀、邓稼先、",
+    "keywords": [],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "G316",
+        "clc_name": "科学工作者",
+        "classification_path": "G 文化、科学、教育、体育 > G2 信息与知识传播 > G31 科学研究工作 > G316 科学工作者",
+        "path_codes": [
+          "G",
+          "G2",
+          "G31",
+          "G316"
+        ],
+        "path_names": [
+          "文化、科学、教育、体育",
+          "信息与知识传播",
+          "科学研究工作",
+          "科学工作者"
+        ],
+        "rag_entry_id": 4327,
+        "rank": 1
+      },
+      {
+        "clc_code": "G322.9",
+        "clc_name": "科学事业史",
+        "classification_path": "G 文化、科学、教育、体育 > G2 信息与知识传播 > G32 世界各国科学研究事业 > G322 中国 > G322.9 科学事业史",
+        "path_codes": [
+          "G",
+          "G2",
+          "G32",
+          "G322",
+          "G322.9"
+        ],
+        "path_names": [
+          "文化、科学、教育、体育",
+          "信息与知识传播",
+          "世界各国科学研究事业",
+          "中国",
+          "科学事业史"
+        ],
+        "rag_entry_id": 4346,
+        "rank": 2
+      },
+      {
+        "clc_code": "G301",
+        "clc_name": "科学学",
+        "classification_path": "G 文化、科学、教育、体育 > G2 信息与知识传播 > G27 档案学、档案事业 > G301 科学学",
+        "path_codes": [
+          "G",
+          "G2",
+          "G27",
+          "G301"
+        ],
+        "path_names": [
+          "文化、科学、教育、体育",
+          "信息与知识传播",
+          "档案学、档案事业",
+          "科学学"
+        ],
+        "rag_entry_id": 4311,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": false,
+    "main_classification": {
+      "clc_code": "G316",
+      "clc_name": "科学工作者",
+      "classification_path": "G 文化、科学、教育、体育 > G2 信息与知识传播 > G31 科学研究工作 > G316 科学工作者",
+      "path_codes": [
+        "G",
+        "G2",
+        "G31",
+        "G316"
+      ],
+      "path_names": [
+        "文化、科学、教育、体育",
+        "信息与知识传播",
+        "科学研究工作",
+        "科学工作者"
+      ],
+      "rag_entry_id": 4327
+    },
+    "auxiliary_classifications": [],
+    "selection_reason": "文章主题是中国科技工作者及其历史贡献，主分类归科学工作者。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 48,
+    "ch_name": "基于行波全频带特征的配电网故障行波波头标定方法",
+    "ch_abstract": "针对配电网行波波头标定方法易受噪声、波头畸变影响的问题，提出一种基于行波全频带特征的配电网故障行波波头标定方法。首先，根据行波高频段分量包含奇异点特征、行波中低频段分量不受噪声干扰的特点，提出利用行波全频带分量特征来标定行波，并分析了不同工况下利用行波全频带分量特征标定波头的优势。然后，设计并搭建基于目标检测模型的卷积神经网络(convolutional neural network, CNN)，以行波全频带分量作为特征输入量，利用一维卷积核提取行波信号的波头特征。最后，结合特征金字塔网络与路径聚合网络结构，融合行波波头高中低频带特征，实现行波到达时刻的准确标定。与传统方法相比，所提方法在短线路、强噪声情况下具有较强的适应性，并且在微弱故障行波场景下也能够实现波头标定，具有良好的现场应用效果。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "配电网"
+      },
+      {
+        "en_name": "",
+        "ch_name": "波头标定"
+      },
+      {
+        "en_name": "",
+        "ch_name": "行波全频带"
+      },
+      {
+        "en_name": "",
+        "ch_name": "目标检测模型"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "TP183",
+        "clc_name": "人工神经网络与计算",
+        "classification_path": "T 工业技术 > TP 自动化技术、计算机技术 > TP1 自动化基础理论 > TP18 人工智能理论 > TP183 人工神经网络与计算",
+        "path_codes": [
+          "T",
+          "TP",
+          "TP1",
+          "TP18",
+          "TP183"
+        ],
+        "path_names": [
+          "工业技术",
+          "自动化技术、计算机技术",
+          "自动化基础理论",
+          "人工智能理论",
+          "人工神经网络与计算"
+        ],
+        "rag_entry_id": 9649,
+        "rank": 2
+      },
+      {
+        "clc_code": "TM93",
+        "clc_name": "电气测量技术及仪器",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM8 高电压技术 > TM93 电气测量技术及仪器",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM8",
+          "TM93"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "高电压技术",
+          "电气测量技术及仪器"
+        ],
+        "rag_entry_id": 9594,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "TP183",
+        "clc_name": "人工神经网络与计算",
+        "classification_path": "T 工业技术 > TP 自动化技术、计算机技术 > TP1 自动化基础理论 > TP18 人工智能理论 > TP183 人工神经网络与计算",
+        "path_codes": [
+          "T",
+          "TP",
+          "TP1",
+          "TP18",
+          "TP183"
+        ],
+        "path_names": [
+          "工业技术",
+          "自动化技术、计算机技术",
+          "自动化基础理论",
+          "人工智能理论",
+          "人工神经网络与计算"
+        ],
+        "rag_entry_id": 9649
+      }
+    ],
+    "selection_reason": "应用场景是配电网故障行波波头标定，卷积神经网络目标检测为辅助方法。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 49,
+    "ch_name": "考虑广义储能的微电网主动能量管理优化算法研究",
+    "ch_abstract": "构建新型电力系统是促进能源转型和实现碳达峰、碳中和的重要支撑，微电网技术是构建新型电力系统的重要环节。如何提高微电网可再生能源的消纳水平和应对其不确定性具有重要研究意义。该文强调微电网的“主动”能量管理。首先，从势博弈视角，建立微电网可再生能源局中人、广义储能局中人和柴油机组局中人模型；然后，构建广义储能模型，让作为“虚拟储能”的柔性负荷和储能单元协调运行，在分时电价激励下制定柔性负荷的详细调度计划并参与优化；最后，针对可再生能源的波动性和间歇性，引入条件风险价值(conditional value at risk,CVaR)模型，量化评估风光不确定性所导致的风险成本，以追求风险和收益的平衡。仿真结果表明，所提出的方法在保证微电网个体的自主性和自利性的基础上，可有效改善柔性负荷用电曲线，所提出的CVaR模型具有较好的鲁棒性，可为可再生能源运营商在收益和风险之间的平衡提供参考方案。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "微电网"
+      },
+      {
+        "en_name": "",
+        "ch_name": "广义储能"
+      },
+      {
+        "en_name": "",
+        "ch_name": "条件风险价值模型"
+      },
+      {
+        "en_name": "",
+        "ch_name": "势博弈"
+      },
+      {
+        "en_name": "",
+        "ch_name": "主动能量管理"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "O225",
+        "clc_name": "对策论（博弈论）",
+        "classification_path": "O 数理科学和化学 > O1 数学 > O22 运筹学 > O225 对策论（博弈论）",
+        "path_codes": [
+          "O",
+          "O1",
+          "O22",
+          "O225"
+        ],
+        "path_names": [
+          "数理科学和化学",
+          "数学",
+          "运筹学",
+          "对策论（博弈论）"
+        ],
+        "rag_entry_id": 6203,
+        "rank": 2
+      },
+      {
+        "clc_code": "F206",
+        "clc_name": "能源管理",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F20 国民经济管理 > F206 能源管理",
+        "path_codes": [
+          "F",
+          "F2",
+          "F20",
+          "F206"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "国民经济管理",
+          "能源管理"
+        ],
+        "rag_entry_id": 2656,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "O225",
+        "clc_name": "对策论（博弈论）",
+        "classification_path": "O 数理科学和化学 > O1 数学 > O22 运筹学 > O225 对策论（博弈论）",
+        "path_codes": [
+          "O",
+          "O1",
+          "O22",
+          "O225"
+        ],
+        "path_names": [
+          "数理科学和化学",
+          "数学",
+          "运筹学",
+          "对策论（博弈论）"
+        ],
+        "rag_entry_id": 6203
+      }
+    ],
+    "selection_reason": "主场景是微电网主动能量管理，势博弈和风险优化是辅助数学方法。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  },
+  {
+    "sample_id": 50,
+    "ch_name": "“源-网-荷-储”协调控制低碳经济优化及降碳效果分析",
+    "ch_abstract": "在“双碳”目标背景下，针对实现配电网低碳经济运行问题，提出了一种“源-网-荷-储”协调控制的配电网低碳经济优化方法。首先，以考虑弃风弃光成本、柔性负荷与储能装置调度成本、碳排放成本等的配电网综合成本最小为目标函数进行建模。其次，通过二阶锥松弛技术，将其转变为混合整数凸规划模型，进一步提高计算速率。然后通过修改的IEEE 33节点配电系统证明了该方法在降低配电网经济成本和碳排放方面的优越性。最后，对“源-网-荷-储”协调优化中不同降碳措施的效果进行了灵敏度分析，并以此为基础研究了协调低碳经济运行与传统经济运行之间矛盾与统一的博弈关系，得出了在不同环境条件下两种运行方式之间的相同点与差异点。",
+    "keywords": [
+      {
+        "en_name": "",
+        "ch_name": "配电网低碳经济运行"
+      },
+      {
+        "en_name": "",
+        "ch_name": "“源-网-荷-储”协同优化"
+      },
+      {
+        "en_name": "",
+        "ch_name": "混合整数二阶锥规划"
+      },
+      {
+        "en_name": "",
+        "ch_name": "降碳效果分析"
+      }
+    ],
+    "rag_top_k_candidates": [
+      {
+        "clc_code": "TM7",
+        "clc_name": "输配电工程、电力网及电力系统",
+        "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+        "path_codes": [
+          "T",
+          "TM",
+          "TM7"
+        ],
+        "path_names": [
+          "工业技术",
+          "电工技术",
+          "输配电工程、电力网及电力系统"
+        ],
+        "rag_entry_id": 9577,
+        "rank": 1
+      },
+      {
+        "clc_code": "X22",
+        "clc_name": "环境与发展",
+        "classification_path": "X 环境科学、安全科学 > X2 环境保护管理 > X22 环境与发展",
+        "path_codes": [
+          "X",
+          "X2",
+          "X22"
+        ],
+        "path_names": [
+          "环境科学、安全科学",
+          "环境保护管理",
+          "环境与发展"
+        ],
+        "rag_entry_id": 12250,
+        "rank": 2
+      },
+      {
+        "clc_code": "F206",
+        "clc_name": "能源管理",
+        "classification_path": "F 经济 > F2 经济计划与管理 > F20 国民经济管理 > F206 能源管理",
+        "path_codes": [
+          "F",
+          "F2",
+          "F20",
+          "F206"
+        ],
+        "path_names": [
+          "经济",
+          "经济计划与管理",
+          "国民经济管理",
+          "能源管理"
+        ],
+        "rag_entry_id": 2656,
+        "rank": 3
+      }
+    ],
+    "is_interdisciplinary": true,
+    "main_classification": {
+      "clc_code": "TM7",
+      "clc_name": "输配电工程、电力网及电力系统",
+      "classification_path": "T 工业技术 > TM 电工技术 > TM7 输配电工程、电力网及电力系统",
+      "path_codes": [
+        "T",
+        "TM",
+        "TM7"
+      ],
+      "path_names": [
+        "工业技术",
+        "电工技术",
+        "输配电工程、电力网及电力系统"
+      ],
+      "rag_entry_id": 9577
+    },
+    "auxiliary_classifications": [
+      {
+        "clc_code": "X22",
+        "clc_name": "环境与发展",
+        "classification_path": "X 环境科学、安全科学 > X2 环境保护管理 > X22 环境与发展",
+        "path_codes": [
+          "X",
+          "X2",
+          "X22"
+        ],
+        "path_names": [
+          "环境科学、安全科学",
+          "环境保护管理",
+          "环境与发展"
+        ],
+        "rag_entry_id": 12250
+      }
+    ],
+    "selection_reason": "研究配电网源网荷储协调的低碳经济运行，电力系统为主，环境与低碳发展为辅助。",
+    "alignment_check": {
+      "all_codes_exist_in_clc_meta": true,
+      "paths_copied_from_clc_meta": true,
+      "path_not_generated_by_model": true
+    }
+  }
+]

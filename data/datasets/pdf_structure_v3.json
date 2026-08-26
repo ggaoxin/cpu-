@@ -1,0 +1,3265 @@
+[
+  {
+    "file": "18.pdf",
+    "doc_type": "en_paper",
+    "title": "All Roads Lead to Rome: Incentivizing Divergent Th",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "Abstract",
+        "char_count": 1193
+      },
+      {
+        "level": 1,
+        "heading": "1. Introduction",
+        "char_count": 6931
+      },
+      {
+        "level": 1,
+        "heading": "2. Related Work",
+        "char_count": 3665
+      },
+      {
+        "level": 1,
+        "heading": "3. Exploring Divergent Thinking in VLMs",
+        "char_count": 460
+      },
+      {
+        "level": 2,
+        "heading": "3.1. Divergent vs Convergent",
+        "char_count": 4655
+      },
+      {
+        "level": 2,
+        "heading": "3.2. Diversity Collapse",
+        "char_count": 2461
+      },
+      {
+        "level": 1,
+        "heading": "4. The Proposed Method",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "4.1. Preliminary",
+        "char_count": 2306
+      },
+      {
+        "level": 2,
+        "heading": "4.2. Multi-Group Policy Optimization",
+        "char_count": 5453
+      },
+      {
+        "level": 1,
+        "heading": "5. Experiment and Results",
+        "char_count": 2072
+      },
+      {
+        "level": 2,
+        "heading": "5.1. Main Results",
+        "char_count": 7411
+      },
+      {
+        "level": 2,
+        "heading": "5.2. Further Discussion",
+        "char_count": 6230
+      },
+      {
+        "level": 1,
+        "heading": "6. Conclusion",
+        "char_count": 766
+      },
+      {
+        "level": 1,
+        "heading": "Acknowledgement",
+        "char_count": 287
+      },
+      {
+        "level": 1,
+        "heading": "References",
+        "char_count": 13550
+      }
+    ]
+  },
+  {
+    "file": "19.pdf",
+    "doc_type": "en_paper",
+    "title": "DIFFUSION LARGE LANGUAGE MODELS FOR BLACK-BOX OPTI",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "ABSTRACT",
+        "char_count": 1589
+      },
+      {
+        "level": 2,
+        "heading": "1 INTRODUCTION",
+        "char_count": 5040
+      },
+      {
+        "level": 2,
+        "heading": "2 PRELIMINARIES",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "2.1 OFFLINE BLACK-BOX OPTIMIZATION",
+        "char_count": 1571
+      },
+      {
+        "level": 2,
+        "heading": "2.2 DIFFUSION LARGE LANGUAGE MODELS",
+        "char_count": 2549
+      },
+      {
+        "level": 2,
+        "heading": "3 METHOD",
+        "char_count": 128
+      },
+      {
+        "level": 2,
+        "heading": "3.1 IN-CONTEXT DENOISING",
+        "char_count": 494
+      },
+      {
+        "level": 1,
+        "heading": "Offline Dataset",
+        "char_count": 3130
+      },
+      {
+        "level": 2,
+        "heading": "3.2 MASKED DIFFUSION TREE SEARCH",
+        "char_count": 4962
+      },
+      {
+        "level": 2,
+        "heading": "4 EXPERIMENTS",
+        "char_count": 295
+      },
+      {
+        "level": 2,
+        "heading": "4.1 BENCHMARKS",
+        "char_count": 1626
+      },
+      {
+        "level": 2,
+        "heading": "4.2 BASELINES",
+        "char_count": 6439
+      },
+      {
+        "level": 2,
+        "heading": "4.3 IMPLEMENTATION DETAILS",
+        "char_count": 672
+      },
+      {
+        "level": 2,
+        "heading": "4.4 RESULTS AND ANALYSIS",
+        "char_count": 1865
+      },
+      {
+        "level": 2,
+        "heading": "4.5 ABLATION STUDIES",
+        "char_count": 2185
+      },
+      {
+        "level": 2,
+        "heading": "4.6 HYPERPARAMETER SENSITIVITY",
+        "char_count": 2124
+      },
+      {
+        "level": 2,
+        "heading": "5 RELATED WORK",
+        "char_count": 3854
+      },
+      {
+        "level": 2,
+        "heading": "6 CONCLUSION",
+        "char_count": 855
+      },
+      {
+        "level": 1,
+        "heading": "REPRODUCIBILITY STATEMENT",
+        "char_count": 90
+      },
+      {
+        "level": 1,
+        "heading": "ETHICS STATEMENT",
+        "char_count": 772
+      },
+      {
+        "level": 1,
+        "heading": "REFERENCES",
+        "char_count": 14130
+      },
+      {
+        "level": 1,
+        "heading": "A APPENDIX",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "A.1 LLM USAGE",
+        "char_count": 290
+      },
+      {
+        "level": 2,
+        "heading": "A.2 IN-CONTEXT PROMPT",
+        "char_count": 91
+      },
+      {
+        "level": 1,
+        "heading": "In-Context Prompt for Ant",
+        "char_count": 2245
+      },
+      {
+        "level": 1,
+        "heading": "In-Context Prompt for D’Kitty",
+        "char_count": 2074
+      },
+      {
+        "level": 1,
+        "heading": "In-Context Prompt for TF8",
+        "char_count": 4939
+      },
+      {
+        "level": 1,
+        "heading": "In-Context Prompt for TF10",
+        "char_count": 1510
+      },
+      {
+        "level": 2,
+        "heading": "A.3 MEDIAN RESULTS",
+        "char_count": 356
+      },
+      {
+        "level": 2,
+        "heading": "A.4 DIFFERENT TASK DESCRIPTIONS",
+        "char_count": 472
+      }
+    ]
+  },
+  {
+    "file": "20.pdf",
+    "doc_type": "zh_paper",
+    "title": "强化多视图多模态网络的社交媒体机器人检测",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "摘要",
+        "char_count": 522
+      },
+      {
+        "level": 2,
+        "heading": "Enhanced Multi-View Multi-Modal Network for Social Media Bot Detection",
+        "char_count": 3437
+      },
+      {
+        "level": 1,
+        "heading": "1 相关工作",
+        "char_count": 85
+      },
+      {
+        "level": 2,
+        "heading": "1.1 基于特征的方法",
+        "char_count": 533
+      },
+      {
+        "level": 2,
+        "heading": "1.2 基于文本的方法",
+        "char_count": 463
+      },
+      {
+        "level": 2,
+        "heading": "1.3 基于图关系的方法",
+        "char_count": 692
+      },
+      {
+        "level": 2,
+        "heading": "1.4 基于特征融合的方法",
+        "char_count": 466
+      },
+      {
+        "level": 2,
+        "heading": "1.5 基于分类结果集成的方法",
+        "char_count": 411
+      },
+      {
+        "level": 1,
+        "heading": "2 方法论",
+        "char_count": 359
+      },
+      {
+        "level": 2,
+        "heading": "2.1 Roberta",
+        "char_count": 1260
+      },
+      {
+        "level": 2,
+        "heading": "2.2 BotRGCN",
+        "char_count": 3226
+      },
+      {
+        "level": 2,
+        "heading": "2.3 MLP",
+        "char_count": 418
+      },
+      {
+        "level": 2,
+        "heading": "2.4 VCDN",
+        "char_count": 1710
+      },
+      {
+        "level": 2,
+        "heading": "2.5 AttVCDN",
+        "char_count": 2335
+      },
+      {
+        "level": 1,
+        "heading": "算法1 BotAttVCDN模型算法",
+        "char_count": 2766
+      },
+      {
+        "level": 1,
+        "heading": "3 实验及分析",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "3.1 实验设置",
+        "char_count": 0
+      },
+      {
+        "level": 3,
+        "heading": "3.1.1 数据集",
+        "char_count": 1223
+      },
+      {
+        "level": 3,
+        "heading": "3.1.2 基线",
+        "char_count": 122
+      },
+      {
+        "level": 2,
+        "heading": "3.2 实验结果与分析",
+        "char_count": 8150
+      },
+      {
+        "level": 2,
+        "heading": "3.3 AttVCDN消融实验",
+        "char_count": 1411
+      },
+      {
+        "level": 1,
+        "heading": "4 结束语",
+        "char_count": 486
+      },
+      {
+        "level": 1,
+        "heading": "参考文献：",
+        "char_count": 7299
+      }
+    ]
+  },
+  {
+    "file": "21.pdf",
+    "doc_type": "en_paper",
+    "title": "Towards LLM-centric Afective Visual Customization ",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "Abstract",
+        "char_count": 1624
+      },
+      {
+        "level": 1,
+        "heading": "CCS Concepts",
+        "char_count": 52
+      },
+      {
+        "level": 1,
+        "heading": "Keywords",
+        "char_count": 110
+      },
+      {
+        "level": 1,
+        "heading": "ACM Reference Format:",
+        "char_count": 334
+      },
+      {
+        "level": 2,
+        "heading": "1 Introduction",
+        "char_count": 6083
+      },
+      {
+        "level": 2,
+        "heading": "2 Related Work",
+        "char_count": 4443
+      },
+      {
+        "level": 2,
+        "heading": "3 Approach",
+        "char_count": 1821
+      },
+      {
+        "level": 2,
+        "heading": "3.1 Preliminary of Difusion Models",
+        "char_count": 2070
+      },
+      {
+        "level": 2,
+        "heading": "3.2 Eficient Inter-emotion Converting Module",
+        "char_count": 2678
+      },
+      {
+        "level": 2,
+        "heading": "3.3 Precise Exter-emotion Retaining Module",
+        "char_count": 3235
+      },
+      {
+        "level": 2,
+        "heading": "3.4 Optimization for EPEM approach",
+        "char_count": 2835
+      },
+      {
+        "level": 2,
+        "heading": "4 Experimental Settings",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "4.1 Dataset Construction",
+        "char_count": 2835
+      },
+      {
+        "level": 2,
+        "heading": "4.2 Baselines",
+        "char_count": 3502
+      },
+      {
+        "level": 2,
+        "heading": "4.3 Implement Details",
+        "char_count": 1109
+      },
+      {
+        "level": 2,
+        "heading": "4.4 Evaluation Metrics",
+        "char_count": 2761
+      },
+      {
+        "level": 2,
+        "heading": "5 Results and Discussion",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "5.1 Experimental Results",
+        "char_count": 4750
+      },
+      {
+        "level": 2,
+        "heading": "5.2 Are Emotion Conversion Really Aligned?",
+        "char_count": 1404
+      },
+      {
+        "level": 2,
+        "heading": "5.3 Are Emotion-agnostic Contents Retaining?",
+        "char_count": 1651
+      },
+      {
+        "level": 2,
+        "heading": "5.4 Contributions of Key Components",
+        "char_count": 1536
+      },
+      {
+        "level": 2,
+        "heading": "5.5 Visualization Study",
+        "char_count": 1253
+      },
+      {
+        "level": 2,
+        "heading": "6 Conclusion",
+        "char_count": 1017
+      },
+      {
+        "level": 1,
+        "heading": "Acknowledgments",
+        "char_count": 426
+      },
+      {
+        "level": 1,
+        "heading": "References",
+        "char_count": 16230
+      }
+    ]
+  },
+  {
+    "file": "22.pdf",
+    "doc_type": "zh_paper",
+    "title": "Enhancing the Performance and Application of Socia",
+    "sections": [
+      {
+        "level": 2,
+        "heading": "基于多视图集成与多教师知识蒸馏的社交媒体机器人检测框架",
+        "char_count": 351
+      },
+      {
+        "level": 1,
+        "heading": "关于学位论文独创声明和学术诚信承诺",
+        "char_count": 249
+      },
+      {
+        "level": 1,
+        "heading": "关于学位论文著作权使用授权书",
+        "char_count": 273
+      },
+      {
+        "level": 1,
+        "heading": "摘 要",
+        "char_count": 3488
+      },
+      {
+        "level": 1,
+        "heading": "ABSTRACT",
+        "char_count": 1057
+      },
+      {
+        "level": 1,
+        "heading": "目 录",
+        "char_count": 1687
+      },
+      {
+        "level": 1,
+        "heading": "1 绪论",
+        "char_count": 241
+      },
+      {
+        "level": 2,
+        "heading": "1.1 研究背景与意义",
+        "char_count": 823
+      },
+      {
+        "level": 2,
+        "heading": "1.2 国内外研究现状",
+        "char_count": 237
+      },
+      {
+        "level": 3,
+        "heading": "1.2.1 基于多模态数据建模的社交媒体机器人检测方法",
+        "char_count": 103
+      },
+      {
+        "level": 3,
+        "heading": "（1）基于多模态特征融合的方法",
+        "char_count": 540
+      },
+      {
+        "level": 3,
+        "heading": "（2）基于多模态分类结果集成的方法",
+        "char_count": 769
+      },
+      {
+        "level": 3,
+        "heading": "1.2.2 基于社交图关系数据建模的社交媒体机器人检测方法",
+        "char_count": 1154
+      },
+      {
+        "level": 2,
+        "heading": "1.3 本文主要工作及贡献",
+        "char_count": 1191
+      },
+      {
+        "level": 2,
+        "heading": "1.4 本文组织结构",
+        "char_count": 1465
+      },
+      {
+        "level": 2,
+        "heading": "1.5 本章小结",
+        "char_count": 162
+      },
+      {
+        "level": 1,
+        "heading": "2 相关研究基础理论和技术",
+        "char_count": 203
+      },
+      {
+        "level": 2,
+        "heading": "2.1 基于注意力与对比学习强化视图相关性发现网络的理论技术",
+        "char_count": 62
+      },
+      {
+        "level": 3,
+        "heading": "2.1.1 视图相关性发现网络",
+        "char_count": 542
+      },
+      {
+        "level": 3,
+        "heading": "2.1.2 多头注意力机制",
+        "char_count": 309
+      },
+      {
+        "level": 3,
+        "heading": "2.1.3 自监督对比学习",
+        "char_count": 491
+      },
+      {
+        "level": 2,
+        "heading": "2.2 基于多教师知识蒸馏框架的理论技术",
+        "char_count": 51
+      },
+      {
+        "level": 3,
+        "heading": "2.2.1 专家混合机制",
+        "char_count": 503
+      },
+      {
+        "level": 3,
+        "heading": "2.2.2 知识蒸馏",
+        "char_count": 447
+      },
+      {
+        "level": 2,
+        "heading": "2.3 社交媒体机器人检测评判指标及常用算法",
+        "char_count": 74
+      },
+      {
+        "level": 3,
+        "heading": "2.3.1 评判指标",
+        "char_count": 57
+      },
+      {
+        "level": 3,
+        "heading": "（1）准确率（Accuracy）",
+        "char_count": 297
+      },
+      {
+        "level": 3,
+        "heading": "（2）精确率（Precision）",
+        "char_count": 157
+      },
+      {
+        "level": 3,
+        "heading": "（3）召回率（Recall）",
+        "char_count": 161
+      },
+      {
+        "level": 3,
+        "heading": "（4）F1-score",
+        "char_count": 397
+      },
+      {
+        "level": 3,
+        "heading": "2.3.2 常用算法",
+        "char_count": 72
+      },
+      {
+        "level": 3,
+        "heading": "（1）基于规则的方法",
+        "char_count": 80
+      },
+      {
+        "level": 3,
+        "heading": "（2）基于机器学习的方法",
+        "char_count": 242
+      },
+      {
+        "level": 3,
+        "heading": "（3）基于深度学习的方法",
+        "char_count": 289
+      },
+      {
+        "level": 2,
+        "heading": "2.4 本章小结",
+        "char_count": 256
+      },
+      {
+        "level": 1,
+        "heading": "3 基于注意力与对比学习强化视图相关性发现网络",
+        "char_count": 372
+      },
+      {
+        "level": 2,
+        "heading": "3.1 引言",
+        "char_count": 547
+      },
+      {
+        "level": 2,
+        "heading": "3.2 流程分析与算法设计",
+        "char_count": 601
+      },
+      {
+        "level": 3,
+        "heading": "3.2.1 算法流程",
+        "char_count": 2224
+      },
+      {
+        "level": 3,
+        "heading": "3.2.2 多模态子模型预训练模块",
+        "char_count": 2373
+      },
+      {
+        "level": 3,
+        "heading": "3.2.3 基于正相关对比学习优化视图相关性发现网络的算法设计",
+        "char_count": 126
+      },
+      {
+        "level": 3,
+        "heading": "（1）传统的VCDN模型",
+        "char_count": 1023
+      },
+      {
+        "level": 3,
+        "heading": "（2）基于正相关对比学习优化 VCDN算法",
+        "char_count": 1799
+      },
+      {
+        "level": 3,
+        "heading": "3.2.4 基于注意力机制强化视图相关性发现网络的算法设计",
+        "char_count": 1951
+      },
+      {
+        "level": 2,
+        "heading": "3.3 实验结果与分析",
+        "char_count": 52
+      },
+      {
+        "level": 3,
+        "heading": "3.3.1 实验数据集介绍",
+        "char_count": 862
+      },
+      {
+        "level": 3,
+        "heading": "3.3.2 实验结果与分析",
+        "char_count": 5451
+      },
+      {
+        "level": 3,
+        "heading": "3.3.3 消融实验",
+        "char_count": 1748
+      },
+      {
+        "level": 2,
+        "heading": "3.4 本章小结",
+        "char_count": 512
+      },
+      {
+        "level": 1,
+        "heading": "4 基于多教师知识蒸馏策略部署无图机器人检测框架",
+        "char_count": 300
+      },
+      {
+        "level": 2,
+        "heading": "4.1 引言",
+        "char_count": 2005
+      },
+      {
+        "level": 2,
+        "heading": "4.2 流程分析与框架设计",
+        "char_count": 647
+      },
+      {
+        "level": 3,
+        "heading": "4.2.1 算法流程",
+        "char_count": 2868
+      },
+      {
+        "level": 3,
+        "heading": "4.2.2 教师模型与学生模型训练模块",
+        "char_count": 3421
+      },
+      {
+        "level": 3,
+        "heading": "4.2.3 基于多教师知识蒸馏框架的算法设计",
+        "char_count": 528
+      },
+      {
+        "level": 3,
+        "heading": "（1）软标签蒸馏",
+        "char_count": 313
+      },
+      {
+        "level": 3,
+        "heading": "（2）硬标签学习",
+        "char_count": 298
+      },
+      {
+        "level": 3,
+        "heading": "4.2.4 基于专家混合机制优化多教师知识蒸馏框架的算法设计",
+        "char_count": 691
+      },
+      {
+        "level": 2,
+        "heading": "4.3 实验结果与分析",
+        "char_count": 59
+      },
+      {
+        "level": 3,
+        "heading": "4.3.1 实验相关数据集介绍",
+        "char_count": 1898
+      },
+      {
+        "level": 3,
+        "heading": "4.3.2 实验结果与分析",
+        "char_count": 4335
+      },
+      {
+        "level": 3,
+        "heading": "4.3.3 消融实验",
+        "char_count": 1318
+      },
+      {
+        "level": 2,
+        "heading": "4.4 本章小结",
+        "char_count": 427
+      },
+      {
+        "level": 1,
+        "heading": "5 社交媒体机器人检测系统的设计与实现",
+        "char_count": 179
+      },
+      {
+        "level": 2,
+        "heading": "5.1 开发环境",
+        "char_count": 129
+      },
+      {
+        "level": 2,
+        "heading": "5.2 应用场景",
+        "char_count": 393
+      },
+      {
+        "level": 2,
+        "heading": "5.3 需求分析",
+        "char_count": 53
+      },
+      {
+        "level": 3,
+        "heading": "5.3.1 功能需求",
+        "char_count": 400
+      },
+      {
+        "level": 3,
+        "heading": "（1）仪表盘模块",
+        "char_count": 159
+      },
+      {
+        "level": 3,
+        "heading": "（2）机器人检测模块",
+        "char_count": 205
+      },
+      {
+        "level": 3,
+        "heading": "（3）分析报告模块",
+        "char_count": 214
+      },
+      {
+        "level": 3,
+        "heading": "（4）系统设置模块",
+        "char_count": 167
+      },
+      {
+        "level": 3,
+        "heading": "5.3.2 非功能性需求",
+        "char_count": 574
+      },
+      {
+        "level": 2,
+        "heading": "5.4 系统的设计与实现",
+        "char_count": 92
+      },
+      {
+        "level": 3,
+        "heading": "5.4.1 系统设计",
+        "char_count": 310
+      },
+      {
+        "level": 3,
+        "heading": "5.4.2 系统实现",
+        "char_count": 291
+      },
+      {
+        "level": 3,
+        "heading": "（1）用户管理模块",
+        "char_count": 244
+      },
+      {
+        "level": 3,
+        "heading": "（2）仪表盘展示模块",
+        "char_count": 291
+      },
+      {
+        "level": 3,
+        "heading": "（3）机器人检测页面",
+        "char_count": 761
+      },
+      {
+        "level": 3,
+        "heading": "（4）分析报告模块",
+        "char_count": 226
+      },
+      {
+        "level": 3,
+        "heading": "（5）系统设置模块",
+        "char_count": 980
+      },
+      {
+        "level": 2,
+        "heading": "5.5 本章小结",
+        "char_count": 383
+      },
+      {
+        "level": 1,
+        "heading": "6 全文总结与展望",
+        "char_count": 275
+      },
+      {
+        "level": 2,
+        "heading": "6.1 全文总结",
+        "char_count": 839
+      },
+      {
+        "level": 2,
+        "heading": "6.2 未来展望",
+        "char_count": 669
+      },
+      {
+        "level": 1,
+        "heading": "参考文献",
+        "char_count": 12334
+      },
+      {
+        "level": 1,
+        "heading": "致 谢",
+        "char_count": 403
+      },
+      {
+        "level": 1,
+        "heading": "攻读学位期间的科研成果",
+        "char_count": 0
+      },
+      {
+        "level": 1,
+        "heading": "一、 发表学术论文",
+        "char_count": 294
+      },
+      {
+        "level": 1,
+        "heading": "二、 申请专利",
+        "char_count": 150
+      },
+      {
+        "level": 1,
+        "heading": "三、 参加竞赛",
+        "char_count": 64
+      }
+    ]
+  },
+  {
+    "file": "23.pdf",
+    "doc_type": "en_paper",
+    "title": "GENERATIVE CLASSIFIERS AVOID SHORTCUT SOLUTIONS",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "ABSTRACT",
+        "char_count": 1207
+      },
+      {
+        "level": 2,
+        "heading": "1 INTRODUCTION",
+        "char_count": 5192
+      },
+      {
+        "level": 2,
+        "heading": "2 RELATED WORK",
+        "char_count": 3840
+      },
+      {
+        "level": 2,
+        "heading": "3 PRELIMINARIES",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "3.1 TYPES OF DISTRIBUTION SHIFT",
+        "char_count": 1438
+      },
+      {
+        "level": 2,
+        "heading": "3.2 SHORTCOMINGS OF DISCRIMINATIVE CLASSIFIERS",
+        "char_count": 1248
+      },
+      {
+        "level": 2,
+        "heading": "4 GENERATIVE CLASSIFIERS",
+        "char_count": 723
+      },
+      {
+        "level": 2,
+        "heading": "4.1 INTUITION",
+        "char_count": 857
+      },
+      {
+        "level": 2,
+        "heading": "4.2 DIFFUSION-BASED GENERATIVE CLASSIFIER",
+        "char_count": 1419
+      },
+      {
+        "level": 2,
+        "heading": "4.3 AUTOREGRESSIVE GENERATIVE CLASSIFIER",
+        "char_count": 3049
+      },
+      {
+        "level": 2,
+        "heading": "5 EXPERIMENTS",
+        "char_count": 378
+      },
+      {
+        "level": 2,
+        "heading": "5.1 SETUP",
+        "char_count": 4283
+      },
+      {
+        "level": 2,
+        "heading": "5.2 RESULTS ON DISTRIBUTION SHIFT BENCHMARKS",
+        "char_count": 3120
+      },
+      {
+        "level": 2,
+        "heading": "5.3 WHY DO GENERATIVE CLASSIFIERS DO BETTER?",
+        "char_count": 3668
+      },
+      {
+        "level": 2,
+        "heading": "6 ILLUSTRATIVE SETTING",
+        "char_count": 437
+      },
+      {
+        "level": 2,
+        "heading": "6.1 DATA",
+        "char_count": 1625
+      },
+      {
+        "level": 2,
+        "heading": "6.2 ALGORITHMS",
+        "char_count": 1366
+      },
+      {
+        "level": 2,
+        "heading": "6.3 THE INDUCTIVE BIAS OF LDA",
+        "char_count": 3579
+      },
+      {
+        "level": 2,
+        "heading": "6.4 GENERALIZATION PHASE DIAGRAMS",
+        "char_count": 4743
+      },
+      {
+        "level": 2,
+        "heading": "7 CONCLUSION",
+        "char_count": 1502
+      },
+      {
+        "level": 1,
+        "heading": "REFERENCES",
+        "char_count": 12645
+      },
+      {
+        "level": 1,
+        "heading": "APPENDIX",
+        "char_count": 0
+      },
+      {
+        "level": 1,
+        "heading": "A ADDITIONAL ANALYSIS",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "A.1 ADDITIONAL RESULTS ON THE EFFECT OF DISCRIMINATIVE MODEL SIZE",
+        "char_count": 1198
+      },
+      {
+        "level": 2,
+        "heading": "A.2 SCALING CAN IMPROVE GENERATIVE CLASSIFIERS",
+        "char_count": 1642
+      },
+      {
+        "level": 2,
+        "heading": "A.3 RESULTS ON ADDITIONAL DATASETS",
+        "char_count": 1350
+      },
+      {
+        "level": 2,
+        "heading": "A.4 CORRELATION BETWEEN GENERATIVE AND DISCRIMINATIVE PERFORMANCE",
+        "char_count": 3643
+      },
+      {
+        "level": 2,
+        "heading": "A.5 EFFECT OF IMAGE EMBEDDING MODEL",
+        "char_count": 2667
+      },
+      {
+        "level": 2,
+        "heading": "A.6 COMPARISON WITH PRE-TRAINED DISCRIMINATIVE MODELS",
+        "char_count": 1211
+      },
+      {
+        "level": 2,
+        "heading": "A.7 ADDITIONAL PLOTS FOR GENERALIZATION PHASE DIAGRAMS",
+        "char_count": 2107
+      },
+      {
+        "level": 1,
+        "heading": "B EXPERIMENTAL DETAILS",
+        "char_count": 539
+      },
+      {
+        "level": 2,
+        "heading": "B.1 IMAGE-BASED EXPERIMENTS",
+        "char_count": 0
+      },
+      {
+        "level": 3,
+        "heading": "B.1.1 DIFFUSION-BASED GENERATIVE CLASSIFIER",
+        "char_count": 921
+      },
+      {
+        "level": 3,
+        "heading": "B.1.2 DISCRIMINATIVE BASELINES",
+        "char_count": 354
+      },
+      {
+        "level": 2,
+        "heading": "B.2 AUTOREGRESSIVE GENERATIVE CLASSIFIER",
+        "char_count": 496
+      },
+      {
+        "level": 3,
+        "heading": "B.2.1 DISCRIMINATIVE BASELINES",
+        "char_count": 221
+      }
+    ]
+  },
+  {
+    "file": "24.pdf",
+    "doc_type": "en_paper",
+    "title": "Timestep-Aware Block Masking for Efficient Diffusi",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "Abstract",
+        "char_count": 1349
+      },
+      {
+        "level": 1,
+        "heading": "1. Introduction",
+        "char_count": 5244
+      },
+      {
+        "level": 1,
+        "heading": "2. Related Work",
+        "char_count": 2872
+      },
+      {
+        "level": 1,
+        "heading": "3. Method",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "3.1. Preliminary",
+        "char_count": 1584
+      },
+      {
+        "level": 2,
+        "heading": "3.2. Problem Formulation",
+        "char_count": 2469
+      },
+      {
+        "level": 2,
+        "heading": "3.3. Optimization",
+        "char_count": 3168
+      },
+      {
+        "level": 2,
+        "heading": "3.4. Timestep-Aware Loss Scaling",
+        "char_count": 1402
+      },
+      {
+        "level": 2,
+        "heading": "3.5. Knowledge-Guided Mask Rectification",
+        "char_count": 2031
+      },
+      {
+        "level": 1,
+        "heading": "4. Experiments",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "4.1. Experimental Setup",
+        "char_count": 2284
+      },
+      {
+        "level": 2,
+        "heading": "4.2. Main Results",
+        "char_count": 8077
+      },
+      {
+        "level": 2,
+        "heading": "4.3. Ablation Study",
+        "char_count": 3430
+      },
+      {
+        "level": 1,
+        "heading": "5. Conclusion",
+        "char_count": 724
+      },
+      {
+        "level": 1,
+        "heading": "References",
+        "char_count": 11754
+      }
+    ]
+  },
+  {
+    "file": "25.pdf",
+    "doc_type": "en_paper",
+    "title": "Prefill-Time Intervention for Mitigating Hallucina",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "Abstract(a)",
+        "char_count": 1588
+      },
+      {
+        "level": 1,
+        "heading": "1. Introduction",
+        "char_count": 6538
+      },
+      {
+        "level": 1,
+        "heading": "2. Related Work",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "2.1. Large Vision-Language Models",
+        "char_count": 1115
+      },
+      {
+        "level": 2,
+        "heading": "2.2. Mitigating Hallucination in LVLMs",
+        "char_count": 1713
+      },
+      {
+        "level": 1,
+        "heading": "3. Methodology",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "3.1. Preliminaries: Inference with KV Cache",
+        "char_count": 3804
+      },
+      {
+        "level": 2,
+        "heading": "3.2. Object Directions Extraction",
+        "char_count": 5745
+      },
+      {
+        "level": 2,
+        "heading": "3.3. Downstream Intervention",
+        "char_count": 2611
+      },
+      {
+        "level": 1,
+        "heading": "4. Experiments",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "4.1. Experimental Setup",
+        "char_count": 1006
+      },
+      {
+        "level": 2,
+        "heading": "4.2. Implementation Details",
+        "char_count": 704
+      },
+      {
+        "level": 2,
+        "heading": "4.3. Results on Object Hallucination Benchmarks",
+        "char_count": 8690
+      },
+      {
+        "level": 2,
+        "heading": "4.4. Results on Comprehensive Benchmarks",
+        "char_count": 3143
+      },
+      {
+        "level": 1,
+        "heading": "5. Analysis and Discussions",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "5.1. Ablation Study and Error Analysis",
+        "char_count": 2013
+      },
+      {
+        "level": 2,
+        "heading": "5.2. Internal Interpretability Analysis",
+        "char_count": 3002
+      },
+      {
+        "level": 2,
+        "heading": "5.3. Generalizability Analysis",
+        "char_count": 2325
+      },
+      {
+        "level": 1,
+        "heading": "6. Conclusion",
+        "char_count": 648
+      },
+      {
+        "level": 1,
+        "heading": "Acknowledgements",
+        "char_count": 88
+      },
+      {
+        "level": 1,
+        "heading": "References",
+        "char_count": 14937
+      },
+      {
+        "level": 2,
+        "heading": "Prefill-Time Intervention for Mitigating Hallucination in Large Vision-Language Models",
+        "char_count": 22
+      },
+      {
+        "level": 2,
+        "heading": "A. Details of Internal Interpretability Analysis.",
+        "char_count": 723
+      },
+      {
+        "level": 2,
+        "heading": "A.1. Global Visual Attention Dynamics",
+        "char_count": 2669
+      },
+      {
+        "level": 2,
+        "heading": "A.2. Local Object-Centric Attention Shift",
+        "char_count": 5931
+      },
+      {
+        "level": 2,
+        "heading": "B. Additional Experiments of PTI.",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "B.1. More Experimental Results of POPE.",
+        "char_count": 953
+      },
+      {
+        "level": 2,
+        "heading": "B.2. Detailed Experimental Results of MME.",
+        "char_count": 708
+      },
+      {
+        "level": 2,
+        "heading": "B.3. Inference Efficiency Analysis.",
+        "char_count": 4061
+      },
+      {
+        "level": 2,
+        "heading": "B.4. Ablation Experiments of Hyperparameters.",
+        "char_count": 3211
+      },
+      {
+        "level": 1,
+        "heading": "C. Additional Case Studies",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "C.1. Attention Map Visualization.",
+        "char_count": 996
+      },
+      {
+        "level": 2,
+        "heading": "C.2. Qualitative Examples.",
+        "char_count": 1285
+      }
+    ]
+  },
+  {
+    "file": "26.pdf",
+    "doc_type": "en_paper",
+    "title": "Can Slow-Thinking LLMs Reason Over Time? Empirical",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "Abstract",
+        "char_count": 1607
+      },
+      {
+        "level": 1,
+        "heading": "CCS Concepts",
+        "char_count": 637
+      },
+      {
+        "level": 2,
+        "heading": "1 Introduction",
+        "char_count": 5798
+      },
+      {
+        "level": 2,
+        "heading": "2 Related Work",
+        "char_count": 114
+      },
+      {
+        "level": 2,
+        "heading": "2.1 Time Series Forecasting",
+        "char_count": 2139
+      },
+      {
+        "level": 2,
+        "heading": "2.2 LLM-based Reasoning",
+        "char_count": 1780
+      },
+      {
+        "level": 2,
+        "heading": "3 Problem Definition",
+        "char_count": 845
+      },
+      {
+        "level": 2,
+        "heading": "4 The Proposed TimeReasoner",
+        "char_count": 166
+      },
+      {
+        "level": 2,
+        "heading": "4.1 Overview of TimeReasoner",
+        "char_count": 1052
+      },
+      {
+        "level": 2,
+        "heading": "4.2 Hybrid Instruction",
+        "char_count": 1241
+      },
+      {
+        "level": 2,
+        "heading": "4.3 Inference-Time Reasoning",
+        "char_count": 1041
+      },
+      {
+        "level": 2,
+        "heading": "4.4 Reasoning Strategies",
+        "char_count": 1004
+      },
+      {
+        "level": 2,
+        "heading": "4.5 Reasoning Exploration and Trajectory",
+        "char_count": 2124
+      },
+      {
+        "level": 2,
+        "heading": "5 Experimental Settings",
+        "char_count": 137
+      },
+      {
+        "level": 2,
+        "heading": "5.1 Datasets",
+        "char_count": 965
+      },
+      {
+        "level": 2,
+        "heading": "5.2 Baselines",
+        "char_count": 5351
+      },
+      {
+        "level": 2,
+        "heading": "5.3 Implementation Details",
+        "char_count": 1026
+      },
+      {
+        "level": 2,
+        "heading": "6 Experimental Results",
+        "char_count": 191
+      },
+      {
+        "level": 2,
+        "heading": "6.1 Forecasting Performance Comparison",
+        "char_count": 1037
+      },
+      {
+        "level": 2,
+        "heading": "6.2 Analysis of Key Settings in TimeReasoner",
+        "char_count": 4687
+      },
+      {
+        "level": 2,
+        "heading": "6.3 Trustworthiness Evaluation",
+        "char_count": 3227
+      },
+      {
+        "level": 2,
+        "heading": "6.4 Evaluation Under Diferent TSF Settings",
+        "char_count": 1975
+      },
+      {
+        "level": 2,
+        "heading": "6.5 Hyperparameter Sensitivity Analysis",
+        "char_count": 2726
+      },
+      {
+        "level": 2,
+        "heading": "6.6 Visualization Analysis",
+        "char_count": 5678
+      },
+      {
+        "level": 2,
+        "heading": "7 Conclusion and Discussions",
+        "char_count": 1674
+      },
+      {
+        "level": 2,
+        "heading": "8 Acknowledgments",
+        "char_count": 373
+      },
+      {
+        "level": 1,
+        "heading": "Ethical Considerations",
+        "char_count": 801
+      },
+      {
+        "level": 1,
+        "heading": "References",
+        "char_count": 22231
+      }
+    ]
+  },
+  {
+    "file": "27.pdf",
+    "doc_type": "en_paper",
+    "title": "“Just in Time” World Modeling Supports Human Plann",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "Abstract",
+        "char_count": 1251
+      },
+      {
+        "level": 2,
+        "heading": "“Just in Time” World Modeling Supports Human Planning and Reasoning Introduction",
+        "char_count": 5361
+      },
+      {
+        "level": 1,
+        "heading": "The Just-in-Time model",
+        "char_count": 4925
+      },
+      {
+        "level": 2,
+        "heading": "Domains for testing the JIT model",
+        "char_count": 562
+      },
+      {
+        "level": 1,
+        "heading": "Planning",
+        "char_count": 1029
+      },
+      {
+        "level": 1,
+        "heading": "Physical reasoning",
+        "char_count": 588
+      },
+      {
+        "level": 2,
+        "heading": "An alternate model: Value Guided Construal",
+        "char_count": 2512
+      },
+      {
+        "level": 1,
+        "heading": "JIT Explains Human Planning",
+        "char_count": 0
+      },
+      {
+        "level": 1,
+        "heading": "Representations for planning",
+        "char_count": 3898
+      },
+      {
+        "level": 2,
+        "heading": "The Eficiency of JIT Representations",
+        "char_count": 5136
+      },
+      {
+        "level": 2,
+        "heading": "JIT Explains Representations for Physical Prediction",
+        "char_count": 387
+      },
+      {
+        "level": 2,
+        "heading": "Representations for physical prediction",
+        "char_count": 1527
+      },
+      {
+        "level": 2,
+        "heading": "Comparing the JIT model against people",
+        "char_count": 2544
+      },
+      {
+        "level": 2,
+        "heading": "Experimentally distinguishing VGC and JIT",
+        "char_count": 3039
+      },
+      {
+        "level": 1,
+        "heading": "Discussion",
+        "char_count": 2378
+      },
+      {
+        "level": 2,
+        "heading": "Our current investigation has focused on the diferences between",
+        "char_count": 2787
+      },
+      {
+        "level": 1,
+        "heading": "Methods",
+        "char_count": 0
+      },
+      {
+        "level": 1,
+        "heading": "Model implementation",
+        "char_count": 881
+      },
+      {
+        "level": 1,
+        "heading": "Planning",
+        "char_count": 3756
+      },
+      {
+        "level": 1,
+        "heading": "Physics",
+        "char_count": 2872
+      },
+      {
+        "level": 1,
+        "heading": "Physics experiments details",
+        "char_count": 0
+      },
+      {
+        "level": 1,
+        "heading": "Experiment 2A",
+        "char_count": 4063
+      },
+      {
+        "level": 2,
+        "heading": "Experiment 2B: Distinguishing JIT and VGC",
+        "char_count": 2148
+      },
+      {
+        "level": 1,
+        "heading": "Author Contributions",
+        "char_count": 231
+      },
+      {
+        "level": 1,
+        "heading": "References",
+        "char_count": 8374
+      },
+      {
+        "level": 1,
+        "heading": "Extended Data Figures",
+        "char_count": 700
+      },
+      {
+        "level": 1,
+        "heading": "Exp 1E",
+        "char_count": 80
+      },
+      {
+        "level": 1,
+        "heading": "Figure E3",
+        "char_count": 3033
+      },
+      {
+        "level": 1,
+        "heading": "Figure E5",
+        "char_count": 3301
+      },
+      {
+        "level": 1,
+        "heading": "Supplementary Materials",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "S1 Additional physics experiments",
+        "char_count": 884
+      },
+      {
+        "level": 2,
+        "heading": "S1.1 Experiment S1: Testing for visual attention",
+        "char_count": 0
+      },
+      {
+        "level": 1,
+        "heading": "S1.1.1 Participants",
+        "char_count": 140
+      },
+      {
+        "level": 1,
+        "heading": "S1.1.2 Procedure",
+        "char_count": 864
+      },
+      {
+        "level": 1,
+        "heading": "S1.1.3 Results",
+        "char_count": 1622
+      },
+      {
+        "level": 2,
+        "heading": "S1.2 Experiment S2: Testing for purely visual processes",
+        "char_count": 430
+      },
+      {
+        "level": 1,
+        "heading": "S1.2.1 Participants",
+        "char_count": 148
+      },
+      {
+        "level": 1,
+        "heading": "S1.2.2 Procedure",
+        "char_count": 741
+      },
+      {
+        "level": 1,
+        "heading": "S1.2.3 Materials",
+        "char_count": 485
+      },
+      {
+        "level": 1,
+        "heading": "S1.2.4 Results",
+        "char_count": 1281
+      },
+      {
+        "level": 2,
+        "heading": "S1.3 Experiment S3: Measuring human simulations",
+        "char_count": 353
+      },
+      {
+        "level": 1,
+        "heading": "S1.3.1 Participants",
+        "char_count": 149
+      },
+      {
+        "level": 1,
+        "heading": "S1.3.2 Procedure",
+        "char_count": 403
+      },
+      {
+        "level": 1,
+        "heading": "S1.3.3 Results",
+        "char_count": 590
+      },
+      {
+        "level": 2,
+        "heading": "S2 Additional analyses and results",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "S2.1 Details on the planning eficiency simulation analysis",
+        "char_count": 2456
+      },
+      {
+        "level": 2,
+        "heading": "S2.2 Details on VGC implementation for physics tasks",
+        "char_count": 2973
+      },
+      {
+        "level": 2,
+        "heading": "S2.3 Alternative Decision Rules",
+        "char_count": 2806
+      },
+      {
+        "level": 2,
+        "heading": "S2.4 Additional Physics Baseline",
+        "char_count": 1776
+      },
+      {
+        "level": 2,
+        "heading": "S2.5 Additional control analyses",
+        "char_count": 1224
+      },
+      {
+        "level": 2,
+        "heading": "S2.6 Reanalysis of planning experiments",
+        "char_count": 2561
+      }
+    ]
+  },
+  {
+    "file": "28.pdf",
+    "doc_type": "en_paper",
+    "title": "TRIAGE: HIERARCHICAL VISUAL BUDGETING FOR EFFICIEN",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "ABSTRACT",
+        "char_count": 1089
+      },
+      {
+        "level": 1,
+        "heading": "1. INTRODUCTION",
+        "char_count": 3515
+      },
+      {
+        "level": 1,
+        "heading": "2. PROPOSED METHOD",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "2.1. Frame-Level Budgeting",
+        "char_count": 2927
+      },
+      {
+        "level": 2,
+        "heading": "2.2. Token-Level Budgeting",
+        "char_count": 4930
+      },
+      {
+        "level": 1,
+        "heading": "3. EXPERIMENTS",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "3.1. Experimental Setup",
+        "char_count": 740
+      },
+      {
+        "level": 2,
+        "heading": "3.2. Main Results",
+        "char_count": 1288
+      },
+      {
+        "level": 2,
+        "heading": "3.3. Ablation Study and Analysis",
+        "char_count": 5166
+      },
+      {
+        "level": 1,
+        "heading": "4. CONCLUSION",
+        "char_count": 406
+      },
+      {
+        "level": 1,
+        "heading": "5. ACKNOWLEDGMENTS",
+        "char_count": 292
+      },
+      {
+        "level": 1,
+        "heading": "6. REFERENCES",
+        "char_count": 4100
+      }
+    ]
+  },
+  {
+    "file": "29.pdf",
+    "doc_type": "en_paper",
+    "title": "SAVES: STEERING SAFETY JUDGMENTS IN VISION-LANGUAG",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "ABSTRACT",
+        "char_count": 1090
+      },
+      {
+        "level": 2,
+        "heading": "1 Introduction",
+        "char_count": 6058
+      },
+      {
+        "level": 2,
+        "heading": "2 Related Works",
+        "char_count": 3807
+      },
+      {
+        "level": 2,
+        "heading": "3 Method",
+        "char_count": 233
+      },
+      {
+        "level": 2,
+        "heading": "3.1 Problem Formulation.",
+        "char_count": 1955
+      },
+      {
+        "level": 2,
+        "heading": "3.2 Semantic Steering Framework",
+        "char_count": 4291
+      },
+      {
+        "level": 2,
+        "heading": "3.3 Automated Steering Architectures",
+        "char_count": 3180
+      },
+      {
+        "level": 2,
+        "heading": "3.4 Safety Evaluation",
+        "char_count": 7267
+      },
+      {
+        "level": 2,
+        "heading": "4 Experiments",
+        "char_count": 514
+      },
+      {
+        "level": 2,
+        "heading": "4.1 Steering Across MSSBench-Embodied and SAVeS",
+        "char_count": 4568
+      },
+      {
+        "level": 2,
+        "heading": "4.2 Ablation Studies",
+        "char_count": 2414
+      },
+      {
+        "level": 2,
+        "heading": "4.3 Automated Steering Pipelines",
+        "char_count": 3285
+      },
+      {
+        "level": 2,
+        "heading": "4.4 Qualitative Analysis",
+        "char_count": 2274
+      },
+      {
+        "level": 2,
+        "heading": "5 Conclusions",
+        "char_count": 1062
+      },
+      {
+        "level": 1,
+        "heading": "References",
+        "char_count": 5842
+      },
+      {
+        "level": 1,
+        "heading": "Supplementary Materials",
+        "char_count": 509
+      },
+      {
+        "level": 2,
+        "heading": "6 Experimental Setup and Reproducibility",
+        "char_count": 1659
+      },
+      {
+        "level": 2,
+        "heading": "7 SAVeS Construction Pipeline Details",
+        "char_count": 10635
+      },
+      {
+        "level": 2,
+        "heading": "8 Additional Quantitative Results",
+        "char_count": 6704
+      },
+      {
+        "level": 2,
+        "heading": "9 Additional Qualitative Results",
+        "char_count": 1931
+      },
+      {
+        "level": 2,
+        "heading": "10 Limitations and Additional Discussion",
+        "char_count": 1841
+      }
+    ]
+  },
+  {
+    "file": "30.pdf",
+    "doc_type": "en_paper",
+    "title": "FVG-PT: Adaptive Foreground View-Guided Prompt Tun",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "Abstract",
+        "char_count": 1091
+      },
+      {
+        "level": 2,
+        "heading": "1 Introduction",
+        "char_count": 6757
+      },
+      {
+        "level": 2,
+        "heading": "2 Related Work",
+        "char_count": 4708
+      },
+      {
+        "level": 2,
+        "heading": "3 Proposed Method",
+        "char_count": 640
+      },
+      {
+        "level": 2,
+        "heading": "3.1 Preliminaries",
+        "char_count": 1774
+      },
+      {
+        "level": 2,
+        "heading": "3.2 Foreground Reliability Gate",
+        "char_count": 4062
+      },
+      {
+        "level": 2,
+        "heading": "3.3 Foreground Distillation Compensation",
+        "char_count": 3314
+      },
+      {
+        "level": 2,
+        "heading": "3.4 Prior Calibration",
+        "char_count": 3811
+      },
+      {
+        "level": 2,
+        "heading": "4 Experiments",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "4.1 Experimental Setup",
+        "char_count": 6317
+      },
+      {
+        "level": 2,
+        "heading": "4.2 Experimental Results",
+        "char_count": 6325
+      },
+      {
+        "level": 2,
+        "heading": "4.3 Ablation Study",
+        "char_count": 6802
+      },
+      {
+        "level": 2,
+        "heading": "5 Conclusion",
+        "char_count": 1620
+      },
+      {
+        "level": 1,
+        "heading": "References",
+        "char_count": 12403
+      },
+      {
+        "level": 2,
+        "heading": "FVG-PT: Adaptive Foreground View-Guided Prompt Tuning for Vision-Language Models",
+        "char_count": 1045
+      },
+      {
+        "level": 1,
+        "heading": "A Details of Shifts in Foreground Attention",
+        "char_count": 313
+      },
+      {
+        "level": 2,
+        "heading": "A.1 Quantitative Analysis",
+        "char_count": 2992
+      },
+      {
+        "level": 2,
+        "heading": "A.2 More Visualization Results",
+        "char_count": 667
+      },
+      {
+        "level": 1,
+        "heading": "B More Implementation Details",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "B.1 Experimental Setup",
+        "char_count": 2533
+      },
+      {
+        "level": 2,
+        "heading": "B.2 Details of Segmentation Model",
+        "char_count": 1073
+      },
+      {
+        "level": 2,
+        "heading": "B.3 FVG-PT Optimization for Backbones",
+        "char_count": 5911
+      },
+      {
+        "level": 1,
+        "heading": "C More Experimental Results",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "C.1 Error Bar Analysis",
+        "char_count": 1123
+      },
+      {
+        "level": 2,
+        "heading": "C.2 Compare with More Baselines",
+        "char_count": 2769
+      },
+      {
+        "level": 2,
+        "heading": "C.3 Detailed Ablation Study",
+        "char_count": 3672
+      },
+      {
+        "level": 2,
+        "heading": "C.4 Data Eficiency Analysis",
+        "char_count": 1315
+      },
+      {
+        "level": 1,
+        "heading": "D Failure Case Study",
+        "char_count": 1494
+      }
+    ]
+  },
+  {
+    "file": "ch1.pdf",
+    "doc_type": "zh_paper",
+    "title": "大数据赋能高校体育场馆智慧化建设的现实困境与路径研究",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "摘要",
+        "char_count": 366
+      },
+      {
+        "level": 1,
+        "heading": "引言",
+        "char_count": 494
+      },
+      {
+        "level": 1,
+        "heading": "1、大数据赋能高校体育场馆智慧化建设的作用机理",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "1.1、驱动数据要素汇聚，重塑场馆管理决策模式",
+        "char_count": 667
+      },
+      {
+        "level": 2,
+        "heading": "1.2、优化资源配置机制，提升场馆运营综合效益",
+        "char_count": 625
+      },
+      {
+        "level": 1,
+        "heading": "2、大数据赋能高校体育场馆智慧化建设的现实困境",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "2.1、数据治理体系不完善，技术应用流于表面",
+        "char_count": 515
+      },
+      {
+        "level": 2,
+        "heading": "2.2、管理协同机制缺位，运营效能提升受阻",
+        "char_count": 610
+      },
+      {
+        "level": 2,
+        "heading": "2.3、专业人才短缺，内生动力严重不足",
+        "char_count": 579
+      },
+      {
+        "level": 1,
+        "heading": "3、大数据赋能高校体育场馆智慧化建设的实现路径",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "3.1、构建数据治理体系，夯实智慧化转型基础",
+        "char_count": 701
+      },
+      {
+        "level": 2,
+        "heading": "3.2、创新运营管理机制，提升场馆综合治理效能",
+        "char_count": 290
+      },
+      {
+        "level": 1,
+        "heading": "4、结语",
+        "char_count": 324
+      },
+      {
+        "level": 1,
+        "heading": "参考文献：",
+        "char_count": 149
+      }
+    ]
+  },
+  {
+    "file": "ch2.pdf",
+    "doc_type": "zh_paper",
+    "title": "大数据算法驱动下BOPPPS模型在肾内科血净护理实习教学中的应用研究",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "摘要",
+        "char_count": 427
+      },
+      {
+        "level": 2,
+        "heading": "ResearchontheApplicationoftheBOPPPSModelDrivenbyBigDataAlgorithms inthePracticalTeachingofHemodialysisNursingintheNephrologyDepartment",
+        "char_count": 1524
+      },
+      {
+        "level": 1,
+        "heading": "0 引 言",
+        "char_count": 199
+      },
+      {
+        "level": 1,
+        "heading": "1 大数据算法驱动的BOPPPS模型技术框架",
+        "char_count": 0
+      },
+      {
+        "level": 1,
+        "heading": "核心算法选择与技术逻辑",
+        "char_count": 51
+      },
+      {
+        "level": 1,
+        "heading": "聚类分析( )",
+        "char_count": 332
+      },
+      {
+        "level": 3,
+        "heading": "1.1.2 关联规则挖掘(Apriori)",
+        "char_count": 424
+      },
+      {
+        "level": 1,
+        "heading": "协同过滤推荐算法",
+        "char_count": 299
+      },
+      {
+        "level": 2,
+        "heading": "1.2 数据采集与预处理",
+        "char_count": 86
+      },
+      {
+        "level": 1,
+        "heading": "2 实验设计与实施",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "2.1 研究对象",
+        "char_count": 65
+      },
+      {
+        "level": 2,
+        "heading": "2.2 干预方案",
+        "char_count": 277
+      },
+      {
+        "level": 2,
+        "heading": "2.3 评价指标",
+        "char_count": 60
+      },
+      {
+        "level": 1,
+        "heading": "3 实验结果与分析",
+        "char_count": 0
+      },
+      {
+        "level": 1,
+        "heading": "教学效果对比",
+        "char_count": 530
+      },
+      {
+        "level": 2,
+        "heading": "3.2 学习行为数据分析",
+        "char_count": 374
+      },
+      {
+        "level": 1,
+        "heading": "4 结 语",
+        "char_count": 150
+      },
+      {
+        "level": 1,
+        "heading": "参考文献",
+        "char_count": 586
+      }
+    ]
+  },
+  {
+    "file": "ch3.pdf",
+    "doc_type": "zh_paper",
+    "title": "大数据与 AI 画像:高校思想政治教育个性化实践探索",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "摘要",
+        "char_count": 419
+      },
+      {
+        "level": 2,
+        "heading": "Big Data and AI Portrait: Exploring Personalized Practice in Ideological and Political Education in Colleges and Universities",
+        "char_count": 1903
+      },
+      {
+        "level": 1,
+        "heading": "一、大数据与 AI 画像在高校辅导员思政教育个性化实践中的应用现状",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "(一)数据体系与画像平台建设现状",
+        "char_count": 380
+      },
+      {
+        "level": 2,
+        "heading": "(二)辅导员一线工作场景的落地应用",
+        "char_count": 553
+      },
+      {
+        "level": 2,
+        "heading": "(三)辅导员队伍应用能力与配套支撑现状",
+        "char_count": 321
+      },
+      {
+        "level": 1,
+        "heading": "二、大数据与 AI 画像赋能辅导员思政教育个性化实践的现实困境",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "(一)数据壁垒突出,画像模型与思政工作需求适配性不足",
+        "char_count": 395
+      },
+      {
+        "level": 2,
+        "heading": "(二)工具供给与能力建设错位,应用落地存在双重鸿沟",
+        "char_count": 347
+      },
+      {
+        "level": 2,
+        "heading": "(三)工具理性僭越育人本质,个性化思政实践存在异化风险",
+        "char_count": 397
+      },
+      {
+        "level": 2,
+        "heading": "(四)安全与伦理规范缺位,一线工作存在合规性风险",
+        "char_count": 346
+      },
+      {
+        "level": 1,
+        "heading": "三、大数据与 AI 画像赋能辅导员思政教育个性化实践的优化策略",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "(一)构建适配辅导员工作的全维度数据体系与动态画像模型",
+        "char_count": 409
+      },
+      {
+        "level": 2,
+        "heading": "(二)打造专属工具矩阵与全周期数字素养提升体系",
+        "char_count": 510
+      },
+      {
+        "level": 2,
+        "heading": "(三)坚守育人初心,构建“AI 赋能+人文滋养”的个性化思政实践闭环",
+        "char_count": 432
+      },
+      {
+        "level": 2,
+        "heading": "(四)健全数据安全与伦理规范,筑牢一线工作合规边界",
+        "char_count": 377
+      },
+      {
+        "level": 1,
+        "heading": "四、结论",
+        "char_count": 273
+      },
+      {
+        "level": 1,
+        "heading": "参考文献:",
+        "char_count": 410
+      }
+    ]
+  },
+  {
+    "file": "ch4.pdf",
+    "doc_type": "zh_paper",
+    "title": "地震动记录选取的新视角：大数据与机器学习",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "地震动记录选取的新视角：大数据与机器学习",
+        "char_count": 719
+      },
+      {
+        "level": 2,
+        "heading": "A new perspective on the selection of ground motion records: big data and machine learning",
+        "char_count": 2559
+      },
+      {
+        "level": 1,
+        "heading": "0 引 言",
+        "char_count": 1614
+      },
+      {
+        "level": 1,
+        "heading": "1 地震动记录数据库的建立",
+        "char_count": 663
+      },
+      {
+        "level": 1,
+        "heading": "2 基本原理",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "2.1 模糊C-均值聚类分析方法",
+        "char_count": 1569
+      },
+      {
+        "level": 2,
+        "heading": "2.2 基于遗传模拟退火算法的聚类分析",
+        "char_count": 604
+      },
+      {
+        "level": 2,
+        "heading": "2.3 聚类分析结果",
+        "char_count": 512
+      },
+      {
+        "level": 1,
+        "heading": "3 基于聚类分析的地震动记录选取",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "3.1 不同场地类别的地震动记录选取",
+        "char_count": 2221
+      },
+      {
+        "level": 2,
+        "heading": "3.2 不同聚类分组的地震动记录选取",
+        "char_count": 1341
+      },
+      {
+        "level": 1,
+        "heading": "4 基于主成分排序的地震动记录推荐",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "4.1 基于主成分分析进行地震动记录排序",
+        "char_count": 4500
+      },
+      {
+        "level": 2,
+        "heading": "4.2 基于主成分分析的地震动记录推荐",
+        "char_count": 8381
+      },
+      {
+        "level": 1,
+        "heading": "5 结 论",
+        "char_count": 669
+      },
+      {
+        "level": 1,
+        "heading": "参考文献：",
+        "char_count": 7804
+      }
+    ]
+  },
+  {
+    "file": "ch5.pdf",
+    "doc_type": "zh_paper",
+    "title": "基于LSTM的暂冲式风洞马赫数建模与控制方法",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "基于LSTM的暂冲式风洞马赫数建模与控制方法",
+        "char_count": 499
+      },
+      {
+        "level": 2,
+        "heading": "A LSTM-based modeling and control method for Mach number in an intemitent wind tunnel",
+        "char_count": 1635
+      },
+      {
+        "level": 1,
+        "heading": "0 引 言",
+        "char_count": 1972
+      },
+      {
+        "level": 1,
+        "heading": "1 某暂冲式亚跨超风洞马赫数控制系统",
+        "char_count": 1324
+      },
+      {
+        "level": 1,
+        "heading": "2 基于 LSTM 的马赫数建模方法",
+        "char_count": 0
+      },
+      {
+        "level": 1,
+        "heading": "2. 1 建模原理",
+        "char_count": 1771
+      },
+      {
+        "level": 1,
+        "heading": "2. 2 建模方法",
+        "char_count": 6954
+      },
+      {
+        "level": 1,
+        "heading": "3 基于 LSTM 的马赫数智能控制方法",
+        "char_count": 0
+      },
+      {
+        "level": 1,
+        "heading": "3. 1 小扰动最优化动态补偿控制方法",
+        "char_count": 3175
+      },
+      {
+        "level": 1,
+        "heading": "3. 2 控制仿真",
+        "char_count": 3249
+      },
+      {
+        "level": 1,
+        "heading": "3. 3 预测模型误差对控制效果的影响分析",
+        "char_count": 2516
+      },
+      {
+        "level": 1,
+        "heading": "4 结 论",
+        "char_count": 719
+      },
+      {
+        "level": 1,
+        "heading": "参 考 文 献",
+        "char_count": 5211
+      }
+    ]
+  },
+  {
+    "file": "ch6.pdf",
+    "doc_type": "zh_paper",
+    "title": "基于 ResNet 的混凝土搅拌均匀性智能检测模型参数优化研究\\*",
+    "sections": [
+      {
+        "level": 2,
+        "heading": "基于 ResNet 的混凝土搅拌均匀性智能检测模型参数优化研究<sup>\\*</sup>",
+        "char_count": 616
+      },
+      {
+        "level": 2,
+        "heading": "Parameter Optimization of a ResNet-Based Intelligent Detection Model for Concrete Mixing Uniformity",
+        "char_count": 2386
+      },
+      {
+        "level": 1,
+        "heading": "0 引言",
+        "char_count": 1370
+      },
+      {
+        "level": 1,
+        "heading": "1 试验设计与方法",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "1.1 数据集构建",
+        "char_count": 389
+      },
+      {
+        "level": 2,
+        "heading": "1.2 模型架构",
+        "char_count": 324
+      },
+      {
+        "level": 2,
+        "heading": "1.3 试验参数设置",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "1）固定参数",
+        "char_count": 543
+      },
+      {
+        "level": 2,
+        "heading": "1）图像输入尺寸设置",
+        "char_count": 771
+      },
+      {
+        "level": 2,
+        "heading": "2）学习率调整策略设置",
+        "char_count": 1683
+      },
+      {
+        "level": 2,
+        "heading": "3）数据增强强度设置",
+        "char_count": 1294
+      },
+      {
+        "level": 1,
+        "heading": "2 不同参数对混凝土搅拌均匀性智能检测模型性能的影响",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "2.1 图像输入尺寸",
+        "char_count": 910
+      },
+      {
+        "level": 2,
+        "heading": "2.2 学习率调整策略",
+        "char_count": 869
+      },
+      {
+        "level": 2,
+        "heading": "2.3 数据增强强度",
+        "char_count": 860
+      },
+      {
+        "level": 1,
+        "heading": "3 混凝土搅拌均匀性智能检测模型性能分析",
+        "char_count": 2236
+      },
+      {
+        "level": 1,
+        "heading": "4 结语",
+        "char_count": 582
+      },
+      {
+        "level": 1,
+        "heading": "参考文献：",
+        "char_count": 2625
+      }
+    ]
+  },
+  {
+    "file": "ch7.pdf",
+    "doc_type": "zh_paper",
+    "title": "基于Transformer模型的重庆某大型三甲医院门诊量预测",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "摘要",
+        "char_count": 275
+      },
+      {
+        "level": 2,
+        "heading": "PredictionofOutpatientVolumeofaLargeTertiaryHospital inChongqingBasedonTransformerModel",
+        "char_count": 1656
+      },
+      {
+        "level": 1,
+        "heading": "0 引 言",
+        "char_count": 213
+      },
+      {
+        "level": 1,
+        "heading": "1 资料来源",
+        "char_count": 74
+      },
+      {
+        "level": 1,
+        "heading": "2 技术发展历程",
+        "char_count": 0
+      },
+      {
+        "level": 1,
+        "heading": "传统统计建模",
+        "char_count": 195
+      },
+      {
+        "level": 1,
+        "heading": "机器学习与非线性建模",
+        "char_count": 151
+      },
+      {
+        "level": 1,
+        "heading": "以 为代表的深度学习建模",
+        "char_count": 182
+      },
+      {
+        "level": 1,
+        "heading": "3 方法实现",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "3.1 数据整体概况",
+        "char_count": 86
+      },
+      {
+        "level": 2,
+        "heading": "3.2Transformer模型",
+        "char_count": 226
+      },
+      {
+        "level": 1,
+        "heading": "基于 模型的门诊量预测方法",
+        "char_count": 399
+      },
+      {
+        "level": 1,
+        "heading": "4 实验结果分析",
+        "char_count": 1954
+      },
+      {
+        "level": 1,
+        "heading": "5 结 语",
+        "char_count": 165
+      },
+      {
+        "level": 1,
+        "heading": "参考文献",
+        "char_count": 417
+      }
+    ]
+  },
+  {
+    "file": "ch8.pdf",
+    "doc_type": "zh_paper",
+    "title": "基于WGCNA和 113 种机器学习算法鉴定糖尿病肾病关键基因",
+    "sections": [
+      {
+        "level": 2,
+        "heading": "基于WGCNA和 113 种机器学习算法鉴定糖尿病肾病关键基因",
+        "char_count": 924
+      },
+      {
+        "level": 2,
+        "heading": "Identification of key genes in diabetic nephropathy based on WGCNA and 113 machine learning algorithms",
+        "char_count": 3747
+      },
+      {
+        "level": 1,
+        "heading": "1 材料和方法",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "1.1 数据集下载和数据预处理",
+        "char_count": 250
+      },
+      {
+        "level": 2,
+        "heading": "1.2 差异表达基因筛选",
+        "char_count": 145
+      },
+      {
+        "level": 2,
+        "heading": "1.3 WGCNA 关键模块差异表达基因鉴定",
+        "char_count": 183
+      },
+      {
+        "level": 2,
+        "heading": "1.4 细胞衰老相关分泌蛋白差异表达基因",
+        "char_count": 382
+      },
+      {
+        "level": 2,
+        "heading": "1.5 SASP-DEGs 功能分析",
+        "char_count": 71
+      },
+      {
+        "level": 2,
+        "heading": "1.6 113 种机器学习算法构建 DN诊断模型",
+        "char_count": 216
+      },
+      {
+        "level": 2,
+        "heading": "1.7 关键基因分子相互作用网络构建",
+        "char_count": 87
+      },
+      {
+        "level": 2,
+        "heading": "1.8 基因集富集分析（Gene set enrichment analysis，GSEA）",
+        "char_count": 110
+      },
+      {
+        "level": 2,
+        "heading": "1.9 关键基因 CeRNA 和 TFs 网络构建",
+        "char_count": 248
+      },
+      {
+        "level": 2,
+        "heading": "1.10 关键基因药物预测和分子对接",
+        "char_count": 243
+      },
+      {
+        "level": 1,
+        "heading": "2 结果",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "2.1 DEGs 的筛选",
+        "char_count": 267
+      },
+      {
+        "level": 2,
+        "heading": "2.2 DN 关键模块鉴定",
+        "char_count": 154
+      },
+      {
+        "level": 2,
+        "heading": "2.3 SASP-DEGs 的鉴定及功能富集分析",
+        "char_count": 231
+      },
+      {
+        "level": 2,
+        "heading": "2.4 113 种机器学习构建 DN诊断模型",
+        "char_count": 3915
+      },
+      {
+        "level": 2,
+        "heading": "2.5 关键基因 GSEA 功能分析",
+        "char_count": 931
+      },
+      {
+        "level": 2,
+        "heading": "2.6 关键基因调控网络构建和药物富集分析",
+        "char_count": 1095
+      },
+      {
+        "level": 2,
+        "heading": "2.7 分子对接",
+        "char_count": 515
+      },
+      {
+        "level": 1,
+        "heading": "3 讨论",
+        "char_count": 1150
+      },
+      {
+        "level": 1,
+        "heading": "4 结论",
+        "char_count": 6536
+      }
+    ]
+  },
+  {
+    "file": "project1.pdf",
+    "doc_type": "fund_project",
+    "title": "TiAI合金中氢原子团簇的第一性原理计算及实验研究",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "项目摘要",
+        "char_count": 158
+      },
+      {
+        "level": 1,
+        "heading": "结题摘要",
+        "char_count": 3558
+      },
+      {
+        "level": 1,
+        "heading": "(一）结题部分",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "1. 研究计划执行情况概述。",
+        "char_count": 0
+      },
+      {
+        "level": 3,
+        "heading": "（1）按计划执行情况。",
+        "char_count": 223
+      },
+      {
+        "level": 3,
+        "heading": "（2）研究目标完成情况。",
+        "char_count": 225
+      },
+      {
+        "level": 2,
+        "heading": "2. 研究工作主要进展、结果和影响。",
+        "char_count": 0
+      },
+      {
+        "level": 3,
+        "heading": "（1）主要研究内容。",
+        "char_count": 45577
+      },
+      {
+        "level": 2,
+        "heading": "3. 研究人员的合作与分工。",
+        "char_count": 133
+      },
+      {
+        "level": 2,
+        "heading": "4. 国内外学术合作交流等情况。",
+        "char_count": 99
+      },
+      {
+        "level": 2,
+        "heading": "5. 存在的问题、建议及其他需要说明的情况。",
+        "char_count": 2
+      },
+      {
+        "level": 1,
+        "heading": "（二）成果部分",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "1. 项目取得成果的总体情况。",
+        "char_count": 250
+      },
+      {
+        "level": 2,
+        "heading": "2. 项目成果转化及应用情况。",
+        "char_count": 2
+      },
+      {
+        "level": 2,
+        "heading": "3. 人才培养情况。",
+        "char_count": 33
+      },
+      {
+        "level": 2,
+        "heading": "4. 其他需要说明的成果。",
+        "char_count": 213
+      },
+      {
+        "level": 2,
+        "heading": "5. 项目成果科普性介绍或展示网站。",
+        "char_count": 2
+      },
+      {
+        "level": 1,
+        "heading": "研究成果目录",
+        "char_count": 342
+      },
+      {
+        "level": 2,
+        "heading": "期刊论文",
+        "char_count": 477
+      },
+      {
+        "level": 2,
+        "heading": "人才培养",
+        "char_count": 99
+      },
+      {
+        "level": 2,
+        "heading": "项目成果应用前景",
+        "char_count": 121
+      },
+      {
+        "level": 1,
+        "heading": "国家自然科学基金包干制项目决算表",
+        "char_count": 1474
+      },
+      {
+        "level": 1,
+        "heading": "决算说明书",
+        "char_count": 97
+      },
+      {
+        "level": 2,
+        "heading": "一、项目资金支出情况",
+        "char_count": 324
+      },
+      {
+        "level": 2,
+        "heading": "二、资金结余情况",
+        "char_count": 6
+      },
+      {
+        "level": 2,
+        "heading": "三、单价50万元（含）以上的设备名称及使用情况",
+        "char_count": 2
+      },
+      {
+        "level": 2,
+        "heading": "四、资金管理和使用过程中的问题及建议",
+        "char_count": 2
+      },
+      {
+        "level": 2,
+        "heading": "五、其他需要说明的事项",
+        "char_count": 919
+      },
+      {
+        "level": 1,
+        "heading": "签字及审核意见表",
+        "char_count": 0
+      }
+    ]
+  },
+  {
+    "file": "project2.pdf",
+    "doc_type": "fund_project",
+    "title": "大规模通用隐式非线性有限元分析软件研发",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "项目摘要",
+        "char_count": 2308
+      },
+      {
+        "level": 1,
+        "heading": "结题摘要",
+        "char_count": 3279
+      },
+      {
+        "level": 1,
+        "heading": "(一) 结题部分",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "1. 研究计划执行情况概述。",
+        "char_count": 0
+      },
+      {
+        "level": 3,
+        "heading": "（1）按计划执行情况。",
+        "char_count": 385
+      },
+      {
+        "level": 3,
+        "heading": "(2)研究目标完成情况。",
+        "char_count": 280
+      },
+      {
+        "level": 2,
+        "heading": "2. 研究工作主要进展、结果和影响。",
+        "char_count": 0
+      },
+      {
+        "level": 3,
+        "heading": "（1）主要研究内容。",
+        "char_count": 15854
+      },
+      {
+        "level": 2,
+        "heading": "3. 研究人员的合作与分工。",
+        "char_count": 1724
+      },
+      {
+        "level": 2,
+        "heading": "4. 国内外学术合作交流等情况。",
+        "char_count": 292
+      },
+      {
+        "level": 2,
+        "heading": "5. 存在的问题、建议及其他需要说明的情况。",
+        "char_count": 0
+      },
+      {
+        "level": 1,
+        "heading": "（二）成果部分",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "1. 项目取得成果的总体情况。",
+        "char_count": 384
+      },
+      {
+        "level": 2,
+        "heading": "2. 项目成果转化及应用情况。",
+        "char_count": 582
+      },
+      {
+        "level": 2,
+        "heading": "3. 人才培养情况。",
+        "char_count": 507
+      },
+      {
+        "level": 2,
+        "heading": "5. 项目成果科普性介绍或展示网站。",
+        "char_count": 776
+      },
+      {
+        "level": 1,
+        "heading": "研究成果目录",
+        "char_count": 342
+      },
+      {
+        "level": 2,
+        "heading": "期刊论文",
+        "char_count": 633
+      },
+      {
+        "level": 2,
+        "heading": "会议论文",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "软件著作权",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "人才培养",
+        "char_count": 136
+      },
+      {
+        "level": 2,
+        "heading": "学术交流",
+        "char_count": 179
+      },
+      {
+        "level": 2,
+        "heading": "项目成果应用前景",
+        "char_count": 2808
+      },
+      {
+        "level": 1,
+        "heading": "决算说明书",
+        "char_count": 2243
+      },
+      {
+        "level": 1,
+        "heading": "电子附件目录",
+        "char_count": 694
+      },
+      {
+        "level": 1,
+        "heading": "签字及审核意见表",
+        "char_count": 0
+      }
+    ]
+  },
+  {
+    "file": "project3.pdf",
+    "doc_type": "fund_project",
+    "title": "结题摘要",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "项目摘要",
+        "char_count": 302
+      },
+      {
+        "level": 1,
+        "heading": "结题摘要",
+        "char_count": 3948
+      },
+      {
+        "level": 1,
+        "heading": "（一）结题部分",
+        "char_count": 14
+      },
+      {
+        "level": 3,
+        "heading": "（1）按计划执行情况",
+        "char_count": 459
+      },
+      {
+        "level": 3,
+        "heading": "（2）研究目标完成情况",
+        "char_count": 577
+      },
+      {
+        "level": 2,
+        "heading": "2. 研究工作主要进展、结果和影响。",
+        "char_count": 0
+      },
+      {
+        "level": 3,
+        "heading": "(1) 主要研究内容。",
+        "char_count": 295
+      },
+      {
+        "level": 3,
+        "heading": "（2）取得的主要研究进展、重要结果、关键数据等及其科学意义或应用前景。",
+        "char_count": 7239
+      },
+      {
+        "level": 2,
+        "heading": "3.研究人员的合作与分工。",
+        "char_count": 15
+      },
+      {
+        "level": 2,
+        "heading": "4. 国内外学术合作交流等情况。",
+        "char_count": 81
+      },
+      {
+        "level": 2,
+        "heading": "5. 存在的问题、建议及其他需要说明的情况。",
+        "char_count": 2
+      },
+      {
+        "level": 1,
+        "heading": "（二）成果部分",
+        "char_count": 0
+      },
+      {
+        "level": 2,
+        "heading": "1. 项目取得成果的总体情况。",
+        "char_count": 2338
+      },
+      {
+        "level": 2,
+        "heading": "2. 项目成果转化及应用情况。",
+        "char_count": 165
+      },
+      {
+        "level": 1,
+        "heading": "研究成果目录",
+        "char_count": 342
+      },
+      {
+        "level": 2,
+        "heading": "期刊论文",
+        "char_count": 1071
+      },
+      {
+        "level": 2,
+        "heading": "项目成果应用前景",
+        "char_count": 6119
+      },
+      {
+        "level": 1,
+        "heading": "决算说明书",
+        "char_count": 1245
+      },
+      {
+        "level": 1,
+        "heading": "电子附件目录",
+        "char_count": 2080
+      },
+      {
+        "level": 1,
+        "heading": "签字及审核意见表",
+        "char_count": 0
+      },
+      {
+        "level": 1,
+        "heading": "附表：研究成果统计数据表",
+        "char_count": 0
+      }
+    ]
+  }
+]

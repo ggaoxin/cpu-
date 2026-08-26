@@ -1,0 +1,29 @@
+functional_item: 深度聚类工具
+name: 深度聚类
+description: 按用户选择的技术路线轴或应用场景轴执行无主题库语义聚类；输入可为通用科技文本或带可选元数据的文献对象。
+input_type: multi_text
+engine_type: clustering
+system_prompt: |
+  深度聚类由双路线算法引擎执行。技术路线使用 BGE-M3 原生稀疏头；应用场景优先
+  使用证据约束的领域、对象、问题三分面表示。大模型和规则均不得直接指定类簇。
+principles: |
+  - 两条路线独立，单次请求只执行用户选择的一条路线。
+  - 不使用主题库、类别模板或 Gold 标签参与生产聚类。
+  - cluster_count 可由用户指定；auto 模式使用无标签内部指标或图社区发现。
+  - 技术路线默认使用 BGE-M3 原生稀疏表示。
+  - 应用场景使用 domain/object/problem Core3 表示，权重为 0.40/0.35/0.25。
+dictionaries:
+  stopwords: []
+output_schema:
+  type: object
+  properties:
+    data:
+      type: object
+      properties:
+        documents: {type: array, description: 每篇双轴主题映射}
+        technical_topics: {type: array, description: 技术路线轴主题分组}
+        application_topics: {type: array, description: 应用场景轴主题分组}
+        n: {type: integer}
+      required: [documents, technical_topics, application_topics, n]
+  required: [data]
+examples: []

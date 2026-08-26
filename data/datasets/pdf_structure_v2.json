@@ -1,0 +1,2878 @@
+[
+  {
+    "file": "18.pdf",
+    "doc_type": "en_paper",
+    "title": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "Abstract"
+      },
+      {
+        "level": 1,
+        "heading": "1. Introduction"
+      },
+      {
+        "level": 1,
+        "heading": "2. Related Work"
+      },
+      {
+        "level": 1,
+        "heading": "3. Exploring Divergent Thinking in VLMs"
+      },
+      {
+        "level": 2,
+        "heading": "3.1. Divergent vs Convergent"
+      },
+      {
+        "level": 2,
+        "heading": "3.2. Diversity Collapse"
+      },
+      {
+        "level": 1,
+        "heading": "4. The Proposed Method"
+      },
+      {
+        "level": 2,
+        "heading": "4.1. Preliminary"
+      },
+      {
+        "level": 2,
+        "heading": "4.2. Multi-Group Policy Optimization"
+      },
+      {
+        "level": 1,
+        "heading": "5. Experiment and Results"
+      },
+      {
+        "level": 2,
+        "heading": "5.1. Main Results"
+      },
+      {
+        "level": 2,
+        "heading": "5.2. Further Discussion"
+      },
+      {
+        "level": 1,
+        "heading": "6. Conclusion"
+      },
+      {
+        "level": 1,
+        "heading": "Acknowledgement"
+      },
+      {
+        "level": 1,
+        "heading": "References"
+      }
+    ]
+  },
+  {
+    "file": "19.pdf",
+    "doc_type": "en_paper",
+    "title": "DIFFUSION LARGE LANGUAGE MODELS FOR BLACK-BOX OPTIMIZATION",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "ABSTRACT"
+      },
+      {
+        "level": 2,
+        "heading": "1 INTRODUCTION"
+      },
+      {
+        "level": 2,
+        "heading": "2 PRELIMINARIES"
+      },
+      {
+        "level": 2,
+        "heading": "2.1 OFFLINE BLACK-BOX OPTIMIZATION"
+      },
+      {
+        "level": 2,
+        "heading": "2.2 DIFFUSION LARGE LANGUAGE MODELS"
+      },
+      {
+        "level": 2,
+        "heading": "3 METHOD"
+      },
+      {
+        "level": 2,
+        "heading": "3.1 IN-CONTEXT DENOISING"
+      },
+      {
+        "level": 1,
+        "heading": "Offline Dataset"
+      },
+      {
+        "level": 2,
+        "heading": "3.2 MASKED DIFFUSION TREE SEARCH"
+      },
+      {
+        "level": 2,
+        "heading": "4 EXPERIMENTS"
+      },
+      {
+        "level": 2,
+        "heading": "4.1 BENCHMARKS"
+      },
+      {
+        "level": 2,
+        "heading": "4.2 BASELINES"
+      },
+      {
+        "level": 2,
+        "heading": "4.3 IMPLEMENTATION DETAILS"
+      },
+      {
+        "level": 2,
+        "heading": "4.4 RESULTS AND ANALYSIS"
+      },
+      {
+        "level": 2,
+        "heading": "4.5 ABLATION STUDIES"
+      },
+      {
+        "level": 2,
+        "heading": "4.6 HYPERPARAMETER SENSITIVITY"
+      },
+      {
+        "level": 2,
+        "heading": "5 RELATED WORK"
+      },
+      {
+        "level": 2,
+        "heading": "6 CONCLUSION"
+      },
+      {
+        "level": 1,
+        "heading": "REPRODUCIBILITY STATEMENT"
+      },
+      {
+        "level": 1,
+        "heading": "ETHICS STATEMENT"
+      },
+      {
+        "level": 1,
+        "heading": "REFERENCES"
+      },
+      {
+        "level": 1,
+        "heading": "A APPENDIX"
+      },
+      {
+        "level": 2,
+        "heading": "A.1 LLM USAGE"
+      },
+      {
+        "level": 2,
+        "heading": "A.2 IN-CONTEXT PROMPT"
+      },
+      {
+        "level": 1,
+        "heading": "In-Context Prompt for Ant"
+      },
+      {
+        "level": 1,
+        "heading": "In-Context Prompt for D’Kitty"
+      },
+      {
+        "level": 1,
+        "heading": "In-Context Prompt for TF8"
+      },
+      {
+        "level": 1,
+        "heading": "In-Context Prompt for TF10"
+      },
+      {
+        "level": 2,
+        "heading": "A.3 MEDIAN RESULTS"
+      },
+      {
+        "level": 2,
+        "heading": "A.4 DIFFERENT TASK DESCRIPTIONS"
+      }
+    ]
+  },
+  {
+    "file": "20.pdf",
+    "doc_type": "zh_paper",
+    "title": "强化多视图多模态网络的社交媒体机器人检测",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "摘要"
+      },
+      {
+        "level": 2,
+        "heading": "Enhanced Multi-View Multi-Modal Network for Social Media Bot Detection"
+      },
+      {
+        "level": 2,
+        "heading": "1 相关工作"
+      },
+      {
+        "level": 2,
+        "heading": "1.1 基于特征的方法"
+      },
+      {
+        "level": 2,
+        "heading": "1.2 基于文本的方法"
+      },
+      {
+        "level": 2,
+        "heading": "1.3 基于图关系的方法"
+      },
+      {
+        "level": 2,
+        "heading": "1.4 基于特征融合的方法"
+      },
+      {
+        "level": 2,
+        "heading": "1.5 基于分类结果集成的方法"
+      },
+      {
+        "level": 2,
+        "heading": "2 方法论"
+      },
+      {
+        "level": 2,
+        "heading": "2.1 Roberta"
+      },
+      {
+        "level": 2,
+        "heading": "2.2 BotRGCN"
+      },
+      {
+        "level": 2,
+        "heading": "2.3 MLP"
+      },
+      {
+        "level": 2,
+        "heading": "2.4 VCDN"
+      },
+      {
+        "level": 2,
+        "heading": "2.5 AttVCDN"
+      },
+      {
+        "level": 1,
+        "heading": "算法1 BotAttVCDN模型算法"
+      },
+      {
+        "level": 2,
+        "heading": "3 实验及分析"
+      },
+      {
+        "level": 2,
+        "heading": "3.1 实验设置"
+      },
+      {
+        "level": 2,
+        "heading": "3.1.1 数据集"
+      },
+      {
+        "level": 2,
+        "heading": "3.1.2 基线"
+      },
+      {
+        "level": 2,
+        "heading": "3.2 实验结果与分析"
+      },
+      {
+        "level": 2,
+        "heading": "3.3 AttVCDN消融实验"
+      },
+      {
+        "level": 2,
+        "heading": "4 结束语"
+      },
+      {
+        "level": 1,
+        "heading": "参考文献："
+      }
+    ]
+  },
+  {
+    "file": "21.pdf",
+    "doc_type": "en_paper",
+    "title": "Towards LLM-centric Afective Visual Customization via Eficient and Precise Emotion Manipulating",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "Abstract"
+      },
+      {
+        "level": 1,
+        "heading": "CCS Concepts"
+      },
+      {
+        "level": 1,
+        "heading": "Keywords"
+      },
+      {
+        "level": 1,
+        "heading": "ACM Reference Format:"
+      },
+      {
+        "level": 2,
+        "heading": "1 Introduction"
+      },
+      {
+        "level": 2,
+        "heading": "2 Related Work"
+      },
+      {
+        "level": 2,
+        "heading": "3 Approach"
+      },
+      {
+        "level": 2,
+        "heading": "3.1 Preliminary of Difusion Models"
+      },
+      {
+        "level": 2,
+        "heading": "3.2 Eficient Inter-emotion Converting Module"
+      },
+      {
+        "level": 2,
+        "heading": "3.3 Precise Exter-emotion Retaining Module"
+      },
+      {
+        "level": 2,
+        "heading": "3.4 Optimization for EPEM approach"
+      },
+      {
+        "level": 2,
+        "heading": "4 Experimental Settings"
+      },
+      {
+        "level": 2,
+        "heading": "4.1 Dataset Construction"
+      },
+      {
+        "level": 2,
+        "heading": "4.2 Baselines"
+      },
+      {
+        "level": 2,
+        "heading": "4.3 Implement Details"
+      },
+      {
+        "level": 2,
+        "heading": "4.4 Evaluation Metrics"
+      },
+      {
+        "level": 2,
+        "heading": "5 Results and Discussion"
+      },
+      {
+        "level": 2,
+        "heading": "5.1 Experimental Results"
+      },
+      {
+        "level": 2,
+        "heading": "5.2 Are Emotion Conversion Really Aligned?"
+      },
+      {
+        "level": 2,
+        "heading": "5.3 Are Emotion-agnostic Contents Retaining?"
+      },
+      {
+        "level": 2,
+        "heading": "5.4 Contributions of Key Components"
+      },
+      {
+        "level": 2,
+        "heading": "5.5 Visualization Study"
+      },
+      {
+        "level": 2,
+        "heading": "6 Conclusion"
+      },
+      {
+        "level": 1,
+        "heading": "Acknowledgments"
+      },
+      {
+        "level": 1,
+        "heading": "References"
+      }
+    ]
+  },
+  {
+    "file": "22.pdf",
+    "doc_type": "zh_paper",
+    "title": "Enhancing the Performance and Application of Social Media Bot Detection Framework Based on Multi-View Integration and Multi-Teacher Distillation",
+    "sections": [
+      {
+        "level": 2,
+        "heading": "基于多视图集成与多教师知识蒸馏的社交媒体机器人检测框架"
+      },
+      {
+        "level": 1,
+        "heading": "关于学位论文独创声明和学术诚信承诺"
+      },
+      {
+        "level": 1,
+        "heading": "关于学位论文著作权使用授权书"
+      },
+      {
+        "level": 1,
+        "heading": "摘 要"
+      },
+      {
+        "level": 1,
+        "heading": "ABSTRACT"
+      },
+      {
+        "level": 1,
+        "heading": "目 录"
+      },
+      {
+        "level": 2,
+        "heading": "1 绪论"
+      },
+      {
+        "level": 2,
+        "heading": "1.1 研究背景与意义"
+      },
+      {
+        "level": 2,
+        "heading": "1.2 国内外研究现状"
+      },
+      {
+        "level": 2,
+        "heading": "1.2.1 基于多模态数据建模的社交媒体机器人检测方法"
+      },
+      {
+        "level": 1,
+        "heading": "（1）基于多模态特征融合的方法"
+      },
+      {
+        "level": 1,
+        "heading": "（2）基于多模态分类结果集成的方法"
+      },
+      {
+        "level": 2,
+        "heading": "1.2.2 基于社交图关系数据建模的社交媒体机器人检测方法"
+      },
+      {
+        "level": 2,
+        "heading": "1.3 本文主要工作及贡献"
+      },
+      {
+        "level": 2,
+        "heading": "1.4 本文组织结构"
+      },
+      {
+        "level": 2,
+        "heading": "1.5 本章小结"
+      },
+      {
+        "level": 2,
+        "heading": "2 相关研究基础理论和技术"
+      },
+      {
+        "level": 2,
+        "heading": "2.1 基于注意力与对比学习强化视图相关性发现网络的理论技术"
+      },
+      {
+        "level": 2,
+        "heading": "2.1.1 视图相关性发现网络"
+      },
+      {
+        "level": 2,
+        "heading": "2.1.2 多头注意力机制"
+      },
+      {
+        "level": 2,
+        "heading": "2.1.3 自监督对比学习"
+      },
+      {
+        "level": 2,
+        "heading": "2.2 基于多教师知识蒸馏框架的理论技术"
+      },
+      {
+        "level": 2,
+        "heading": "2.2.1 专家混合机制"
+      },
+      {
+        "level": 2,
+        "heading": "2.2.2 知识蒸馏"
+      },
+      {
+        "level": 2,
+        "heading": "2.3 社交媒体机器人检测评判指标及常用算法"
+      },
+      {
+        "level": 2,
+        "heading": "2.3.1 评判指标"
+      },
+      {
+        "level": 1,
+        "heading": "（1）准确率（Accuracy）"
+      },
+      {
+        "level": 1,
+        "heading": "（2）精确率（Precision）"
+      },
+      {
+        "level": 1,
+        "heading": "（3）召回率（Recall）"
+      },
+      {
+        "level": 1,
+        "heading": "（4）F1-score"
+      },
+      {
+        "level": 2,
+        "heading": "2.3.2 常用算法"
+      },
+      {
+        "level": 1,
+        "heading": "（1）基于规则的方法"
+      },
+      {
+        "level": 1,
+        "heading": "（2）基于机器学习的方法"
+      },
+      {
+        "level": 1,
+        "heading": "（3）基于深度学习的方法"
+      },
+      {
+        "level": 2,
+        "heading": "2.4 本章小结"
+      },
+      {
+        "level": 2,
+        "heading": "3 基于注意力与对比学习强化视图相关性发现网络"
+      },
+      {
+        "level": 2,
+        "heading": "3.1 引言"
+      },
+      {
+        "level": 2,
+        "heading": "3.2 流程分析与算法设计"
+      },
+      {
+        "level": 2,
+        "heading": "3.2.1 算法流程"
+      },
+      {
+        "level": 2,
+        "heading": "3.2.2 多模态子模型预训练模块"
+      },
+      {
+        "level": 2,
+        "heading": "3.2.3 基于正相关对比学习优化视图相关性发现网络的算法设计"
+      },
+      {
+        "level": 1,
+        "heading": "（1）传统的VCDN模型"
+      },
+      {
+        "level": 2,
+        "heading": "（2）基于正相关对比学习优化 VCDN算法"
+      },
+      {
+        "level": 2,
+        "heading": "3.2.4 基于注意力机制强化视图相关性发现网络的算法设计"
+      },
+      {
+        "level": 2,
+        "heading": "3.3 实验结果与分析"
+      },
+      {
+        "level": 2,
+        "heading": "3.3.1 实验数据集介绍"
+      },
+      {
+        "level": 2,
+        "heading": "3.3.2 实验结果与分析"
+      },
+      {
+        "level": 2,
+        "heading": "3.3.3 消融实验"
+      },
+      {
+        "level": 2,
+        "heading": "3.4 本章小结"
+      },
+      {
+        "level": 2,
+        "heading": "4 基于多教师知识蒸馏策略部署无图机器人检测框架"
+      },
+      {
+        "level": 2,
+        "heading": "4.1 引言"
+      },
+      {
+        "level": 2,
+        "heading": "4.2 流程分析与框架设计"
+      },
+      {
+        "level": 2,
+        "heading": "4.2.1 算法流程"
+      },
+      {
+        "level": 2,
+        "heading": "4.2.2 教师模型与学生模型训练模块"
+      },
+      {
+        "level": 2,
+        "heading": "4.2.3 基于多教师知识蒸馏框架的算法设计"
+      },
+      {
+        "level": 1,
+        "heading": "（1）软标签蒸馏"
+      },
+      {
+        "level": 1,
+        "heading": "（2）硬标签学习"
+      },
+      {
+        "level": 2,
+        "heading": "4.2.4 基于专家混合机制优化多教师知识蒸馏框架的算法设计"
+      },
+      {
+        "level": 2,
+        "heading": "4.3 实验结果与分析"
+      },
+      {
+        "level": 2,
+        "heading": "4.3.1 实验相关数据集介绍"
+      },
+      {
+        "level": 2,
+        "heading": "4.3.2 实验结果与分析"
+      },
+      {
+        "level": 2,
+        "heading": "4.3.3 消融实验"
+      },
+      {
+        "level": 2,
+        "heading": "4.4 本章小结"
+      },
+      {
+        "level": 2,
+        "heading": "5 社交媒体机器人检测系统的设计与实现"
+      },
+      {
+        "level": 2,
+        "heading": "5.1 开发环境"
+      },
+      {
+        "level": 2,
+        "heading": "5.2 应用场景"
+      },
+      {
+        "level": 2,
+        "heading": "5.3 需求分析"
+      },
+      {
+        "level": 2,
+        "heading": "5.3.1 功能需求"
+      },
+      {
+        "level": 1,
+        "heading": "（1）仪表盘模块"
+      },
+      {
+        "level": 1,
+        "heading": "（2）机器人检测模块"
+      },
+      {
+        "level": 1,
+        "heading": "（3）分析报告模块"
+      },
+      {
+        "level": 1,
+        "heading": "（4）系统设置模块"
+      },
+      {
+        "level": 2,
+        "heading": "5.3.2 非功能性需求"
+      },
+      {
+        "level": 2,
+        "heading": "5.4 系统的设计与实现"
+      },
+      {
+        "level": 2,
+        "heading": "5.4.1 系统设计"
+      },
+      {
+        "level": 2,
+        "heading": "5.4.2 系统实现"
+      },
+      {
+        "level": 1,
+        "heading": "（1）用户管理模块"
+      },
+      {
+        "level": 1,
+        "heading": "（2）仪表盘展示模块"
+      },
+      {
+        "level": 1,
+        "heading": "（3）机器人检测页面"
+      },
+      {
+        "level": 1,
+        "heading": "（4）分析报告模块"
+      },
+      {
+        "level": 1,
+        "heading": "（5）系统设置模块"
+      },
+      {
+        "level": 2,
+        "heading": "5.5 本章小结"
+      },
+      {
+        "level": 2,
+        "heading": "6 全文总结与展望"
+      },
+      {
+        "level": 2,
+        "heading": "6.1 全文总结"
+      },
+      {
+        "level": 2,
+        "heading": "6.2 未来展望"
+      },
+      {
+        "level": 1,
+        "heading": "参考文献"
+      },
+      {
+        "level": 1,
+        "heading": "致 谢"
+      },
+      {
+        "level": 1,
+        "heading": "攻读学位期间的科研成果"
+      },
+      {
+        "level": 1,
+        "heading": "一、 发表学术论文"
+      },
+      {
+        "level": 1,
+        "heading": "二、 申请专利"
+      },
+      {
+        "level": 1,
+        "heading": "三、 参加竞赛"
+      }
+    ]
+  },
+  {
+    "file": "23.pdf",
+    "doc_type": "en_paper",
+    "title": "GENERATIVE CLASSIFIERS AVOID SHORTCUT SOLUTIONS",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "ABSTRACT"
+      },
+      {
+        "level": 2,
+        "heading": "1 INTRODUCTION"
+      },
+      {
+        "level": 2,
+        "heading": "2 RELATED WORK"
+      },
+      {
+        "level": 2,
+        "heading": "3 PRELIMINARIES"
+      },
+      {
+        "level": 2,
+        "heading": "3.1 TYPES OF DISTRIBUTION SHIFT"
+      },
+      {
+        "level": 2,
+        "heading": "3.2 SHORTCOMINGS OF DISCRIMINATIVE CLASSIFIERS"
+      },
+      {
+        "level": 2,
+        "heading": "4 GENERATIVE CLASSIFIERS"
+      },
+      {
+        "level": 2,
+        "heading": "4.1 INTUITION"
+      },
+      {
+        "level": 2,
+        "heading": "4.2 DIFFUSION-BASED GENERATIVE CLASSIFIER"
+      },
+      {
+        "level": 2,
+        "heading": "4.3 AUTOREGRESSIVE GENERATIVE CLASSIFIER"
+      },
+      {
+        "level": 2,
+        "heading": "5 EXPERIMENTS"
+      },
+      {
+        "level": 2,
+        "heading": "5.1 SETUP"
+      },
+      {
+        "level": 2,
+        "heading": "5.2 RESULTS ON DISTRIBUTION SHIFT BENCHMARKS"
+      },
+      {
+        "level": 2,
+        "heading": "5.3 WHY DO GENERATIVE CLASSIFIERS DO BETTER?"
+      },
+      {
+        "level": 2,
+        "heading": "6 ILLUSTRATIVE SETTING"
+      },
+      {
+        "level": 2,
+        "heading": "6.1 DATA"
+      },
+      {
+        "level": 2,
+        "heading": "6.2 ALGORITHMS"
+      },
+      {
+        "level": 2,
+        "heading": "6.3 THE INDUCTIVE BIAS OF LDA"
+      },
+      {
+        "level": 2,
+        "heading": "6.4 GENERALIZATION PHASE DIAGRAMS"
+      },
+      {
+        "level": 2,
+        "heading": "7 CONCLUSION"
+      },
+      {
+        "level": 1,
+        "heading": "REFERENCES"
+      },
+      {
+        "level": 1,
+        "heading": "APPENDIX"
+      },
+      {
+        "level": 1,
+        "heading": "A ADDITIONAL ANALYSIS"
+      },
+      {
+        "level": 2,
+        "heading": "A.1 ADDITIONAL RESULTS ON THE EFFECT OF DISCRIMINATIVE MODEL SIZE"
+      },
+      {
+        "level": 2,
+        "heading": "A.2 SCALING CAN IMPROVE GENERATIVE CLASSIFIERS"
+      },
+      {
+        "level": 2,
+        "heading": "A.3 RESULTS ON ADDITIONAL DATASETS"
+      },
+      {
+        "level": 2,
+        "heading": "A.4 CORRELATION BETWEEN GENERATIVE AND DISCRIMINATIVE PERFORMANCE"
+      },
+      {
+        "level": 2,
+        "heading": "A.5 EFFECT OF IMAGE EMBEDDING MODEL"
+      },
+      {
+        "level": 2,
+        "heading": "A.6 COMPARISON WITH PRE-TRAINED DISCRIMINATIVE MODELS"
+      },
+      {
+        "level": 2,
+        "heading": "A.7 ADDITIONAL PLOTS FOR GENERALIZATION PHASE DIAGRAMS"
+      },
+      {
+        "level": 1,
+        "heading": "B EXPERIMENTAL DETAILS"
+      },
+      {
+        "level": 2,
+        "heading": "B.1 IMAGE-BASED EXPERIMENTS"
+      },
+      {
+        "level": 2,
+        "heading": "B.1.1 DIFFUSION-BASED GENERATIVE CLASSIFIER"
+      },
+      {
+        "level": 2,
+        "heading": "B.1.2 DISCRIMINATIVE BASELINES"
+      },
+      {
+        "level": 2,
+        "heading": "B.2 AUTOREGRESSIVE GENERATIVE CLASSIFIER"
+      },
+      {
+        "level": 2,
+        "heading": "B.2.1 DISCRIMINATIVE BASELINES"
+      }
+    ]
+  },
+  {
+    "file": "24.pdf",
+    "doc_type": "en_paper",
+    "title": "Timestep-Aware Block Masking for Efficient Diffusion Model Inference",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "Abstract"
+      },
+      {
+        "level": 1,
+        "heading": "1. Introduction"
+      },
+      {
+        "level": 1,
+        "heading": "2. Related Work"
+      },
+      {
+        "level": 1,
+        "heading": "3. Method"
+      },
+      {
+        "level": 2,
+        "heading": "3.1. Preliminary"
+      },
+      {
+        "level": 2,
+        "heading": "3.2. Problem Formulation"
+      },
+      {
+        "level": 2,
+        "heading": "3.3. Optimization"
+      },
+      {
+        "level": 2,
+        "heading": "3.4. Timestep-Aware Loss Scaling"
+      },
+      {
+        "level": 2,
+        "heading": "3.5. Knowledge-Guided Mask Rectification"
+      },
+      {
+        "level": 1,
+        "heading": "4. Experiments"
+      },
+      {
+        "level": 2,
+        "heading": "4.1. Experimental Setup"
+      },
+      {
+        "level": 2,
+        "heading": "4.2. Main Results"
+      },
+      {
+        "level": 2,
+        "heading": "4.3. Ablation Study"
+      },
+      {
+        "level": 1,
+        "heading": "5. Conclusion"
+      },
+      {
+        "level": 1,
+        "heading": "References"
+      }
+    ]
+  },
+  {
+    "file": "25.pdf",
+    "doc_type": "en_paper",
+    "title": "Prefill-Time Intervention for Mitigating Hallucination in Large Vision-Language Models",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "Abstract(a)"
+      },
+      {
+        "level": 1,
+        "heading": "1. Introduction"
+      },
+      {
+        "level": 1,
+        "heading": "2. Related Work"
+      },
+      {
+        "level": 2,
+        "heading": "2.1. Large Vision-Language Models"
+      },
+      {
+        "level": 2,
+        "heading": "2.2. Mitigating Hallucination in LVLMs"
+      },
+      {
+        "level": 1,
+        "heading": "3. Methodology"
+      },
+      {
+        "level": 2,
+        "heading": "3.1. Preliminaries: Inference with KV Cache"
+      },
+      {
+        "level": 2,
+        "heading": "3.2. Object Directions Extraction"
+      },
+      {
+        "level": 2,
+        "heading": "3.3. Downstream Intervention"
+      },
+      {
+        "level": 1,
+        "heading": "4. Experiments"
+      },
+      {
+        "level": 2,
+        "heading": "4.1. Experimental Setup"
+      },
+      {
+        "level": 2,
+        "heading": "4.2. Implementation Details"
+      },
+      {
+        "level": 2,
+        "heading": "4.3. Results on Object Hallucination Benchmarks"
+      },
+      {
+        "level": 2,
+        "heading": "4.4. Results on Comprehensive Benchmarks"
+      },
+      {
+        "level": 1,
+        "heading": "5. Analysis and Discussions"
+      },
+      {
+        "level": 2,
+        "heading": "5.1. Ablation Study and Error Analysis"
+      },
+      {
+        "level": 2,
+        "heading": "5.2. Internal Interpretability Analysis"
+      },
+      {
+        "level": 2,
+        "heading": "5.3. Generalizability Analysis"
+      },
+      {
+        "level": 1,
+        "heading": "6. Conclusion"
+      },
+      {
+        "level": 1,
+        "heading": "Acknowledgements"
+      },
+      {
+        "level": 1,
+        "heading": "References"
+      },
+      {
+        "level": 2,
+        "heading": "Prefill-Time Intervention for Mitigating Hallucination in Large Vision-Language Models"
+      },
+      {
+        "level": 2,
+        "heading": "A. Details of Internal Interpretability Analysis."
+      },
+      {
+        "level": 2,
+        "heading": "A.1. Global Visual Attention Dynamics"
+      },
+      {
+        "level": 2,
+        "heading": "A.2. Local Object-Centric Attention Shift"
+      },
+      {
+        "level": 2,
+        "heading": "B. Additional Experiments of PTI."
+      },
+      {
+        "level": 2,
+        "heading": "B.1. More Experimental Results of POPE."
+      },
+      {
+        "level": 2,
+        "heading": "B.2. Detailed Experimental Results of MME."
+      },
+      {
+        "level": 2,
+        "heading": "B.3. Inference Efficiency Analysis."
+      },
+      {
+        "level": 2,
+        "heading": "B.4. Ablation Experiments of Hyperparameters."
+      },
+      {
+        "level": 1,
+        "heading": "C. Additional Case Studies"
+      },
+      {
+        "level": 2,
+        "heading": "C.1. Attention Map Visualization."
+      },
+      {
+        "level": 2,
+        "heading": "C.2. Qualitative Examples."
+      }
+    ]
+  },
+  {
+    "file": "26.pdf",
+    "doc_type": "en_paper",
+    "title": "Can Slow-Thinking LLMs Reason Over Time? Empirical Studies in Time Series Forecasting",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "Abstract"
+      },
+      {
+        "level": 1,
+        "heading": "CCS Concepts"
+      },
+      {
+        "level": 2,
+        "heading": "1 Introduction"
+      },
+      {
+        "level": 2,
+        "heading": "2 Related Work"
+      },
+      {
+        "level": 2,
+        "heading": "2.1 Time Series Forecasting"
+      },
+      {
+        "level": 2,
+        "heading": "2.2 LLM-based Reasoning"
+      },
+      {
+        "level": 2,
+        "heading": "3 Problem Definition"
+      },
+      {
+        "level": 2,
+        "heading": "4 The Proposed TimeReasoner"
+      },
+      {
+        "level": 2,
+        "heading": "4.1 Overview of TimeReasoner"
+      },
+      {
+        "level": 2,
+        "heading": "4.2 Hybrid Instruction"
+      },
+      {
+        "level": 2,
+        "heading": "4.3 Inference-Time Reasoning"
+      },
+      {
+        "level": 2,
+        "heading": "4.4 Reasoning Strategies"
+      },
+      {
+        "level": 2,
+        "heading": "4.5 Reasoning Exploration and Trajectory"
+      },
+      {
+        "level": 2,
+        "heading": "5 Experimental Settings"
+      },
+      {
+        "level": 2,
+        "heading": "5.1 Datasets"
+      },
+      {
+        "level": 2,
+        "heading": "5.2 Baselines"
+      },
+      {
+        "level": 2,
+        "heading": "5.3 Implementation Details"
+      },
+      {
+        "level": 2,
+        "heading": "6 Experimental Results"
+      },
+      {
+        "level": 2,
+        "heading": "6.1 Forecasting Performance Comparison"
+      },
+      {
+        "level": 2,
+        "heading": "6.2 Analysis of Key Settings in TimeReasoner"
+      },
+      {
+        "level": 2,
+        "heading": "6.3 Trustworthiness Evaluation"
+      },
+      {
+        "level": 2,
+        "heading": "6.4 Evaluation Under Diferent TSF Settings"
+      },
+      {
+        "level": 2,
+        "heading": "6.5 Hyperparameter Sensitivity Analysis"
+      },
+      {
+        "level": 2,
+        "heading": "6.6 Visualization Analysis"
+      },
+      {
+        "level": 2,
+        "heading": "7 Conclusion and Discussions"
+      },
+      {
+        "level": 2,
+        "heading": "8 Acknowledgments"
+      },
+      {
+        "level": 1,
+        "heading": "Ethical Considerations"
+      },
+      {
+        "level": 1,
+        "heading": "References"
+      }
+    ]
+  },
+  {
+    "file": "27.pdf",
+    "doc_type": "en_paper",
+    "title": "“Just in Time” World Modeling Supports Human Planning and Reasoning",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "Abstract"
+      },
+      {
+        "level": 2,
+        "heading": "“Just in Time” World Modeling Supports Human Planning and Reasoning Introduction"
+      },
+      {
+        "level": 1,
+        "heading": "The Just-in-Time model"
+      },
+      {
+        "level": 2,
+        "heading": "Domains for testing the JIT model"
+      },
+      {
+        "level": 1,
+        "heading": "Planning"
+      },
+      {
+        "level": 1,
+        "heading": "Physical reasoning"
+      },
+      {
+        "level": 2,
+        "heading": "An alternate model: Value Guided Construal"
+      },
+      {
+        "level": 1,
+        "heading": "JIT Explains Human Planning"
+      },
+      {
+        "level": 1,
+        "heading": "Representations for planning"
+      },
+      {
+        "level": 2,
+        "heading": "The Eficiency of JIT Representations"
+      },
+      {
+        "level": 2,
+        "heading": "JIT Explains Representations for Physical Prediction"
+      },
+      {
+        "level": 2,
+        "heading": "Representations for physical prediction"
+      },
+      {
+        "level": 2,
+        "heading": "Comparing the JIT model against people"
+      },
+      {
+        "level": 2,
+        "heading": "Experimentally distinguishing VGC and JIT"
+      },
+      {
+        "level": 1,
+        "heading": "Discussion"
+      },
+      {
+        "level": 2,
+        "heading": "Our current investigation has focused on the diferences between"
+      },
+      {
+        "level": 1,
+        "heading": "Methods"
+      },
+      {
+        "level": 1,
+        "heading": "Model implementation"
+      },
+      {
+        "level": 1,
+        "heading": "Planning"
+      },
+      {
+        "level": 1,
+        "heading": "Physics"
+      },
+      {
+        "level": 1,
+        "heading": "Physics experiments details"
+      },
+      {
+        "level": 1,
+        "heading": "Experiment 2A"
+      },
+      {
+        "level": 2,
+        "heading": "Experiment 2B: Distinguishing JIT and VGC"
+      },
+      {
+        "level": 1,
+        "heading": "Author Contributions"
+      },
+      {
+        "level": 1,
+        "heading": "References"
+      },
+      {
+        "level": 1,
+        "heading": "Extended Data Figures"
+      },
+      {
+        "level": 1,
+        "heading": "Exp 1E"
+      },
+      {
+        "level": 1,
+        "heading": "Figure E3"
+      },
+      {
+        "level": 1,
+        "heading": "Figure E5"
+      },
+      {
+        "level": 1,
+        "heading": "Supplementary Materials"
+      },
+      {
+        "level": 2,
+        "heading": "S1 Additional physics experiments"
+      },
+      {
+        "level": 2,
+        "heading": "S1.1 Experiment S1: Testing for visual attention"
+      },
+      {
+        "level": 1,
+        "heading": "S1.1.1 Participants"
+      },
+      {
+        "level": 1,
+        "heading": "S1.1.2 Procedure"
+      },
+      {
+        "level": 1,
+        "heading": "S1.1.3 Results"
+      },
+      {
+        "level": 2,
+        "heading": "S1.2 Experiment S2: Testing for purely visual processes"
+      },
+      {
+        "level": 1,
+        "heading": "S1.2.1 Participants"
+      },
+      {
+        "level": 1,
+        "heading": "S1.2.2 Procedure"
+      },
+      {
+        "level": 1,
+        "heading": "S1.2.3 Materials"
+      },
+      {
+        "level": 1,
+        "heading": "S1.2.4 Results"
+      },
+      {
+        "level": 2,
+        "heading": "S1.3 Experiment S3: Measuring human simulations"
+      },
+      {
+        "level": 1,
+        "heading": "S1.3.1 Participants"
+      },
+      {
+        "level": 1,
+        "heading": "S1.3.2 Procedure"
+      },
+      {
+        "level": 1,
+        "heading": "S1.3.3 Results"
+      },
+      {
+        "level": 2,
+        "heading": "S2 Additional analyses and results"
+      },
+      {
+        "level": 2,
+        "heading": "S2.1 Details on the planning eficiency simulation analysis"
+      },
+      {
+        "level": 2,
+        "heading": "S2.2 Details on VGC implementation for physics tasks"
+      },
+      {
+        "level": 2,
+        "heading": "S2.3 Alternative Decision Rules"
+      },
+      {
+        "level": 2,
+        "heading": "S2.4 Additional Physics Baseline"
+      },
+      {
+        "level": 2,
+        "heading": "S2.5 Additional control analyses"
+      },
+      {
+        "level": 2,
+        "heading": "S2.6 Reanalysis of planning experiments"
+      }
+    ]
+  },
+  {
+    "file": "28.pdf",
+    "doc_type": "en_paper",
+    "title": "TRIAGE: HIERARCHICAL VISUAL BUDGETING FOR EFFICIENT VIDEO REASONING IN VISION-LANGUAGE MODELS",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "ABSTRACT"
+      },
+      {
+        "level": 1,
+        "heading": "1. INTRODUCTION"
+      },
+      {
+        "level": 1,
+        "heading": "2. PROPOSED METHOD"
+      },
+      {
+        "level": 2,
+        "heading": "2.1. Frame-Level Budgeting"
+      },
+      {
+        "level": 2,
+        "heading": "2.2. Token-Level Budgeting"
+      },
+      {
+        "level": 1,
+        "heading": "3. EXPERIMENTS"
+      },
+      {
+        "level": 2,
+        "heading": "3.1. Experimental Setup"
+      },
+      {
+        "level": 2,
+        "heading": "3.2. Main Results"
+      },
+      {
+        "level": 2,
+        "heading": "3.3. Ablation Study and Analysis"
+      },
+      {
+        "level": 1,
+        "heading": "4. CONCLUSION"
+      },
+      {
+        "level": 1,
+        "heading": "5. ACKNOWLEDGMENTS"
+      },
+      {
+        "level": 1,
+        "heading": "6. REFERENCES"
+      }
+    ]
+  },
+  {
+    "file": "29.pdf",
+    "doc_type": "en_paper",
+    "title": "SAVES: STEERING SAFETY JUDGMENTS IN VISION-LANGUAGE MODELS VIA SEMANTIC CUES",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "ABSTRACT"
+      },
+      {
+        "level": 2,
+        "heading": "1 Introduction"
+      },
+      {
+        "level": 2,
+        "heading": "2 Related Works"
+      },
+      {
+        "level": 2,
+        "heading": "3 Method"
+      },
+      {
+        "level": 2,
+        "heading": "3.1 Problem Formulation."
+      },
+      {
+        "level": 2,
+        "heading": "3.2 Semantic Steering Framework"
+      },
+      {
+        "level": 2,
+        "heading": "3.3 Automated Steering Architectures"
+      },
+      {
+        "level": 2,
+        "heading": "3.4 Safety Evaluation"
+      },
+      {
+        "level": 2,
+        "heading": "4 Experiments"
+      },
+      {
+        "level": 2,
+        "heading": "4.1 Steering Across MSSBench-Embodied and SAVeS"
+      },
+      {
+        "level": 2,
+        "heading": "4.2 Ablation Studies"
+      },
+      {
+        "level": 2,
+        "heading": "4.3 Automated Steering Pipelines"
+      },
+      {
+        "level": 2,
+        "heading": "4.4 Qualitative Analysis"
+      },
+      {
+        "level": 2,
+        "heading": "5 Conclusions"
+      },
+      {
+        "level": 1,
+        "heading": "References"
+      },
+      {
+        "level": 1,
+        "heading": "Supplementary Materials"
+      },
+      {
+        "level": 2,
+        "heading": "6 Experimental Setup and Reproducibility"
+      },
+      {
+        "level": 2,
+        "heading": "7 SAVeS Construction Pipeline Details"
+      },
+      {
+        "level": 2,
+        "heading": "8 Additional Quantitative Results"
+      },
+      {
+        "level": 2,
+        "heading": "9 Additional Qualitative Results"
+      },
+      {
+        "level": 2,
+        "heading": "10 Limitations and Additional Discussion"
+      }
+    ]
+  },
+  {
+    "file": "30.pdf",
+    "doc_type": "en_paper",
+    "title": "FVG-PT: Adaptive Foreground View-Guided Prompt Tuning for Vision-Language Models",
+    "sections": [
+      {
+        "level": 2,
+        "heading": "1 Introduction"
+      },
+      {
+        "level": 2,
+        "heading": "2 Related Work"
+      },
+      {
+        "level": 2,
+        "heading": "3 Proposed Method"
+      },
+      {
+        "level": 2,
+        "heading": "3.1 Preliminaries"
+      },
+      {
+        "level": 2,
+        "heading": "3.2 Foreground Reliability Gate"
+      },
+      {
+        "level": 2,
+        "heading": "3.3 Foreground Distillation Compensation"
+      },
+      {
+        "level": 2,
+        "heading": "3.4 Prior Calibration"
+      },
+      {
+        "level": 2,
+        "heading": "4 Experiments"
+      },
+      {
+        "level": 2,
+        "heading": "4.1 Experimental Setup"
+      },
+      {
+        "level": 2,
+        "heading": "4.2 Experimental Results"
+      },
+      {
+        "level": 2,
+        "heading": "4.3 Ablation Study"
+      },
+      {
+        "level": 2,
+        "heading": "5 Conclusion"
+      },
+      {
+        "level": 1,
+        "heading": "References"
+      },
+      {
+        "level": 2,
+        "heading": "FVG-PT: Adaptive Foreground View-Guided Prompt Tuning for Vision-Language Models"
+      },
+      {
+        "level": 1,
+        "heading": "A Details of Shifts in Foreground Attention"
+      },
+      {
+        "level": 2,
+        "heading": "A.1 Quantitative Analysis"
+      },
+      {
+        "level": 2,
+        "heading": "A.2 More Visualization Results"
+      },
+      {
+        "level": 1,
+        "heading": "B More Implementation Details"
+      },
+      {
+        "level": 2,
+        "heading": "B.1 Experimental Setup"
+      },
+      {
+        "level": 2,
+        "heading": "B.2 Details of Segmentation Model"
+      },
+      {
+        "level": 2,
+        "heading": "B.3 FVG-PT Optimization for Backbones"
+      },
+      {
+        "level": 1,
+        "heading": "C More Experimental Results"
+      },
+      {
+        "level": 2,
+        "heading": "C.1 Error Bar Analysis"
+      },
+      {
+        "level": 2,
+        "heading": "C.2 Compare with More Baselines"
+      },
+      {
+        "level": 2,
+        "heading": "C.3 Detailed Ablation Study"
+      },
+      {
+        "level": 2,
+        "heading": "C.4 Data Eficiency Analysis"
+      },
+      {
+        "level": 1,
+        "heading": "D Failure Case Study"
+      }
+    ]
+  },
+  {
+    "file": "ch1.pdf",
+    "doc_type": "zh_paper",
+    "title": "大数据赋能高校体育场馆智慧化建设的现实困境与路径研究",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "摘要"
+      },
+      {
+        "level": 1,
+        "heading": "引言"
+      },
+      {
+        "level": 1,
+        "heading": "1、大数据赋能高校体育场馆智慧化建设的作用机理"
+      },
+      {
+        "level": 2,
+        "heading": "1.1、驱动数据要素汇聚，重塑场馆管理决策模式"
+      },
+      {
+        "level": 2,
+        "heading": "1.2、优化资源配置机制，提升场馆运营综合效益"
+      },
+      {
+        "level": 1,
+        "heading": "2、大数据赋能高校体育场馆智慧化建设的现实困境"
+      },
+      {
+        "level": 2,
+        "heading": "2.1、数据治理体系不完善，技术应用流于表面"
+      },
+      {
+        "level": 2,
+        "heading": "2.2、管理协同机制缺位，运营效能提升受阻"
+      },
+      {
+        "level": 2,
+        "heading": "2.3、专业人才短缺，内生动力严重不足"
+      },
+      {
+        "level": 1,
+        "heading": "3、大数据赋能高校体育场馆智慧化建设的实现路径"
+      },
+      {
+        "level": 2,
+        "heading": "3.1、构建数据治理体系，夯实智慧化转型基础"
+      },
+      {
+        "level": 2,
+        "heading": "3.2、创新运营管理机制，提升场馆综合治理效能"
+      },
+      {
+        "level": 1,
+        "heading": "4、结语"
+      },
+      {
+        "level": 1,
+        "heading": "参考文献："
+      }
+    ]
+  },
+  {
+    "file": "ch2.pdf",
+    "doc_type": "zh_paper",
+    "title": "大数据算法驱动下BOPPPS模型在肾内科血净护理实习教学中的应用研究",
+    "sections": [
+      {
+        "level": 2,
+        "heading": "ResearchontheApplicationoftheBOPPPSModelDrivenbyBigDataAlgorithms inthePracticalTeachingofHemodialysisNursingintheNephrologyDepartment"
+      },
+      {
+        "level": 2,
+        "heading": "0 引 言"
+      },
+      {
+        "level": 2,
+        "heading": "1 大数据算法驱动的BOPPPS模型技术框架"
+      },
+      {
+        "level": 1,
+        "heading": "核心算法选择与技术逻辑"
+      },
+      {
+        "level": 1,
+        "heading": "聚类分析( )"
+      },
+      {
+        "level": 2,
+        "heading": "1.1.2 关联规则挖掘(Apriori)"
+      },
+      {
+        "level": 1,
+        "heading": "协同过滤推荐算法"
+      },
+      {
+        "level": 2,
+        "heading": "1.2 数据采集与预处理"
+      },
+      {
+        "level": 2,
+        "heading": "2 实验设计与实施"
+      },
+      {
+        "level": 2,
+        "heading": "2.1 研究对象"
+      },
+      {
+        "level": 2,
+        "heading": "2.2 干预方案"
+      },
+      {
+        "level": 2,
+        "heading": "2.3 评价指标"
+      },
+      {
+        "level": 2,
+        "heading": "3 实验结果与分析"
+      },
+      {
+        "level": 1,
+        "heading": "教学效果对比"
+      },
+      {
+        "level": 2,
+        "heading": "3.2 学习行为数据分析"
+      },
+      {
+        "level": 2,
+        "heading": "4 结 语"
+      },
+      {
+        "level": 1,
+        "heading": "参考文献"
+      }
+    ]
+  },
+  {
+    "file": "ch3.pdf",
+    "doc_type": "zh_paper",
+    "title": "大数据与 AI 画像:高校思想政治教育个性化实践探索",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "摘要"
+      },
+      {
+        "level": 2,
+        "heading": "Big Data and AI Portrait: Exploring Personalized Practice in Ideological and Political Education in Colleges and Universities"
+      },
+      {
+        "level": 1,
+        "heading": "一、大数据与 AI 画像在高校辅导员思政教育个性化实践中的应用现状"
+      },
+      {
+        "level": 2,
+        "heading": "(一)数据体系与画像平台建设现状"
+      },
+      {
+        "level": 2,
+        "heading": "(二)辅导员一线工作场景的落地应用"
+      },
+      {
+        "level": 2,
+        "heading": "(三)辅导员队伍应用能力与配套支撑现状"
+      },
+      {
+        "level": 1,
+        "heading": "二、大数据与 AI 画像赋能辅导员思政教育个性化实践的现实困境"
+      },
+      {
+        "level": 2,
+        "heading": "(一)数据壁垒突出,画像模型与思政工作需求适配性不足"
+      },
+      {
+        "level": 2,
+        "heading": "(二)工具供给与能力建设错位,应用落地存在双重鸿沟"
+      },
+      {
+        "level": 2,
+        "heading": "(三)工具理性僭越育人本质,个性化思政实践存在异化风险"
+      },
+      {
+        "level": 2,
+        "heading": "(四)安全与伦理规范缺位,一线工作存在合规性风险"
+      },
+      {
+        "level": 1,
+        "heading": "三、大数据与 AI 画像赋能辅导员思政教育个性化实践的优化策略"
+      },
+      {
+        "level": 2,
+        "heading": "(一)构建适配辅导员工作的全维度数据体系与动态画像模型"
+      },
+      {
+        "level": 2,
+        "heading": "(二)打造专属工具矩阵与全周期数字素养提升体系"
+      },
+      {
+        "level": 2,
+        "heading": "(三)坚守育人初心,构建“AI 赋能+人文滋养”的个性化思政实践闭环"
+      },
+      {
+        "level": 2,
+        "heading": "(四)健全数据安全与伦理规范,筑牢一线工作合规边界"
+      },
+      {
+        "level": 1,
+        "heading": "四、结论"
+      },
+      {
+        "level": 1,
+        "heading": "参考文献:"
+      }
+    ]
+  },
+  {
+    "file": "ch4.pdf",
+    "doc_type": "zh_paper",
+    "title": "地震动记录选取的新视角：大数据与机器学习",
+    "sections": [
+      {
+        "level": 2,
+        "heading": "地震动记录选取的新视角：大数据与机器学习"
+      },
+      {
+        "level": 2,
+        "heading": "A new perspective on the selection of ground motion records: big data and machine learning"
+      },
+      {
+        "level": 2,
+        "heading": "0 引 言"
+      },
+      {
+        "level": 2,
+        "heading": "1 地震动记录数据库的建立"
+      },
+      {
+        "level": 2,
+        "heading": "2 基本原理"
+      },
+      {
+        "level": 2,
+        "heading": "2.1 模糊C-均值聚类分析方法"
+      },
+      {
+        "level": 2,
+        "heading": "2.2 基于遗传模拟退火算法的聚类分析"
+      },
+      {
+        "level": 2,
+        "heading": "2.3 聚类分析结果"
+      },
+      {
+        "level": 2,
+        "heading": "3 基于聚类分析的地震动记录选取"
+      },
+      {
+        "level": 2,
+        "heading": "3.1 不同场地类别的地震动记录选取"
+      },
+      {
+        "level": 2,
+        "heading": "3.2 不同聚类分组的地震动记录选取"
+      },
+      {
+        "level": 2,
+        "heading": "4 基于主成分排序的地震动记录推荐"
+      },
+      {
+        "level": 2,
+        "heading": "4.1 基于主成分分析进行地震动记录排序"
+      },
+      {
+        "level": 2,
+        "heading": "4.2 基于主成分分析的地震动记录推荐"
+      },
+      {
+        "level": 2,
+        "heading": "5 结 论"
+      },
+      {
+        "level": 1,
+        "heading": "参考文献："
+      }
+    ]
+  },
+  {
+    "file": "ch5.pdf",
+    "doc_type": "zh_paper",
+    "title": "基于LSTM的暂冲式风洞马赫数建模与控制方法",
+    "sections": [
+      {
+        "level": 2,
+        "heading": "基于LSTM的暂冲式风洞马赫数建模与控制方法"
+      },
+      {
+        "level": 2,
+        "heading": "A LSTM-based modeling and control method for Mach number in an intemitent wind tunnel"
+      },
+      {
+        "level": 2,
+        "heading": "0 引 言"
+      },
+      {
+        "level": 2,
+        "heading": "1 某暂冲式亚跨超风洞马赫数控制系统"
+      },
+      {
+        "level": 2,
+        "heading": "2 基于 LSTM 的马赫数建模方法"
+      },
+      {
+        "level": 1,
+        "heading": "2. 1 建模原理"
+      },
+      {
+        "level": 1,
+        "heading": "2. 2 建模方法"
+      },
+      {
+        "level": 2,
+        "heading": "3 基于 LSTM 的马赫数智能控制方法"
+      },
+      {
+        "level": 1,
+        "heading": "3. 1 小扰动最优化动态补偿控制方法"
+      },
+      {
+        "level": 1,
+        "heading": "3. 2 控制仿真"
+      },
+      {
+        "level": 1,
+        "heading": "3. 3 预测模型误差对控制效果的影响分析"
+      },
+      {
+        "level": 2,
+        "heading": "4 结 论"
+      },
+      {
+        "level": 1,
+        "heading": "参 考 文 献"
+      }
+    ]
+  },
+  {
+    "file": "ch6.pdf",
+    "doc_type": "zh_paper",
+    "title": "基于 ResNet 的混凝土搅拌均匀性智能检测模型参数优化研究<sup>\\*</sup>",
+    "sections": [
+      {
+        "level": 2,
+        "heading": "基于 ResNet 的混凝土搅拌均匀性智能检测模型参数优化研究<sup>\\*</sup>"
+      },
+      {
+        "level": 2,
+        "heading": "Parameter Optimization of a ResNet-Based Intelligent Detection Model for Concrete Mixing Uniformity"
+      },
+      {
+        "level": 2,
+        "heading": "0 引言"
+      },
+      {
+        "level": 2,
+        "heading": "1 试验设计与方法"
+      },
+      {
+        "level": 2,
+        "heading": "1.1 数据集构建"
+      },
+      {
+        "level": 2,
+        "heading": "1.2 模型架构"
+      },
+      {
+        "level": 2,
+        "heading": "1.3 试验参数设置"
+      },
+      {
+        "level": 2,
+        "heading": "1）固定参数"
+      },
+      {
+        "level": 2,
+        "heading": "1）图像输入尺寸设置"
+      },
+      {
+        "level": 2,
+        "heading": "2）学习率调整策略设置"
+      },
+      {
+        "level": 2,
+        "heading": "3）数据增强强度设置"
+      },
+      {
+        "level": 2,
+        "heading": "2 不同参数对混凝土搅拌均匀性智能检测模型性能的影响"
+      },
+      {
+        "level": 2,
+        "heading": "2.1 图像输入尺寸"
+      },
+      {
+        "level": 2,
+        "heading": "2.2 学习率调整策略"
+      },
+      {
+        "level": 2,
+        "heading": "2.3 数据增强强度"
+      },
+      {
+        "level": 2,
+        "heading": "3 混凝土搅拌均匀性智能检测模型性能分析"
+      },
+      {
+        "level": 2,
+        "heading": "4 结语"
+      },
+      {
+        "level": 1,
+        "heading": "参考文献："
+      }
+    ]
+  },
+  {
+    "file": "ch7.pdf",
+    "doc_type": "zh_paper",
+    "title": "基于Transformer模型的重庆某大型三甲医院门诊量预测",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "摘要"
+      },
+      {
+        "level": 2,
+        "heading": "PredictionofOutpatientVolumeofaLargeTertiaryHospital inChongqingBasedonTransformerModel"
+      },
+      {
+        "level": 2,
+        "heading": "0 引 言"
+      },
+      {
+        "level": 2,
+        "heading": "1 资料来源"
+      },
+      {
+        "level": 2,
+        "heading": "2 技术发展历程"
+      },
+      {
+        "level": 1,
+        "heading": "传统统计建模"
+      },
+      {
+        "level": 1,
+        "heading": "机器学习与非线性建模"
+      },
+      {
+        "level": 1,
+        "heading": "以 为代表的深度学习建模"
+      },
+      {
+        "level": 2,
+        "heading": "3 方法实现"
+      },
+      {
+        "level": 2,
+        "heading": "3.1 数据整体概况"
+      },
+      {
+        "level": 2,
+        "heading": "3.2Transformer模型"
+      },
+      {
+        "level": 1,
+        "heading": "基于 模型的门诊量预测方法"
+      },
+      {
+        "level": 2,
+        "heading": "4 实验结果分析"
+      },
+      {
+        "level": 2,
+        "heading": "5 结 语"
+      },
+      {
+        "level": 1,
+        "heading": "参考文献"
+      }
+    ]
+  },
+  {
+    "file": "ch8.pdf",
+    "doc_type": "zh_paper",
+    "title": "基于WGCNA和 113 种机器学习算法鉴定糖尿病肾病关键基因",
+    "sections": [
+      {
+        "level": 2,
+        "heading": "基于WGCNA和 113 种机器学习算法鉴定糖尿病肾病关键基因"
+      },
+      {
+        "level": 2,
+        "heading": "Identification of key genes in diabetic nephropathy based on WGCNA and 113 machine learning algorithms"
+      },
+      {
+        "level": 2,
+        "heading": "1 材料和方法"
+      },
+      {
+        "level": 2,
+        "heading": "1.1 数据集下载和数据预处理"
+      },
+      {
+        "level": 2,
+        "heading": "1.2 差异表达基因筛选"
+      },
+      {
+        "level": 2,
+        "heading": "1.3 WGCNA 关键模块差异表达基因鉴定"
+      },
+      {
+        "level": 2,
+        "heading": "1.4 细胞衰老相关分泌蛋白差异表达基因"
+      },
+      {
+        "level": 2,
+        "heading": "1.5 SASP-DEGs 功能分析"
+      },
+      {
+        "level": 2,
+        "heading": "1.6 113 种机器学习算法构建 DN诊断模型"
+      },
+      {
+        "level": 2,
+        "heading": "1.7 关键基因分子相互作用网络构建"
+      },
+      {
+        "level": 2,
+        "heading": "1.8 基因集富集分析（Gene set enrichment analysis，GSEA）"
+      },
+      {
+        "level": 2,
+        "heading": "1.9 关键基因 CeRNA 和 TFs 网络构建"
+      },
+      {
+        "level": 2,
+        "heading": "1.10 关键基因药物预测和分子对接"
+      },
+      {
+        "level": 2,
+        "heading": "2 结果"
+      },
+      {
+        "level": 2,
+        "heading": "2.1 DEGs 的筛选"
+      },
+      {
+        "level": 2,
+        "heading": "2.2 DN 关键模块鉴定"
+      },
+      {
+        "level": 2,
+        "heading": "2.3 SASP-DEGs 的鉴定及功能富集分析"
+      },
+      {
+        "level": 2,
+        "heading": "2.4 113 种机器学习构建 DN诊断模型"
+      },
+      {
+        "level": 2,
+        "heading": "2.5 关键基因 GSEA 功能分析"
+      },
+      {
+        "level": 2,
+        "heading": "2.6 关键基因调控网络构建和药物富集分析"
+      },
+      {
+        "level": 2,
+        "heading": "2.7 分子对接"
+      },
+      {
+        "level": 2,
+        "heading": "3 讨论"
+      },
+      {
+        "level": 2,
+        "heading": "4 结论"
+      }
+    ]
+  },
+  {
+    "file": "project1.pdf",
+    "doc_type": "fund_project",
+    "title": "TiAI合金中氢原子团簇的第一性原理计算及实验研究",
+    "sections": [
+      {
+        "level": 2,
+        "heading": "TiAI合金中氢原子团簇的第一性原理计算及实验研究"
+      },
+      {
+        "level": 1,
+        "heading": "国家自然科学基金"
+      },
+      {
+        "level": 1,
+        "heading": "资助项目结题/成果报告"
+      },
+      {
+        "level": 1,
+        "heading": "结题摘要"
+      },
+      {
+        "level": 2,
+        "heading": "中文摘要（对项目的背景、主要研究内容、重要结果、关键数据及其科学意义等做简单概述）："
+      },
+      {
+        "level": 2,
+        "heading": "Abstract (Brief description of research background, main methods, contributions, and research data):"
+      },
+      {
+        "level": 1,
+        "heading": "正文"
+      },
+      {
+        "level": 2,
+        "heading": "(一）结题部分"
+      },
+      {
+        "level": 2,
+        "heading": "1. 研究计划执行情况概述。"
+      },
+      {
+        "level": 2,
+        "heading": "（1）按计划执行情况。"
+      },
+      {
+        "level": 2,
+        "heading": "（2）研究目标完成情况。"
+      },
+      {
+        "level": 2,
+        "heading": "2. 研究工作主要进展、结果和影响。"
+      },
+      {
+        "level": 2,
+        "heading": "（1）主要研究内容。"
+      },
+      {
+        "level": 2,
+        "heading": "一、点缺陷对氢原子在Ti3Al和TiAI相中固溶、团簇行为影响研究"
+      },
+      {
+        "level": 2,
+        "heading": "（一）本征 Ti3Al和 TiAl 中的氢原子固溶行为研究"
+      },
+      {
+        "level": 2,
+        "heading": "（二）Ti3Al和TiAl中点缺陷周围氢原子的固溶行为研究"
+      },
+      {
+        "level": 2,
+        "heading": "1. Ti3AI相中点缺陷对氢原子的固溶行为影响研究"
+      },
+      {
+        "level": 2,
+        "heading": "2. TiAI 相中点缺陷对氢原子固溶行为影响研究"
+      },
+      {
+        "level": 2,
+        "heading": "1. 缺陷簇对Ti3A1中氢原子固溶行为的影响"
+      },
+      {
+        "level": 2,
+        "heading": "2. 缺陷簇对 TiA1 中氢原子固溶行为的影响"
+      },
+      {
+        "level": 2,
+        "heading": "二、Ti3Al/TiAl界面对氢原子固溶行为影响研究"
+      },
+      {
+        "level": 2,
+        "heading": "（一）本征 $\\mathrm { T i } _ { 3 } \\mathrm { A l } / \\mathrm { T i A l }$ 界面处H原子固溶行为研究"
+      },
+      {
+        "level": 2,
+        "heading": "(二)、界面缺陷对氢原子固溶行为的影响研究"
+      },
+      {
+        "level": 2,
+        "heading": "（三）、界面缺陷簇的形成及其对氢原子固溶行为的影响研究"
+      },
+      {
+        "level": 2,
+        "heading": "三、元素对氢原子固溶行为影响研究"
+      },
+      {
+        "level": 2,
+        "heading": "（一）Ti3Al和TiAl中的元素占位倾向性分析"
+      },
+      {
+        "level": 2,
+        "heading": "(二) $\\mathrm { T i } _ { 3 } \\mathrm { A l }$ 和TiA1中元素对氢原子固溶焓影响"
+      },
+      {
+        "level": 2,
+        "heading": "间隙固溶所产生的应力能"
+      },
+      {
+        "level": 2,
+        "heading": "图3.6氢原子固溶后Ti3A1-M八面体间隙及周围的电荷分布情况"
+      },
+      {
+        "level": 2,
+        "heading": "3. 研究人员的合作与分工。"
+      },
+      {
+        "level": 2,
+        "heading": "4. 国内外学术合作交流等情况。"
+      },
+      {
+        "level": 2,
+        "heading": "5. 存在的问题、建议及其他需要说明的情况。"
+      },
+      {
+        "level": 1,
+        "heading": "（二）成果部分"
+      },
+      {
+        "level": 2,
+        "heading": "1. 项目取得成果的总体情况。"
+      },
+      {
+        "level": 2,
+        "heading": "2. 项目成果转化及应用情况。"
+      },
+      {
+        "level": 2,
+        "heading": "3. 人才培养情况。"
+      },
+      {
+        "level": 2,
+        "heading": "4. 其他需要说明的成果。"
+      },
+      {
+        "level": 2,
+        "heading": "5. 项目成果科普性介绍或展示网站。"
+      },
+      {
+        "level": 1,
+        "heading": "研究成果目录"
+      },
+      {
+        "level": 2,
+        "heading": "期刊论文"
+      },
+      {
+        "level": 2,
+        "heading": "人才培养"
+      },
+      {
+        "level": 2,
+        "heading": "项目成果应用前景"
+      },
+      {
+        "level": 1,
+        "heading": "国家自然科学基金包干制项目决算表"
+      },
+      {
+        "level": 1,
+        "heading": "决算说明书"
+      },
+      {
+        "level": 2,
+        "heading": "一、项目资金支出情况"
+      },
+      {
+        "level": 2,
+        "heading": "二、资金结余情况"
+      },
+      {
+        "level": 2,
+        "heading": "三、单价50万元（含）以上的设备名称及使用情况"
+      },
+      {
+        "level": 2,
+        "heading": "四、资金管理和使用过程中的问题及建议"
+      },
+      {
+        "level": 2,
+        "heading": "五、其他需要说明的事项"
+      }
+    ]
+  },
+  {
+    "file": "project2.pdf",
+    "doc_type": "fund_project",
+    "title": "大规模通用隐式非线性有限元分析软件研发",
+    "sections": [
+      {
+        "level": 2,
+        "heading": "大规模通用隐式非线性有限元分析软件研发"
+      },
+      {
+        "level": 1,
+        "heading": "国家自然科学基金"
+      },
+      {
+        "level": 1,
+        "heading": "资助项目结题/成果报告"
+      },
+      {
+        "level": 1,
+        "heading": "项目摘要"
+      },
+      {
+        "level": 2,
+        "heading": "中文摘要："
+      },
+      {
+        "level": 2,
+        "heading": "Abstract:"
+      },
+      {
+        "level": 1,
+        "heading": "结题摘要"
+      },
+      {
+        "level": 2,
+        "heading": "中文摘要（对项目的背景、主要研究内容、重要结果、关键数据及其科学意义等做简单概述）："
+      },
+      {
+        "level": 2,
+        "heading": "Abstract (Brief description of research background, main methods, contributions, and research data):"
+      },
+      {
+        "level": 1,
+        "heading": "正文"
+      },
+      {
+        "level": 2,
+        "heading": "(一) 结题部分"
+      },
+      {
+        "level": 2,
+        "heading": "1. 研究计划执行情况概述。"
+      },
+      {
+        "level": 2,
+        "heading": "（1）按计划执行情况。"
+      },
+      {
+        "level": 2,
+        "heading": "(2)研究目标完成情况。"
+      },
+      {
+        "level": 2,
+        "heading": "2. 研究工作主要进展、结果和影响。"
+      },
+      {
+        "level": 2,
+        "heading": "（1）主要研究内容。"
+      },
+      {
+        "level": 2,
+        "heading": "1）通用隐式非线性有限元软件框架研发"
+      },
+      {
+        "level": 2,
+        "heading": "通用隐式非线性算法程序框架设计"
+      },
+      {
+        "level": 2,
+        "heading": "非线性求解算法，单元列式和材料材料本构计算类设计"
+      },
+      {
+        "level": 2,
+        "heading": "2）更新拉格朗日三维大应变连续体单元"
+      },
+      {
+        "level": 2,
+        "heading": "●（近似）不可压缩问题"
+      },
+      {
+        "level": 2,
+        "heading": "● 剪切锁定问题"
+      },
+      {
+        "level": 2,
+        "heading": "● 完全减缩积分与沙漏控制"
+      },
+      {
+        "level": 2,
+        "heading": "3）单元无关共旋与几何精确结构单元技术"
+      },
+      {
+        "level": 2,
+        "heading": "单元无关共旋技术"
+      },
+      {
+        "level": 2,
+        "heading": "有限转动的几何精确描述"
+      },
+      {
+        "level": 2,
+        "heading": "4）隐式非线性有限元共性技术研究"
+      },
+      {
+        "level": 2,
+        "heading": "线搜索"
+      },
+      {
+        "level": 2,
+        "heading": "自由度结果预测"
+      },
+      {
+        "level": 2,
+        "heading": "自动增量步长"
+      },
+      {
+        "level": 2,
+        "heading": "● 土木工程领域-大跨度悬索桥大挠度分析"
+      },
+      {
+        "level": 2,
+        "heading": "● 核电工程领域-气闸结构弹塑性分析"
+      },
+      {
+        "level": 2,
+        "heading": "其他分析技术：自动增量步长"
+      },
+      {
+        "level": 2,
+        "heading": "● 航空航天领域-折叠机翼展开动力学分析"
+      },
+      {
+        "level": 2,
+        "heading": "5）隐式材料非线性计算及UMAT子程序接口"
+      },
+      {
+        "level": 2,
+        "heading": "增量型与全量型大应变材料非线性分析"
+      },
+      {
+        "level": 2,
+        "heading": "UMAT子程序接口"
+      },
+      {
+        "level": 2,
+        "heading": "3. 研究人员的合作与分工。"
+      },
+      {
+        "level": 2,
+        "heading": "4. 国内外学术合作交流等情况。"
+      },
+      {
+        "level": 2,
+        "heading": "5. 存在的问题、建议及其他需要说明的情况。"
+      },
+      {
+        "level": 1,
+        "heading": "（二）成果部分"
+      },
+      {
+        "level": 2,
+        "heading": "1. 项目取得成果的总体情况。"
+      },
+      {
+        "level": 2,
+        "heading": "2. 项目成果转化及应用情况。"
+      },
+      {
+        "level": 2,
+        "heading": "案例1：核电领域"
+      },
+      {
+        "level": 2,
+        "heading": "案例2：航空领域"
+      },
+      {
+        "level": 2,
+        "heading": "案例3：粉末冶金领域"
+      },
+      {
+        "level": 2,
+        "heading": "案例4：焊接领域"
+      },
+      {
+        "level": 2,
+        "heading": "案例5：桥梁领域"
+      },
+      {
+        "level": 2,
+        "heading": "3. 人才培养情况。"
+      },
+      {
+        "level": 2,
+        "heading": "5. 项目成果科普性介绍或展示网站。"
+      },
+      {
+        "level": 1,
+        "heading": "研究成果目录"
+      },
+      {
+        "level": 2,
+        "heading": "期刊论文"
+      },
+      {
+        "level": 2,
+        "heading": "会议论文"
+      },
+      {
+        "level": 2,
+        "heading": "软件著作权"
+      },
+      {
+        "level": 2,
+        "heading": "人才培养"
+      },
+      {
+        "level": 2,
+        "heading": "学术交流"
+      },
+      {
+        "level": 2,
+        "heading": "项目成果应用前景"
+      },
+      {
+        "level": 1,
+        "heading": "决算说明书"
+      },
+      {
+        "level": 2,
+        "heading": "1. 设备费，支出1.289万元，主要用于购买1台网络存储等。"
+      },
+      {
+        "level": 2,
+        "heading": "2. 材料费，支出1.9208万元，主要用于购买内存、显卡等电子配件产品。"
+      },
+      {
+        "level": 2,
+        "heading": "6. 间接费，支出11.2万元，主要用于学校管理费及参与项目人员绩效发放"
+      },
+      {
+        "level": 1,
+        "heading": "电子附件目录"
+      }
+    ]
+  },
+  {
+    "file": "project3.pdf",
+    "doc_type": "fund_project",
+    "title": "结题摘要",
+    "sections": [
+      {
+        "level": 1,
+        "heading": "国家自然科学基金"
+      },
+      {
+        "level": 1,
+        "heading": "资助项目结题/成果报告"
+      },
+      {
+        "level": 1,
+        "heading": "结题摘要"
+      },
+      {
+        "level": 2,
+        "heading": "中文摘要（对项目的背景、主要研究内容、重要结果、关键数据及其科学意义等做简单概述）："
+      },
+      {
+        "level": 2,
+        "heading": "Abstract (Brief description of research background, main methods, contributions, and research data):"
+      },
+      {
+        "level": 1,
+        "heading": "正文"
+      },
+      {
+        "level": 1,
+        "heading": "（一）结题部分"
+      },
+      {
+        "level": 2,
+        "heading": "（1）按计划执行情况"
+      },
+      {
+        "level": 2,
+        "heading": "（2）研究目标完成情况"
+      },
+      {
+        "level": 2,
+        "heading": "本项目的研究目标为："
+      },
+      {
+        "level": 2,
+        "heading": "3. 氢对FeCoNiCr系高熵合金塑性变形机制的影响规律"
+      },
+      {
+        "level": 2,
+        "heading": "2. 研究工作主要进展、结果和影响。"
+      },
+      {
+        "level": 2,
+        "heading": "(1) 主要研究内容。"
+      },
+      {
+        "level": 2,
+        "heading": "（2）取得的主要研究进展、重要结果、关键数据等及其科学意义或应用前景。"
+      },
+      {
+        "level": 2,
+        "heading": "3.研究人员的合作与分工。"
+      },
+      {
+        "level": 2,
+        "heading": "4. 国内外学术合作交流等情况。"
+      },
+      {
+        "level": 2,
+        "heading": "5. 存在的问题、建议及其他需要说明的情况。"
+      },
+      {
+        "level": 1,
+        "heading": "（二）成果部分"
+      },
+      {
+        "level": 2,
+        "heading": "1. 项目取得成果的总体情况。"
+      },
+      {
+        "level": 2,
+        "heading": "2. 项目成果转化及应用情况。"
+      },
+      {
+        "level": 1,
+        "heading": "研究成果目录"
+      },
+      {
+        "level": 2,
+        "heading": "期刊论文"
+      },
+      {
+        "level": 2,
+        "heading": "项目成果应用前景"
+      },
+      {
+        "level": 1,
+        "heading": "决算说明书"
+      },
+      {
+        "level": 1,
+        "heading": "电子附件目录"
+      }
+    ]
+  }
+]

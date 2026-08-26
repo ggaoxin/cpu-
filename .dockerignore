@@ -1,0 +1,17 @@
+.git
+.env
+config/.env
+.idea
+.vscode
+__pycache__
+*.py[cod]
+*.log
+runtime
+frontend/node_modules
+frontend/dist
+training/runs
+tests
+docs/*.pdf
+models
+rag_store
+data

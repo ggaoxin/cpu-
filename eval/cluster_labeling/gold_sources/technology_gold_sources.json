@@ -1,0 +1,5316 @@
+{
+  "construction": {
+    "purpose": "manual_gold_source_only",
+    "production_topic_library": false,
+    "llm_used": false,
+    "selection_note": "Evaluation-only evidence selectors; never imported by production code."
+  },
+  "cluster_phrase_sets": [
+    {
+      "cluster_id": "T-ZH-01",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "空间溢出效应",
+          "frequency": 18,
+          "weight": 0.955,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "空间杜宾",
+          "frequency": 11,
+          "weight": 0.7975,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "空间计量",
+          "frequency": 6,
+          "weight": 0.685,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "地理探测器",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "esda",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "耦合协调",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "长三角地区",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "产业结构升级",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "城市群",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "粤港澳大湾区",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "高质量发展",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "科技创新",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0740",
+          "title": "中国大豆生产格局变化及其影响因素",
+          "matched_evidence": [
+            "空间计量",
+            "空间溢出效应",
+            "esda"
+          ],
+          "keywords": [
+            "大豆产区",
+            "粮食安全",
+            "产业集中度",
+            "农业机械化",
+            "农业保险",
+            "农业比较收益"
+          ]
+        },
+        {
+          "document_id": "zh_0001",
+          "title": "土地流转和社会化服务对农业全要素生产率的影响实证分析",
+          "matched_evidence": [
+            "空间计量",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "土地流转",
+            "农业社会化服务",
+            "农业全要素生产率",
+            "空间溢出效应"
+          ]
+        },
+        {
+          "document_id": "zh_0068",
+          "title": "中国对外直接投资促进经济高质量发展的空间溢出效应和机制",
+          "matched_evidence": [
+            "空间杜宾",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "对外直接投资",
+            "投资动机类型",
+            "经济高质量发展",
+            "产业结构升级",
+            "就业水平",
+            "资源优化配置",
+            "产业转移"
+          ]
+        },
+        {
+          "document_id": "zh_0082",
+          "title": "人工智能应用促进了长江经济带三大城市群的绿色创新吗？——基于“数字红利”和“数字鸿沟”视角",
+          "matched_evidence": [
+            "空间杜宾",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "人工智能应用",
+            "绿色创新",
+            "倒U型曲线",
+            "空间溢出效应",
+            "衰减边界",
+            "城市群"
+          ]
+        },
+        {
+          "document_id": "zh_0099",
+          "title": "对外开放对粤港澳大湾区旅游业生态效率影响的空间效应",
+          "matched_evidence": [
+            "空间杜宾",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "对外开放",
+            "旅游业生态效率",
+            "绿色转型",
+            "空间效应",
+            "国际合作",
+            "粤港澳大湾区"
+          ]
+        },
+        {
+          "document_id": "zh_0132",
+          "title": "区域旅游开发强度与生态系统功能的耦合协调及驱动机制",
+          "matched_evidence": [
+            "空间溢出效应",
+            "地理探测器"
+          ],
+          "keywords": [
+            "旅游开发强度",
+            "生态系统功能",
+            "交互响应",
+            "耦合协调",
+            "喀斯特生态旅游地",
+            "贵州"
+          ]
+        },
+        {
+          "document_id": "zh_0134",
+          "title": "长三角地区生态韧性抵抗——适应——恢复的耦合协调及影响机制",
+          "matched_evidence": [
+            "空间杜宾",
+            "地理探测器"
+          ],
+          "keywords": [
+            "生态韧性",
+            "耦合协调",
+            "高质量发展",
+            "科技创新",
+            "产业结构",
+            "自然因素",
+            "长三角地区"
+          ]
+        },
+        {
+          "document_id": "zh_0144",
+          "title": "交通基础设施建设对城乡收入差距的影响及其空间效应",
+          "matched_evidence": [
+            "空间杜宾",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "交通基础设施",
+            "城乡收入差距",
+            "空间杜宾模型",
+            "空间溢出效应",
+            "中介效应模型"
+          ]
+        },
+        {
+          "document_id": "zh_0146",
+          "title": "数字经济驱动城市产业结构升级的时空演变",
+          "matched_evidence": [
+            "空间计量",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "数字经济",
+            "产业结构升级",
+            "产业结构合理化",
+            "产业结构高度化",
+            "空间集聚",
+            "空间计量模型"
+          ]
+        },
+        {
+          "document_id": "zh_0162",
+          "title": "长三角地区智能设备制造业空间布局演化及影响因素",
+          "matched_evidence": [
+            "空间杜宾",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "新质生产力",
+            "智能设备制造业",
+            "产业集聚",
+            "工业机器人",
+            "无人飞行器",
+            "创新水平",
+            "长三角地区"
+          ]
+        },
+        {
+          "document_id": "zh_0166",
+          "title": "借用规模视角下中国城市收缩时空特征及其空间溢出效应",
+          "matched_evidence": [
+            "空间杜宾",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "城市收缩",
+            "借用规模",
+            "城市群",
+            "功能规模借用",
+            "绩效规模借用",
+            "集聚阴影"
+          ]
+        },
+        {
+          "document_id": "zh_0365",
+          "title": "土地出让价格对国土空间格局演变的作用机制与空间效应——以长三角地区为例",
+          "matched_evidence": [
+            "空间杜宾",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "土地出让价格",
+            "国土空间格局",
+            "建设用地",
+            "农业生产空间",
+            "生态服务空间",
+            "长三角地区"
+          ]
+        },
+        {
+          "document_id": "zh_0370",
+          "title": "长江中游城市群数智融合对制造业绿色转型的影响及空间效应",
+          "matched_evidence": [
+            "空间杜宾",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "数智融合",
+            "制造业绿色转型",
+            "耦合协调度模型",
+            "空间杜宾模型",
+            "长江中游城市群"
+          ]
+        },
+        {
+          "document_id": "zh_0493",
+          "title": "北京市Airbnb房源价格影响因素计量分析",
+          "matched_evidence": [
+            "空间计量",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "共享住宿",
+            "共享经济",
+            "价格",
+            "空间计量模型",
+            "房东特征",
+            "旅游景点"
+          ]
+        },
+        {
+          "document_id": "zh_0502",
+          "title": "生产性服务业集聚空间效应与城市技术创新——基于长江经济带108个城市面板数据的实证分析",
+          "matched_evidence": [
+            "空间杜宾",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "生产性服务业集聚",
+            "空间溢出",
+            "技术创新",
+            "长江经济带",
+            "专业化集聚",
+            "经济发展水平",
+            "高质量发展"
+          ]
+        },
+        {
+          "document_id": "zh_0524",
+          "title": "环长株潭城市群技术进步及空间溢出效应研究",
+          "matched_evidence": [
+            "空间计量",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "空间溢出效应",
+            "空间计量经济",
+            "技术进步",
+            "环长株潭城市群"
+          ]
+        },
+        {
+          "document_id": "zh_0651",
+          "title": "中国对欧盟直接投资(OFDI)的时空特征及影响因素",
+          "matched_evidence": [
+            "空间计量",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "对外直接投资(OFDI)",
+            "欧盟",
+            "空间分布“",
+            "一带一路”倡议",
+            "空间溢出效应",
+            "贸易关系",
+            "投资自由度"
+          ]
+        },
+        {
+          "document_id": "zh_0789",
+          "title": "中国科技新城的空间联系特征及其影响机制",
+          "matched_evidence": [
+            "空间杜宾",
+            "空间溢出效应"
+          ],
+          "keywords": [
+            "科技新城",
+            "空间联系",
+            "引力模型",
+            "互联网+",
+            "京津冀",
+            "长三角",
+            "创新型城市"
+          ]
+        },
+        {
+          "document_id": "zh_0799",
+          "title": "粤港澳大湾区产业融合驱动全要素生产率增长研究——以制造业与生产性服务业融合为例",
+          "matched_evidence": [
+            "空间溢出效应",
+            "地理探测器"
+          ],
+          "keywords": [
+            "产业融合",
+            "生产性服务业",
+            "制造业",
+            "全要素生产率增长",
+            "粤港澳大湾区",
+            "地理探测器"
+          ]
+        },
+        {
+          "document_id": "zh_0079",
+          "title": "黄河流域绿色发展与共同富裕耦合协调水平变化及其影响因素",
+          "matched_evidence": [
+            "地理探测器"
+          ],
+          "keywords": [
+            "绿色发展",
+            "共同富裕",
+            "耦合协调",
+            "科技创新",
+            "城镇化",
+            "黄河流域"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-ZH-02",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "优化调度",
+          "frequency": 15,
+          "weight": 0.8875,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "鲁棒优化",
+          "frequency": 8,
+          "weight": 0.73,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "随机优化",
+          "frequency": 6,
+          "weight": 0.685,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "分布鲁棒",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "多目标优化",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "综合能源系统",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "条件风险价值",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "分布鲁棒优化",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "不确定性",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "灵活性资源",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "需求响应",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "配电网",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0070",
+          "title": "考虑配电网灵活性不足风险的分布鲁棒低碳优化调度",
+          "matched_evidence": [
+            "鲁棒优化",
+            "分布鲁棒",
+            "优化调度"
+          ],
+          "keywords": [
+            "智能储能软开关",
+            "灵活性资源",
+            "条件风险价值",
+            "Frank-Copula函数",
+            "分布鲁棒优化"
+          ]
+        },
+        {
+          "document_id": "zh_0229",
+          "title": "计及负荷侧频率支持的分布鲁棒频率约束机组组合",
+          "matched_evidence": [
+            "鲁棒优化",
+            "分布鲁棒",
+            "优化调度"
+          ],
+          "keywords": [
+            "频率约束优化调度",
+            "机组组合",
+            "负荷调频",
+            "分布鲁棒优化",
+            "分解算法"
+          ]
+        },
+        {
+          "document_id": "zh_0232",
+          "title": "考虑P2G-CCS-HFC协调运行的园区综合能源系统分布鲁棒优化调度",
+          "matched_evidence": [
+            "鲁棒优化",
+            "分布鲁棒",
+            "优化调度"
+          ],
+          "keywords": [
+            "碳捕集电厂",
+            "电转气",
+            "氢燃料电池",
+            "绿证碳交易",
+            "分布鲁棒优化",
+            "区域综合能源系统"
+          ]
+        },
+        {
+          "document_id": "zh_0038",
+          "title": "计及(火用)效率的电-气-热综合能源系统多目标优化调度方法",
+          "matched_evidence": [
+            "多目标优化",
+            "优化调度"
+          ],
+          "keywords": [
+            "综合能源系统",
+            "多目标优化",
+            "(火用)效率",
+            "求解时间"
+          ]
+        },
+        {
+          "document_id": "zh_0060",
+          "title": "适应新型电力系统发展的多元灵活资源优化调度建模和分析",
+          "matched_evidence": [
+            "多目标优化",
+            "优化调度"
+          ],
+          "keywords": [
+            "新型电力系统",
+            "多元灵活资源",
+            "优化调度",
+            "灵活调节能力"
+          ]
+        },
+        {
+          "document_id": "zh_0123",
+          "title": "考虑源荷相关性及条件风险价值的综合能源系统参与电能量-备用市场优化",
+          "matched_evidence": [
+            "随机优化",
+            "优化调度"
+          ],
+          "keywords": [
+            "综合能源系统",
+            "电能量市场",
+            "旋转备用市场",
+            "源荷相关性",
+            "条件风险价值"
+          ]
+        },
+        {
+          "document_id": "zh_0324",
+          "title": "沿海区域综合能源生产单元随机优化调度",
+          "matched_evidence": [
+            "随机优化",
+            "优化调度"
+          ],
+          "keywords": [
+            "综合能源生产单元",
+            "随机优化调度",
+            "近似动态规划",
+            "参数化代价函数近似"
+          ]
+        },
+        {
+          "document_id": "zh_0388",
+          "title": "基于MIGDT的工业园区综合能源系统鲁棒运行优化",
+          "matched_evidence": [
+            "鲁棒优化",
+            "随机优化"
+          ],
+          "keywords": [
+            "综合能源系统",
+            "运行优化",
+            "需求响应",
+            "鲁棒优化",
+            "不确定性"
+          ]
+        },
+        {
+          "document_id": "zh_0460",
+          "title": "考虑夏普比率的虚拟电厂日前投标策略",
+          "matched_evidence": [
+            "随机优化",
+            "多目标优化"
+          ],
+          "keywords": [
+            "虚拟电厂",
+            "电力现货市场",
+            "随机优化",
+            "条件风险价值",
+            "夏普比率"
+          ]
+        },
+        {
+          "document_id": "zh_0604",
+          "title": "基于条件生成对抗网络的多区域风电短期出力场景生成方法",
+          "matched_evidence": [
+            "随机优化",
+            "优化调度"
+          ],
+          "keywords": [
+            "风电",
+            "场景生成",
+            "时空相关性",
+            "条件生成对抗网络"
+          ]
+        },
+        {
+          "document_id": "zh_0711",
+          "title": "计及源荷多重不确定性的综合能源系统鲁棒经济调度方法",
+          "matched_evidence": [
+            "鲁棒优化",
+            "随机优化"
+          ],
+          "keywords": [
+            "综合能源系统",
+            "综合需求响应",
+            "多重不确定性",
+            "鲁棒-随机优化"
+          ]
+        },
+        {
+          "document_id": "zh_0761",
+          "title": "计及灵活性资源的交直流混合配电网双层优化",
+          "matched_evidence": [
+            "鲁棒优化",
+            "分布鲁棒"
+          ],
+          "keywords": [
+            "交直流混合配电网",
+            "灵活性资源",
+            "分时电价",
+            "双层优化",
+            "分布鲁棒"
+          ]
+        },
+        {
+          "document_id": "zh_0963",
+          "title": "基于零和博弈的电力系统鲁棒优化调度研究",
+          "matched_evidence": [
+            "鲁棒优化",
+            "优化调度"
+          ],
+          "keywords": [
+            "电力调度",
+            "零和博弈",
+            "鲁棒优化",
+            "min-max模型",
+            "分布式能源"
+          ]
+        },
+        {
+          "document_id": "zh_0009",
+          "title": "基于非零和博弈的互联异构多微网系统电-热-碳优化调度策略",
+          "matched_evidence": [
+            "优化调度"
+          ],
+          "keywords": [
+            "多微网系统",
+            "点对点能源交易",
+            "碳配额交易",
+            "需求响应",
+            "交替方向乘子法"
+          ]
+        },
+        {
+          "document_id": "zh_0017",
+          "title": "计及拓扑相似性的含分散式风电配网双层优化重构方法",
+          "matched_evidence": [
+            "优化调度"
+          ],
+          "keywords": [
+            "配电网",
+            "分散式风电",
+            "拓扑相似性",
+            "双层优化重构",
+            "二阶锥规划"
+          ]
+        },
+        {
+          "document_id": "zh_0027",
+          "title": "考虑大规模风光分层接入的配电网多层协调无功优化方法",
+          "matched_evidence": [
+            "优化调度"
+          ],
+          "keywords": [
+            "配电网",
+            "无功优化",
+            "多层协调",
+            "数据驱动"
+          ]
+        },
+        {
+          "document_id": "zh_0063",
+          "title": "基于虚拟电池模型的外逼近闵可夫斯基热泵负荷调节可行域聚合方法",
+          "matched_evidence": [
+            "优化调度"
+          ],
+          "keywords": [
+            "温控负荷",
+            "需求侧灵活性",
+            "虚拟电池模型",
+            "外逼近闵可夫斯基求和",
+            "可行域聚合"
+          ]
+        },
+        {
+          "document_id": "zh_0065",
+          "title": "计及电能量-备用耦合的配电网与光储充电站协调优化调度方法",
+          "matched_evidence": [
+            "优化调度"
+          ],
+          "keywords": [
+            "光储充电站",
+            "协调优化",
+            "节点边际电价",
+            "不确定性"
+          ]
+        },
+        {
+          "document_id": "zh_0091",
+          "title": "考虑新能源配网三相不平衡治理的电动汽车充电策略",
+          "matched_evidence": [
+            "鲁棒优化"
+          ],
+          "keywords": [
+            "电动汽车",
+            "新能源",
+            "三相不平衡",
+            "有序充电",
+            "不确定性",
+            "鲁棒优化"
+          ]
+        },
+        {
+          "document_id": "zh_0102",
+          "title": "基于直升机优化调度的电力系统灾后快速恢复模型",
+          "matched_evidence": [
+            "优化调度"
+          ],
+          "keywords": [
+            "极端事件",
+            "应急响应",
+            "直升机优化调度",
+            "三维航路规划",
+            "灾后快速恢复"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-ZH-03",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "故障定位",
+          "frequency": 7,
+          "weight": 0.7075,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "故障诊断",
+          "frequency": 7,
+          "weight": 0.7075,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "故障检测",
+          "frequency": 5,
+          "weight": 0.6625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "状态评价",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "配电网",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "高阻接地故障",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "极限学习机",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "变压器",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "正则化正交匹配追踪重构算法",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "参数辨识",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "数字孪生",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "最小二乘法",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0019",
+          "title": "基于参数自修正的配电网故障定位数字孪生技术研究",
+          "matched_evidence": [
+            "故障定位"
+          ],
+          "keywords": [
+            "数字孪生",
+            "故障定位",
+            "参数辨识",
+            "最小二乘法",
+            "正则化正交匹配追踪重构算法"
+          ]
+        },
+        {
+          "document_id": "zh_0020",
+          "title": "考虑声-振模态结合的抽水蓄能机组轴承故障诊断",
+          "matched_evidence": [
+            "故障诊断"
+          ],
+          "keywords": [
+            "抽水蓄能机组",
+            "声-振模态",
+            "奇异值分解",
+            "特征工程",
+            "故障诊断"
+          ]
+        },
+        {
+          "document_id": "zh_0028",
+          "title": "基于健康指数的架空线路运行状态评价方法研究",
+          "matched_evidence": [
+            "状态评价"
+          ],
+          "keywords": [
+            "健康指数",
+            "架空线路",
+            "状态评价"
+          ]
+        },
+        {
+          "document_id": "zh_0030",
+          "title": "基于关系超图增强Transformer的智能站二次设备故障诊断研究",
+          "matched_evidence": [
+            "故障诊断"
+          ],
+          "keywords": [
+            "关系超图",
+            "超图卷积神经网络",
+            "故障预测",
+            "二次设备",
+            "设备关联模型"
+          ]
+        },
+        {
+          "document_id": "zh_0057",
+          "title": "基于多元暂态特征故障度的配电网单相接地选线方法",
+          "matched_evidence": [
+            "故障检测"
+          ],
+          "keywords": [
+            "故障选线",
+            "基频移频",
+            "Copula函数",
+            "概率密度",
+            "多元暂态特征故障度"
+          ]
+        },
+        {
+          "document_id": "zh_0131",
+          "title": "离网型制氢系统典型短路故障分析及协同保护",
+          "matched_evidence": [
+            "故障检测"
+          ],
+          "keywords": [
+            "离网制氢",
+            "故障检测",
+            "协同保护",
+            "通信故障"
+          ]
+        },
+        {
+          "document_id": "zh_0177",
+          "title": "基于改进型主动深度学习框架的油浸式变压器故障辨识算法",
+          "matched_evidence": [
+            "故障诊断"
+          ],
+          "keywords": [
+            "变压器故障辨识",
+            "主动学习",
+            "深度学习",
+            "小样本学习",
+            "非均衡数据集"
+          ]
+        },
+        {
+          "document_id": "zh_0191",
+          "title": "基于非线性系统辨识的长距离直流输电线路色散补偿及故障定位方法",
+          "matched_evidence": [
+            "故障定位"
+          ],
+          "keywords": [
+            "高压直流输电",
+            "行波定位",
+            "系统辨识",
+            "色散补偿"
+          ]
+        },
+        {
+          "document_id": "zh_0219",
+          "title": "一种新型单芯移相变压器的差动保护方法研究",
+          "matched_evidence": [
+            "故障定位"
+          ],
+          "keywords": [
+            "移相变压器",
+            "单芯式",
+            "差动保护",
+            "电平衡差动",
+            "故障定位"
+          ]
+        },
+        {
+          "document_id": "zh_0245",
+          "title": "小样本条件下基于深度特征融合的配电网高阻接地故障识别方法",
+          "matched_evidence": [
+            "故障检测"
+          ],
+          "keywords": [
+            "配电网",
+            "高阻接地故障",
+            "时频特征融合",
+            "小样本",
+            "自注意力机"
+          ]
+        },
+        {
+          "document_id": "zh_0270",
+          "title": "声信号下基于双通道特征融合网络的电抗器故障诊断方法",
+          "matched_evidence": [
+            "故障诊断"
+          ],
+          "keywords": [
+            "电抗器",
+            "声信号",
+            "故障",
+            "特征"
+          ]
+        },
+        {
+          "document_id": "zh_0272",
+          "title": "基于改进堆叠降噪自编码器的配电网高阻接地故障检测方法",
+          "matched_evidence": [
+            "故障检测"
+          ],
+          "keywords": [
+            "配电网",
+            "高阻接地故障",
+            "多域特征融合",
+            "堆叠降噪自编码器",
+            "极限学习机"
+          ]
+        },
+        {
+          "document_id": "zh_0320",
+          "title": "多级多分支配电线路雷击故障定位方法",
+          "matched_evidence": [
+            "故障定位"
+          ],
+          "keywords": [
+            "行波法",
+            "山区复杂配电线路",
+            "故障支路判断矩阵",
+            "拓扑变换"
+          ]
+        },
+        {
+          "document_id": "zh_0336",
+          "title": "基于融合少数类过采样均衡多分类数据的改进极限学习机的变压器故障诊断方法",
+          "matched_evidence": [
+            "故障诊断"
+          ],
+          "keywords": [
+            "变压器",
+            "故障诊断",
+            "非均衡数据",
+            "合成少数类过采样",
+            "麻雀搜索算法",
+            "极限学习机"
+          ]
+        },
+        {
+          "document_id": "zh_0341",
+          "title": "考虑三段式线路保护主保护范围的电网故障诊断解析模型",
+          "matched_evidence": [
+            "故障诊断"
+          ],
+          "keywords": [
+            "线路",
+            "主保护",
+            "保护范围",
+            "故障诊断",
+            "解析模型"
+          ]
+        },
+        {
+          "document_id": "zh_0358",
+          "title": "配电网站域式快速线路保护方案及其实现",
+          "matched_evidence": [
+            "故障定位"
+          ],
+          "keywords": [
+            "配电网",
+            "站域式保护",
+            "快速线路保护",
+            "保护应用拓扑",
+            "故障信息矩阵"
+          ]
+        },
+        {
+          "document_id": "zh_0373",
+          "title": "基于护层接地线电流和分段TKEO的电缆早期故障检测方法",
+          "matched_evidence": [
+            "故障检测"
+          ],
+          "keywords": [
+            "早期故障",
+            "脉冲因子",
+            "余弦相似度"
+          ]
+        },
+        {
+          "document_id": "zh_0374",
+          "title": "基于小波变换与TKEO的故障识别与定位方法研究",
+          "matched_evidence": [
+            "故障定位"
+          ],
+          "keywords": [
+            "直流微电网",
+            "故障识别",
+            "故障定位"
+          ]
+        },
+        {
+          "document_id": "zh_0375",
+          "title": "多策略改进DBO算法与KELM的变压器故障辨识",
+          "matched_evidence": [
+            "故障诊断"
+          ],
+          "keywords": [
+            "变压器",
+            "故障诊断",
+            "多策略改进蜣螂算法",
+            "核极限学习机",
+            "核主成分分析"
+          ]
+        },
+        {
+          "document_id": "zh_0389",
+          "title": "基于时域阻抗法的35 kV配电线路相间短路故障测距",
+          "matched_evidence": [
+            "故障定位"
+          ],
+          "keywords": [
+            "时域阻抗法",
+            "单端信息",
+            "故障测距",
+            "阻尼最小二乘法"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-ZH-04",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "控制策略",
+          "frequency": 19,
+          "weight": 0.9775,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "稳定性分析",
+          "frequency": 7,
+          "weight": 0.7075,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "模型预测控制",
+          "frequency": 4,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "滑模控制",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "虚拟阻抗",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "虚拟同步机",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "暂态稳定性",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "荷电状态",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "一次调频",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "构网型",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "作用机理",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "下垂控制",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0013",
+          "title": "构网型下垂控制中虚拟阻抗的作用、改进及研究前景分析",
+          "matched_evidence": [
+            "虚拟阻抗",
+            "控制策略"
+          ],
+          "keywords": [
+            "虚拟阻抗",
+            "构网型",
+            "下垂控制",
+            "作用机理",
+            "研究前景"
+          ]
+        },
+        {
+          "document_id": "zh_0041",
+          "title": "计及电压动态特性的虚拟同步机暂态稳定性分析",
+          "matched_evidence": [
+            "虚拟同步机",
+            "稳定性分析"
+          ],
+          "keywords": [
+            "虚拟同步机",
+            "摇摆方程",
+            "暂态稳定性",
+            "电压动态特性"
+          ]
+        },
+        {
+          "document_id": "zh_0058",
+          "title": "含光储充的配网虚拟电厂二次调频随机模型预测控制策略",
+          "matched_evidence": [
+            "模型预测控制",
+            "控制策略"
+          ],
+          "keywords": [
+            "配网虚拟电厂",
+            "二次调频",
+            "随机模型预测控制",
+            "动态功率跟踪"
+          ]
+        },
+        {
+          "document_id": "zh_0059",
+          "title": "基于回流功率优化的直流微网DC-DC变流器超螺旋滑模控制",
+          "matched_evidence": [
+            "滑模控制",
+            "控制策略"
+          ],
+          "keywords": [
+            "双有源桥直流变换器",
+            "超螺旋滑模控制",
+            "动态性能",
+            "KKT条件法",
+            "回流功率"
+          ]
+        },
+        {
+          "document_id": "zh_0105",
+          "title": "基于卡尔曼滤波和模型预测控制的混合储能平抑风电功率波动策略",
+          "matched_evidence": [
+            "模型预测控制",
+            "控制策略"
+          ],
+          "keywords": [
+            "遗传算法",
+            "卡尔曼滤波",
+            "模型预测控制",
+            "混合储能",
+            "荷电状态",
+            "风电波动平抑"
+          ]
+        },
+        {
+          "document_id": "zh_0181",
+          "title": "附加储能的直驱型风电机组的构网型控制与小信号稳定性分析",
+          "matched_evidence": [
+            "控制策略",
+            "稳定性分析"
+          ],
+          "keywords": [
+            "直驱型风电机组",
+            "构网型控制",
+            "交互稳定性",
+            "储能",
+            "一次调频"
+          ]
+        },
+        {
+          "document_id": "zh_0226",
+          "title": "直流微网系统小干扰稳定性分析及有源阻尼控制",
+          "matched_evidence": [
+            "控制策略",
+            "稳定性分析"
+          ],
+          "keywords": [
+            "直流微电网",
+            "稳定性分析",
+            "灵敏度分析",
+            "有源阻尼方法",
+            "恒功率负荷"
+          ]
+        },
+        {
+          "document_id": "zh_0247",
+          "title": "宽短路比工况下构网型逆变器功率自同步控制的稳定性分析",
+          "matched_evidence": [
+            "控制策略",
+            "稳定性分析"
+          ],
+          "keywords": [
+            "宽短路比",
+            "构网型逆变器",
+            "功率自同步",
+            "稳定性分析",
+            "半实物实时仿真"
+          ]
+        },
+        {
+          "document_id": "zh_0278",
+          "title": "应用多参数协同自适应方法的虚拟同步发电机控制策略",
+          "matched_evidence": [
+            "控制策略",
+            "稳定性分析"
+          ],
+          "keywords": [
+            "虚拟同步发电机",
+            "小信号模型",
+            "虚拟惯量",
+            "阻尼系数",
+            "下垂系数",
+            "自适应控制"
+          ]
+        },
+        {
+          "document_id": "zh_0280",
+          "title": "一种用于非平衡分布式微网的双重灵活模型预测功率控制方法",
+          "matched_evidence": [
+            "模型预测控制",
+            "控制策略"
+          ],
+          "keywords": [
+            "模型预测控制",
+            "功率控制",
+            "不平衡微网",
+            "T型三电平变换器"
+          ]
+        },
+        {
+          "document_id": "zh_0312",
+          "title": "基于滑模一致性的多并联互联变流器分布式鲁棒功率控制策略",
+          "matched_evidence": [
+            "滑模控制",
+            "控制策略"
+          ],
+          "keywords": [
+            "交直流混合微电网",
+            "多并联互联变流器",
+            "分布式滑模控制",
+            "功率协调控制",
+            "干扰补偿"
+          ]
+        },
+        {
+          "document_id": "zh_0371",
+          "title": "基于自适应虚拟阻抗的构网型变流器暂态稳定性提升策略研究",
+          "matched_evidence": [
+            "虚拟阻抗",
+            "控制策略"
+          ],
+          "keywords": [
+            "构网型变流器",
+            "暂态稳定性",
+            "虚拟阻抗",
+            "电流限制",
+            "同步稳定性"
+          ]
+        },
+        {
+          "document_id": "zh_0436",
+          "title": "基于占空比控制的Vienna整流器模型预测控制策略",
+          "matched_evidence": [
+            "模型预测控制",
+            "控制策略"
+          ],
+          "keywords": [
+            "Vienna整流器",
+            "模型预测",
+            "占空比控制",
+            "价值函数",
+            "中点电位"
+          ]
+        },
+        {
+          "document_id": "zh_0509",
+          "title": "高比例水电系统AGC稳定性分析及控制策略优化",
+          "matched_evidence": [
+            "控制策略",
+            "稳定性分析"
+          ],
+          "keywords": [
+            "高比例水电系统",
+            "自动发电控制",
+            "一次调频",
+            "频率振荡",
+            "控制策略"
+          ]
+        },
+        {
+          "document_id": "zh_0862",
+          "title": "新能源经柔直送出系统新型孤岛鲁棒控制",
+          "matched_evidence": [
+            "控制策略",
+            "稳定性分析"
+          ],
+          "keywords": [
+            "柔直换流站",
+            "孤岛控制",
+            "线性扩张状态观测器",
+            "稳定性分析",
+            "鲁棒性"
+          ]
+        },
+        {
+          "document_id": "zh_0033",
+          "title": "交流故障下高压直流系统无功特性分析及无功控制策略研究",
+          "matched_evidence": [
+            "控制策略"
+          ],
+          "keywords": [
+            "高压直流",
+            "无功功率",
+            "换相失败",
+            "交流故障"
+          ]
+        },
+        {
+          "document_id": "zh_0034",
+          "title": "含逆变型分布式电源外电网的短路计算等值及其影响因素分析",
+          "matched_evidence": [
+            "控制策略"
+          ],
+          "keywords": [
+            "多端口戴维南等值",
+            "逆变型分布式电源",
+            "短路电流计算"
+          ]
+        },
+        {
+          "document_id": "zh_0043",
+          "title": "计及SOC影响的电化学储能系统低电压穿越控制策略",
+          "matched_evidence": [
+            "控制策略"
+          ],
+          "keywords": [
+            "电化学储能",
+            "荷电状态",
+            "低电压穿越策略",
+            "自适应调节系数"
+          ]
+        },
+        {
+          "document_id": "zh_0064",
+          "title": "煤化工场景下光储氢热微网能量管理策略研究",
+          "matched_evidence": [
+            "控制策略"
+          ],
+          "keywords": [
+            "煤化工",
+            "光储氢热",
+            "能量管理策略",
+            "半实物仿真"
+          ]
+        },
+        {
+          "document_id": "zh_0071",
+          "title": "基于牛顿-蚁群算法与选择性谐波调制的电网功率放大器宽频控制策略",
+          "matched_evidence": [
+            "控制策略"
+          ],
+          "keywords": [
+            "选择性电网谐波功率放大器",
+            "级联多电平逆变器",
+            "牛顿-蚁群算法",
+            "实时选择性谐波生成脉宽调制"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-ZH-05",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "神经网络",
+          "frequency": 11,
+          "weight": 0.7975,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "transformer",
+          "frequency": 7,
+          "weight": 0.7075,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "深度学习",
+          "frequency": 7,
+          "weight": 0.7075,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "卷积网络",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "配电网",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "双向长短期记忆网络",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "剩余使用寿命预测",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Transformer网络",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "锂离子电池",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "完全集合经验模态分解",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "完全集成经验模态分解",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "双向长短期记忆神经网络",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0055",
+          "title": "基于自适应噪声完全集合经验模态分解与Bi LSTM-Transformer的锂离子电池剩余使用寿命预测",
+          "matched_evidence": [
+            "transformer",
+            "神经网络"
+          ],
+          "keywords": [
+            "锂离子电池",
+            "剩余使用寿命预测",
+            "Transformer网络",
+            "双向长短期记忆网络",
+            "完全集合经验模态分解"
+          ]
+        },
+        {
+          "document_id": "zh_0199",
+          "title": "针对非平稳信号和高频噪声的自适应噪声完整集成经验模态分解-双向长短期记忆风功率预测模型",
+          "matched_evidence": [
+            "深度学习",
+            "神经网络"
+          ],
+          "keywords": [
+            "风电功率预测",
+            "双向长短期记忆神经网络",
+            "完全集成经验模态分解",
+            "经验小波变换",
+            "深度学习"
+          ]
+        },
+        {
+          "document_id": "zh_0306",
+          "title": "基于物理机理引导的数据驱动潮流计算方法",
+          "matched_evidence": [
+            "深度学习",
+            "神经网络"
+          ],
+          "keywords": [
+            "潮流计算",
+            "数据驱动",
+            "深度学习",
+            "物理机理引导",
+            "拓扑门控"
+          ]
+        },
+        {
+          "document_id": "zh_0679",
+          "title": "含深度学习代理模型的有源配电网电压无功控制进化算法",
+          "matched_evidence": [
+            "深度学习",
+            "神经网络"
+          ],
+          "keywords": [
+            "有源配电网",
+            "三相不平衡",
+            "电压无功控制",
+            "高速公路神经网络",
+            "非支配排序遗传算法",
+            "辅助代理模型"
+          ]
+        },
+        {
+          "document_id": "zh_0704",
+          "title": "低成本对抗性隐蔽虚假数据注入攻击及其检测方法",
+          "matched_evidence": [
+            "深度学习",
+            "神经网络"
+          ],
+          "keywords": [
+            "深度学习",
+            "虚假数据注入攻击",
+            "对抗攻击",
+            "白盒攻击",
+            "对抗训练"
+          ]
+        },
+        {
+          "document_id": "zh_0864",
+          "title": "基于卷积深度网络的高压真空断路器机械故障诊断方法",
+          "matched_evidence": [
+            "深度学习",
+            "神经网络"
+          ],
+          "keywords": [
+            "高压真空断路器",
+            "深度学习",
+            "故障诊断",
+            "长短期记忆模型"
+          ]
+        },
+        {
+          "document_id": "zh_0901",
+          "title": "基于改进GMM-CNN-GRU混合的非侵入式负荷监测方法研究",
+          "matched_evidence": [
+            "深度学习",
+            "神经网络"
+          ],
+          "keywords": [
+            "非侵入式负荷监测与分解",
+            "高斯混合模型聚类",
+            "卷积神经网络",
+            "门控循环单元",
+            "深度学习"
+          ]
+        },
+        {
+          "document_id": "zh_0015",
+          "title": "基于分层有向图与动态时空相关性的小区域光伏超短期预测方法",
+          "matched_evidence": [
+            "卷积网络"
+          ],
+          "keywords": [
+            "分层有向图",
+            "动态相关性",
+            "图卷积网络",
+            "区域台区光伏预测"
+          ]
+        },
+        {
+          "document_id": "zh_0098",
+          "title": "基于TCN-LSTM模型的电网电能质量扰动分类研究",
+          "matched_evidence": [
+            "卷积网络"
+          ],
+          "keywords": [
+            "电能质量",
+            "扰动分类",
+            "TCN-LSTM模型",
+            "时序数据",
+            "抗噪性能"
+          ]
+        },
+        {
+          "document_id": "zh_0178",
+          "title": "基于多尺度卷积融合时间序列Transformer的复合电能质量扰动识别",
+          "matched_evidence": [
+            "transformer"
+          ],
+          "keywords": [
+            "电能质量扰动",
+            "多尺度卷积",
+            "多头注意力机制",
+            "扰动识别"
+          ]
+        },
+        {
+          "document_id": "zh_0187",
+          "title": "基于稳态信息和条件分布自适应的风电场阻抗智能辨识和稳定性评估",
+          "matched_evidence": [
+            "神经网络"
+          ],
+          "keywords": [
+            "在线稳定性评估",
+            "阻抗法",
+            "人工神经网络",
+            "条件分布自适应",
+            "状态估计"
+          ]
+        },
+        {
+          "document_id": "zh_0189",
+          "title": "基于Transformer与单分类支持向量机的窃电时间识别方法",
+          "matched_evidence": [
+            "transformer"
+          ],
+          "keywords": [
+            "窃电",
+            "窃电时间识别",
+            "半监督学习",
+            "单分类支持向量机"
+          ]
+        },
+        {
+          "document_id": "zh_0204",
+          "title": "考虑复合指标优化模态分解和Stacking集成的综合能源系统多元负荷预测",
+          "matched_evidence": [
+            "神经网络"
+          ],
+          "keywords": [
+            "多元负荷预测",
+            "综合能源系统",
+            "平均影响值算法",
+            "金豺优化算法",
+            "复合指标"
+          ]
+        },
+        {
+          "document_id": "zh_0222",
+          "title": "计量用低压电流互感器直流偏磁下的误差计算方法和特性研究",
+          "matched_evidence": [
+            "transformer"
+          ],
+          "keywords": [
+            "计量用",
+            "低压电流互感器",
+            "直流偏磁",
+            "比差",
+            "角差"
+          ]
+        },
+        {
+          "document_id": "zh_0242",
+          "title": "",
+          "matched_evidence": [
+            "transformer"
+          ],
+          "keywords": [
+            "录波数据",
+            "自动校核",
+            "通道名称",
+            "同源匹配"
+          ]
+        },
+        {
+          "document_id": "zh_0266",
+          "title": "考虑局部纹理特征和全局温度分布的电力设备红外图像超分辨率重建方法",
+          "matched_evidence": [
+            "transformer"
+          ],
+          "keywords": [
+            "电力设备",
+            "红外图像",
+            "超分辨率重建",
+            "局部纹理特征",
+            "全局温度分布"
+          ]
+        },
+        {
+          "document_id": "zh_0268",
+          "title": "基于行波全频带特征的配电网故障行波波头标定方法",
+          "matched_evidence": [
+            "神经网络"
+          ],
+          "keywords": [
+            "配电网",
+            "波头标定",
+            "行波全频带",
+            "目标检测模型"
+          ]
+        },
+        {
+          "document_id": "zh_0307",
+          "title": "基于混合型晶闸管可控移相器的抗冲击驱动策略",
+          "matched_evidence": [
+            "transformer"
+          ],
+          "keywords": [
+            "晶闸管可控移相器",
+            "绕组短路",
+            "阀组电流方向",
+            "功率参考阈值",
+            "驱动策略"
+          ]
+        },
+        {
+          "document_id": "zh_0313",
+          "title": "针对电力系统人工智能算法的数据投毒后门攻击方法与检测方案",
+          "matched_evidence": [
+            "深度学习"
+          ],
+          "keywords": [
+            "人工智能",
+            "深度学习",
+            "数据投毒",
+            "后门攻击"
+          ]
+        },
+        {
+          "document_id": "zh_0315",
+          "title": "基于在线潮流反馈优化的配电网光伏电源功率公平分配策略",
+          "matched_evidence": [
+            "神经网络"
+          ],
+          "keywords": [
+            "潮流",
+            "光伏电站",
+            "配电网",
+            "电压灵敏度",
+            "有功削减公平分配"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-ZH-06",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "网络结构",
+          "frequency": 14,
+          "weight": 0.865,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "社会网络分析",
+          "frequency": 7,
+          "weight": 0.7075,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "创新网络",
+          "frequency": 6,
+          "weight": 0.685,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "复杂网络",
+          "frequency": 6,
+          "weight": 0.685,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "关联网络",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "京津冀",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "数字技术专利",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "长三角",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "珠三角",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "资本要素",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "空间尺度",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "多维邻近性",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0003",
+          "title": "三大城市群数字技术专利创新网络演化比较研究",
+          "matched_evidence": [
+            "社会网络分析",
+            "网络结构",
+            "创新网络"
+          ],
+          "keywords": [
+            "数字技术专利",
+            "创新网络",
+            "多维邻近性",
+            "空间尺度",
+            "资本要素",
+            "长三角",
+            "珠三角",
+            "京津冀"
+          ]
+        },
+        {
+          "document_id": "zh_0148",
+          "title": "多维邻近下中国绿色创新网络空间结构特征及机制识别",
+          "matched_evidence": [
+            "社会网络分析",
+            "网络结构",
+            "创新网络"
+          ],
+          "keywords": [
+            "绿色创新网络",
+            "多维邻近",
+            "社会网络分析",
+            "创新社区",
+            "城市角色",
+            "区域协同战略"
+          ]
+        },
+        {
+          "document_id": "zh_0907",
+          "title": "广东省城市创新发展水平及其网络结构演化",
+          "matched_evidence": [
+            "社会网络分析",
+            "网络结构",
+            "创新网络"
+          ],
+          "keywords": [
+            "创新网络",
+            "空间联系",
+            "网络结构",
+            "社会网络分析",
+            "圈层结构"
+          ]
+        },
+        {
+          "document_id": "zh_0158",
+          "title": "海运服务贸易网络结构演变与各国角色识别",
+          "matched_evidence": [
+            "社会网络分析",
+            "网络结构"
+          ],
+          "keywords": [
+            "海运服务贸易",
+            "社会网络分析",
+            "出口结构",
+            "网络模体",
+            "层级结构",
+            "贸易匹配"
+          ]
+        },
+        {
+          "document_id": "zh_0364",
+          "title": "长三角城市群旅游经济一体化形成机制与协同发展模式——基于联系网络视角",
+          "matched_evidence": [
+            "社会网络分析",
+            "网络结构"
+          ],
+          "keywords": [
+            "旅游经济一体化",
+            "旅游经济联系",
+            "网络结构",
+            "协同发展模式",
+            "长三角城市群"
+          ]
+        },
+        {
+          "document_id": "zh_0496",
+          "title": "2000—2019年全球核电设备贸易网络结构及其影响因素",
+          "matched_evidence": [
+            "复杂网络",
+            "网络结构"
+          ],
+          "keywords": [
+            "核电设备",
+            "清洁能源",
+            "全球贸易网络",
+            "地缘经济与政治",
+            "网络分析法“",
+            "竞合”关系"
+          ]
+        },
+        {
+          "document_id": "zh_0520",
+          "title": "演化经济地理学视角下创新网络研究进展与展望",
+          "matched_evidence": [
+            "网络结构",
+            "创新网络"
+          ],
+          "keywords": [
+            "创新网络",
+            "演化经济地理学",
+            "研究热点",
+            "邻近性",
+            "路径依赖",
+            "产业集群"
+          ]
+        },
+        {
+          "document_id": "zh_0559",
+          "title": "中国城市旅游信息流空间网络格局及其复杂性",
+          "matched_evidence": [
+            "复杂网络",
+            "社会网络分析"
+          ],
+          "keywords": [
+            "旅游信息流",
+            "空间网络",
+            "空间异质性",
+            "复杂网络分析",
+            "地级以上城市"
+          ]
+        },
+        {
+          "document_id": "zh_0565",
+          "title": "基于复杂网络的长江中游城市群人口迁徙网络空间结构",
+          "matched_evidence": [
+            "复杂网络",
+            "网络结构"
+          ],
+          "keywords": [
+            "复杂网络",
+            "人口迁徙",
+            "空间结构",
+            "长江中游城市群",
+            "武汉城市圈",
+            "环长株潭城市群",
+            "环鄱阳湖城市群"
+          ]
+        },
+        {
+          "document_id": "zh_0618",
+          "title": "基于农业产业集群的农业创新体系结构分析——以河南省鄢陵县花木产业集群为例",
+          "matched_evidence": [
+            "社会网络分析",
+            "创新网络"
+          ],
+          "keywords": [
+            "农业创新体系",
+            "农业产业集群",
+            "社会网络分析法",
+            "鄢陵县花木产业集群"
+          ]
+        },
+        {
+          "document_id": "zh_0641",
+          "title": "基于铁路网的中国主要城市中心性的空间格局",
+          "matched_evidence": [
+            "复杂网络",
+            "网络结构"
+          ],
+          "keywords": [
+            "中心性",
+            "铁路网",
+            "多中心性分析",
+            "空间自相关",
+            "“胡焕庸线”",
+            "铁路枢纽城市",
+            "等级圈层结构"
+          ]
+        },
+        {
+          "document_id": "zh_0706",
+          "title": "中国高端制造业的全球贸易网络格局及其影响因素分析",
+          "matched_evidence": [
+            "网络结构",
+            "关联网络"
+          ],
+          "keywords": [
+            "高端制造业",
+            "全球贸易网络格局",
+            "QAP分析",
+            "经济全球化",
+            "技术创新",
+            "产业升级"
+          ]
+        },
+        {
+          "document_id": "zh_0762",
+          "title": "知识产权保护促进了服务业内部结构优化吗？——基于复杂网络视角",
+          "matched_evidence": [
+            "复杂网络",
+            "关联网络"
+          ],
+          "keywords": [
+            "知识产权保护",
+            "服务业内部结构",
+            "复杂网络",
+            "空间关联"
+          ]
+        },
+        {
+          "document_id": "zh_0092",
+          "title": "适用于含新能源交流电网继电保护整定计算的故障计算方法研究",
+          "matched_evidence": [
+            "网络结构"
+          ],
+          "keywords": [
+            "阻抗矩阵",
+            "新能源",
+            "故障计算",
+            "逐层外扩",
+            "计算效率"
+          ]
+        },
+        {
+          "document_id": "zh_0150",
+          "title": "廊道旅游地空间网络结构及其形成机制",
+          "matched_evidence": [
+            "网络结构"
+          ],
+          "keywords": [
+            "廊道旅游地",
+            "空间网络结构",
+            "模体分析",
+            "民族文化",
+            "资源等级",
+            "乡村振兴",
+            "岭南文旅廊道"
+          ]
+        },
+        {
+          "document_id": "zh_0384",
+          "title": "全域视角下旅游廊道构建与网络体系评价——以渭南市为例",
+          "matched_evidence": [
+            "网络结构"
+          ],
+          "keywords": [
+            "旅游廊道",
+            "旅游网络",
+            "旅游源地",
+            "文旅融合",
+            "渭南市"
+          ]
+        },
+        {
+          "document_id": "zh_0453",
+          "title": "基于城市联系网络的城市群等级结构对比",
+          "matched_evidence": [
+            "复杂网络"
+          ],
+          "keywords": [
+            "城市群",
+            "城市联系网络",
+            "等级结构",
+            "引力模型",
+            "复杂网络"
+          ]
+        },
+        {
+          "document_id": "zh_0459",
+          "title": "长江经济带城市协同发展格局及其优化策略初探",
+          "matched_evidence": [
+            "创新网络"
+          ],
+          "keywords": [
+            "协同",
+            "创新",
+            "绿色",
+            "长江经济带"
+          ]
+        },
+        {
+          "document_id": "zh_0482",
+          "title": "基于深度学习的无人机电网巡检缺陷检测研究",
+          "matched_evidence": [
+            "网络结构"
+          ],
+          "keywords": [
+            "无人机巡检",
+            "深度学习",
+            "绝缘子"
+          ]
+        },
+        {
+          "document_id": "zh_0553",
+          "title": "城乡共建新区:大都市区城乡空间统筹的新路径及其机理探析——以长春市长德新区为例",
+          "matched_evidence": [
+            "关联网络"
+          ],
+          "keywords": [
+            "城镇化",
+            "城乡共建新区",
+            "城乡空间统筹",
+            "大都市区",
+            "长德新区"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-ZH-07",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "评价指标",
+          "frequency": 11,
+          "weight": 0.7975,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "耦合协调",
+          "frequency": 8,
+          "weight": 0.73,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "综合评价",
+          "frequency": 6,
+          "weight": 0.685,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "topsis",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "熵权",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "共同富裕",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "高质量发展",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "耦合协调度",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "数字经济",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "生态韧性",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "组合决策",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "低碳转型",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0174",
+          "title": "低碳转型下煤电多路径改造与新能源组合决策方法",
+          "matched_evidence": [
+            "综合评价",
+            "评价指标",
+            "topsis"
+          ],
+          "keywords": [
+            "低碳转型",
+            "煤电改造",
+            "多时间尺度储能",
+            "组合决策",
+            "综合评价"
+          ]
+        },
+        {
+          "document_id": "zh_0004",
+          "title": "中国省域共同富裕水平测度、时空分异与障碍因素",
+          "matched_evidence": [
+            "综合评价",
+            "评价指标"
+          ],
+          "keywords": [
+            "共同富裕",
+            "时空分异",
+            "障碍因素",
+            "高质量发展"
+          ]
+        },
+        {
+          "document_id": "zh_0025",
+          "title": "黄河上游地区市域数字经济与绿色发展耦合协调度及提升路径",
+          "matched_evidence": [
+            "耦合协调",
+            "熵权"
+          ],
+          "keywords": [
+            "黄河上游地区",
+            "数字经济",
+            "绿色发展",
+            "耦合协调度",
+            "城市群与中心城市",
+            "基础设施",
+            "人才"
+          ]
+        },
+        {
+          "document_id": "zh_0155",
+          "title": "中国减污降碳与扩绿增长耦合协调度的时空特征及其驱动因素",
+          "matched_evidence": [
+            "评价指标",
+            "耦合协调"
+          ],
+          "keywords": [
+            "减污降碳",
+            "扩绿增长",
+            "耦合协调",
+            "时空演化特征",
+            "驱动因素",
+            "多尺度地理加权回归模型"
+          ]
+        },
+        {
+          "document_id": "zh_0170",
+          "title": "海岸带城市经济发展质量与生态韧性协同发展演化及空间收敛特征",
+          "matched_evidence": [
+            "熵权",
+            "topsis"
+          ],
+          "keywords": [
+            "海岸带城市",
+            "经济发展质量",
+            "生态韧性",
+            "协同发展",
+            "演化特征",
+            "一体化发展",
+            "区域差异化政策"
+          ]
+        },
+        {
+          "document_id": "zh_0425",
+          "title": "湘江流域县域发展水平的综合评价及特征分析",
+          "matched_evidence": [
+            "综合评价",
+            "评价指标"
+          ],
+          "keywords": [
+            "县域",
+            "发展水平",
+            "类型",
+            "湘江流域"
+          ]
+        },
+        {
+          "document_id": "zh_0713",
+          "title": "“丝绸之路经济带”中亚石油资源开发对中国的保障程度与风险防控建议",
+          "matched_evidence": [
+            "综合评价",
+            "评价指标"
+          ],
+          "keywords": [
+            "石油资源",
+            "中亚",
+            "保障程度",
+            "投资风险",
+            "防控措施"
+          ]
+        },
+        {
+          "document_id": "zh_0821",
+          "title": "分布式电源电压支撑能力层次分析评价",
+          "matched_evidence": [
+            "综合评价",
+            "评价指标"
+          ],
+          "keywords": [
+            "分布式电源",
+            "电压支撑能力",
+            "层次分析法",
+            "评价指标"
+          ]
+        },
+        {
+          "document_id": "zh_0843",
+          "title": "广佛都市圈公路网络通达性及其空间格局",
+          "matched_evidence": [
+            "综合评价",
+            "评价指标"
+          ],
+          "keywords": [
+            "通达性",
+            "空间格局",
+            "公路网络",
+            "广佛都市圈"
+          ]
+        },
+        {
+          "document_id": "zh_0847",
+          "title": "广州市地铁TOD站域的空间类型分异——基于“节点—场所—联系”耦合度模型的研究",
+          "matched_evidence": [
+            "评价指标",
+            "耦合协调"
+          ],
+          "keywords": [
+            "TOD站域",
+            "地铁“",
+            "节点—场所—联系”耦合度模型",
+            "空间效能评价",
+            "公共交通",
+            "圈层结构"
+          ]
+        },
+        {
+          "document_id": "zh_0011",
+          "title": "适应能源转型发展的输配电价动态激励机制研究",
+          "matched_evidence": [
+            "耦合协调"
+          ],
+          "keywords": [
+            "新型电力系统",
+            "输配电价",
+            "数据包络分析",
+            "耦合协调",
+            "动态激励机制"
+          ]
+        },
+        {
+          "document_id": "zh_0014",
+          "title": "基于云模型的新型配电系统灵活性评估方法",
+          "matched_evidence": [
+            "熵权"
+          ],
+          "keywords": [
+            "新型配电系统",
+            "灵活性评价体系",
+            "云模型",
+            "静态特性",
+            "供需平衡"
+          ]
+        },
+        {
+          "document_id": "zh_0021",
+          "title": "突发散热故障时的光伏MPPT变换器控制方法研究",
+          "matched_evidence": [
+            "评价指标"
+          ],
+          "keywords": [
+            "光伏发电",
+            "最大功率点跟踪控制",
+            "功率器件",
+            "结温估计",
+            "主动热管理"
+          ]
+        },
+        {
+          "document_id": "zh_0026",
+          "title": "省域新型城镇化与共同富裕耦合协调水平的时空特征及其影响因素",
+          "matched_evidence": [
+            "耦合协调"
+          ],
+          "keywords": [
+            "新型城镇化",
+            "共同富裕",
+            "耦合协调",
+            "空间集聚",
+            "科技",
+            "数字化",
+            "信贷"
+          ]
+        },
+        {
+          "document_id": "zh_0069",
+          "title": "省域共同富裕水平测算及其时空演进",
+          "matched_evidence": [
+            "评价指标"
+          ],
+          "keywords": [
+            "共同富裕",
+            "地区差距",
+            "高质量发展",
+            "中等收入群体",
+            "农民农村",
+            "评价指标体系",
+            "演进趋势"
+          ]
+        },
+        {
+          "document_id": "zh_0100",
+          "title": "省域农村基础设施建设与乡村振兴的耦合协调发展研究",
+          "matched_evidence": [
+            "耦合协调"
+          ],
+          "keywords": [
+            "农村基础设施建设",
+            "乡村振兴",
+            "耦合协调",
+            "时空演变",
+            "障碍因子"
+          ]
+        },
+        {
+          "document_id": "zh_0154",
+          "title": "建设用地配置与城市经济韧性的动态演进及空间耦合特征",
+          "matched_evidence": [
+            "耦合协调"
+          ],
+          "keywords": [
+            "建设用地配置",
+            "城市经济韧性",
+            "耦合协调度",
+            "空间演化",
+            "高质量发展"
+          ]
+        },
+        {
+          "document_id": "zh_0161",
+          "title": "长江经济带市域数字经济与城乡融合发展耦合协调格局及其作用机制",
+          "matched_evidence": [
+            "耦合协调"
+          ],
+          "keywords": [
+            "数字经济",
+            "城乡融合",
+            "耦合协调",
+            "作用机制",
+            "区域协调发展",
+            "长江经济带"
+          ]
+        },
+        {
+          "document_id": "zh_0168",
+          "title": "城市更新作用下生态韧性时空分异及其影响效应——以环长株潭城市群为例",
+          "matched_evidence": [
+            "topsis"
+          ],
+          "keywords": [
+            "城市更新",
+            "生态韧性",
+            "环长株潭城市群",
+            "因子分析"
+          ]
+        },
+        {
+          "document_id": "zh_0207",
+          "title": "基于高斯混合模型的紧急控制策略适应性风险评估方法及其应用",
+          "matched_evidence": [
+            "评价指标"
+          ],
+          "keywords": [
+            "紧急控制",
+            "策略适应性",
+            "不确定性分析",
+            "风险决策",
+            "高斯混合模型"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-ZH-08",
+      "language": "zh",
+      "phrases": [
+        {
+          "text": "仿真模型",
+          "frequency": 10,
+          "weight": 0.775,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "仿真分析",
+          "frequency": 6,
+          "weight": 0.685,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "数字孪生",
+          "frequency": 5,
+          "weight": 0.6625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "有限元",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "数值模拟",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "暂态同步稳定性",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "新型电力系统",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "锁相环",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "温度特性",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "有限元法",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "特高压换流变压器",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "通风策略",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "zh_0810",
+          "title": "Box-in结构对特高压换流变压器散热性能影响的仿真分析",
+          "matched_evidence": [
+            "有限元",
+            "数值模拟",
+            "仿真分析"
+          ],
+          "keywords": [
+            "特高压换流变压器",
+            "温度特性",
+            "有限元法",
+            "通风策略"
+          ]
+        },
+        {
+          "document_id": "zh_0339",
+          "title": "基于热-电-流耦合的芯棒碳化复合绝缘子发热特性研究",
+          "matched_evidence": [
+            "有限元",
+            "仿真模型"
+          ],
+          "keywords": [
+            "复合绝缘子",
+            "发热",
+            "有限元",
+            "多物理场耦合",
+            "空气对流"
+          ]
+        },
+        {
+          "document_id": "zh_0511",
+          "title": "适用于变压器保护的数字孪生建模技术研究",
+          "matched_evidence": [
+            "数字孪生",
+            "仿真模型"
+          ],
+          "keywords": [
+            "变压器模型",
+            "离散迭代法",
+            "数字孪生",
+            "异常工况"
+          ]
+        },
+        {
+          "document_id": "zh_0032",
+          "title": "混合级联型HVDC系统的后续换相失败预判方法",
+          "matched_evidence": [
+            "仿真模型"
+          ],
+          "keywords": [
+            "混合级联直流输电系统",
+            "后续换相失败预判",
+            "交流故障",
+            "阈值功率"
+          ]
+        },
+        {
+          "document_id": "zh_0045",
+          "title": "基于故障穿越演化特性的SVG电磁暂态模型测辨方法",
+          "matched_evidence": [
+            "仿真模型"
+          ],
+          "keywords": [
+            "厂家黑盒模型",
+            "故障穿越响应特性",
+            "电磁暂态模型",
+            "控制器结构辨识",
+            "控制器参数辨识"
+          ]
+        },
+        {
+          "document_id": "zh_0062",
+          "title": "考虑响应可靠率的需求侧资源自主被动组合响应策略",
+          "matched_evidence": [
+            "仿真分析"
+          ],
+          "keywords": [
+            "需求侧资源",
+            "需求响应",
+            "响应可靠率",
+            "自主响应",
+            "被动响应"
+          ]
+        },
+        {
+          "document_id": "zh_0103",
+          "title": "面向输变电设备数字孪生的多物理场正反演快速仿真关键技术综述",
+          "matched_evidence": [
+            "数字孪生"
+          ],
+          "keywords": [
+            "数字孪生",
+            "输变电设备",
+            "快速计算",
+            "反演",
+            "状态评估"
+          ]
+        },
+        {
+          "document_id": "zh_0129",
+          "title": "考虑多馈入系统无功电压特性的同时换相失败评估方法",
+          "matched_evidence": [
+            "仿真模型"
+          ],
+          "keywords": [
+            "多馈入直流系统",
+            "无功功率",
+            "多馈入交互作用因子",
+            "换相失败评估方法"
+          ]
+        },
+        {
+          "document_id": "zh_0130",
+          "title": "基于近似熵变化量判据的混合直流输电系统纵联保护方案",
+          "matched_evidence": [
+            "仿真模型"
+          ],
+          "keywords": [
+            "纵联保护",
+            "后备保护",
+            "直流线路保护",
+            "混合直流输电系统",
+            "近似熵"
+          ]
+        },
+        {
+          "document_id": "zh_0190",
+          "title": "弱电网下虚拟同步补偿器对新能源暂态同步稳定性的影响机理",
+          "matched_evidence": [
+            "仿真模型"
+          ],
+          "keywords": [
+            "虚拟同步补偿器",
+            "新能源并网变换器",
+            "限流策略",
+            "暂态同步稳定性"
+          ]
+        },
+        {
+          "document_id": "zh_0203",
+          "title": "电力调度元宇宙架构及关键基础技术验证研究（上）：复杂系统设计原理及架构设计",
+          "matched_evidence": [
+            "数字孪生"
+          ],
+          "keywords": [
+            "新型电力系统",
+            "元宇宙",
+            "调度元宇宙",
+            "数字孪生",
+            "架构设计"
+          ]
+        },
+        {
+          "document_id": "zh_0212",
+          "title": "风暴潮灾害下沿海城市变电站断电预警",
+          "matched_evidence": [
+            "数字孪生"
+          ],
+          "keywords": [
+            "镜像计算",
+            "人工智能",
+            "风暴潮灾害",
+            "电网安全"
+          ]
+        },
+        {
+          "document_id": "zh_0218",
+          "title": "含海上风电制氢的综合能源系统分布鲁棒低碳优化运行",
+          "matched_evidence": [
+            "仿真分析"
+          ],
+          "keywords": [
+            "海上风电制氢",
+            "氢能多元利用",
+            "电热综合能源系统",
+            "凸松弛技术",
+            "分布鲁棒"
+          ]
+        },
+        {
+          "document_id": "zh_0230",
+          "title": "基于光储协调电压自均衡的光伏直流汇集方案研究",
+          "matched_evidence": [
+            "仿真模型"
+          ],
+          "keywords": [
+            "光伏直流汇集",
+            "电压自平衡",
+            "光储协调"
+          ]
+        },
+        {
+          "document_id": "zh_0233",
+          "title": "基于数字孪生模型的主从博弈掺氢综合能源系统最优决策方法",
+          "matched_evidence": [
+            "数字孪生"
+          ],
+          "keywords": [
+            "综合能源系统",
+            "主从博弈",
+            "数字孪生",
+            "碳捕集系统",
+            "需求侧响应"
+          ]
+        },
+        {
+          "document_id": "zh_0235",
+          "title": "新能源经柔直外送系统的暂态同步稳定性分析",
+          "matched_evidence": [
+            "仿真模型"
+          ],
+          "keywords": [
+            "新能源",
+            "并网变换器",
+            "锁相环",
+            "李雅普诺夫函数",
+            "暂态同步稳定性"
+          ]
+        },
+        {
+          "document_id": "zh_0240",
+          "title": "融合电网拓扑信息的分支竞争Q网络智能体紧急切负荷决策",
+          "matched_evidence": [
+            "仿真分析"
+          ],
+          "keywords": [
+            "仿真分析",
+            "暂态电压失稳",
+            "紧急切负荷决策",
+            "深度强化学习",
+            "分支竞争Q网络",
+            "电网拓扑信息",
+            "图卷积增强"
+          ]
+        },
+        {
+          "document_id": "zh_0267",
+          "title": "考虑相关性的配电网分布式光伏承载能力提升方法",
+          "matched_evidence": [
+            "仿真分析"
+          ],
+          "keywords": [
+            "配电网",
+            "分布式光伏",
+            "相关性",
+            "承载能力",
+            "非线性反向学习鲸鱼算法"
+          ]
+        },
+        {
+          "document_id": "zh_0277",
+          "title": "基于锁相环相位补偿的光伏逆变器低电压穿越快速无功控制",
+          "matched_evidence": [
+            "仿真模型"
+          ],
+          "keywords": [
+            "光伏逆变器",
+            "锁相环",
+            "相位补偿",
+            "前馈控制",
+            "低电压穿越",
+            "暂态无功特性"
+          ]
+        },
+        {
+          "document_id": "zh_0281",
+          "title": "交流变速抽蓄机组单通道电力系统稳定器设计研究",
+          "matched_evidence": [
+            "仿真分析"
+          ],
+          "keywords": [
+            "新型电力系统",
+            "交流变速抽蓄机组",
+            "单通道电力系统稳定器",
+            "参数辨识",
+            "动态调节",
+            "厂内协同"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-EN-01",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "meta-analysis",
+          "frequency": 19,
+          "weight": 0.9775,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "systematic review",
+          "frequency": 17,
+          "weight": 0.9325,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Bleeding",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Dopamine Agonist (DA) resistant",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Medically Failed Prolactinoma",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Dopamine Agonist intolerant",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Cabergoline resistant",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Prolactinoma",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Osteoarthritis",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Trapeziectomy",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Joint replacement",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "First carpometacarpal (CMC 1)",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "en_0109",
+          "title": "Surgical outcomes of medically failed prolactinomas: a systematic review and meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "Cabergoline resistant",
+            "Dopamine Agonist (DA) resistant",
+            "Dopamine Agonist intolerant",
+            "Medically Failed Prolactinoma",
+            "Prolactinoma"
+          ]
+        },
+        {
+          "document_id": "en_0202",
+          "title": "Trapeziectomy versus joint replacement for first carpometacarpal (CMC 1) joint osteoarthritis: a systematic review and meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "First carpometacarpal (CMC 1)",
+            "Joint replacement",
+            "Meta-analysis",
+            "Osteoarthritis",
+            "Systematic review",
+            "Trapeziectomy"
+          ]
+        },
+        {
+          "document_id": "en_0222",
+          "title": "Partial versus total adrenalectomy for the treatment of unilateral aldosterone-producing adenoma: a systematic review and meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "Meta-analysis",
+            "Partial adrenalectomy",
+            "Systematic review",
+            "Total adrenalectomy",
+            "Unilateral aldosterone-producing adenoma"
+          ]
+        },
+        {
+          "document_id": "en_0286",
+          "title": "Impact of intraoperative magnetic resonance imaging on gross total resection, extent of resection, and residual tumor volume in pituitary surgery: systematic review and meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "Adenoma",
+            "Extent of resection",
+            "Gross total resection",
+            "Imaging",
+            "Intraoperative magnetic resonance imaging",
+            "Pituitary"
+          ]
+        },
+        {
+          "document_id": "en_0410",
+          "title": "Switching between direct oral anticoagulants: a systematic review and meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "Adverse events",
+            "Atrial fibrillation",
+            "Bleeding",
+            "Crossover",
+            "Direct oral anticoagulants",
+            "Factor Xa inhibitors"
+          ]
+        },
+        {
+          "document_id": "en_0432",
+          "title": "Effects of pre-existing abdominal scar on postoperative complications after autologous breast reconstruction using abdominal flaps: A systematic review and meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "Breast reconstruction",
+            "Complications",
+            "Flap",
+            "Scar"
+          ]
+        },
+        {
+          "document_id": "en_0456",
+          "title": "A Systematic Review and Meta-Analysis of Change in Health-Related Quality of Life for Interactive Telehealth Interventions for Patients With Asthma",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "adherence",
+            "asthma",
+            "digital health",
+            "quality of life",
+            "telehealth",
+            "telemedicine"
+          ]
+        },
+        {
+          "document_id": "en_0597",
+          "title": "Comparative effectiveness and safety of direct oral anticoagulants compared to warfarin in morbidly obese patients with acute venous thromboembolism: systematic review and a meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "DVT",
+            "Morbid obesity",
+            "Overweight",
+            "Pulmonary embolism",
+            "Warfarin"
+          ]
+        },
+        {
+          "document_id": "en_0609",
+          "title": "Prognostic value of CAIX expression in oral squamous cell carcinoma: a systematic review and meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "carbonic anhydrase",
+            "hypoxia",
+            "meta-analysis",
+            "Mouth neoplasm",
+            "prognosis"
+          ]
+        },
+        {
+          "document_id": "en_0633",
+          "title": "Quadriceps tendon autograft for primary ACL reconstruction: a Bayesian network meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "ACL reconstruction",
+            "Autograft",
+            "Hamstring",
+            "Patellar",
+            "Quadriceps"
+          ]
+        },
+        {
+          "document_id": "en_0687",
+          "title": "DOAC compared to LMWH in the treatment of cancer related-venous thromboembolism: a systematic review and meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "Bleeding",
+            "Cancer",
+            "Direct oral anticoagulant",
+            "Low molecular weight heparin",
+            "Venous thromboembolism"
+          ]
+        },
+        {
+          "document_id": "en_0718",
+          "title": "Full-endoscopic (bi-portal or uni-portal) versus microscopic lumbar decompression laminectomy in patients with spinal stenosis: systematic review and meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "BESS",
+            "Full-endoscopic",
+            "Lumbar stenosis",
+            "Meta-analysis",
+            "Microscopic",
+            "ODI",
+            "Uni-portal",
+            "VAS"
+          ]
+        },
+        {
+          "document_id": "en_0797",
+          "title": "Comparative outcomes between collared versus collarless and short versus long stem of direct anterior approach total hip arthroplasty: a systematic review and indirect meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "Collar femoral stem",
+            "Meta-analysis",
+            "Short femoral stem",
+            "Systematic review",
+            "THA"
+          ]
+        },
+        {
+          "document_id": "en_0810",
+          "title": "Efficacy and safety of glecaprevir/pibrentasvir for chronic hepatitis C virus genotypes 1–6 infection: A systematic review and meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "Combination therapy",
+            "Glecaprevir/pibrentasvir",
+            "Hepatitis C virus",
+            "Sustained virological response"
+          ]
+        },
+        {
+          "document_id": "en_0871",
+          "title": "Efficacy and safety of figure-of-eight suture versus manual pressure for venous access closure: a systematic review and meta-analysis",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "Efficacy and safety",
+            "Figure of eight (FoE) suture",
+            "Manual pressure",
+            "Vascular venous hemostasis"
+          ]
+        },
+        {
+          "document_id": "en_0938",
+          "title": "Fluoroquinolone-based versus β-lactam-based regimens for complicated intra-abdominal infections: a meta-analysis of randomised controlled trials",
+          "matched_evidence": [
+            "systematic review",
+            "meta-analysis"
+          ],
+          "keywords": [
+            "Cephalosporins",
+            "Ciprofloxacin",
+            "Fluoroquinolones",
+            "Intra-abdominal infection",
+            "Moxifloxacin",
+            "Peritonitis"
+          ]
+        },
+        {
+          "document_id": "en_0120",
+          "title": "Aortic aneurysms in systemic lupus erythematosus: a meta-analysis of 35 cases in the literature and two different pathogeneses",
+          "matched_evidence": [
+            "meta-analysis"
+          ],
+          "keywords": [
+            "Aortic aneurysm",
+            "Aortic dissection",
+            "Cystic medial degeneration",
+            "Systemic lupus erythematosus",
+            "Vasculitis"
+          ]
+        },
+        {
+          "document_id": "en_0151",
+          "title": "Long-term aesthetics, patient-reported outcomes, and auricular sensitivity after microtia reconstruction: A systematic review",
+          "matched_evidence": [
+            "systematic review"
+          ],
+          "keywords": [
+            "Auricular reconstruction",
+            "Autologous costal cartilage",
+            "Long-term outcomes",
+            "Medpor",
+            "Microtia",
+            "Porous polyethylene"
+          ]
+        },
+        {
+          "document_id": "en_0165",
+          "title": "Modeling the Cost-Utility of Treatment Sequences for Multiple Sclerosis",
+          "matched_evidence": [
+            "meta-analysis"
+          ],
+          "keywords": [
+            "disease modifying treatment",
+            "microsimulation",
+            "network meta-analysis",
+            "societal perspective",
+            "treatment sequence"
+          ]
+        },
+        {
+          "document_id": "en_0220",
+          "title": "Effect of hyaluronate-based bioresorbable membrane (Seprafilm) on outcomes of abdominal surgery: a meta-analysis and trial sequential analysis of randomised controlled trials",
+          "matched_evidence": [
+            "meta-analysis"
+          ],
+          "keywords": [
+            "Anti-adhesion barrier",
+            "Seprafilm",
+            "Small bowel obstruction"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-EN-02",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "clinical trial",
+          "frequency": 11,
+          "weight": 0.7975,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "randomized controlled trial",
+          "frequency": 10,
+          "weight": 0.775,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "cost-effectiveness",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "patient-reported outcomes",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "quality of life",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "cancer",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "symptoms",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Functional constipation",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Physiotherapy",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Conventional treatment",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Osteoarthritis",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Manual therapy",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "en_0169",
+          "title": "Investigating Trends in the Quality of Reporting of Patient-Reported Outcomes in Oncology Over Time: Analysis of 631 Randomized Controlled Trials Published Between 2004 and 2019",
+          "matched_evidence": [
+            "randomized controlled trial",
+            "clinical trial"
+          ],
+          "keywords": [
+            "cancer",
+            "clinical trial",
+            "patient-reported outcomes",
+            "quality of life",
+            "symptoms"
+          ]
+        },
+        {
+          "document_id": "en_0025",
+          "title": "Effect of adding telerehabilitation home program to pharmaceutical treatment on the symptoms and the quality of life in children with functional constipation: a randomized controlled trial",
+          "matched_evidence": [
+            "randomized controlled trial"
+          ],
+          "keywords": [
+            "Conventional treatment",
+            "Functional constipation",
+            "Physiotherapy"
+          ]
+        },
+        {
+          "document_id": "en_0034",
+          "title": "A myofascial component of pain in knee osteoarthritis",
+          "matched_evidence": [
+            "randomized controlled trial"
+          ],
+          "keywords": [
+            "Dysfunction",
+            "Knee",
+            "Manual therapy",
+            "Myofascial pain",
+            "Osteoarthritis",
+            "Soft tissue mobilizations"
+          ]
+        },
+        {
+          "document_id": "en_0070",
+          "title": "Sleep apnea and atrial fibrillation: challenges in clinical and translational research",
+          "matched_evidence": [
+            "randomized controlled trial"
+          ],
+          "keywords": [
+            "Atrial fibrillation",
+            "CPAP",
+            "polygraphy",
+            "pulmonary vein isolation",
+            "screening",
+            "sleep apnea"
+          ]
+        },
+        {
+          "document_id": "en_0082",
+          "title": "Lung-protective mechanical ventilation does not protect against acute kidney injury in patients without lung injury at onset of mechanical ventilation",
+          "matched_evidence": [
+            "randomized controlled trial"
+          ],
+          "keywords": [
+            "Acute kidney injury",
+            "Cystatin C",
+            "Lung-protective mechanical ventilation",
+            "Neutrophil gelatinase-associated lipocalin (NGAL)",
+            "Ventilator-associated lung injury"
+          ]
+        },
+        {
+          "document_id": "en_0148",
+          "title": "A Comparison of Generic and Condition-Specific Preference-Based Measures Using Data From Nivolumab Trials: EQ-5D-3L, Mapping to the EQ-5D-5L, and European Organisation for Research and Treatment of Cancer Quality of Life Utility Measure-Core 10 Dimensions",
+          "matched_evidence": [
+            "randomized controlled trial"
+          ],
+          "keywords": [
+            "cost-effectiveness",
+            "EQ-5D-3L",
+            "EQ-5D-5L",
+            "European Organisation for Research and Treatment of Cancer Quality of Life Utility Measure-Core 10 Dimensions",
+            "nivolumab",
+            "quality-adjusted life-years"
+          ]
+        },
+        {
+          "document_id": "en_0168",
+          "title": "Novel d-amino acid tetrapeptides produce potent antinociception by selectively acting at peripheral κ-opioid receptors,",
+          "matched_evidence": [
+            "clinical trial"
+          ],
+          "keywords": [
+            "Antinociception",
+            "Kappa opioid agonist",
+            "Peptides",
+            "Peripheral",
+            "Radioligand binding",
+            "Rodent models"
+          ]
+        },
+        {
+          "document_id": "en_0263",
+          "title": "The early evolutionary landscape of osteosarcoma provides clues for targeted treatment strategies",
+          "matched_evidence": [
+            "clinical trial"
+          ],
+          "keywords": [
+            "BRCAness",
+            "cyclin-dependent kinase inhibitors",
+            "cyclins",
+            "molecular diagnostics",
+            "osteosarcoma",
+            "PARP inhibitors",
+            "personalized medicine",
+            "targeted therapies"
+          ]
+        },
+        {
+          "document_id": "en_0292",
+          "title": "Recommendations for the Electronic Migration and Implementation of Clinician-Reported Outcome Assessments in Clinical Trials",
+          "matched_evidence": [
+            "clinical trial"
+          ],
+          "keywords": [
+            "clinician-reported outcome",
+            "electronic clinical outcome assessment",
+            "electronic migration"
+          ]
+        },
+        {
+          "document_id": "en_0293",
+          "title": "Massive intraperitoneal hemorrhage in patients with COVID-19: a case series",
+          "matched_evidence": [
+            "clinical trial"
+          ],
+          "keywords": [
+            "Coagulopathy",
+            "COVID-19",
+            "Disseminated intravascular coagulation",
+            "Thrombotic microangiopathy"
+          ]
+        },
+        {
+          "document_id": "en_0366",
+          "title": "Modelling item scores of Unified Parkinson's Disease Rating Scale Part III for greater trial efficiency",
+          "matched_evidence": [
+            "clinical trial"
+          ],
+          "keywords": [
+            "item response theory",
+            "longitudinal modelling",
+            "pharmacometrics",
+            "Unified Parkinson's Disease Rating Scale"
+          ]
+        },
+        {
+          "document_id": "en_0368",
+          "title": "Direct Medical Costs of Advanced Breast Cancer Treatment: A Real-World Study in the Southeast of The Netherlands",
+          "matched_evidence": [
+            "clinical trial"
+          ],
+          "keywords": [
+            "breast neoplasms",
+            "healthcare costs",
+            "healthcare utilization",
+            "real-world data",
+            "The Netherlands"
+          ]
+        },
+        {
+          "document_id": "en_0371",
+          "title": "In Pursuit of an Effective Treatment: the Past, Present and Future of Clinical Trials in Inclusion Body Myositis",
+          "matched_evidence": [
+            "clinical trial"
+          ],
+          "keywords": [
+            "Clinical trial",
+            "Immunosuppression",
+            "Inclusion body myositis",
+            "Inflammatory myopathy",
+            "Protein homeostasis"
+          ]
+        },
+        {
+          "document_id": "en_0383",
+          "title": "Stapler-less burst pressure in an ex vivo human gastric tissue: a randomized controlled trial",
+          "matched_evidence": [
+            "randomized controlled trial"
+          ],
+          "keywords": [
+            "Burst pressure",
+            "Leaks",
+            "Manometry",
+            "Sleeve gastrectomy",
+            "Stapler-less"
+          ]
+        },
+        {
+          "document_id": "en_0404",
+          "title": "Rationale and Design of a Telehealth Self-Management, Shared Care Intervention for Post-treatment Survivors of Lung and Colorectal Cancer",
+          "matched_evidence": [
+            "randomized controlled trial"
+          ],
+          "keywords": [
+            "Cancer survivorship",
+            "Colorectal cancer",
+            "Lung cancer",
+            "Primary care",
+            "Self-efficacy",
+            "Self-management",
+            "Shared care"
+          ]
+        },
+        {
+          "document_id": "en_0481",
+          "title": "Cost-Effectiveness of Different Formats for Delivery of Cognitive Behavioral Therapy for Depression: A Systematic Review Based Economic Model",
+          "matched_evidence": [
+            "randomized controlled trial"
+          ],
+          "keywords": [
+            "cognitive behavioral therapy",
+            "cost-effectiveness",
+            "decision-analytic model",
+            "depression"
+          ]
+        },
+        {
+          "document_id": "en_0606",
+          "title": "The association between treatment with heparin and survival in patients with Covid-19",
+          "matched_evidence": [
+            "randomized controlled trial"
+          ],
+          "keywords": [
+            "Coronavirus infections",
+            "Covid-19",
+            "Heparin",
+            "Mortality",
+            "Pulmonary embolism",
+            "Thrombosis"
+          ]
+        },
+        {
+          "document_id": "en_0664",
+          "title": "Cardiovascular effects of growth hormone (GH) treatment on GH-deficient adults: a meta-analysis update",
+          "matched_evidence": [
+            "clinical trial"
+          ],
+          "keywords": [
+            "Cardiac structure",
+            "Cardiovascular function",
+            "Echocardiography",
+            "GH treatment",
+            "Growth hormone deficiency"
+          ]
+        },
+        {
+          "document_id": "en_0673",
+          "title": "Tumor Development and Angiogenesis in Adult Brain Tumor: Glioblastoma",
+          "matched_evidence": [
+            "clinical trial"
+          ],
+          "keywords": [
+            "Angiogenesis",
+            "Anti-angiogenesis therapy",
+            "Clinical trials in glioblastoma (GBM)",
+            "Glioblastoma (GBM)",
+            "Tumor development"
+          ]
+        },
+        {
+          "document_id": "en_0734",
+          "title": "Identification of Monomethyl Sulfate and Sulfate Impurities in Zidebactam Using LC–MS and Application of Mixed-Mode Liquid Chromatography with Charged Aerosol Detection and Ion Chromatography for Quantification",
+          "matched_evidence": [
+            "clinical trial"
+          ],
+          "keywords": [
+            "Charged aerosol detector",
+            "Ion chromatography",
+            "Mixed-mode liquid chromatography",
+            "Monomethyl sulfate",
+            "Sulfate",
+            "Zidebactam"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-EN-03",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "cox regression",
+          "frequency": 10,
+          "weight": 0.85,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "nomogram",
+          "frequency": 3,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "survival analysis",
+          "frequency": 3,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "prognostic model",
+          "frequency": 1,
+          "weight": 0.58,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Prognosis",
+          "frequency": 3,
+          "weight": 0.64,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Venous thromboembolism",
+          "frequency": 2,
+          "weight": 0.61,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Comorbidity",
+          "frequency": 2,
+          "weight": 0.61,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Mortality",
+          "frequency": 2,
+          "weight": 0.61,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Survival",
+          "frequency": 2,
+          "weight": 0.61,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Overall survival",
+          "frequency": 1,
+          "weight": 0.58,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "SEER",
+          "frequency": 1,
+          "weight": 0.58,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Hepatoblastoma",
+          "frequency": 1,
+          "weight": 0.58,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 15,
+      "evidence_documents": [
+        {
+          "document_id": "en_0008",
+          "title": "Construction and validation of nomogram prognostic model for predicting survival in hepatoblastoma patients: a population-based study",
+          "matched_evidence": [
+            "cox regression",
+            "nomogram",
+            "prognostic model"
+          ],
+          "keywords": [
+            "Cancer-specific survival",
+            "Hepatoblastoma",
+            "Nomogram",
+            "Overall survival",
+            "Prognosis",
+            "SEER"
+          ]
+        },
+        {
+          "document_id": "en_0051",
+          "title": "Family history of venous thromboembolism and mortality after venous thromboembolism: a Swedish population-based cohort study",
+          "matched_evidence": [
+            "cox regression"
+          ],
+          "keywords": [
+            "Comorbidity",
+            "Deep venous thrombosis",
+            "Family history",
+            "Genetics",
+            "Mortality",
+            "Pulmonary embolism",
+            "Venous thromboembolism"
+          ]
+        },
+        {
+          "document_id": "en_0076",
+          "title": "A comprehensive investigation of nutritional status and psoas muscle mass in predicting five-year survival in patients with liver transplant",
+          "matched_evidence": [
+            "cox regression"
+          ],
+          "keywords": [
+            "Liver transplant",
+            "Prognostic nutritional index",
+            "Psoas muscle mass index",
+            "Survival"
+          ]
+        },
+        {
+          "document_id": "en_0079",
+          "title": "Comparison of prone positioning and extracorporeal membrane oxygenation in acute respiratory distress syndrome: A multicenter cohort study and propensity-matched analysis",
+          "matched_evidence": [
+            "cox regression"
+          ],
+          "keywords": [
+            "Acute respiratory distress syndrome",
+            "Extracorporeal membrane oxygenation",
+            "Prone positioning"
+          ]
+        },
+        {
+          "document_id": "en_0094",
+          "title": "Effect of age and comorbidity on the treatment and survival of older patients with vulvar cancer",
+          "matched_evidence": [
+            "cox regression"
+          ],
+          "keywords": [
+            "Comorbidity",
+            "Treatment outcome",
+            "Vulvar cancer"
+          ]
+        },
+        {
+          "document_id": "en_0102",
+          "title": "Early prediction of post-molar gestational trophoblastic neoplasia and resistance to methotrexate, based on a single serum human chorionic gonadotropin measurement",
+          "matched_evidence": [
+            "nomogram"
+          ],
+          "keywords": [
+            "Complete hydatidiform mole",
+            "Gestational trophoblastic disease",
+            "Human chorionic gonadotropin",
+            "Methotrexate",
+            "Nomogram",
+            "Resistance"
+          ]
+        },
+        {
+          "document_id": "en_0195",
+          "title": "Harmonized D-dimer levels upon admission for prognosis of COVID-19 severity: Results from a Spanish multicenter registry (BIOCOVID-Spain study)",
+          "matched_evidence": [
+            "cox regression"
+          ],
+          "keywords": [
+            "COVID-19",
+            "D-dimer",
+            "Harmonization",
+            "Mortality",
+            "Prognosis"
+          ]
+        },
+        {
+          "document_id": "en_0362",
+          "title": "External validation of nomogram for predicting malignant intraductal papillary mucinous neoplasm (IPMN): from the theory to the clinical practice using the decision curve analysis model",
+          "matched_evidence": [
+            "nomogram"
+          ],
+          "keywords": [
+            "Dysplasia",
+            "Intraductal papillary mucinous neoplasms",
+            "Nomogram",
+            "Pancreas"
+          ]
+        },
+        {
+          "document_id": "en_0444",
+          "title": "Intestinal Dysbiosis Amplifies Acetaminophen-Induced Acute Liver Injury",
+          "matched_evidence": [
+            "cox regression"
+          ],
+          "keywords": [
+            "Acute Liver Failure",
+            "Dysbiosis",
+            "Gut-Liver-Axis",
+            "Microbiota"
+          ]
+        },
+        {
+          "document_id": "en_0446",
+          "title": "Does regional lymph node status have a predictive effect on the prognosis of Merkel cell carcinoma?",
+          "matched_evidence": [
+            "survival analysis"
+          ],
+          "keywords": [
+            "Merkel cell carcinoma",
+            "Prognosis",
+            "Regional lymph node status",
+            "Survival"
+          ]
+        },
+        {
+          "document_id": "en_0484",
+          "title": "Graft factors as determinants of postoperative delirium after liver transplantation",
+          "matched_evidence": [
+            "survival analysis"
+          ],
+          "keywords": [
+            "Ageing",
+            "Cognitive impairment",
+            "Liver transplantation",
+            "Outcomes",
+            "Postoperative delirium",
+            "Surgical quality"
+          ]
+        },
+        {
+          "document_id": "en_0548",
+          "title": "Bias in Mean Survival From Fitting Cure Models With Limited Follow-Up",
+          "matched_evidence": [
+            "survival analysis"
+          ],
+          "keywords": [
+            "cure models",
+            "oncology",
+            "overall survival",
+            "survival analysis"
+          ]
+        },
+        {
+          "document_id": "en_0660",
+          "title": "The preoperative prognostic nutrition index is a prognostic indicator for survival in elderly gastric cancer patients after gastrectomy: a propensity score-matched analysis",
+          "matched_evidence": [
+            "cox regression"
+          ],
+          "keywords": [
+            "Elderly patients",
+            "Gastric cancer",
+            "Prognostic nutrition index"
+          ]
+        },
+        {
+          "document_id": "en_0738",
+          "title": "Self-rated health and venous thromboembolism among middle-aged women: a population-based cohort study",
+          "matched_evidence": [
+            "cox regression"
+          ],
+          "keywords": [
+            "Prevention",
+            "Self-rated health",
+            "Varicose veins",
+            "Venous thromboembolism",
+            "Women"
+          ]
+        },
+        {
+          "document_id": "en_0912",
+          "title": "Midrange ejection fraction as a risk factor for deterioration of cardiofunction after permanent pacemaker implantation",
+          "matched_evidence": [
+            "cox regression"
+          ],
+          "keywords": [
+            "B-type natriuretic peptide",
+            "Heart failure",
+            "Midrange ejection fraction",
+            "Permanent pacemaker implantation"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-EN-04",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "density functional theory",
+          "frequency": 3,
+          "weight": 0.775,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "first-principles",
+          "frequency": 2,
+          "weight": 0.7,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "molecular dynamics",
+          "frequency": 1,
+          "weight": 0.625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "titanoniobate",
+          "frequency": 1,
+          "weight": 0.625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "polyoxometalate",
+          "frequency": 1,
+          "weight": 0.625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "inhibition",
+          "frequency": 1,
+          "weight": 0.625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "S100A9",
+          "frequency": 1,
+          "weight": 0.625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "amyloid-neuroinflammatory cascade",
+          "frequency": 1,
+          "weight": 0.625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "fibrils",
+          "frequency": 1,
+          "weight": 0.625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "amyloid",
+          "frequency": 1,
+          "weight": 0.625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "decaniobate",
+          "frequency": 1,
+          "weight": 0.625,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Semicrystalline polymer",
+          "frequency": 1,
+          "weight": 0.625,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 6,
+      "evidence_documents": [
+        {
+          "document_id": "en_0239",
+          "title": "Polyoxometalates as Effective Nano-inhibitors of Amyloid Aggregation of Pro-inflammatory S100A9 Protein Involved in Neurodegenerative Diseases",
+          "matched_evidence": [
+            "molecular dynamics"
+          ],
+          "keywords": [
+            "amyloid",
+            "amyloid-neuroinflammatory cascade",
+            "decaniobate",
+            "fibrils",
+            "inhibition",
+            "polyoxometalate",
+            "S100A9",
+            "titanoniobate"
+          ]
+        },
+        {
+          "document_id": "en_0328",
+          "title": "Exploring the chemical structure of polydapsone",
+          "matched_evidence": [
+            "density functional theory"
+          ],
+          "keywords": [
+            "Conductive polymer",
+            "Density functional theory",
+            "Polymer synthesis",
+            "Poly[4-(4-aminophenyl)sulfonylaniline]",
+            "Semicrystalline polymer",
+            "Spectroscopy"
+          ]
+        },
+        {
+          "document_id": "en_0416",
+          "title": "Colossal Magnetization and Giant Coercivity in Ion-Implanted (Nb and Co) MoS 2 Crystals",
+          "matched_evidence": [
+            "first-principles"
+          ],
+          "keywords": [
+            "2D materials",
+            "coercivity",
+            "first-principles calculations",
+            "magnetization",
+            "MoS<sub>2</sub>"
+          ]
+        },
+        {
+          "document_id": "en_0533",
+          "title": "Vitamin B 12 on Graphene for Highly Efficient CO 2 Electroreduction",
+          "matched_evidence": [
+            "density functional theory"
+          ],
+          "keywords": [
+            "carbon dioxide",
+            "cobalt",
+            "electrocatalyst",
+            "graphene",
+            "vitamin B<sub>12</sub>"
+          ]
+        },
+        {
+          "document_id": "en_0748",
+          "title": "Confinement-Induced Giant Spin–Orbit-Coupled Magnetic Moment of Co Nanoclusters in TiO 2 Films",
+          "matched_evidence": [
+            "first-principles"
+          ],
+          "keywords": [
+            "enhanced magnetic moment",
+            "ferromagnetism",
+            "nanoclusters",
+            "quantum confinement effect",
+            "TiO<sub>2</sub>"
+          ]
+        },
+        {
+          "document_id": "en_0808",
+          "title": "An Insight into Photophysical Investigation of (E)-2-Fluoro-N’-(1-(4-Nitrophenyl)Ethylidene)Benzohydrazide through Solvatochromism Approaches and Computational Studies",
+          "matched_evidence": [
+            "density functional theory"
+          ],
+          "keywords": [
+            "Guggenheim-Debye method",
+            "Light harvesting efficiency",
+            "Photophysical properties",
+            "Schiff base",
+            "Solvatochromic method",
+            "TD-DFT"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-EN-05",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "spectroscopy",
+          "frequency": 18,
+          "weight": 0.955,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "microscopy",
+          "frequency": 13,
+          "weight": 0.8425,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "raman",
+          "frequency": 8,
+          "weight": 0.73,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "x-ray diffraction",
+          "frequency": 3,
+          "weight": 0.6175,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Raman spectroscopy",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "XPS",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "lithium batteries",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "CIGS thin film",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "DC magnetron sputtering",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Jâu0080u0093V characteristics",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "dielectric loss",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "electromagnetic interference",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "en_0066",
+          "title": "Effect of sputtering power on properties and photovoltaic performance of CIGS thin film solar cells",
+          "matched_evidence": [
+            "spectroscopy",
+            "microscopy",
+            "x-ray diffraction",
+            "raman"
+          ],
+          "keywords": [
+            "CIGS thin film",
+            "DC magnetron sputtering",
+            "Jâu0080u0093V characteristics",
+            "Raman spectroscopy"
+          ]
+        },
+        {
+          "document_id": "en_0528",
+          "title": "Molybdenum Disulfide-Wrapped Carbon Nanotube-Reduced Graphene Oxide (CNT/MoS 2 -rGO) Nanohybrids for Excellent and Fast Removal of Electromagnetic Interference Pollution",
+          "matched_evidence": [
+            "spectroscopy",
+            "microscopy",
+            "x-ray diffraction",
+            "raman"
+          ],
+          "keywords": [
+            "dielectric loss",
+            "electromagnetic interference",
+            "electron hopping",
+            "graphene",
+            "hybrid material"
+          ]
+        },
+        {
+          "document_id": "en_0219",
+          "title": "Combined ToF‐SIMS/XPS study of plasma modification and metallization of polyimide",
+          "matched_evidence": [
+            "spectroscopy",
+            "microscopy",
+            "raman"
+          ],
+          "keywords": [
+            "Copper",
+            "Metal deposition",
+            "Plasma modification",
+            "Polyimide",
+            "Polymers",
+            "ToF-SIMS",
+            "XPS"
+          ]
+        },
+        {
+          "document_id": "en_0939",
+          "title": "Tailoring Fast Directional Mass Transport of Nano-Confined Ag–Cu Alloys upon Heating: Effect of the AlN Barrier Thickness",
+          "matched_evidence": [
+            "spectroscopy",
+            "microscopy",
+            "x-ray diffraction"
+          ],
+          "keywords": [
+            "interface migration",
+            "multilayer thin films",
+            "nano-joining",
+            "nanoconfinement",
+            "thermally activated processes"
+          ]
+        },
+        {
+          "document_id": "en_0055",
+          "title": "Selective Preconcentration of Mezlocillin from Eggs by Molecularly Imprinted Polymers on Silica",
+          "matched_evidence": [
+            "spectroscopy",
+            "microscopy"
+          ],
+          "keywords": [
+            "Eggs",
+            "mezlocillin",
+            "solid-phase extraction",
+            "surface molecular imprinting"
+          ]
+        },
+        {
+          "document_id": "en_0071",
+          "title": "Calix[4]arene phosphonato derivative as a novel and capable processing aid agent for improving dynamic, mechanical, and thermal behavior of tire tread rubber compounds",
+          "matched_evidence": [
+            "spectroscopy",
+            "microscopy"
+          ],
+          "keywords": [
+            "Calix[4]arene phosphonato derivative",
+            "Dynamic mechanical thermal analysis",
+            "Processing aid agent",
+            "Rolling resistance",
+            "Tire tread compound",
+            "Wet grip"
+          ]
+        },
+        {
+          "document_id": "en_0099",
+          "title": "Thermal near-field tuning of silicon Mie nanoparticles",
+          "matched_evidence": [
+            "spectroscopy",
+            "raman"
+          ],
+          "keywords": [
+            "electron energy-loss spectroscopy",
+            "high-refractive-index nanostructures",
+            "Mie resonances",
+            "near-field tuning",
+            "thermo-optic tuning"
+          ]
+        },
+        {
+          "document_id": "en_0132",
+          "title": "Reactivity and Potential Profile across the Electrochemical LiCoO 2 –Li 3 PS 4 Interface Probed by Operando X-ray Photoelectron Spectroscopy",
+          "matched_evidence": [
+            "spectroscopy",
+            "microscopy"
+          ],
+          "keywords": [
+            "all-solid-state battery",
+            "interface",
+            "LCO",
+            "LPS",
+            "operando",
+            "post-mortem",
+            "XPEEM",
+            "XPS"
+          ]
+        },
+        {
+          "document_id": "en_0183",
+          "title": "Laser Printing of Multilayered Alternately Conducting and Insulating Microstructures",
+          "matched_evidence": [
+            "spectroscopy",
+            "raman"
+          ],
+          "keywords": [
+            "conducting/insulating",
+            "microbubble",
+            "microfluidics",
+            "multilayered structures",
+            "pattern formation"
+          ]
+        },
+        {
+          "document_id": "en_0212",
+          "title": "Nanostructured Valsartan Microparticles with Enhanced Bioavailability Produced by High-Throughput Electrohydrodynamic Room-Temperature Atomization",
+          "matched_evidence": [
+            "spectroscopy",
+            "microscopy"
+          ],
+          "keywords": [
+            "BCS II drug",
+            "enhanced bioavailability",
+            "HPMC",
+            "lactose monohydrate",
+            "nanonization",
+            "valsartan"
+          ]
+        },
+        {
+          "document_id": "en_0290",
+          "title": "Monitoring electrode/electrolyte interfaces of Li‐ion batteries under working conditions: A surface‐enhanced Raman spectroscopic study on LiCoO 2 composite cathodes",
+          "matched_evidence": [
+            "spectroscopy",
+            "raman"
+          ],
+          "keywords": [
+            "in situ spectroscopy",
+            "LiCoO<sub>2</sub>",
+            "lithium batteries",
+            "Raman spectroscopy",
+            "SERS",
+            "SHINERS",
+            "solid electrolyte interface"
+          ]
+        },
+        {
+          "document_id": "en_0302",
+          "title": "High-Resolution Lithographic Patterning with Organotin Films: Role of CO 2 in Differential Dissolution Rates",
+          "matched_evidence": [
+            "spectroscopy",
+            "microscopy"
+          ],
+          "keywords": [
+            "electron-beam lithography",
+            "extreme ultraviolet lithography",
+            "inorganic resist",
+            "organotin clusters"
+          ]
+        },
+        {
+          "document_id": "en_0381",
+          "title": "Perylenetetracarboxylic acid–incorporated silver nanocluster for cost-effective visible-light-driven photocatalysis and catalytic reduction",
+          "matched_evidence": [
+            "spectroscopy",
+            "microscopy"
+          ],
+          "keywords": [
+            "Catalysis",
+            "Nanocluster",
+            "Organic semiconductor",
+            "Photocatalysis"
+          ]
+        },
+        {
+          "document_id": "en_0627",
+          "title": "Nonionic Surfactants for the Cleaning of Works of Art: Insights on Acrylic Polymer Films Dewetting and Artificial Soil Removal",
+          "matched_evidence": [
+            "spectroscopy",
+            "microscopy"
+          ],
+          "keywords": [
+            "cleaning",
+            "confocal laser scanning microscopy",
+            "conservation of cultural heritage",
+            "fluorescence correlation spectroscopy",
+            "methoxy-pentadeca(oxyethylene) dodecanoate",
+            "microemulsions",
+            "pentadeca(oxyethylene) dodecyl ether",
+            "small-angle X-ray scattering"
+          ]
+        },
+        {
+          "document_id": "en_0694",
+          "title": "One-Step Green Preparation of N-Doped Silicon Quantum Dots for the on-off Fluorescent Determination of Hydrogen Peroxide",
+          "matched_evidence": [
+            "spectroscopy",
+            "microscopy"
+          ],
+          "keywords": [
+            "Fluorescence",
+            "fluorescent sensor",
+            "hydrogen peroxide",
+            "quantum dots",
+            "silicon quantum dots"
+          ]
+        },
+        {
+          "document_id": "en_0985",
+          "title": "TiO Phase Stabilized into Freestanding Nanofibers as Strong Polysulfide Immobilizer in Li–S Batteries: Evidence for Lewis Acid–Base Interactions",
+          "matched_evidence": [
+            "spectroscopy",
+            "raman"
+          ],
+          "keywords": [
+            "electrospinning",
+            "Lewis acid-base interactions",
+            "lithium-sulfur batteries",
+            "sulfur cathodes",
+            "titanium monoxide nanofibers"
+          ]
+        },
+        {
+          "document_id": "en_0027",
+          "title": "Tuning Ceramic Surface to Minimize the Ionic Resistance at the Interface between PEO- and LATP-Based Ceramic Electrolyte",
+          "matched_evidence": [
+            "spectroscopy"
+          ],
+          "keywords": [
+            "impedance spectroscopy",
+            "lithium batteries",
+            "polymer electrolyte",
+            "polymer/ceramic interfaces",
+            "solid-state electrolytes",
+            "surface composition"
+          ]
+        },
+        {
+          "document_id": "en_0067",
+          "title": "Small molecule NPT-440-1 inhibits ionic flux through Aβ 1-42 pores: Implications for Alzheimer's disease therapeutics",
+          "matched_evidence": [
+            "microscopy"
+          ],
+          "keywords": [
+            "Alzheimer's disease",
+            "Amyloid beta peptide",
+            "Amyloid pore",
+            "Atomic force microscopy",
+            "Bilayer electrophysiology",
+            "Calcium",
+            "Small molecule"
+          ]
+        },
+        {
+          "document_id": "en_0069",
+          "title": "Nanoplatform to Investigate Tumor-Initiating Cancer Stem Cells: Breaking the Diagnostic Barrier",
+          "matched_evidence": [
+            "raman"
+          ],
+          "keywords": [
+            "drug resistance",
+            "epigenetic changes",
+            "functionalized nanoplatform",
+            "surface-enhanced Raman scattering",
+            "tumor-initiating cancer stem cells"
+          ]
+        },
+        {
+          "document_id": "en_0084",
+          "title": "Hydrogen Production at a NiO Photocathode Based on a Ruthenium Dye–Cobalt Diimine Dioxime Catalyst Assembly: Insights from Advanced Spectroscopy and Post-operando Characterization",
+          "matched_evidence": [
+            "spectroscopy"
+          ],
+          "keywords": [
+            "cobalt catalyst",
+            "dye-sensitized",
+            "hydrogen",
+            "photoelectrochemistry",
+            "solar fuels"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-EN-06",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "deep learning",
+          "frequency": 6,
+          "weight": 0.795455,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "machine learning",
+          "frequency": 3,
+          "weight": 0.672727,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "neural network",
+          "frequency": 2,
+          "weight": 0.631818,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Segmentation",
+          "frequency": 2,
+          "weight": 0.631818,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Semantic segmentation",
+          "frequency": 2,
+          "weight": 0.631818,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Brain MRI",
+          "frequency": 1,
+          "weight": 0.590909,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Anomaly",
+          "frequency": 1,
+          "weight": 0.590909,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Unsupervised",
+          "frequency": 1,
+          "weight": 0.590909,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "3D autoencoder",
+          "frequency": 1,
+          "weight": 0.590909,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "sensors",
+          "frequency": 1,
+          "weight": 0.590909,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "adulteration",
+          "frequency": 1,
+          "weight": 0.590909,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "nondestructive",
+          "frequency": 1,
+          "weight": 0.590909,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 11,
+      "evidence_documents": [
+        {
+          "document_id": "en_0200",
+          "title": "Three-dimensional deep learning with spatial erasing for unsupervised anomaly segmentation in brain MRI",
+          "matched_evidence": [
+            "deep learning"
+          ],
+          "keywords": [
+            "3D autoencoder",
+            "Anomaly",
+            "Brain MRI",
+            "Segmentation",
+            "Unsupervised"
+          ]
+        },
+        {
+          "document_id": "en_0317",
+          "title": "E-nose coupled with an artificial neural network to detection of fraud in pure and industrial fruit juices",
+          "matched_evidence": [
+            "neural network"
+          ],
+          "keywords": [
+            "adulteration",
+            "nondestructive",
+            "Olfactory machine",
+            "sensors"
+          ]
+        },
+        {
+          "document_id": "en_0329",
+          "title": "A deep cascaded segmentation of obstructive sleep apnea-relevant organs from sagittal spine MRI",
+          "matched_evidence": [
+            "deep learning"
+          ],
+          "keywords": [
+            "Deep learning",
+            "MRI",
+            "Segmentation",
+            "Sleep apnea"
+          ]
+        },
+        {
+          "document_id": "en_0400",
+          "title": "Quantifying Salt and Pepper Noise Using Deep Convolutional Neural Network",
+          "matched_evidence": [
+            "neural network"
+          ],
+          "keywords": [
+            "Convolutional neural network",
+            "Denoising",
+            "Image processing",
+            "Noise reduction",
+            "Salt and pepper"
+          ]
+        },
+        {
+          "document_id": "en_0441",
+          "title": "Real-time vessel segmentation and reconstruction for virtual fixtures for an active handheld microneurosurgical instrument",
+          "matched_evidence": [
+            "deep learning"
+          ],
+          "keywords": [
+            "Handheld robotic tools",
+            "Neurosurgery",
+            "Real-time intra-operative vessel segmentation",
+            "Robot-assisted surgery",
+            "Virtual fixture control"
+          ]
+        },
+        {
+          "document_id": "en_0455",
+          "title": "NIST-certified secure key generation via deep learning of physical unclonable functions in silica aerogels",
+          "matched_evidence": [
+            "deep learning"
+          ],
+          "keywords": [
+            "artificial intelligence",
+            "complex light scattering",
+            "physical unclonable functions",
+            "random optical nanomaterials",
+            "security"
+          ]
+        },
+        {
+          "document_id": "en_0480",
+          "title": "Unravelling the effect of data augmentation transformations in polyp segmentation",
+          "matched_evidence": [
+            "deep learning"
+          ],
+          "keywords": [
+            "Data augmentation",
+            "Deep learning",
+            "Polyp segmentation",
+            "Semantic segmentation",
+            "Transformations"
+          ]
+        },
+        {
+          "document_id": "en_0486",
+          "title": "Assessing and mitigating the effects of class imbalance in machine learning with application to X-ray imaging",
+          "matched_evidence": [
+            "machine learning"
+          ],
+          "keywords": [
+            "Class imbalance",
+            "Machine learning",
+            "Medical imaging",
+            "Radiology",
+            "X-ray"
+          ]
+        },
+        {
+          "document_id": "en_0499",
+          "title": "Generative multi-adversarial network for striking the right balance in abdominal image segmentation",
+          "matched_evidence": [
+            "deep learning"
+          ],
+          "keywords": [
+            "Abdominal imaging",
+            "Generative multi-discriminative networks",
+            "Imbalanced learning",
+            "Semantic segmentation"
+          ]
+        },
+        {
+          "document_id": "en_0720",
+          "title": "Evaluating Thermal Quenching Temperature in Eu 3+ -Substituted Oxide Phosphors via Machine Learning",
+          "matched_evidence": [
+            "machine learning"
+          ],
+          "keywords": [
+            "inorganic phosphors",
+            "machine learning",
+            "photoluminescence",
+            "support vector regression",
+            "thermal quenching"
+          ]
+        },
+        {
+          "document_id": "en_0727",
+          "title": "Machine learning-based prediction of response to growth hormone treatment in Turner syndrome: the LG Growth Study",
+          "matched_evidence": [
+            "machine learning"
+          ],
+          "keywords": [
+            "growth hormone",
+            "height outcome",
+            "Turner syndrome"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-EN-07",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "finite element",
+          "frequency": 2,
+          "weight": 0.85,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "numerical simulation",
+          "frequency": 2,
+          "weight": 0.85,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Asphalt mixture",
+          "frequency": 1,
+          "weight": 0.7,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "microstructure",
+          "frequency": 1,
+          "weight": 0.7,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "cohesive behaviour",
+          "frequency": 1,
+          "weight": 0.7,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "interface stripping",
+          "frequency": 1,
+          "weight": 0.7,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Axial pretension",
+          "frequency": 1,
+          "weight": 0.7,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "thermoelastic damping",
+          "frequency": 1,
+          "weight": 0.7,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "micromechanical resonator",
+          "frequency": 1,
+          "weight": 0.7,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "finite element analysis",
+          "frequency": 1,
+          "weight": 0.7,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "hydrogel shells",
+          "frequency": 1,
+          "weight": 0.7,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "plasmonics",
+          "frequency": 1,
+          "weight": 0.7,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 3,
+      "evidence_documents": [
+        {
+          "document_id": "en_0033",
+          "title": "Investigation on interface stripping damage at high-temperature using microstructural analysis",
+          "matched_evidence": [
+            "finite element",
+            "numerical simulation"
+          ],
+          "keywords": [
+            "Asphalt mixture",
+            "cohesive behaviour",
+            "interface stripping",
+            "microstructure",
+            "numerical simulation"
+          ]
+        },
+        {
+          "document_id": "en_0822",
+          "title": "Evaluation of thermoelastic damping in micromechanical resonators with axial pretension: An analytical model accounting for two-dimensional thermal conduction",
+          "matched_evidence": [
+            "finite element"
+          ],
+          "keywords": [
+            "Axial pretension",
+            "finite element analysis",
+            "micromechanical resonator",
+            "thermoelastic damping"
+          ]
+        },
+        {
+          "document_id": "en_0884",
+          "title": "In-Plane Surface Lattice and Higher Order Resonances in Self-Assembled Plasmonic Monolayers: From Substrate-Supported to Free-Standing Thin Films",
+          "matched_evidence": [
+            "numerical simulation"
+          ],
+          "keywords": [
+            "core/shell colloids",
+            "free-standing films",
+            "higher order mode coupling",
+            "hydrogel shells",
+            "nanoparticle arrays",
+            "plasmonics",
+            "self-assembly",
+            "surface plasmon resonance"
+          ]
+        }
+      ]
+    },
+    {
+      "cluster_id": "T-EN-08",
+      "language": "en",
+      "phrases": [
+        {
+          "text": "synthesis",
+          "frequency": 14,
+          "weight": 0.865,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "synthesized",
+          "frequency": 12,
+          "weight": 0.82,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "self-assembly",
+          "frequency": 2,
+          "weight": 0.595,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "hydrothermal synthesis",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "sol-gel",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Nanosensor",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Metanil yellow",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Nitrogen-doped carbon dots",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "Picric acid",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "ZIF-8",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "mixed-matrix membrane",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        },
+        {
+          "text": "dopamine modulation",
+          "frequency": 1,
+          "weight": 0.5725,
+          "source": "reviewed_json_evidence"
+        }
+      ],
+      "document_count": 20,
+      "evidence_documents": [
+        {
+          "document_id": "en_0346",
+          "title": "Simple One-step Solid-state Synthesis of Highly Crystalline N Doped Carbon Dots As Selective Turn Off-sensor for Picric Acid and Metanil Yellow",
+          "matched_evidence": [
+            "synthesized",
+            "synthesis"
+          ],
+          "keywords": [
+            "Metanil yellow",
+            "Nanosensor",
+            "Nitrogen-doped carbon dots",
+            "Picric acid"
+          ]
+        },
+        {
+          "document_id": "en_0364",
+          "title": "Aqueous One-Step Modulation for Synthesizing Monodispersed ZIF-8 Nanocrystals for Mixed-Matrix Membrane",
+          "matched_evidence": [
+            "synthesized",
+            "synthesis"
+          ],
+          "keywords": [
+            "dopamine modulation",
+            "mixed-matrix membrane",
+            "monodispersity",
+            "nucleation",
+            "ZIF-8"
+          ]
+        },
+        {
+          "document_id": "en_0403",
+          "title": "Synthesis of a novel mesoporous Fe3O4@SiO2/CTAB-SiO2 composite material and its application in the efficient removal of bisphenol A from water",
+          "matched_evidence": [
+            "sol-gel",
+            "synthesis"
+          ],
+          "keywords": [
+            "Adsorbent",
+            "BPA removal",
+            "Fe<sub>3</sub>O<sub>4</sub>@SiO<sub>2</sub>/CTAB-SiO<sub>2</sub>",
+            "Water sample"
+          ]
+        },
+        {
+          "document_id": "en_0407",
+          "title": "Synthesis of novel pregnane-based 20-carboxamides via palladium-catalysed aminocarbonylation",
+          "matched_evidence": [
+            "synthesized",
+            "synthesis"
+          ],
+          "keywords": [
+            "Aminocarbonylation",
+            "Carboxamide",
+            "Iodoalkene",
+            "Palladium",
+            "Pregnane"
+          ]
+        },
+        {
+          "document_id": "en_0430",
+          "title": "Ultralow Thermal Conductivity and Large Figure of Merit in Low-Cost and Nontoxic Core–Shell Cu@Cu 2 O Nanocomposites",
+          "matched_evidence": [
+            "synthesized",
+            "synthesis"
+          ],
+          "keywords": [
+            "defects",
+            "figure of merit",
+            "interface",
+            "nanocomposites",
+            "ultralow thermal conductivity"
+          ]
+        },
+        {
+          "document_id": "en_0453",
+          "title": "Synthesis of Sensitive and Robust Lignin Capped Silver Nanoparticles for the Determination of Cobalt(II), Chromium(III), and Manganese(II) Ions by Colorimetry and Manganese(II) Ions by Surface-Enhanced Raman Scattering (SERS) in Aqueous Media",
+          "matched_evidence": [
+            "synthesized",
+            "synthesis"
+          ],
+          "keywords": [
+            "Colorimetric detection",
+            "heavy metals",
+            "lignin-functionalized silver nanoparticles (L-AgNPs)",
+            "surface-enhanced Raman scattering (SERS)"
+          ]
+        },
+        {
+          "document_id": "en_0753",
+          "title": "Visible-Light-Activated High-Density Materials for Controlled in Vivo Insulin Release",
+          "matched_evidence": [
+            "synthesized",
+            "synthesis"
+          ],
+          "keywords": [
+            "click chemistry",
+            "coumarin",
+            "insulin",
+            "photolysis",
+            "protein chemistry"
+          ]
+        },
+        {
+          "document_id": "en_0879",
+          "title": "One-Step Synthesis of Label-Free Ratiometric Fluorescence Carbon Dots for the Detection of Silver Ions and Glutathione and Cellular Imaging Applications",
+          "matched_evidence": [
+            "hydrothermal synthesis",
+            "synthesis"
+          ],
+          "keywords": [
+            "bioimaging",
+            "carbon dots",
+            "glutathione",
+            "long-wavelength emission",
+            "ratiometric fluorescent",
+            "silver ion"
+          ]
+        },
+        {
+          "document_id": "en_0963",
+          "title": "Synthesis and biological evaluation of benzothiazin-4-ones: a possible new class of acetylcholinesterase inhibitors",
+          "matched_evidence": [
+            "synthesized",
+            "synthesis"
+          ],
+          "keywords": [
+            "acetylcholinesterase",
+            "Benzothiazinone",
+            "fibroblast cells",
+            "propylpiperidine"
+          ]
+        },
+        {
+          "document_id": "en_0971",
+          "title": "Aqueous Synthesis of Lead Halide Perovskite Nanocrystals with High Water Stability and Bright Photoluminescence",
+          "matched_evidence": [
+            "self-assembly",
+            "synthesis"
+          ],
+          "keywords": [
+            "CsPbBr<sub>3</sub>/Cs<sub>4</sub>PbBr<sub>6</sub>",
+            "multicolor",
+            "nanocrystals",
+            "perovskite",
+            "water-soluble"
+          ]
+        },
+        {
+          "document_id": "en_0022",
+          "title": "Rationally Integrating Charge-Transfer Cocrystal and Ni(II) Organometallics for Visualized Photo/Thermochromic Sensors",
+          "matched_evidence": [
+            "synthesized"
+          ],
+          "keywords": [
+            "organic charge-transfer cocrystal",
+            "photoinduced thermochromics",
+            "photothermal conversion",
+            "stimulus-responsive materials",
+            "thermochromic Ni(II) organometallics"
+          ]
+        },
+        {
+          "document_id": "en_0032",
+          "title": "Tunable UV- and Visible-Light Photoresponse Based on p-ZnO Nanostructures/n-ZnO/Glass Peppered with Au Nanoparticles",
+          "matched_evidence": [
+            "synthesized"
+          ],
+          "keywords": [
+            "Au nanoparticles",
+            "p-n homojunction",
+            "p-type ZnO nanostructures",
+            "tunable",
+            "UV and visible photoresponse"
+          ]
+        },
+        {
+          "document_id": "en_0037",
+          "title": "Impact of atrial fibrillation on platelet gene expression",
+          "matched_evidence": [
+            "synthesis"
+          ],
+          "keywords": [
+            "gene expression",
+            "platelets",
+            "pulmonary vein isolation",
+            "thrombosis"
+          ]
+        },
+        {
+          "document_id": "en_0043",
+          "title": "Charged Covalent Triazine Frameworks for CO 2 Capture and Conversion",
+          "matched_evidence": [
+            "synthesis"
+          ],
+          "keywords": [
+            "charged porous polymers",
+            "CO<sub>2</sub> fixation",
+            "hierarchical porosity",
+            "ionic networks",
+            "ionothermal synthesis"
+          ]
+        },
+        {
+          "document_id": "en_0080",
+          "title": "Injectable Magnetic-Responsive Short-Peptide Supramolecular Hydrogels: Ex Vivo and In Vivo Evaluation",
+          "matched_evidence": [
+            "self-assembly"
+          ],
+          "keywords": [
+            "biomaterials",
+            "hybrid hydrogels",
+            "magnetic nanoparticles",
+            "peptides",
+            "regenerative medicine",
+            "self-assembly",
+            "tissue engineering"
+          ]
+        },
+        {
+          "document_id": "en_0096",
+          "title": "Asymmetrically Functionalized 1,3-Di(2-pyridyl)benzenes: Synthesis and Photophysical Studies",
+          "matched_evidence": [
+            "synthesis"
+          ],
+          "keywords": [
+            "1,2,4-triazines",
+            "1,3-di(2-pyridyl)benzenes",
+            "Aza-Dielsâu0080u0093Alder reaction",
+            "Cross-coupling",
+            "Fluorescence"
+          ]
+        },
+        {
+          "document_id": "en_0140",
+          "title": "Bottlebrush Polymer-Conjugated Melittin Exhibits Enhanced Antitumor Activity and Better Safety Profile",
+          "matched_evidence": [
+            "synthesis"
+          ],
+          "keywords": [
+            "bottlebrush polymer",
+            "drug delivery",
+            "melittin",
+            "narrow therapeutic index drugs",
+            "PEGylation"
+          ]
+        },
+        {
+          "document_id": "en_0141",
+          "title": "Gas-Sorption Properties of Cobalt(II)-Carborane-Based Coordination Polymers as a Function of Morphology",
+          "matched_evidence": [
+            "synthesized"
+          ],
+          "keywords": [
+            "Carboranes",
+            "Gas separation",
+            "Hydrogen storage",
+            "Infinite coordination polymers",
+            "Nanoporous materials"
+          ]
+        },
+        {
+          "document_id": "en_0182",
+          "title": "Efficient separation of oil‐in‐water emulsion based on a superhydrophilic and underwater superoleophobic polyvinylidene fluoride membrane",
+          "matched_evidence": [
+            "synthesized"
+          ],
+          "keywords": [
+            "PVDF membrane",
+            "separation of oil-in-water emulsion",
+            "superhydrophilicity",
+            "underwater superoleophobicity"
+          ]
+        },
+        {
+          "document_id": "en_0204",
+          "title": "Defect Engineering in Ultrathin SnSe Nanosheets for High-Performance Optoelectronic Applications",
+          "matched_evidence": [
+            "synthesized"
+          ],
+          "keywords": [
+            "defect engineering",
+            "optoelectronic",
+            "recombination dynamics",
+            "Se vacancies",
+            "SnSe nanosheets"
+          ]
+        }
+      ]
+    }
+  ],
+  "axis": "technology",
+  "dataset": {
+    "chinese_source_documents": 1000,
+    "english_source_documents": 1000
+  }
+}

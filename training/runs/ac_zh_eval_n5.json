@@ -1,0 +1,105 @@
+{
+  "summary": {
+    "n": 5,
+    "n_ok": 5,
+    "top_k": 25,
+    "main_acc": 0.2,
+    "main_hier_acc": 0.4,
+    "main_branch_acc": 1.0,
+    "main_top_acc": 1.0,
+    "main_or_aux_hit": 0.2,
+    "aux_match": 0.25,
+    "aux_gold_count": 4,
+    "inter_acc": 0.4,
+    "inter_precision": 0.0,
+    "inter_recall": 0.0,
+    "inter_f1": 0.0,
+    "anti_hallucination_pass": 1.0
+  },
+  "records": [
+    {
+      "sample_id": 1,
+      "pred_main": "F299.21",
+      "gold_main": "F291.1",
+      "pred_aux": [
+        "F124.7"
+      ],
+      "gold_aux": [
+        "F124.7"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献以我国省域新型城镇化与共同富裕的耦合协调为研究核心，主分类F299.21（中国城市经济）契合新型城镇化的应用场景；辅助分类F124.7（人民生活水平）对应共同富裕这一并列的次要主题。两者同属经济大类（F），学科边界相同，故不判为交叉学科。"
+    },
+    {
+      "sample_id": 2,
+      "pred_main": "F323",
+      "gold_main": "F320.1",
+      "pred_aux": [
+        "F49"
+      ],
+      "gold_aux": [
+        "TP311.13"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类F323（农业经济建设与发展）契合文献着力解决的现代农业产业高质量发展、农业生产配置效率优化及转型升级等农业经济问题；辅助分类F49（信息产业经济）对应文献中作为核心要素探讨的数据要素、数据基础设施建设及数据流通机制等次要主题。两者同属经济学科边界（F大类），故不判为交叉学科。"
+    },
+    {
+      "sample_id": 3,
+      "pred_main": "F299.21",
+      "gold_main": "F290",
+      "pred_aux": [],
+      "gold_aux": [
+        "G301"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献针对我国科技创新城市的功能内涵、评价体系及判定标准进行研究，借助城市经济基础和城市功能理论，从城市经济活动的基本与非基本部分构建评价指标体系。这属于中国城市经济结构与发展的研究范畴，故主分类选 F299.21。文献未涉及跨学科的核心方法或并列次要主题，故无辅助分类号，不判为交叉学科。"
+    },
+    {
+      "sample_id": 4,
+      "pred_main": "TM713",
+      "gold_main": "TM713",
+      "pred_aux": [
+        "TM732"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "主分类TM713（电力系统短路）契合文献着力解决的配电网短路故障计算与分析的应用场景；辅助分类TM732（各种发电并网）对应高比例分布式电源并网这一有分量的次要主题。两者同"
+    },
+    {
+      "sample_id": 5,
+      "pred_main": "TM714.1",
+      "gold_main": "TM714",
+      "pred_aux": [],
+      "gold_aux": [
+        "TP181"
+      ],
+      "pred_inter": false,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "文献着力解决新型电力系统度冬度夏日最大负荷的预测问题，属于电力系统负荷预测范畴，主分类号取 TM714.1（负荷预测）。文中虽使用了聚类分析、M-K检验、SVR等统计与机器学习方法，并考虑了GDP、CPI等经济因素和气温空间分布等气象因素，但这些均作为负荷预测的辅助手段或输入特征，属于例行统计手段或背景特征，不构成独立的次要主题，故不设辅助分类号，也不判为交叉学科。"
+    }
+  ]
+}

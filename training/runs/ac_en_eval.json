@@ -1,0 +1,833 @@
+{
+  "summary": {
+    "n": 50,
+    "n_ok": 50,
+    "top_k": 25,
+    "main_acc": 0.06,
+    "main_hier_acc": 0.68,
+    "main_branch_acc": 0.92,
+    "main_top_acc": 0.92,
+    "main_or_aux_hit": 0.06,
+    "aux_match": 0.444,
+    "aux_gold_count": 9,
+    "inter_acc": 0.76,
+    "inter_precision": 0.2,
+    "inter_recall": 1.0,
+    "inter_f1": 0.333,
+    "anti_hallucination_pass": 1.0
+  },
+  "records": [
+    {
+      "sample_id": 1,
+      "pred_main": "TM914.4+1",
+      "gold_main": "TM615",
+      "pred_aux": [
+        "TN304.055"
+      ],
+      "gold_aux": [],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TM914.4→TM914.4+1] The main code TM914.4 (Solar cells) is selected because the core application scenario of the paper is proposing a recombination layer for perovskite/TOPCon tandem solar cells to improve their performance. The auxiliary code TN304.055 (Preparation of semiconductor materials) is assigned because the paper substantively discusses the fabrication mechanism and oxidation process of the titanium silicide (TiSi2) thin film material. Since TM (Electrical Engineering) and TN (Electronics) are distinct second-level disciplines within Class T, the combination is considered interdisciplinary."
+    },
+    {
+      "sample_id": 2,
+      "pred_main": "U491.2",
+      "gold_main": "U49",
+      "pred_aux": [
+        "TM727"
+      ],
+      "gold_aux": [],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 U491.1→U491.2] The main code U491.1 (Traffic planning and traffic management) is selected because the core application scenario of the paper is the design and planning of a self-consistent energy system specifically tailored for transport infrastructures (highway, railway, waterway) under traffic constraints. The auxiliary code TM727 (Power supply to specific users/environments) is assigned because the substantive secondary theme involves the electrical engineering discipline of power sources, energy storage, and interconnected microgrids. Since the main code belongs to the U (Transportation) discipline boundary and the auxiliary code belongs to the TM (Electrical Engineering) discipline boundary within the aggregated T class, this is considered interdisciplinary."
+    },
+    {
+      "sample_id": 3,
+      "pred_main": "R471",
+      "gold_main": "R47",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R47→R471] The core subject of this paper is the nursing profession and the development of research competence among nurses through an immersion program in a clinical setting. In the CLC system, R47 covers Nursing Science. The article focuses on nursing education, evidence-based practice, and improving patient care outcomes, which directly aligns with the scope of R47. No auxiliary code is needed as the methodology (experiential learning) is a routine educational strategy rather than a substantive secondary theme from a distinct discipline."
+    },
+    {
+      "sample_id": 4,
+      "pred_main": "R541",
+      "gold_main": "R54",
+      "pred_aux": [
+        "R726.2"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R542→R541] The main code R542 (Diseases of the heart) fits the core application scenario of the paper, which focuses on sudden cardiac death (SCD) and its pathogenesis related to the cardiac conduction system. The auxiliary code R726.2 (Pediatric cardiovascular diseases) is assigned because the paper particularly emphasizes sudden infant death syndrome (SIDS) and sudden intrauterine unexpected death syndrome (SIUDS), making pediatric cardiology a substantive secondary theme. Both codes fall under the R (Medicine) discipline boundary, so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 5,
+      "pred_main": "R749.053",
+      "gold_main": "R749",
+      "pred_aux": [
+        "R971"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R749.4→R749.053] The main code R749.4 (Neuroses / Psychosomatic disorders) is selected because the core application scenario is the clinical treatment of binge eating disorder (BED) comorbid with depressive disorders. The auxiliary code R971.43 (Antidepressants) is assigned as a substantive secondary theme representing the specific pharmacological intervention (duloxetine) evaluated in the trial. Both codes fall under the R (Medicine) top class, sharing the same discipline boundary, so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 6,
+      "pred_main": "Q936",
+      "gold_main": "Q939",
+      "pred_aux": [
+        "Q949.32"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core subject of this paper is the activation, localization, and functional mechanism of protein kinase C (NPKC) in Neurospora crassa, which falls under enzyme biochemistry (Q936). The auxiliary code Q949.32 represents the specific biological organism studied, Neurospora crassa (fungi). Both main and auxiliary codes belong to the Q (Biological Sciences) discipline boundary, so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 7,
+      "pred_main": "R782.2",
+      "gold_main": "R62",
+      "pred_aux": [
+        "R622"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core application scenario of this paper is lip aesthetics and lip enhancement treatment, which falls under oral and maxillofacial surgery / plastic surgery of the lips. In the CLC system, R782.2 (Surgery of the lips and oral mucosa) is the most specific subordinate code for lip-related surgical and aesthetic interventions. The auxiliary code R622 (Plastic surgery) is assigned as a substantive secondary theme because the study evaluates facial beauty, anthropometric proportions, and aesthetic outcomes for lip augmentation, which are fundamental topics in plastic surgery. Both the main and auxiliary codes belong to the same top-level class R (Medicine and Health), so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 8,
+      "pred_main": "O641.4",
+      "gold_main": "O621",
+      "pred_aux": [
+        "O634"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core subject of the paper is the synthesis and structural/topological study of infinite coordination polymers (ICPs) and their gas sorption properties. In the CLC system, coordination polymers (including MOFs) are classified under O641.4 (Coordination compounds). The auxiliary code O634 (Boron compounds) is assigned because the coordination polymers are specifically synthesized from carborane (a boron cluster compound) derivatives, which serves as a substantive secondary chemical theme. Both codes fall under the top-level class O (Chemistry), so it is not considered interdisciplinary."
+    },
+    {
+      "sample_id": 9,
+      "pred_main": "R541.1",
+      "gold_main": "R54",
+      "pred_aux": [
+        "R361"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core application scenario of this study is the clinical and pathological analysis of congenital heart disease (specifically left-to-right shunts) and its associated complication, plexogenic pulmonary arteriopathy (pulmonary hypertension). Therefore, the main CLC code is R541.1 (Congenital heart disease). The study extensively utilizes autopsy and explant lung tissue histopathology to evaluate age-related changes in plexiform lesions, making histopathological examination a substantive secondary theme, which corresponds to the auxiliary code R361.2 (Pathological anatomy). Both the main and auxiliary codes fall under the top-level class R (Medicine and Health), so it is not considered interdisciplinary."
+    },
+    {
+      "sample_id": 10,
+      "pred_main": "R739.41",
+      "gold_main": "R73",
+      "pred_aux": [
+        "R944.9"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The main code R739.41 (Neurogenic tumors) is assigned because the core application scenario of the paper is the treatment of pediatric diffuse midline/intrinsic pontine glioma (DIPG), a type of brainstem glioma. The auxiliary code R944.9 (Other forms of preparations) is assigned because a substantive secondary theme is the development and evaluation of novel nanoencapsulated drug delivery systems (apoferritin nanocages and nanoliposomes) to improve pharmacokinetics. Both the main and auxiliary codes fall under the R (Medicine) top class, so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 11,
+      "pred_main": "C912.81",
+      "gold_main": "C912",
+      "pred_aux": [
+        "D756.1"
+      ],
+      "gold_aux": [],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The main code C912.81 (Urban sociology / Community studies) fits the core application scenario of the paper, which explores how diverse populations (Polish migrants and long-settled residents) produce inclusive community spaces and positive encounters in the East End of Glasgow. The auxiliary code D756.138 (Migration and ethnic minorities in the UK) captures the substantive secondary theme of EU migration and the specific political context of Brexit. Since the main code belongs to the Social Sciences (C) boundary and the auxiliary code belongs to the Politics/Law (D) boundary, they cross different discipline boundaries, making it interdisciplinary."
+    },
+    {
+      "sample_id": 12,
+      "pred_main": "R969.1",
+      "gold_main": "R96",
+      "pred_aux": [
+        "R814.42"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core subject of this paper is the clinical pharmacokinetics (PK) of MR309 and its brain receptor occupancy in healthy volunteers, which falls under biochemical pharmacology and clinical pharmacology (R969.1). Positron emission tomography (PET) is used as a substantive methodological tool to measure brain receptor occupancy, making R814.42 (PET imaging) a valid auxiliary code. Since both the main code (R) and auxiliary code (R) belong to the same top-level discipline boundary (Medicine and Health), is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 13,
+      "pred_main": "X820.3",
+      "gold_main": "X8",
+      "pred_aux": [
+        "X321"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The main code X820.3 (Environmental impact assessment) fits the core application scenario of the paper, which evaluates Regional and Strategic Environmental Assessment (RSEA) protocols and their integration of environmental, social, and health impacts. The auxiliary code X321 (Environmental planning) is assigned as a substantive secondary theme, as the paper explicitly discusses integrating these diverse land-use values into planning and decision-making for large, transboundary projects. Both codes fall under the same top-level class X (Environmental Science), so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 14,
+      "pred_main": "R683.41",
+      "gold_main": "R68",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core subject of this paper is the clinical and radiographic comparison of minimally invasive intramedullary fixation techniques (screws vs. K-wires) for treating metacarpal fractures. In the CLC system, R683.41 specifically covers fractures of the hand and wrist bones. As this is a clinical study focused entirely on orthopedic treatment outcomes without a substantive secondary theme from a different discipline, no auxiliary code is assigned and it is not considered interdisciplinary."
+    },
+    {
+      "sample_id": 15,
+      "pred_main": "TP391.4",
+      "gold_main": "TP3",
+      "pred_aux": [
+        "TN918"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core application scenario is physical signature authentication, which fundamentally falls under pattern recognition and identification systems (TP391.4). The paper models signatures as random processes and analyzes information rates and error probabilities, which serves as a substantive methodological foundation related to cryptographic authentication and information theory (TN918). Since both the main code (TP) and auxiliary code (TN) belong to the broader Industrial Technology (T) class but represent distinct second-level disciplines (Computer Science vs. Electronics/Communication), they are considered different discipline boundaries within T, making this an interdisciplinary classification."
+    },
+    {
+      "sample_id": 16,
+      "pred_main": "R723.13",
+      "gold_main": "R58",
+      "pred_aux": [
+        "R394"
+      ],
+      "gold_aux": [
+        "R394"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R723.14→R723.13] The core application scenario of this paper is the clinical study of childhood obesity, specifically investigating the clinical features and comorbidities (like insulin resistance) of severe early-onset obesity in children. Therefore, the main code is R723.14 (Pediatric metabolic diseases/Obesity). The auxiliary code is R394 (Medical genetics), as the study utilizes genetic analysis of MC4R variants and polymorphisms as a substantive method to understand the condition. Both the main and auxiliary codes fall under the top-level class R (Medicine and Health), so it is not considered interdisciplinary."
+    },
+    {
+      "sample_id": 17,
+      "pred_main": "R699.2",
+      "gold_main": "R69",
+      "pred_aux": [
+        "R815"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core application scenario of this paper is evaluating the surgical outcomes of graft nephrectomy (移植肾切除术), which falls under kidney surgery, classified as R699.2. The study uses renal artery embolization (动脉栓塞) as an interventional radiology technique to reduce bleeding and operating times, which serves as a substantive secondary theme and method, classified under R815 (Interventional Radiology). Both the main code and auxiliary code belong to the same top-level discipline boundary (R - Medicine), so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 18,
+      "pred_main": "O613.71",
+      "gold_main": "O613",
+      "pred_aux": [
+        "O643.36"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core subject of the paper is the synthesis, structural characterization, and properties of nitrogen-doped porous graphitic carbons derived from chitosan. Since carbon is a non-metallic element, its chemistry falls under O613.71 (Carbon). The auxiliary code O643.36 (Catalysis and catalysts) is assigned because the paper substantively discusses the photocatalytic activity of these carbon materials for hydrogen generation. Both the main and auxiliary codes belong to the same top-level class (O, Chemistry), so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 19,
+      "pred_main": "R742.5",
+      "gold_main": "R742",
+      "pred_aux": [
+        "R394"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The main code R742.5 corresponds to Parkinson's disease, which is the core application scenario and central subject of the study. The auxiliary code R394 (Medical Genetics) is assigned because the study fundamentally investigates the pathogenic mechanisms of specific genetic mutations (LRRK2 G2019S) and their molecular impact on disease pathology. Both codes fall under the R (Medicine) top class, sharing the same discipline boundary, so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 20,
+      "pred_main": "O643.36",
+      "gold_main": "O644",
+      "pred_aux": [
+        "O614.122"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core application scenario of this paper is photocatalysis and catalytic reduction using a synthesized nanomaterial. Therefore, the main code is O643.36 (Catalysis by catalysts of specific composition/properties), which specifically covers nanomaterial catalysis. The auxiliary code O614.122 (Silver) represents the substantive secondary theme regarding the chemistry of the silver nanoclusters used as the catalyst material. Since both codes fall under the same top-level class O (Chemistry), is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 21,
+      "pred_main": "R512.99",
+      "gold_main": "R37",
+      "pred_aux": [
+        "Q811"
+      ],
+      "gold_aux": [
+        "R51"
+      ],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The main code R512.99 (Other viral infectious diseases) is chosen because the core application scenario is elucidating the neurological manifestations and comorbidities of COVID-19 (a viral infectious disease) and suggesting drug repurposing for its treatment. The auxiliary code Q811 (Biomathematics / Systems biology) is assigned because the study employs a systems biology-based network approach to analyze disease-gene interactions and identify hub proteins, which is a substantive methodological theme. It is interdisciplinary because the main code belongs to the Medical sciences (R) boundary, while the auxiliary code belongs to the Biological sciences (Q) boundary."
+    },
+    {
+      "sample_id": 22,
+      "pred_main": "R186",
+      "gold_main": "R1",
+      "pred_aux": [
+        "R511.7"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core application scenario of this paper is evaluating the cost-effectiveness of a pediatric influenza vaccination program, which falls under preventive medicine and immunization (R186). The auxiliary code R511.7 represents influenza as an infectious disease, which is the specific medical subject being targeted by the vaccination. Both codes belong to the R (Medicine and Health) discipline boundary, so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 23,
+      "pred_main": "R651.1+2",
+      "gold_main": "R65",
+      "pred_aux": [
+        "TP391.41"
+      ],
+      "gold_aux": [
+        "TP3"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R651→R651.1+2] The main code R651 (Neurosurgery) is chosen because the core application scenario is improving safety in neurosurgical procedures (e.g., petroclival meningioma surgery) by avoiding vascular damage. The auxiliary code TP391.41 (Pattern recognition applied to image processing) is assigned because the paper substantively relies on deep learning-based real-time intra-operative blood vessel segmentation and 3D reconstruction as its core method. This is interdisciplinary because the main code belongs to Medicine (R) and the auxiliary code belongs to Computer Science/Industrial Technology (TP), crossing distinct discipline boundaries."
+    },
+    {
+      "sample_id": 24,
+      "pred_main": "R52",
+      "gold_main": "R52",
+      "pred_aux": [
+        "R692.5"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core application scenario of this paper is an observational study on the prevalence of latent tuberculosis infection (LTBI) and its treatment outcomes using the 3HP regimen. Therefore, the main code is R52 (Tuberculosis), which specifically covers tuberculosis infection and its clinical management. The study population specifically consists of end-stage renal disease (ESRD) patients undergoing hemodialysis, which serves as a substantive secondary clinical context. Thus, R692.5 (Renal failure, Uremia) is assigned as the auxiliary code. Both the main and auxiliary codes fall under the top-level class R (Medicine and Health), so the study is not considered interdisciplinary."
+    },
+    {
+      "sample_id": 25,
+      "pred_main": "R749.055",
+      "gold_main": "R749",
+      "pred_aux": [
+        "R195.1"
+      ],
+      "gold_aux": [
+        "R186"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R749.4→R749.055] The core application scenario of this paper is the clinical treatment of depression using Cognitive Behavioral Therapy (CBT). Therefore, the main CLC code is R749.4 (Emotional/affective disorders), which covers depression. The study employs health economic evaluation methods (decision-analytic models, cost-effectiveness analysis) to evaluate the therapy, making R195.1 (Health economics/Hospital economics) a substantive auxiliary code representing the methodological discipline. Since both the main and auxiliary codes fall under the same top-level class R (Medicine and Health), this is not considered interdisciplinary."
+    },
+    {
+      "sample_id": 26,
+      "pred_main": "R194",
+      "gold_main": "R19",
+      "pred_aux": [
+        "TP311"
+      ],
+      "gold_aux": [],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R199→R194] The main code R199 (Health care and health services) fits the core application scenario of the paper, which is developing a tool to evaluate clinical registries for Health Technology Assessment (HTA) bodies to support healthcare decision-making. The auxiliary code TP311 (Computer software) is assigned because the core methodology involves developing an information technology-based web application and Excel tool. It is interdisciplinary because the main code belongs to the Medicine (R) discipline boundary, while the auxiliary code belongs to the Computer Science (TP) sub-discipline within Industrial Technology (T)."
+    },
+    {
+      "sample_id": 27,
+      "pred_main": "O437",
+      "gold_main": "O436",
+      "pred_aux": [
+        "TN241"
+      ],
+      "gold_aux": [],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 O436→O437] The core subject of the paper is the physical mechanism of optical trapping (光捕获) and nonlinear optical effects (非线性效应) overcoming the diffraction limit, which falls under physical optics (O436). The auxiliary code TN241 (Laser physics) is assigned because the study specifically utilizes femtosecond Gaussian beam lasers to induce these effects. Since O (Physics) and TN (Radio electronics/Tech) belong to different discipline boundaries, the classification is interdisciplinary."
+    },
+    {
+      "sample_id": 28,
+      "pred_main": "TQ028.8",
+      "gold_main": "TQ028",
+      "pred_aux": [
+        "O647"
+      ],
+      "gold_aux": [],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core application scenario of this paper is the study of membrane separation technology, specifically investigating the impact of surface functionalization on the pore structure and gas flow mechanisms of mesoporous membranes. Therefore, the main CLC code is TQ028.8 (Membrane separation technology). The auxiliary code O647 (Surface chemistry) is assigned because the study substantively explores surface chemical modifications (using silanes) and their physicochemical effects on gas-surface interactions. Since the main code falls under the T (Industrial Technology) boundary and the auxiliary code falls under the O (Chemistry) boundary, the classification is considered interdisciplinary."
+    },
+    {
+      "sample_id": 29,
+      "pred_main": "R814.42",
+      "gold_main": "R814",
+      "pred_aux": [
+        "R981"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core application scenario is the evaluation of CT image reconstruction techniques and image quality using a phantom, which falls under X-ray computed tomography (R814.42). The auxiliary code R981.1 represents contrast media used in medical imaging, which is a substantive secondary theme investigated in the study. Both the main and auxiliary codes belong to the R (Medicine) class, so it is not considered interdisciplinary."
+    },
+    {
+      "sample_id": 30,
+      "pred_main": "Q959.4",
+      "gold_main": "Q958",
+      "pred_aux": [
+        "Q958.12"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core application scenario of this paper is the study of fish behavioral responses to male chemical stimuli, specifically focusing on lake trout (Salvelinus namaycush). Therefore, the main code is Q959.4 (Ichthyology). The auxiliary code is Q958.12 (Chemical ecology), which corresponds to the paper's substantive secondary theme of chemical ecology and olfactory communication. Both the main and auxiliary codes fall under the same top-level class Q (Biology), so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 31,
+      "pred_main": "R749.4+1",
+      "gold_main": "R749",
+      "pred_aux": [
+        "R338"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R749.4→R749.4+1] The main code R749.4 (Emotional/affective disorders) fits the core application scenario of the paper, which investigates the pathogenesis of major depressive disorder induced by immune responses. The auxiliary code R338 (Neurophysiology) is assigned because the study substantively employs neurophysiological methods (e.g., patch clamp recordings) and explores structural and functional synaptic alterations and neuronal excitability. Since both the main application (clinical psychiatry) and the auxiliary methodology (neurophysiology) fall under the same top-level class R (Medicine and Health), the classification is not considered interdisciplinary."
+    },
+    {
+      "sample_id": 32,
+      "pred_main": "R743",
+      "gold_main": "R743",
+      "pred_aux": [
+        "R544.1"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R749.16→R743] The core application scenario and primary subject of this review is the pathogenesis and cerebrovascular mechanisms of Alzheimer's disease (AD), which maps to R749.16 (Alzheimer's disease). The paper substantively discusses hypertension (chronic high mean arterial blood pressure) as a parallel secondary theme impacting cerebral perfusion, making R544.1 (Hypertension) an appropriate auxiliary code. Both the main and auxiliary codes fall under the same top-level class R (Medicine and Health), so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 33,
+      "pred_main": "S791.24",
+      "gold_main": "S718",
+      "pred_aux": [
+        "S718.43"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The main code S791.24 (Pinus cembra) is chosen because the core application scenario of this paper is the study of the Pinus cembra species, specifically analyzing its trunk hydraulics and growth patterns. The auxiliary code S718.43 (Tree physiology) is assigned as the secondary theme because the paper substantively investigates the physiological mechanisms of the tree, such as specific hydraulic conductivity and xylogenesis. Since both the main code and auxiliary code fall under the S (Agriculture/Forestry) discipline boundary, is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 34,
+      "pred_main": "TM919",
+      "gold_main": "O482",
+      "pred_aux": [
+        "TB383"
+      ],
+      "gold_aux": [],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": false,
+      "alignment_ok": true,
+      "selection_reason": "The main code TM919 (Other special power sources) is assigned because the core application scenario of the paper is the development and performance enhancement of a piezoelectric nanogenerator for energy harvesting. The auxiliary code TB383 (Nanomaterials) is assigned because the core methodology and material focus involve the synthesis and microstructuration of ZnSnO3 nanowires and PDMS composites. It is interdisciplinary because the main code falls under the Electrical Engineering (TM) discipline boundary, while the auxiliary code falls under the Industrial Technology / Materials Science (TB) boundary within the aggregated class T."
+    },
+    {
+      "sample_id": 35,
+      "pred_main": "R722.6",
+      "gold_main": "R72",
+      "pred_aux": [
+        "R582"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R722.1→R722.6] The main code R722.1 (Diseases of newborn infants) is chosen because the core application scenario and study population are preterm/very low birth weight neonates, focusing on their neonatal screening and associated neonatal clinical outcomes. The auxiliary code R582 (Hypothyroidism) is assigned as a substantive secondary theme, representing the specific endocrine disorder (congenital hypothyroidism and hyperthyrotropinemia) being investigated. Both codes fall under the R (Medicine and Health) discipline boundary, so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 36,
+      "pred_main": "TS26",
+      "gold_main": "TS26",
+      "pred_aux": [
+        "TS2"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": true,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TS262.6→TS26] The core application scenario of this paper is the winemaking process, specifically exploring the use of α-pinene as a novel alternative additive to sulfur dioxide in red wine fermentation. Therefore, the main CLC code is TS262.6 (Wine making). The auxiliary code is TS201.3 (Food additives), as the study fundamentally evaluates the application and effects of a specific chemical additive (α-pinene) within the food matrix. Since both the main code and the auxiliary code fall under the same second-level discipline boundary of Light and Chemical Industry (TS) within Industrial Technology (T), is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 37,
+      "pred_main": "R725.7",
+      "gold_main": "R72",
+      "pred_aux": [
+        "R575.5"
+      ],
+      "gold_aux": [
+        "R575"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core application scenario of this study is investigating the association between neck circumference and non-alcoholic fatty liver disease (NAFLD) in a pediatric population (children and adolescents) with obesity. In the CLC system, R725 covers pediatric diseases, and R725.7 specifically addresses pediatric metabolic and nutritional disorders, making it the most fitting main code for childhood obesity and its related metabolic conditions. The auxiliary code R575.5 represents fatty liver disease (a specific liver disorder under internal medicine), which serves as the substantive secondary clinical subject of the research. Both the main and auxiliary codes fall under the same top-level class 'R' (Medicine and Health), so the study is not considered interdisciplinary."
+    },
+    {
+      "sample_id": 38,
+      "pred_main": "R575.6+2",
+      "gold_main": "R575",
+      "pred_aux": [
+        "R581"
+      ],
+      "gold_aux": [
+        "R582"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R575.6→R575.6+2] The main code R575.6 (Cholelithiasis) is chosen because the core application scenario and primary clinical focus of the paper is the formation of gallstones due to rapid weight loss. The auxiliary code R581 (Hyperthyroidism) is assigned as a substantive secondary theme, as Graves' disease/hyperthyroidism is the underlying cause of the weight loss and is discussed as a potential promoter of cholelithiasis via cholesterol metabolism. Both codes fall under the same top-level class R (Medicine and Health), so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 39,
+      "pred_main": "R737.31",
+      "gold_main": "R737",
+      "pred_aux": [
+        "Q503"
+      ],
+      "gold_aux": [],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R737.3→R737.31] The main code R737.3 (Oncology - Genitourinary and reproductive tract tumors) is assigned because the core application scenario is a clinical case study of high-grade serous ovarian carcinoma and the analysis of acquired drug resistance (to platinum and PARP inhibitors) during cancer progression. The auxiliary code Q503 (Biochemistry - Nucleic acids) is assigned because the study substantively employs digital droplet PCR (ddPCR) as a molecular biology technique to investigate specific BRCA2 gene mutations at the nucleic acid level. It is considered interdisciplinary because the main code falls under Medicine (R) while the auxiliary code falls under Biological Sciences (Q), crossing distinct discipline boundaries."
+    },
+    {
+      "sample_id": 40,
+      "pred_main": "R749.2+5",
+      "gold_main": "R58",
+      "pred_aux": [
+        "R589.3"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R749.92→R749.2+5] The core application scenario of this paper is the psychological and psychosocial impact of a chronic disease on patients, specifically studying self-representation, IQ scores, quality of life, social discrimination, and anxiety/depression. This aligns with R749.92 (Psychological and psychiatric issues caused by somatic diseases). The auxiliary code R589.3 (Disorders of phenylalanine metabolism, i.e., Phenylketonuria) represents the specific underlying medical condition being studied. Both codes fall under the top-level class R (Medicine and Health), so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 41,
+      "pred_main": "S963.73",
+      "gold_main": "S96",
+      "pred_aux": [
+        "S941"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 S963.7→S963.73] The main code S963.7 (Feed additives in aquaculture) fits the core application scenario of the paper, which evaluates the effect of dietary purslane leaves powder as a feed additive on Nile tilapia. The auxiliary code S941 (Fish diseases and their prevention) is assigned because a substantial secondary theme of the study is the immunostimulation and protection of fish against Aeromonas hydrophila bacterial infection. Both the main and auxiliary codes fall under the S (Agriculture/Forestry/Animal Husbandry/Fishery) discipline boundary, so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 42,
+      "pred_main": "S855.2",
+      "gold_main": "S855",
+      "pred_aux": [
+        "R378"
+      ],
+      "gold_aux": [],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 S855.1→S855.2] The main code S855.1 (Animal infectious diseases) fits the core application scenario of the paper, which investigates the prevalence, transmission, and control of bovine tuberculosis (bTB) in cattle at the wildlife-livestock interface. The auxiliary code R378 (Branch bacteria) represents the substantive secondary theme concerning the microbiological characteristics, isolation, and genotyping (spoligotyping and VNTR) of the Mycobacterium bovis pathogen itself. Since the main code falls under Agriculture (S) and the auxiliary code falls under Medicine and Health (R), they cross different discipline boundaries, making it interdisciplinary."
+    },
+    {
+      "sample_id": 43,
+      "pred_main": "S965.232",
+      "gold_main": "Q959",
+      "pred_aux": [
+        "Q346"
+      ],
+      "gold_aux": [],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": false,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 S965.122→S965.232] The main code S965.122 (Brown trout) is chosen because the core application scenario of the paper is the population recovery, restoration stocking, and conservation of brown trout (Salmo trutta) populations affected by acidification. The auxiliary code Q346 (Population genetics) is assigned because the study employs microsatellite markers to deeply analyze genetic diversity, population bottlenecks, and introgression, which constitutes a substantive secondary methodological theme. It is interdisciplinary because the main code falls under Agriculture/Forestry/Animal Husbandry/Fishery (S) while the auxiliary code belongs to Biological Sciences (Q), crossing distinct discipline boundaries."
+    },
+    {
+      "sample_id": 44,
+      "pred_main": "Q959.46+8",
+      "gold_main": "Q959",
+      "pred_aux": [],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 Q959.468→Q959.46+8] The paper describes a new fish species of the genus Enteromius (family Cyprinidae, order Cypriniformes) from Gabon, focusing on its morphological diagnosis and systematic classification. In the CLC system, Q959.468 specifically classifies Cypriniformes (Cyprinidae), making it the most accurate main code for this taxonomic description. No auxiliary code is needed as the morphometric and systematic methods are intrinsic to biological taxonomy rather than a separate disciplinary technology."
+    },
+    {
+      "sample_id": 45,
+      "pred_main": "R544.1",
+      "gold_main": "R749",
+      "pred_aux": [
+        "R749.4"
+      ],
+      "gold_aux": [
+        "R544"
+      ],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "The core application scenario of this study is exploring the pathogenesis and comorbidity mechanism of hypertension and depression. Hypertension is the primary physiological disease model investigated, making R544.1 (Hypertension) the most fitting main classification code. Depression serves as a parallel secondary application topic and comorbid condition, warranting R749.4 (Emotional/affective disorders) as the auxiliary code. Both the main and auxiliary codes fall under the top-level class R (Medicine and Health), sharing the same discipline boundary; therefore, is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 46,
+      "pred_main": "TS255",
+      "gold_main": "R151",
+      "pred_aux": [
+        "R151.3"
+      ],
+      "gold_aux": [],
+      "pred_inter": true,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": false,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TS255.5→TS255] The main code TS255.5 (Processing of fruits and vegetables) fits the application scenario of evaluating watermelon as a potential functional fruit snack and food ingredient. The auxiliary code R151.3 (Nutrients) represents the substantive secondary theme of phytochemicals and their nutritional/health benefits in reducing chronic disease risks. Since TS (Industrial Technology / Food) and R (Medicine / Health) belong to different discipline boundaries, the classification is interdisciplinary."
+    },
+    {
+      "sample_id": 47,
+      "pred_main": "R542.4+2",
+      "gold_main": "R54",
+      "pred_aux": [
+        "R978.1"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 R542.4→R542.4+2] The main code R542.4 (Endocarditis) is chosen because the core application scenario and clinical focus of the paper is the treatment and clinical outcome of Gram-positive infective endocarditis. The auxiliary code R978.1 (Antibiotics) is assigned because the study specifically evaluates the clinical efficacy of ceftaroline fosamil, a specific cephalosporin antibiotic. Both codes fall under the top-level class R (Medicine and Health), so the study is not considered interdisciplinary."
+    },
+    {
+      "sample_id": 48,
+      "pred_main": "TS7",
+      "gold_main": "X7",
+      "pred_aux": [
+        "X511"
+      ],
+      "gold_aux": [
+        "TQ"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": false,
+      "branch_correct": false,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 TS743→TS7] The main code TS743 (Kraft pulping) is chosen because the core application scenario is the operation, energy balance, and processes of kraft pulp mills. The auxiliary code X511 (Air pollution and air pollutants) is assigned because the paper substantively addresses CO2 emission reduction, carbon capture, and storage (BECCS/BECCU) as a secondary theme. It is interdisciplinary because the main code belongs to the T (Industrial Technology) discipline boundary, while the auxiliary code belongs to the X (Environmental Science) discipline boundary."
+    },
+    {
+      "sample_id": 49,
+      "pred_main": "Q954.56+1",
+      "gold_main": "Q954",
+      "pred_aux": [
+        "Q959.837"
+      ],
+      "gold_aux": [],
+      "pred_inter": false,
+      "gold_inter": false,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 Q954.5→Q954.56+1] The paper investigates the morphological branching patterns of the aortic arch in Syrian hamsters, which falls under animal anatomy/morphology (Q954.5). The auxiliary code Q959.837 represents the specific animal classification for Syrian hamsters (Rodentia/Cricetidae), serving as a parallel secondary subject. Both codes belong to the Q (Biology) discipline boundary, so is_interdisciplinary is false."
+    },
+    {
+      "sample_id": 50,
+      "pred_main": "G642.0",
+      "gold_main": "G642",
+      "pred_aux": [
+        "P5"
+      ],
+      "gold_aux": [
+        "P5"
+      ],
+      "pred_inter": true,
+      "gold_inter": true,
+      "main_correct": false,
+      "hier_correct": true,
+      "branch_correct": true,
+      "alignment_ok": true,
+      "selection_reason": "[二阶段细化 G642.4→G642.0] The main code G642.4 (Teaching methods and teaching organization in higher education) is chosen because the core application scenario of the paper is evaluating an instructional intervention and teaching method for undergraduate students. The auxiliary code P5 (Geology) represents the substantive secondary theme, as the specific subject matter being taught and investigated is geoscience, specifically rock elasticity and plate tectonics. It is interdisciplinary because the main code belongs to the educational sciences (G) and the auxiliary code belongs to a natural science discipline (P)."
+    }
+  ]
+}

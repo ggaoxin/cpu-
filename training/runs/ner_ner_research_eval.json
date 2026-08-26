@@ -1,0 +1,80 @@
+{
+  "summary": {
+    "type": "ner_research",
+    "n_docs": 1,
+    "entity_precision": 0.6,
+    "entity_recall": 0.75,
+    "entity_f1": 0.667,
+    "tp": 9,
+    "fp": 6,
+    "fn": 3,
+    "table_before": 4,
+    "table_after": 4,
+    "new_entries": 0,
+    "variant_added": 0
+  },
+  "records": [
+    {
+      "doc_id": "ch3",
+      "n_pred": 24,
+      "n_gold": 12,
+      "tp": 9,
+      "fp": 6,
+      "fn": 3,
+      "dt_s": 13.2,
+      "missed_or_wrong": [
+        {
+          "canonical": "学生思想监测",
+          "type": "TOPIC",
+          "variants": [
+            "学生思想监测",
+            "student ideological monitoring"
+          ]
+        },
+        {
+          "canonical": "重点群体预警",
+          "type": "TOPIC",
+          "variants": [
+            "重点群体预警"
+          ]
+        },
+        {
+          "canonical": "数据安全与伦理规范",
+          "type": "TOPIC",
+          "variants": [
+            "数据安全与伦理规范",
+            "安全伦理规范"
+          ]
+        }
+      ],
+      "extra": [
+        {
+          "text": "学生画像模型",
+          "type": "METHOD"
+        },
+        {
+          "text": "AI 画像平台",
+          "type": "INSTRUMENT"
+        },
+        {
+          "text": "AI 画像平台",
+          "type": "INSTRUMENT"
+        },
+        {
+          "text": "AI算法",
+          "type": "METHOD"
+        },
+        {
+          "text": "校园数据中台",
+          "type": "INSTRUMENT"
+        },
+        {
+          "text": "算法审核委员会",
+          "type": "INSTRUMENT"
+        }
+      ]
+    }
+  ],
+  "new_entries": [],
+  "variant_added": []
+}

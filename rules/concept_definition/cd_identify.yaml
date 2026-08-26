@@ -1,0 +1,204 @@
+functional_item: 概念定义识别工具
+name: 概念定义识别
+description: 从文献全文中规则抽取定义句→LLM判不确定句→LLM提取概念词→后置规则引擎校验（动态权重+冲突审核）。输出概念-定义映射+置信度。
+input_type: text
+engine_type: concept_definition
+
+system_prompt: |
+  你是科技文献概念定义分析专家。对给定的定义句，提取其中被定义的概念词/术语。
+  概念词应为名词性术语，简洁完整（如"深度学习"而非整个定义句）。
+  常见定义句式：X是指Y / X指的是Y / X被称为Y / X定义为Y / 所谓X是指Y / X即Y / X是一种Y
+  英文：X is defined as Y / X refers to Y / X is known as Y
+  只输出JSON：{"data":{"results":[{"sentence":"定义句原文","concept":"概念词","confidence":0.9}]}}
+
+principles: |
+  - 定义句抽取用规则（高置信标志词硬匹配 + 线索词触发LLM判定）。
+  - 概念词提取看定义句式（X是指Y→概念词=X）。
+  - LLM提取后，后置规则引擎校验（动态权重+冲突审核）。
+  - 本项目基于GLM API调用，不训练模型。
+
+# 高置信定义句标志（硬规则，直接确定定义句，不需LLM判定）
+definition_markers:
+  # === 中文经典定义句式 ===
+  - "是指"
+  - "指的是"
+  - "被称为"
+  - "又称"
+  - "也称"
+  - "定义为"
+  - "被定义为"
+  - "所谓"
+  - "是一种"
+  - "是一类"
+  - "，即"
+  - "，也就是"
+  # === 中文补充定义句式 ===
+  - "称为"
+  - "叫做"
+  - "简称"
+  - "全称"
+  - "缩写为"
+  - "本质上是"
+  - "实际上是"
+  - "通常指"
+  - "泛指"
+  - "特指"
+  - "系指"
+  - "属于"
+  - "归为"
+  - "归于"
+  - "划为"
+  - "等同于"
+  - "等价于"
+  - "可理解为"
+  - "可定义为"
+  - "可表述为"
+  - "可描述为"
+  - "可视为"
+  - "可看作"
+  - "可认为是"
+  - "可解释为"
+  # === 英文定义句式 ===
+  - "is defined as"
+  - "refers to"
+  - "is known as"
+  - "is called"
+  - ", namely"
+  - "is referred to as"
+  - "is considered"
+  - "is regarded as"
+  - "is viewed as"
+  - "is understood as"
+  - "is interpreted as"
+  - "is conceptualized as"
+  - "is a type of"
+  - "is a kind of"
+  - "is a form of"
+  - "is a class of"
+  - "is a category of"
+
+# 线索词（含这些词但没匹配高置信标志的→找LLM判定是否定义句）
+# 用结构化线索替代裸"是"，减少LLM拒绝率
+definition_cues: "概念|定义|含义|内涵|实质|本质|理解为|解释为|表述为|描述为|简言之|换言之|是"
+
+# 排除模式（过滤明显非定义句，减少送LLM的句子量）
+exclude_patterns:
+  - "^(参考文献|References|REFERENCES|文章编号|中图分类号|文献标识码|doi|DOI|收稿日期|基金项目|作者简介|通信作者|关键词|Keywords|Abstract|摘要)"
+  - "^\\d+\\s*$"
+  - "^\\d{4}-\\d{4}"
+  - "表现.*是.*第"
+  - "作为.*特征.*的"
+  - "结果是"
+  - "目的.*是"
+  - "目标.*是"
+  - "结论.*是"
+  - "意义.*是"
+  - "本文.*提出"
+  - "本文.*采用"
+  - "本文.*研究"
+  - "本研究.*旨在"
+  - "实验.*表明"
+  - "研究.*发现"
+  - "数据.*显示"
+  - "表.*显示"
+  - "图.*显示"
+  - "从表.*可以"
+  - "值得注意"
+  - "需要指出"
+  - "可以看"
+  - "综上"
+  - "总而言之"
+  - "然而"
+  - "因此"
+  - "从而"
+  - "由此"
+  - "这.*表明"
+  - "这.*说明"
+  - "结果.*说明"
+
+# 概念定义识别规则库（RuleLib兼容格式）
+# target_move: "定义句" → 支持定义句（+score）/ "非定义句" → 排除（-score）
+# labels: ["定义句", "非定义句"]
+pattern_rules:
+  # === 定义句支持规则（+score） ===
+  - id: CD-R001
+    layer: universal
+    scope: global
+    target_move: "定义句"
+    action: "+score"
+    level: strong
+    weight: 0.8
+    description: "含高置信定义标志词→定义句"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["是指", "指的是", "被称为", "又称", "也称", "定义为", "被定义为", "所谓", "即", "也就是", "is defined as", "refers to", "is known as", "is called"]
+    stats: {}
+    fold_count: 0
+
+  - id: CD-R002
+    layer: universal
+    scope: global
+    target_move: "定义句"
+    action: "+score"
+    level: soft
+    weight: 0.4
+    description: "含'是一种/是一类'→定义句"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["是一种", "是一类"]
+    exclusion_conditions:
+      - kind: keyword
+        any_of: ["取得了", "得到了", "已被", "正在", "逐渐"]
+    stats: {}
+    fold_count: 0
+
+  # === 非定义句排除规则（-score） ===
+  - id: CD-R003
+    layer: universal
+    scope: global
+    target_move: "定义句"
+    action: "-score"
+    level: strong
+    weight: 0.8
+    description: "含进展/应用/证明等非定义表述→排除"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["取得了.*进展", "得到了.*应用", "已被证明", "已经被.*采用", "正在.*发展", "逐渐.*普及", "表现.*第一", "作为.*特征"]
+    stats: {}
+    fold_count: 0
+
+  - id: CD-R004
+    layer: universal
+    scope: global
+    target_move: "定义句"
+    action: "-score"
+    level: advisory
+    weight: 0.3
+    description: "含'目的是/目标是/结论是/意义是'→非定义句"
+    necessary_conditions:
+      - kind: keyword
+        any_of: ["目的是", "目标是", "结论是", "意义是", "结果.*表明"]
+    stats: {}
+    fold_count: 0
+
+dictionaries:
+  stopwords: []
+
+output_schema:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        type: object
+        properties:
+          sentence: {type: string, description: "定义句原文"}
+          concept: {type: string, description: "被定义的概念词"}
+          pattern: {type: string, description: "定义句式标志"}
+          context_before: {type: string, description: "前一句"}
+          context_after: {type: string, description: "后一句"}
+          confidence: {type: number}
+        required: [sentence, concept, confidence]
+  required: [data]
+
+examples: []

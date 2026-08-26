@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "semantic-toolkit-sdk"
+version = "7.74.0"
+description = "Python SDK for the Semantic Toolkit V7.74 REST API"
+requires-python = ">=3.10"
+dependencies = ["httpx>=0.27"]
+
+[tool.setuptools.packages.find]
+include = ["semantic_toolkit_sdk*"]
+

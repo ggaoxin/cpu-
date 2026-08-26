@@ -1,0 +1,64 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: semantic_toolkit
+      MYSQL_USER: semantic_app
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-semantic_app_change_me}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_change_me}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  backend:
+    build:
+      context: .
+      args:
+        INSTALL_ML: ${INSTALL_ML:-true}
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql+pymysql://semantic_app:${MYSQL_PASSWORD:-semantic_app_change_me}@mysql:3306/semantic_toolkit?charset=utf8mb4
+      DATABASE_AUTO_CREATE: "true"
+      DATABASE_REQUIRED: "true"
+      GLM_API_KEY: ${GLM_API_KEY:-}
+      GLM_BASE_URL: ${GLM_BASE_URL:-https://open.bigmodel.cn/api/paas/v4}
+      GLM_MODEL: ${GLM_MODEL:-glm-5.2}
+      GLM_REQUIRED_AT_STARTUP: ${GLM_REQUIRED_AT_STARTUP:-true}
+      MINERU_BIN: ${MINERU_BIN:-mineru}
+      CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
+      TZ: Asia/Shanghai
+    volumes:
+      - ./models:/app/models:ro
+      - ./rag_store:/app/rag_store:ro
+      - ./data:/app/data:ro
+      - ./runtime:/app/runtime
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+
+volumes:
+  mysql_data:

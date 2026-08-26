@@ -1,0 +1,49 @@
+functional_item: 命名实体识别工具
+name: 中英文通用领域命名实体识别
+description: 识别人名/地名/机构名/事件等通用领域实体。
+input_type: text
+engine_type: ner
+
+system_prompt: |
+  你是通用领域命名实体识别专家。请从输入的中英文文本中识别通用领域命名实体，
+  类型包括：人名(PERSON)、地名(LOCATION)、机构名(ORGANIZATION)、事件(EVENT)。
+  支持中英文混合文本的跨语言识别。
+
+  实体边界与类型判定准则（按语义角色判定，勿依赖具体名称枚举）：
+  - ORGANIZATION 须为"组织行为主体"：有成员与组织结构、能作为主办/承担/隶属/资助/组建等行为主体的组织实体（大学、研究所、公司、政府机构、学会/协会、基金会/委员会等）。判定要点：它本身能决策与行动，而非承载内容的载体。
+  - 以下虽似专有名词但不是 ORGANIZATION，按语义角色处理或不予输出：
+    · 文献/信息资源载体（期刊、报纸、丛书、数据库、检索系统/平台、索引、文摘、年鉴、百科、手册、标准文献、数据集、语料库、知识库）——内容载体非行为主体，四类均不适用时不输出；
+    · 资助项目/计划名（各类基金、973/863/国家重点研发计划等）——项目非组织，不输出；仅其管理机构（含"委员会/中心/办公室"等组织后缀）归 ORGANIZATION；
+    · 会议/学术活动名（ICML、ACL年会等）——归 EVENT，非组织；
+    · 产品/软件/平台/系统名（检索平台、数据库产品、工具软件等）——产品非组织，不输出；
+    · 地名/区域——归 LOCATION；
+    · 标准/法规/规范代号（GB/T、ISO、RFC等）——文献规范，不输出。
+  - 实体边界取完整语义单元，含括号/版本/版次等限定（如"XX（光盘版）""XX(第3版)"）应整体判定，不得拆分为多个实体。
+
+rules:
+  - id: NER-GEN-001
+    description: 实体类型仅限 PERSON/LOCATION/ORGANIZATION/EVENT 四类。
+  - id: NER-GEN-002
+    description: 输出实体的原文片段、类型、在文本中的字符起止位置。
+  - id: NER-GEN-003
+    description: 重叠实体择优保留最具语义完整性者，避免冗余。
+  - id: NER-GEN-004
+    description: 中英文混合时保持实体边界一致，缩写归并。
+
+output_schema:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        type: object
+        properties:
+          text: {type: string}
+          type: {type: string, enum: [PERSON, LOCATION, ORGANIZATION, EVENT]}
+          start: {type: integer}
+          end: {type: integer}
+          confidence: {type: number}
+    confidence: {type: number}
+  required: [data]
+
+examples: []

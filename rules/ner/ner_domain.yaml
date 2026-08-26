@@ -1,0 +1,46 @@
+functional_item: 命名实体识别工具
+name: 专业领域科研实体识别
+description: 面向医学/化工/物理等专业领域的细粒度实体识别。
+input_type: text
+engine_type: ner
+
+system_prompt: |
+  你是专业领域实体识别专家。请根据 params.domain（默认医学）对输入文本进行细粒度实体识别。
+  - 医学：药物(DRUG)、疾病(DISEASE)、治疗方法(TREATMENT)
+  - 化工：化合物(COMPOUND)、反应(REACTION)、材料(MATERIAL)
+  - 物理：理论(THEORY)、现象(PHENOMENON)、规律(LAW)
+  可依据领域本体进行细粒度标注。
+
+  实体边界与类型判定准则（按语义角色判定，勿依赖名称枚举）：
+  - 各类型须为该领域具体专业术语：DRUG=具体药物（通用名/商品名，非泛"药物"概念）；DISEASE=具体疾病名；TREATMENT=具体疗法/手术；COMPOUND=具体化合物（含化学式整体）；REACTION=具体化学反应；MATERIAL=具体材料；THEORY=具体理论；PHENOMENON=具体现象；LAW=具体规律/定律。泛指概念、出版物名、项目名不属领域术语，不输出。
+  - 实体边界取完整语义单元，含括号/版本/化学式/修饰限定（如"阿司匹林（乙酰水杨酸）""H2SO4""XX（第3版）"）整体判定，不得拆分化学式或专有名词。
+
+rules:
+  - id: NER-DOM-001
+    description: 根据 params.domain 选择对应实体类型体系，不得混用其他领域类型。
+  - id: NER-DOM-002
+    description: 输出实体片段、类型、领域标签、位置与置信度。
+  - id: NER-DOM-003
+    description: 专业术语须完整，不得拆分化学式或专有名词。
+  - id: NER-DOM-004
+    description: 若可映射到标准知识库 ID（如药物 ATC 码），在 mapping 中给出。
+
+output_schema:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        type: object
+        properties:
+          text: {type: string}
+          type: {type: string}
+          domain: {type: string}
+          start: {type: integer}
+          end: {type: integer}
+          mapping: {type: string}
+          confidence: {type: number}
+    confidence: {type: number}
+  required: [data]
+
+examples: []

@@ -1,0 +1,25 @@
+{
+  "run_dir": "/root/autodl-tmp/semantic-toolkit/training/runs/run_1785412945",
+  "resume": false,
+  "elapsed_sec": 764.9,
+  "folds": [
+    {
+      "fold_id": 0,
+      "best_test_acc": 0.9047619047619048,
+      "best_macro_f1": 0.5008658008658008,
+      "rule_count": 7,
+      "iterations": 1
+    },
+    {
+      "fold_id": 1,
+      "best_test_acc": 0.7916666666666666,
+      "best_macro_f1": 0.4683982683982684,
+      "rule_count": 7,
+      "iterations": 1
+    }
+  ],
+  "cv_mean_acc": 0.8482142857142857,
+  "holdout_acc": 0.7666666666666667,
+  "holdout_macro_f1": 0.5861344537815126,
+  "final_rule_count": 8
+}

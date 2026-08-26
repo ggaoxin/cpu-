@@ -1,0 +1,739 @@
+{
+  "labels": [
+    {
+      "cluster_id": "T-ZH-01",
+      "label": "空间溢出效应空间杜宾",
+      "candidate_labels": [
+        "空间溢出效应空间杜宾",
+        "空间溢出效应与空间杜宾",
+        "空间杜宾与空间溢出效应",
+        "空间溢出效应与杜宾",
+        "空间溢出效应空间计量"
+      ],
+      "evidence_terms": [
+        "空间溢出效应",
+        "空间杜宾"
+      ],
+      "language": "zh",
+      "confidence": 0.772873,
+      "distinctiveness": 0.831389,
+      "coverage": 0.827007,
+      "evidence_support": 0.706508,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-ZH-01",
+        "before_label": "空间溢出效应空间杜宾",
+        "after_label": "空间溢出效应空间杜宾",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.831389,
+        "after_distinctiveness": 0.831389,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-ZH-02",
+      "label": "分布鲁棒优化",
+      "candidate_labels": [
+        "分布鲁棒优化",
+        "综合能源系统优化",
+        "优化调度分布鲁棒优化",
+        "分布鲁棒优化调度",
+        "优化调度鲁棒优化"
+      ],
+      "evidence_terms": [
+        "鲁棒优化",
+        "分布鲁棒",
+        "优化调度",
+        "随机优化",
+        "多目标优化",
+        "分布鲁棒优化"
+      ],
+      "language": "zh",
+      "confidence": 0.851597,
+      "distinctiveness": 0.852085,
+      "coverage": 0.797288,
+      "evidence_support": 0.940379,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-ZH-02",
+        "before_label": "分布鲁棒优化",
+        "after_label": "分布鲁棒优化",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.852085,
+        "after_distinctiveness": 0.852085,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-ZH-03",
+      "label": "故障定位诊断",
+      "candidate_labels": [
+        "故障定位诊断",
+        "故障定位检测",
+        "故障定位故障诊断",
+        "故障诊断与故障定位",
+        "故障定位与故障诊断"
+      ],
+      "evidence_terms": [
+        "故障定位",
+        "故障诊断"
+      ],
+      "language": "zh",
+      "confidence": 0.760805,
+      "distinctiveness": 0.780436,
+      "coverage": 0.766222,
+      "evidence_support": 0.699636,
+      "generation_method": "evidence_task_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-ZH-03",
+        "before_label": "故障定位诊断",
+        "after_label": "故障定位诊断",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.780436,
+        "after_distinctiveness": 0.780436,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-ZH-04",
+      "label": "虚拟阻抗控制",
+      "candidate_labels": [
+        "虚拟阻抗控制",
+        "稳定性分析控制",
+        "暂态稳定性控制",
+        "控制策略分析",
+        "荷电状态控制"
+      ],
+      "evidence_terms": [
+        "虚拟阻抗",
+        "控制策略",
+        "模型预测控制",
+        "滑模控制",
+        "下垂控制"
+      ],
+      "language": "zh",
+      "confidence": 0.756633,
+      "distinctiveness": 0.750731,
+      "coverage": 0.69061,
+      "evidence_support": 0.792222,
+      "generation_method": "evidence_task_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-ZH-04",
+        "before_label": "稳定性分析控制",
+        "after_label": "虚拟阻抗控制",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.728548,
+        "after_distinctiveness": 0.750731,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-ZH-05",
+      "label": "transformer双向长短期记忆网络",
+      "candidate_labels": [
+        "transformer双向长短期记忆网络",
+        "神经网络",
+        "神经网络与transformer",
+        "transformer与神经网络",
+        "神经网络Transformer网络"
+      ],
+      "evidence_terms": [
+        "transformer",
+        "双向长短期记忆网络"
+      ],
+      "language": "zh",
+      "confidence": 0.728732,
+      "distinctiveness": 0.809368,
+      "coverage": 0.720926,
+      "evidence_support": 0.841949,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-ZH-05",
+        "before_label": "神经网络",
+        "after_label": "transformer双向长短期记忆网络",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.619917,
+        "after_distinctiveness": 0.809368,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-ZH-06",
+      "label": "网络结构社会网络分析",
+      "candidate_labels": [
+        "网络结构社会网络分析",
+        "网络结构分析",
+        "网络结构与社会网络分析",
+        "社会网络分析与网络结构",
+        "创新网络结构"
+      ],
+      "evidence_terms": [
+        "网络结构",
+        "社会网络分析"
+      ],
+      "language": "zh",
+      "confidence": 0.767443,
+      "distinctiveness": 0.780584,
+      "coverage": 0.839123,
+      "evidence_support": 0.714641,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-ZH-06",
+        "before_label": "网络结构社会网络分析",
+        "after_label": "网络结构社会网络分析",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.780584,
+        "after_distinctiveness": 0.780584,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-ZH-07",
+      "label": "耦合协调评价",
+      "candidate_labels": [
+        "耦合协调评价",
+        "评价指标",
+        "耦合协调度评价",
+        "评价指标耦合协调",
+        "共同富裕评价"
+      ],
+      "evidence_terms": [
+        "耦合协调",
+        "评价指标",
+        "综合评价"
+      ],
+      "language": "zh",
+      "confidence": 0.819521,
+      "distinctiveness": 0.811446,
+      "coverage": 0.783046,
+      "evidence_support": 0.800321,
+      "generation_method": "evidence_task_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-ZH-07",
+        "before_label": "耦合协调评价",
+        "after_label": "耦合协调评价",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.811446,
+        "after_distinctiveness": 0.811446,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-ZH-08",
+      "label": "新型电力系统仿真",
+      "candidate_labels": [
+        "新型电力系统仿真",
+        "数字孪生仿真",
+        "有限元仿真",
+        "暂态同步稳定性仿真",
+        "数值模拟仿真"
+      ],
+      "evidence_terms": [
+        "新型电力系统",
+        "仿真模型",
+        "仿真分析"
+      ],
+      "language": "zh",
+      "confidence": 0.769119,
+      "distinctiveness": 0.750249,
+      "coverage": 0.697278,
+      "evidence_support": 0.834865,
+      "generation_method": "evidence_task_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-ZH-08",
+        "before_label": "数字孪生仿真",
+        "after_label": "新型电力系统仿真",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.733288,
+        "after_distinctiveness": 0.750249,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-EN-01",
+      "label": "Dopamine Agonist (DA) resistant and meta-analysis",
+      "candidate_labels": [
+        "Dopamine Agonist (DA) resistant and meta-analysis",
+        "meta-analysis Dopamine Agonist (DA) resistant",
+        "meta-analysis systematic review",
+        "systematic review and meta-analysis",
+        "Dopamine Agonist intolerant and meta-analysis"
+      ],
+      "evidence_terms": [
+        "meta-analysis",
+        "Dopamine Agonist (DA) resistant"
+      ],
+      "language": "en",
+      "confidence": 0.756839,
+      "distinctiveness": 0.868366,
+      "coverage": 0.746146,
+      "evidence_support": 0.781658,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-EN-01",
+        "before_label": "Dopamine Agonist (DA) resistant and meta-analysis",
+        "after_label": "Dopamine Agonist (DA) resistant and meta-analysis",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.868366,
+        "after_distinctiveness": 0.868366,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-EN-02",
+      "label": "clinical trial randomized controlled trial",
+      "candidate_labels": [
+        "clinical trial randomized controlled trial",
+        "randomized controlled trial and clinical trial",
+        "clinical trial treatment",
+        "clinical trial control",
+        "clinical trial cost-effectiveness"
+      ],
+      "evidence_terms": [
+        "clinical trial",
+        "randomized controlled trial"
+      ],
+      "language": "en",
+      "confidence": 0.792543,
+      "distinctiveness": 0.799909,
+      "coverage": 0.863635,
+      "evidence_support": 0.752141,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-EN-02",
+        "before_label": "clinical trial randomized controlled trial",
+        "after_label": "clinical trial randomized controlled trial",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.799909,
+        "after_distinctiveness": 0.799909,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-EN-03",
+      "label": "cox regression analysis",
+      "candidate_labels": [
+        "cox regression analysis",
+        "cox regression Survival",
+        "Survival and cox regression",
+        "survival analysis and cox regression",
+        "cox regression survival analysis"
+      ],
+      "evidence_terms": [
+        "cox regression",
+        "survival analysis"
+      ],
+      "language": "en",
+      "confidence": 0.770482,
+      "distinctiveness": 0.794365,
+      "coverage": 0.777695,
+      "evidence_support": 0.718271,
+      "generation_method": "evidence_task_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-EN-03",
+        "before_label": "cox regression analysis",
+        "after_label": "cox regression analysis",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.794365,
+        "after_distinctiveness": 0.794365,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-EN-04",
+      "label": "first-principles and density functional theory",
+      "candidate_labels": [
+        "first-principles and density functional theory",
+        "density functional theory first-principles",
+        "density functional theory titanoniobate",
+        "titanoniobate and density functional theory",
+        "S100A9 and density functional theory"
+      ],
+      "evidence_terms": [
+        "density functional theory",
+        "first-principles"
+      ],
+      "language": "en",
+      "confidence": 0.766405,
+      "distinctiveness": 0.79003,
+      "coverage": 0.801846,
+      "evidence_support": 0.746555,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-EN-04",
+        "before_label": "first-principles and density functional theory",
+        "after_label": "first-principles and density functional theory",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.79003,
+        "after_distinctiveness": 0.79003,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-EN-05",
+      "label": "raman and spectroscopy",
+      "candidate_labels": [
+        "raman and spectroscopy",
+        "spectroscopy raman",
+        "spectroscopy and Raman spectroscopy",
+        "Raman spectroscopy and spectroscopy",
+        "microscopy Raman spectroscopy"
+      ],
+      "evidence_terms": [
+        "spectroscopy",
+        "raman",
+        "Raman spectroscopy"
+      ],
+      "language": "en",
+      "confidence": 0.859332,
+      "distinctiveness": 0.783556,
+      "coverage": 0.791855,
+      "evidence_support": 0.928766,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-EN-05",
+        "before_label": "raman and spectroscopy",
+        "after_label": "raman and spectroscopy",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.783556,
+        "after_distinctiveness": 0.783556,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-EN-06",
+      "label": "Brain MRI and Segmentation",
+      "candidate_labels": [
+        "Brain MRI and Segmentation",
+        "deep learning segmentation",
+        "machine learning segmentation",
+        "neural network segmentation",
+        "Segmentation and deep learning"
+      ],
+      "evidence_terms": [
+        "Segmentation",
+        "Brain MRI",
+        "Semantic segmentation"
+      ],
+      "language": "en",
+      "confidence": 0.758636,
+      "distinctiveness": 0.757846,
+      "coverage": 0.665271,
+      "evidence_support": 0.812918,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-EN-06",
+        "before_label": "deep learning segmentation",
+        "after_label": "Brain MRI and Segmentation",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.74811,
+        "after_distinctiveness": 0.757846,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-EN-07",
+      "label": "finite element analysis",
+      "candidate_labels": [
+        "finite element analysis",
+        "finite element simulation",
+        "numerical simulation and finite element",
+        "finite element numerical simulation",
+        "microstructure and finite element"
+      ],
+      "evidence_terms": [
+        "finite element",
+        "finite element analysis"
+      ],
+      "language": "en",
+      "confidence": 0.792714,
+      "distinctiveness": 0.803934,
+      "coverage": 0.763461,
+      "evidence_support": 0.842171,
+      "generation_method": "evidence_task_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-EN-07",
+        "before_label": "finite element analysis",
+        "after_label": "finite element analysis",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.803934,
+        "after_distinctiveness": 0.803934,
+        "threshold_passed": true
+      }
+    },
+    {
+      "cluster_id": "T-EN-08",
+      "label": "Nitrogen-doped carbon dots and synthesis",
+      "candidate_labels": [
+        "Nitrogen-doped carbon dots and synthesis",
+        "synthesized and synthesis",
+        "Metanil yellow and synthesis",
+        "self-assembly and synthesis",
+        "Nanosensor and synthesis"
+      ],
+      "evidence_terms": [
+        "synthesis",
+        "Nitrogen-doped carbon dots",
+        "hydrothermal synthesis"
+      ],
+      "language": "en",
+      "confidence": 0.812285,
+      "distinctiveness": 0.805737,
+      "coverage": 0.709056,
+      "evidence_support": 0.838325,
+      "generation_method": "evidence_phrase_fusion",
+      "phrase_count": 12,
+      "optimization": {
+        "cluster_id": "T-EN-08",
+        "before_label": "synthesized and synthesis",
+        "after_label": "Nitrogen-doped carbon dots and synthesis",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.724616,
+        "after_distinctiveness": 0.805737,
+        "threshold_passed": true
+      }
+    }
+  ],
+  "generation_report": {
+    "engine_version": "cluster-label-evidence-v2",
+    "input_type": "cluster_phrase_sets",
+    "run_mode": "batch",
+    "cluster_count": 16,
+    "generated_label_count": 16,
+    "language_distribution": {
+      "en": 8,
+      "zh": 8
+    },
+    "parameters": {
+      "label_length_limit": 12,
+      "language_type": "auto",
+      "distinctiveness_threshold": 0.75,
+      "candidate_count": 5
+    },
+    "stages": [
+      "phrase_cleaning_and_normalization",
+      "frequency_ngram_and_cooccurrence_candidates",
+      "evidence_grounded_candidate_scoring",
+      "cross_cluster_differentiation",
+      "global_label_selection"
+    ],
+    "topic_library_used": false,
+    "llm_used": false,
+    "llm_assigns_cluster_membership": false,
+    "llm_failures": [],
+    "rejected_candidate_count": 0,
+    "optimized_label_count": 5,
+    "distinctiveness_pass_count": 16,
+    "average_confidence": 0.783497,
+    "average_distinctiveness": 0.798127,
+    "average_coverage": 0.765029
+  },
+  "label_differentiation_optimization": {
+    "threshold": 0.75,
+    "optimized_count": 5,
+    "passed_count": 16,
+    "failed_count": 0,
+    "items": [
+      {
+        "cluster_id": "T-ZH-01",
+        "before_label": "空间溢出效应空间杜宾",
+        "after_label": "空间溢出效应空间杜宾",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.831389,
+        "after_distinctiveness": 0.831389,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-ZH-02",
+        "before_label": "分布鲁棒优化",
+        "after_label": "分布鲁棒优化",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.852085,
+        "after_distinctiveness": 0.852085,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-ZH-03",
+        "before_label": "故障定位诊断",
+        "after_label": "故障定位诊断",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.780436,
+        "after_distinctiveness": 0.780436,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-ZH-04",
+        "before_label": "稳定性分析控制",
+        "after_label": "虚拟阻抗控制",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.728548,
+        "after_distinctiveness": 0.750731,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-ZH-05",
+        "before_label": "神经网络",
+        "after_label": "transformer双向长短期记忆网络",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.619917,
+        "after_distinctiveness": 0.809368,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-ZH-06",
+        "before_label": "网络结构社会网络分析",
+        "after_label": "网络结构社会网络分析",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.780584,
+        "after_distinctiveness": 0.780584,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-ZH-07",
+        "before_label": "耦合协调评价",
+        "after_label": "耦合协调评价",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.811446,
+        "after_distinctiveness": 0.811446,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-ZH-08",
+        "before_label": "数字孪生仿真",
+        "after_label": "新型电力系统仿真",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.733288,
+        "after_distinctiveness": 0.750249,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-EN-01",
+        "before_label": "Dopamine Agonist (DA) resistant and meta-analysis",
+        "after_label": "Dopamine Agonist (DA) resistant and meta-analysis",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.868366,
+        "after_distinctiveness": 0.868366,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-EN-02",
+        "before_label": "clinical trial randomized controlled trial",
+        "after_label": "clinical trial randomized controlled trial",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.799909,
+        "after_distinctiveness": 0.799909,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-EN-03",
+        "before_label": "cox regression analysis",
+        "after_label": "cox regression analysis",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.794365,
+        "after_distinctiveness": 0.794365,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-EN-04",
+        "before_label": "first-principles and density functional theory",
+        "after_label": "first-principles and density functional theory",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.79003,
+        "after_distinctiveness": 0.79003,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-EN-05",
+        "before_label": "raman and spectroscopy",
+        "after_label": "raman and spectroscopy",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.783556,
+        "after_distinctiveness": 0.783556,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-EN-06",
+        "before_label": "deep learning segmentation",
+        "after_label": "Brain MRI and Segmentation",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.74811,
+        "after_distinctiveness": 0.757846,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-EN-07",
+        "before_label": "finite element analysis",
+        "after_label": "finite element analysis",
+        "changed": false,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.803934,
+        "after_distinctiveness": 0.803934,
+        "threshold_passed": true
+      },
+      {
+        "cluster_id": "T-EN-08",
+        "before_label": "synthesized and synthesis",
+        "after_label": "Nitrogen-doped carbon dots and synthesis",
+        "changed": true,
+        "reason": "满足类簇间差异阈值且综合评分最高",
+        "before_distinctiveness": 0.724616,
+        "after_distinctiveness": 0.805737,
+        "threshold_passed": true
+      }
+    ]
+  },
+  "experiment_source": {
+    "phrase_set_file": "eval\\cluster_labeling\\gold_sources\\technology_gold_sources.json",
+    "axis": "technology",
+    "dataset": {
+      "chinese_source_documents": 1000,
+      "english_source_documents": 1000
+    },
+    "deep_clustering_quality": null
+  }
+}

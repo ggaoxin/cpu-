@@ -1,0 +1,45 @@
+functional_item: 命名实体识别工具
+name: 中英文通用科研实体识别
+description: 识别模型方法/数据资料/仪器设备/理论原理/研究问题等科研实体。
+input_type: text
+engine_type: ner
+
+system_prompt: |
+  你是科研实体识别专家。请从输入的中英文学术文本中识别科研类实体，类型包括：
+  模型方法(METHOD)、数据资料(DATASET)、仪器设备(INSTRUMENT)、理论原理(THEORY)、研究问题(TOPIC)。
+
+  实体边界与类型判定准则（按语义角色判定，勿依赖名称枚举）：
+  - METHOD 须为具体的算法/模型/技术/方法名称（如"Transformer""CRISPR-Cas9""随机森林"），非泛指概念、非出版物名。
+  - DATASET 须为具体数据集/语料库/数据资源（如"ImageNet""PubMed数据库"）；期刊/会议/出版物名（如"中国学术期刊（光盘版）""Nature"）是出版物载体而非数据集，不归此类、不输出。
+  - INSTRUMENT 须为具体仪器/设备/硬件（如"扫描电镜""GPU"），非软件产品名。
+  - THEORY 须为具体理论/原理/定律（如"相对论""热力学第二定律"），非泛词。
+  - TOPIC 须为具体研究问题/主题。
+  - 实体边界取完整语义单元，含括号/版本/版次（如"CRISPR-Cas9""XX（第3版）"）整体判定，不得拆分。
+
+rules:
+  - id: NER-RES-001
+    description: 实体类型仅限 METHOD/DATASET/INSTRUMENT/THEORY/TOPIC 五类。
+  - id: NER-RES-002
+    description: 模型方法须为具体的算法/模型/技术名称，而非泛指。
+  - id: NER-RES-003
+    description: 数据资料须为具体数据集/语料/数据资源名称。
+  - id: NER-RES-004
+    description: 输出实体片段、类型、位置与置信度。
+
+output_schema:
+  type: object
+  properties:
+    data:
+      type: array
+      items:
+        type: object
+        properties:
+          text: {type: string}
+          type: {type: string, enum: [METHOD, DATASET, INSTRUMENT, THEORY, TOPIC]}
+          start: {type: integer}
+          end: {type: integer}
+          confidence: {type: number}
+    confidence: {type: number}
+  required: [data]
+
+examples: []

@@ -1,0 +1,121 @@
+{
+  "single_split_metrics": [
+    {
+      "n": 60,
+      "accuracy": 0.85,
+      "macro_f1": 0.673464109,
+      "ARI": 0.797148847,
+      "NMI": 0.9264547462,
+      "V_measure": 0.9264547462,
+      "homogeneity": 0.8989850967,
+      "completeness": 0.9556560498,
+      "dimension": "technical",
+      "model": "v6_architecture_no_zh_rules",
+      "train_n": 171,
+      "dev_n": 56,
+      "locked_test_n": 60,
+      "weights": "(0.55, 0.45, 0)"
+    },
+    {
+      "n": 60,
+      "accuracy": 0.8666666667,
+      "macro_f1": 0.7404026734,
+      "ARI": 0.797148847,
+      "NMI": 0.9264547462,
+      "V_measure": 0.9264547462,
+      "homogeneity": 0.8989850967,
+      "completeness": 0.9556560498,
+      "dimension": "technical",
+      "model": "v7_unified_with_zh_rules",
+      "train_n": 171,
+      "dev_n": 56,
+      "locked_test_n": 60,
+      "weights": "(0.3, 0.45, 0.25)"
+    },
+    {
+      "n": 100,
+      "accuracy": 0.82,
+      "macro_f1": 0.6924839528,
+      "ARI": 0.6973238383,
+      "NMI": 0.8717614425,
+      "V_measure": 0.8717614425,
+      "homogeneity": 0.8530421322,
+      "completeness": 0.8913207456,
+      "dimension": "application",
+      "model": "v6_architecture_no_zh_rules",
+      "train_n": 286,
+      "dev_n": 96,
+      "locked_test_n": 100,
+      "weights": "(0.55, 0.45, 0)"
+    },
+    {
+      "n": 100,
+      "accuracy": 0.9,
+      "macro_f1": 0.821182266,
+      "ARI": 0.8120573119,
+      "NMI": 0.9297456977,
+      "V_measure": 0.9297456977,
+      "homogeneity": 0.917508119,
+      "completeness": 0.9423141352,
+      "dimension": "application",
+      "model": "v7_unified_with_zh_rules",
+      "train_n": 286,
+      "dev_n": 96,
+      "locked_test_n": 100,
+      "weights": "(0.35, 0.45, 0.2)"
+    }
+  ],
+  "stability_3seeds": [
+    {
+      "维度": "application",
+      "模型": "baseline",
+      "Accuracy均值": 0.7999999999999999,
+      "Accuracy标准差": 0.03464101615137751,
+      "Macro-F1均值": 0.6793072216846441,
+      "ARI均值": 0.6890192050103351,
+      "NMI均值": 0.8659233886083505
+    },
+    {
+      "维度": "application",
+      "模型": "v7_conservative",
+      "Accuracy均值": 0.8833333333333333,
+      "Accuracy标准差": 0.02081665999466135,
+      "Macro-F1均值": 0.8359563723677302,
+      "ARI均值": 0.8069843993410597,
+      "NMI均值": 0.9166018519535227
+    },
+    {
+      "维度": "technical",
+      "模型": "baseline",
+      "Accuracy均值": 0.8388888888888889,
+      "Accuracy标准差": 0.03469443332443554,
+      "Macro-F1均值": 0.6663624136314195,
+      "ARI均值": 0.7757602633949171,
+      "NMI均值": 0.9213078247497867
+    },
+    {
+      "维度": "technical",
+      "模型": "v7_conservative",
+      "Accuracy均值": 0.85,
+      "Accuracy标准差": 0.0,
+      "Macro-F1均值": 0.6947008523207353,
+      "ARI均值": 0.7633782924674009,
+      "NMI均值": 0.9226327945142702
+    }
+  ],
+  "gold_counts": {
+    "technical_high": 287,
+    "application_high": 482,
+    "combined_high": 141,
+    "combined_medium": 181,
+    "combined_needs_review": 678
+  },
+  "taxonomy": {
+    "technical_total": 49,
+    "application_total": 51,
+    "english_v6_preserved_technical": 33,
+    "english_v6_preserved_application": 30,
+    "new_technical": 16,
+    "new_application": 21
+  }
+}

@@ -1,0 +1,55 @@
+functional_item: 聚类标签生成工具
+name: 聚类标签自动生成
+description: 基于深度聚类模型输出的类簇短语集合，为单个或多个类簇生成简洁、准确且彼此可区分的标签。
+input_type: multi_text
+engine_type: labeling
+system_prompt: |
+  聚类标签生成由专用证据约束引擎执行。本提示词不直接参与类簇归属判断。
+principles: |
+  - 直接输入必须是深度聚类模型输出的类簇短语集合。
+  - 支持单类簇模式和批量类簇模式。
+  - 不使用主题库、类别模板或 Gold 标签生成生产结果。
+  - GLM 仅生成候选标签；最终结果必须经过输入证据校验、类内覆盖评分和跨类簇差异化优化。
+  - 标签生成不得改变深度聚类给出的类簇归属。
+dictionaries:
+  stopwords: []
+input_schema:
+  type: object
+  properties:
+    cluster_phrase_sets:
+      type: array
+      description: 深度聚类模型输出的类簇短语集合；每项包含 cluster_id 和 phrases。
+    label_length_limit:
+      type: integer
+      description: 可选标签长度限制；中文按字符、英文按单词计算，默认12。
+    language_type:
+      type: string
+      description: 可选语言类型，支持 auto、zh、en，默认auto。
+    distinctiveness_threshold:
+      type: number
+      description: 可选类簇标签差异度阈值，范围0到1，默认0.75。
+    candidate_count:
+      type: integer
+      description: 可选候选标签数量，范围3到10，默认5。
+    generation_mode:
+      type: string
+      description: 可选生成模式；hybrid使用GLM生成候选并由BGE-M3复核，local仅使用本地证据生成，默认hybrid。
+  required: [cluster_phrase_sets]
+output_schema:
+  type: object
+  properties:
+    data:
+      type: object
+      properties:
+        labels:
+          type: array
+          description: 类簇标签集合，包含主标签、候选标签、证据、置信度和差异度。
+        generation_report:
+          type: object
+          description: 标签生成过程报告。
+        label_differentiation_optimization:
+          type: object
+          description: 标签差异化优化结果。
+      required: [labels, generation_report, label_differentiation_optimization]
+  required: [data]
+examples: []

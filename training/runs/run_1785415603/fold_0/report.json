@@ -1,0 +1,17 @@
+{
+  "fold_id": 0,
+  "best_test_acc": 0.8559322033898306,
+  "best_macro_f1": 0.8163728470111449,
+  "history": [
+    {
+      "iteration": 1,
+      "test_acc": 0.8559322033898306,
+      "macro_f1": 0.8163728470111449,
+      "rule_count": 5,
+      "level_dist": {
+        "soft": 5
+      }
+    }
+  ],
+  "rule_count": 5
+}

@@ -1,0 +1,708 @@
+{
+  "version": "7.0-unified",
+  "id_policy": "T01-T33 and A01-A30 are preserved from English v6; new IDs append only",
+  "technical": {
+    "T01": {
+      "label_zh": "深度学习与神经网络",
+      "label_en": "Deep Learning and Neural Networks",
+      "prototype_en": "deep learning neural network convolutional neural network CNN transformer U-Net GAN autoencoder attention model",
+      "prototype_zh": "深度学习 神经网络 Transformer 卷积神经网络 CNN 图神经网络 循环神经网络 LSTM 注意力 生成对抗网络 自编码器",
+      "origin": "english_v6_preserved"
+    },
+    "T02": {
+      "label_zh": "经典机器学习与统计建模",
+      "label_en": "Classical Machine Learning and Statistical Modeling",
+      "prototype_en": "machine learning support vector machine random forest decision tree logistic regression nomogram predictive statistical model clustering PCA",
+      "prototype_zh": "机器学习 支持向量机 随机森林 决策树 逻辑回归 统计模型 预测模型 主成分分析 分类 回归",
+      "origin": "english_v6_preserved"
+    },
+    "T03": {
+      "label_zh": "临床观察性队列与回顾性分析",
+      "label_en": "Clinical Observational Cohort and Retrospective Analysis",
+      "prototype_en": "retrospective prospective cohort cross-sectional population-based registry case-control patients survival risk factors observational clinical study",
+      "prototype_zh": "回顾性研究 前瞻性队列 横断面研究 病例对照 队列研究 临床观察 生存分析 风险因素 人群研究",
+      "origin": "english_v6_preserved"
+    },
+    "T04": {
+      "label_zh": "随机对照与干预试验",
+      "label_en": "Randomized Controlled and Intervention Trials",
+      "prototype_en": "randomized controlled trial placebo intervention control group double blind clinical trial efficacy",
+      "prototype_zh": "随机对照试验 干预组 对照组 双盲 临床试验 干预效果 疗效评价",
+      "origin": "english_v6_preserved"
+    },
+    "T05": {
+      "label_zh": "系统综述与Meta分析",
+      "label_en": "Systematic Review and Meta-analysis",
+      "prototype_en": "systematic review meta-analysis PRISMA pooled analysis evidence synthesis literature search",
+      "prototype_zh": "系统综述 Meta分析 荟萃分析 PRISMA 证据合成 文献检索",
+      "origin": "english_v6_preserved"
+    },
+    "T06": {
+      "label_zh": "叙述性综述与理论观点",
+      "label_en": "Narrative Review and Theoretical Perspective",
+      "prototype_en": "narrative review perspective commentary overview prospects conceptual framework literature review",
+      "prototype_zh": "叙述性综述 理论观点 研究述评 概述 前景 展望 文献综述",
+      "origin": "english_v6_preserved"
+    },
+    "T07": {
+      "label_zh": "病例报告与病例系列",
+      "label_en": "Case Reports and Case Series",
+      "prototype_en": "case report case series clinical case rare patient presentation report of cases",
+      "prototype_zh": "病例报告 病例系列 个案报道 罕见病例 临床病例",
+      "origin": "english_v6_preserved"
+    },
+    "T08": {
+      "label_zh": "细胞分子与生化实验",
+      "label_en": "Cellular, Molecular and Biochemical Experiments",
+      "prototype_en": "cell culture western blot protein expression apoptosis signaling pathway biochemical assay in vitro cellular experiment",
+      "prototype_zh": "细胞培养 蛋白表达 Western blot 凋亡 信号通路 生化实验 体外细胞实验",
+      "origin": "english_v6_preserved"
+    },
+    "T09": {
+      "label_zh": "组学测序与生物信息分析",
+      "label_en": "Omics Sequencing and Bioinformatics",
+      "prototype_en": "RNA sequencing transcriptomics proteomics metabolomics single-cell genomics bioinformatics omics profiling",
+      "prototype_zh": "RNA测序 转录组 蛋白组 代谢组 单细胞测序 基因组 生物信息 组学分析",
+      "origin": "english_v6_preserved"
+    },
+    "T10": {
+      "label_zh": "病理组织与免疫组化诊断",
+      "label_en": "Histopathology and Immunohistochemical Diagnosis",
+      "prototype_en": "histopathology histology immunohistochemistry tissue staining microscopic morphology pathological diagnosis",
+      "prototype_zh": "组织病理 组织学 免疫组化 染色 显微形态 病理诊断",
+      "origin": "english_v6_preserved"
+    },
+    "T11": {
+      "label_zh": "成像、生理测量与诊断检测",
+      "label_en": "Imaging, Physiological Measurement and Diagnostic Testing",
+      "prototype_en": "MRI CT ultrasound Doppler ECG X-ray imaging physiological measurement diagnostic test monitoring",
+      "prototype_zh": "MRI CT 超声 多普勒 心电图 X射线 成像 生理测量 诊断检测 监测",
+      "origin": "english_v6_preserved"
+    },
+    "T12": {
+      "label_zh": "材料合成与制备工艺",
+      "label_en": "Material Synthesis and Fabrication",
+      "prototype_en": "material synthesis fabrication preparation polymerization deposition hydrothermal annealing coating electrospinning doping processing",
+      "prototype_zh": "材料合成 制备 聚合 沉积 水热 退火 涂层 电纺 掺杂 加工",
+      "origin": "english_v6_preserved"
+    },
+    "T13": {
+      "label_zh": "材料表征与性能测试",
+      "label_en": "Material Characterization and Performance Testing",
+      "prototype_en": "XRD SEM TEM Raman FTIR spectroscopy microscopy characterization mechanical testing impedance performance measurement",
+      "prototype_zh": "XRD SEM TEM 拉曼 红外 光谱 显微 表征 力学测试 阻抗 性能测试",
+      "origin": "english_v6_preserved"
+    },
+    "T14": {
+      "label_zh": "数值模拟与有限元计算",
+      "label_en": "Numerical Simulation and Finite-Element Computation",
+      "prototype_en": "finite element numerical simulation computational fluid dynamics Monte Carlo device simulation microstructural model numerical method",
+      "prototype_zh": "有限元 数值模拟 计算流体力学 蒙特卡洛 器件仿真 微结构模型 数值方法",
+      "origin": "english_v6_preserved"
+    },
+    "T15": {
+      "label_zh": "第一性原理与原子分子模拟",
+      "label_en": "First-Principles and Atomistic Simulation",
+      "prototype_en": "first principles density functional theory DFT molecular dynamics atomistic simulation ab initio phonon calculation",
+      "prototype_zh": "第一性原理 密度泛函 DFT 分子动力学 原子模拟 从头计算 声子计算",
+      "origin": "english_v6_preserved"
+    },
+    "T16": {
+      "label_zh": "解析理论与数学建模",
+      "label_en": "Analytical Theory and Mathematical Modeling",
+      "prototype_en": "analytical solution theoretical mathematical model kinetic model asymptotic derivation mechanics equation",
+      "prototype_zh": "解析解 理论模型 数学建模 动力学模型 渐近推导 力学方程",
+      "origin": "english_v6_preserved"
+    },
+    "T17": {
+      "label_zh": "工程器件、天线与原型设计",
+      "label_en": "Engineering Devices, Antennas and Prototype Design",
+      "prototype_en": "device design prototype antenna power divider waveguide photodetector circuit sensor engineering fabrication measured",
+      "prototype_zh": "器件设计 样机 原型 天线 功分器 波导 光电探测器 电路 传感器 工程制造 实测",
+      "origin": "english_v6_preserved"
+    },
+    "T18": {
+      "label_zh": "化学合成与催化反应",
+      "label_en": "Chemical Synthesis and Catalytic Reactions",
+      "prototype_en": "chemical synthesis catalytic reaction catalyst electrocatalysis photocatalysis derivatives cross coupling reaction mechanism",
+      "prototype_zh": "化学合成 催化反应 催化剂 电催化 光催化 偶联反应 反应机理",
+      "origin": "english_v6_preserved"
+    },
+    "T19": {
+      "label_zh": "环境处理与资源回收工艺",
+      "label_en": "Environmental Treatment and Resource-Recovery Processes",
+      "prototype_en": "wastewater treatment adsorption membrane bioreactor remediation resource recovery removal environmental process",
+      "prototype_zh": "废水处理 吸附 膜 生物反应器 修复 资源回收 去除 环境工艺",
+      "origin": "english_v6_preserved"
+    },
+    "T20": {
+      "label_zh": "问卷调查与定性社会研究",
+      "label_en": "Questionnaire Surveys and Qualitative Social Research",
+      "prototype_en": "questionnaire survey interview qualitative focus group perception knowledge attitude social research",
+      "prototype_zh": "问卷 调查 访谈 定性 焦点小组 感知 知识 态度 社会研究",
+      "origin": "english_v6_preserved"
+    },
+    "T21": {
+      "label_zh": "经济评价与政策分析",
+      "label_en": "Economic Evaluation and Policy Analysis",
+      "prototype_en": "cost-effectiveness cost utility economic evaluation time trade-off discrete choice policy value assessment",
+      "prototype_zh": "成本效果 成本效用 经济评价 时间权衡 离散选择 政策价值评估",
+      "origin": "english_v6_preserved"
+    },
+    "T22": {
+      "label_zh": "动物模型与药理干预实验",
+      "label_en": "Animal Models and Pharmacological Intervention",
+      "prototype_en": "animal model rats mice dogs fish in vivo pharmacological intervention induced model treatment experiment",
+      "prototype_zh": "动物模型 大鼠 小鼠 犬 鱼 体内 药理干预 诱导模型 治疗实验",
+      "origin": "english_v6_preserved"
+    },
+    "T23": {
+      "label_zh": "微生物培养与宏基因组分析",
+      "label_en": "Microbial Culture and Metagenomic Analysis",
+      "prototype_en": "microbiome metagenomics bacterial culture antimicrobial susceptibility microbial community probiotic isolates",
+      "prototype_zh": "微生物组 宏基因组 细菌培养 药敏 微生物群落 益生菌 菌株",
+      "origin": "english_v6_preserved"
+    },
+    "T24": {
+      "label_zh": "遗传关联与PCR分子检测",
+      "label_en": "Genetic Association and PCR-Based Molecular Detection",
+      "prototype_en": "polymorphism genotype PCR qPCR mutation genetic association gene variant Mendelian randomization",
+      "prototype_zh": "多态性 基因型 PCR qPCR 突变 遗传关联 基因变异 孟德尔随机化",
+      "origin": "english_v6_preserved"
+    },
+    "T25": {
+      "label_zh": "数据集、基准与工具验证",
+      "label_en": "Datasets, Benchmarks and Tool Validation",
+      "prototype_en": "dataset benchmark database tool development validation protocol risk score software instrument",
+      "prototype_zh": "数据集 基准 数据库 工具开发 验证 协议 风险评分 软件 仪器",
+      "origin": "english_v6_preserved"
+    },
+    "T26": {
+      "label_zh": "控制规划与机器人自动化",
+      "label_en": "Control Planning and Robotic Automation",
+      "prototype_en": "robot autonomous control trajectory planning model predictive control navigation tracking controller automation",
+      "prototype_zh": "机器人 自主控制 轨迹规划 模型预测控制 导航 跟踪 控制器 自动化",
+      "origin": "english_v6_preserved"
+    },
+    "T27": {
+      "label_zh": "信号、图像处理与算法优化",
+      "label_en": "Signal/Image Processing and Algorithm Optimization",
+      "prototype_en": "signal processing image processing reconstruction filtering segmentation algorithm feature extraction compression optimization",
+      "prototype_zh": "信号处理 图像处理 重建 滤波 分割 算法 特征提取 压缩 优化",
+      "origin": "english_v6_preserved"
+    },
+    "T28": {
+      "label_zh": "其他实验与综合研究方法",
+      "label_en": "Other Experimental and Integrated Methods",
+      "prototype_en": "general experimental comparative evaluation laboratory methodology mixed methods integrated research",
+      "prototype_zh": "综合实验 比较评价 实验室方法 混合方法 综合研究",
+      "origin": "english_v6_preserved"
+    },
+    "T29": {
+      "label_zh": "野外采样与生态调查",
+      "label_en": "Field Sampling and Ecological Surveys",
+      "prototype_en": "field sampling ecological survey photo trapping species monitoring habitat vegetation population observation",
+      "prototype_zh": "野外采样 生态调查 相机陷阱 物种监测 栖息地 植被 种群观察",
+      "origin": "english_v6_preserved"
+    },
+    "T30": {
+      "label_zh": "风险评估与空间统计",
+      "label_en": "Risk Assessment and Spatial Statistics",
+      "prototype_en": "risk assessment source apportionment spatial distribution exposure pollution health risk statistical spatial analysis",
+      "prototype_zh": "风险评估 源解析 空间分布 暴露 污染 健康风险 空间统计",
+      "origin": "english_v6_preserved"
+    },
+    "T31": {
+      "label_zh": "理化分析与定量测定",
+      "label_en": "Physicochemical Analysis and Quantitative Measurement",
+      "prototype_en": "chromatography mass spectrometry chemical analysis antioxidant assay quantitative determination physicochemical analysis",
+      "prototype_zh": "色谱 质谱 化学分析 抗氧化测定 定量测定 理化分析",
+      "origin": "english_v6_preserved"
+    },
+    "T32": {
+      "label_zh": "工程系统设计与方案优化",
+      "label_en": "Engineering System Design and Scheme Optimization",
+      "prototype_en": "system architecture engineering design energy management configuration optimization integrated framework strategy planning",
+      "prototype_zh": "系统架构 工程设计 能源管理 配置优化 综合框架 策略规划",
+      "origin": "english_v6_preserved"
+    },
+    "T33": {
+      "label_zh": "生物行为与生理比较实验",
+      "label_en": "Behavioral and Physiological Comparative Experiments",
+      "prototype_en": "growth performance behavior physiology reproductive parameters feeding trial swimming spawning comparative animal experiment",
+      "prototype_zh": "生长性能 行为 生理 生殖参数 饲养试验 比较动物实验",
+      "origin": "english_v6_preserved"
+    },
+    "T34": {
+      "label_zh": "聚类、关联规则与模式识别",
+      "label_en": "Clustering, Association Rules and Pattern Recognition",
+      "prototype_en": "clustering association rule pattern recognition topology identification relation identification fuzzy C-means",
+      "prototype_zh": "聚类 模糊C均值 FCM K均值 关联规则 Apriori 模式识别 关系辨识 拓扑识别",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T35": {
+      "label_zh": "时序预测与状态估计",
+      "label_en": "Time-Series Forecasting and State Estimation",
+      "prototype_en": "time series forecasting short-term prediction state estimation power forecasting load forecasting",
+      "prototype_zh": "时序预测 超短期预测 功率预测 负荷预测 状态估计 剩余寿命预测",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T36": {
+      "label_zh": "故障诊断、定位与保护算法",
+      "label_en": "Fault Diagnosis, Localization and Protection Algorithms",
+      "prototype_en": "fault diagnosis fault location protection algorithm fault detection condition monitoring",
+      "prototype_zh": "故障诊断 故障定位 故障检测 故障选线 故障测距 保护算法 状态监测",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T37": {
+      "label_zh": "优化调度与数学规划",
+      "label_en": "Optimization Scheduling and Mathematical Programming",
+      "prototype_en": "optimization scheduling mathematical programming mixed integer second-order cone network reconfiguration",
+      "prototype_zh": "优化调度 联合规划 多目标优化 线性规划 混合整数 二阶锥规划 网络重构 配置优化",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T38": {
+      "label_zh": "博弈论、市场机制与多主体决策",
+      "label_en": "Game Theory, Market Mechanisms and Multi-Agent Decision-Making",
+      "prototype_en": "game theory Nash bargaining Stackelberg market mechanism multi-agent decision",
+      "prototype_zh": "博弈 纳什谈判 主从博弈 合作博弈 市场交易 定价机制 竞价",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T39": {
+      "label_zh": "鲁棒、随机与不确定性优化",
+      "label_en": "Robust, Stochastic and Uncertainty Optimization",
+      "prototype_en": "robust stochastic distributionally robust chance constrained uncertainty optimization CVaR",
+      "prototype_zh": "鲁棒优化 分布鲁棒 随机优化 机会约束 不确定性 条件风险价值 概率潮流",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T40": {
+      "label_zh": "电力系统建模、潮流与等值计算",
+      "label_en": "Power-System Modeling, Power Flow and Equivalencing",
+      "prototype_en": "power system modeling power flow equivalent circuit short circuit calculation Thevenin model",
+      "prototype_zh": "电力系统建模 潮流计算 短路电流 等值模型 戴维南等值 阻抗建模 计算方程",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T41": {
+      "label_zh": "指标体系与综合评价",
+      "label_en": "Indicator Systems and Comprehensive Evaluation",
+      "prototype_en": "indicator system comprehensive evaluation AHP entropy weight TOPSIS DEA health index cloud model",
+      "prototype_zh": "指标体系 综合评价 层次分析 熵权法 TOPSIS 数据包络分析 健康指数 云模型",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T42": {
+      "label_zh": "面板回归、计量经济与因果识别",
+      "label_en": "Panel Regression, Econometrics and Causal Identification",
+      "prototype_en": "panel regression econometrics fixed effects spatial Durbin DID PSM instrumental variable causal identification",
+      "prototype_zh": "面板数据 回归模型 固定效应 空间杜宾 门槛模型 DID PSM 工具变量 计量经济 因果效应",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T43": {
+      "label_zh": "社会网络与复杂网络分析",
+      "label_en": "Social and Complex Network Analysis",
+      "prototype_en": "social network complex network innovation network cooperation network centrality proximity",
+      "prototype_zh": "社会网络分析 创新网络 合作网络 复杂网络 中心性 多维邻近 网络结构",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T44": {
+      "label_zh": "耦合协调、障碍度与时空演化",
+      "label_en": "Coupling Coordination, Obstacle Analysis and Spatiotemporal Evolution",
+      "prototype_en": "coupling coordination obstacle degree spatiotemporal evolution Dagum Gini kernel density",
+      "prototype_zh": "耦合协调度 障碍度模型 时空演化 Dagum基尼 核密度 动态演进 重心迁移",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T45": {
+      "label_zh": "文献计量与技术态势研判",
+      "label_en": "Bibliometrics and Technology-Trend Assessment",
+      "prototype_en": "bibliometrics technology trend foresight patent landscape development status trend analysis",
+      "prototype_zh": "文献计量 技术态势 发展态势 专利分析 Citespace 前沿分析 趋势研判",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T46": {
+      "label_zh": "理论机制、制度设计与政策路径",
+      "label_en": "Theoretical Mechanisms, Institutional Design and Policy Pathways",
+      "prototype_en": "theoretical mechanism institutional design policy pathway governance framework normative analysis",
+      "prototype_zh": "理论框架 作用机制 形成机制 制度设计 政策路径 规范分析 TOE框架 治理机制",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T47": {
+      "label_zh": "数字孪生、软件平台与系统架构",
+      "label_en": "Digital Twins, Software Platforms and System Architecture",
+      "prototype_en": "digital twin software platform information system architecture data platform database",
+      "prototype_zh": "数字孪生 软件平台 信息系统 系统架构 数据平台 数据库 仿真平台",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T48": {
+      "label_zh": "空间统计、GIS与分区分析",
+      "label_en": "Spatial Statistics, GIS and Zoning Analysis",
+      "prototype_en": "spatial autocorrelation GIS Moran geographic detector zoning spatial pattern",
+      "prototype_zh": "空间自相关 莫兰指数 Moran ArcGIS GIS 空间格局 空间分异 地理探测器 分区",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "T49": {
+      "label_zh": "控制策略与稳定性分析",
+      "label_en": "Control Strategies and Stability Analysis",
+      "prototype_en": "control strategy stability analysis low voltage ride through droop control virtual synchronous machine",
+      "prototype_zh": "控制策略 稳定性分析 低电压穿越 下垂控制 虚拟同步机 构网控制 暂态稳定 阻尼控制",
+      "origin": "v7_added_from_chinese_corpus"
+    }
+  },
+  "application": {
+    "A01": {
+      "label_zh": "心血管与循环系统疾病",
+      "label_en": "Cardiovascular and Circulatory Diseases",
+      "prototype_en": "cardiovascular cardiac heart hypertension atrial fibrillation myocardial aortic vascular thrombosis stroke coronary",
+      "prototype_zh": "心血管 心脏 高血压 房颤 心肌 主动脉 血管 血栓 卒中 冠心病",
+      "origin": "english_v6_preserved"
+    },
+    "A02": {
+      "label_zh": "内分泌代谢与糖尿病",
+      "label_en": "Endocrine, Metabolic and Diabetes Disorders",
+      "prototype_en": "endocrine metabolic diabetes obesity thyroid Cushing adrenal polycystic ovarian glucose insulin",
+      "prototype_zh": "内分泌 代谢 糖尿病 肥胖 甲状腺 库欣 肾上腺 多囊卵巢 血糖 胰岛素",
+      "origin": "english_v6_preserved"
+    },
+    "A03": {
+      "label_zh": "肿瘤与癌症诊疗",
+      "label_en": "Oncology and Cancer Diagnosis/Treatment",
+      "prototype_en": "cancer tumor carcinoma oncology metastasis chemotherapy radiotherapy leukemia lymphoma",
+      "prototype_zh": "癌症 肿瘤 癌 乳腺癌 肺癌 肝癌 转移 化疗 放疗 白血病 淋巴瘤",
+      "origin": "english_v6_preserved"
+    },
+    "A04": {
+      "label_zh": "神经精神与心理健康",
+      "label_en": "Neurological, Psychiatric and Mental Health",
+      "prototype_en": "neurology brain psychiatric mental health depression PTSD dementia Parkinson schizophrenia cognition pain",
+      "prototype_zh": "神经 脑 精神 心理 抑郁 PTSD 痴呆 帕金森 认知 疼痛",
+      "origin": "english_v6_preserved"
+    },
+    "A05": {
+      "label_zh": "骨科肌肉与康复医学",
+      "label_en": "Orthopedics, Musculoskeletal and Rehabilitation Medicine",
+      "prototype_en": "fracture orthopedic osteoarthritis bone joint arthroplasty musculoskeletal rehabilitation mandibular",
+      "prototype_zh": "骨折 骨科 骨关节炎 骨 关节 关节置换 肌肉骨骼 康复 下颌骨",
+      "origin": "english_v6_preserved"
+    },
+    "A06": {
+      "label_zh": "消化肝胆与胃肠疾病",
+      "label_en": "Digestive, Hepatobiliary and Gastrointestinal Diseases",
+      "prototype_en": "liver hepatic intestinal gastrointestinal bowel colon colorectal pancreas constipation kidney renal",
+      "prototype_zh": "肝脏 肝病 肠道 胃肠 结肠 直肠 胰腺 便秘 肾脏",
+      "origin": "english_v6_preserved"
+    },
+    "A07": {
+      "label_zh": "感染微生物与抗菌耐药",
+      "label_en": "Infectious Diseases, Microbiology and Antimicrobial Resistance",
+      "prototype_en": "infection bacteria virus viral antimicrobial resistance pathogen COVID sepsis microbiology",
+      "prototype_zh": "感染 细菌 病毒 抗菌 耐药 病原 COVID 败血症 微生物",
+      "origin": "english_v6_preserved"
+    },
+    "A08": {
+      "label_zh": "妇产儿科与生殖健康",
+      "label_en": "Obstetrics, Pediatrics and Reproductive Health",
+      "prototype_en": "pediatric children pregnancy preeclampsia menstrual reproductive neonatal maternal fertility",
+      "prototype_zh": "儿科 儿童 妊娠 子痫 月经 生殖 新生儿 孕产 妊娠期",
+      "origin": "english_v6_preserved"
+    },
+    "A09": {
+      "label_zh": "医学影像、诊断与医疗器械",
+      "label_en": "Medical Imaging, Diagnostics and Medical Devices",
+      "prototype_en": "medical imaging diagnosis ultrasound MRI CT X-ray medical device clinical monitoring surgical instrument",
+      "prototype_zh": "医学影像 诊断 超声 MRI CT X射线 医疗器械 临床监测 手术器械",
+      "origin": "english_v6_preserved"
+    },
+    "A10": {
+      "label_zh": "公共卫生、护理与卫生服务",
+      "label_en": "Public Health, Nursing and Health Services",
+      "prototype_en": "public health nursing healthcare service quality of life patient management screening epidemiology health system",
+      "prototype_zh": "公共卫生 护理 卫生服务 生活质量 患者管理 筛查 流行病学 卫生系统",
+      "origin": "english_v6_preserved"
+    },
+    "A11": {
+      "label_zh": "兽医、水产与动物健康",
+      "label_en": "Veterinary, Aquaculture and Animal Health",
+      "prototype_en": "veterinary dog canine cat fish tilapia aquaculture livestock animal health",
+      "prototype_zh": "兽医 犬 猫 鱼 罗非鱼 水产 牲畜 动物健康",
+      "origin": "english_v6_preserved"
+    },
+    "A12": {
+      "label_zh": "生态保护与农业生物",
+      "label_en": "Ecological Conservation and Agricultural Biology",
+      "prototype_en": "ecology species biodiversity conservation plant crop forest wildlife agriculture seed soil",
+      "prototype_zh": "生态 物种 生物多样性 保护 植物 作物 森林 野生动物 农业 种子 土壤",
+      "origin": "english_v6_preserved"
+    },
+    "A13": {
+      "label_zh": "水环境、污染治理与废物资源化",
+      "label_en": "Water Environment, Pollution Control and Waste Valorization",
+      "prototype_en": "wastewater water treatment pollution remediation contamination toxic elements groundwater waste resource recovery",
+      "prototype_zh": "废水 水处理 污染 修复 污染物 地下水 废物 资源回收",
+      "origin": "english_v6_preserved"
+    },
+    "A14": {
+      "label_zh": "能源、电池与太阳能系统",
+      "label_en": "Energy, Batteries and Solar-Energy Systems",
+      "prototype_en": "battery energy storage solar cell photovoltaic fuel cell hydrogen microgrid electrolyte cathode anode",
+      "prototype_zh": "电池 储能 太阳能电池 光伏 燃料电池 氢能 微电网 电解质 正极 负极",
+      "origin": "english_v6_preserved"
+    },
+    "A15": {
+      "label_zh": "结构材料、聚合物与复合材料",
+      "label_en": "Structural Materials, Polymers and Composites",
+      "prototype_en": "polymer composite alloy ceramic structural material mechanical properties coating hydrogel asphalt concrete",
+      "prototype_zh": "聚合物 复合材料 合金 陶瓷 结构材料 力学性能 涂层 水凝胶 沥青 混凝土",
+      "origin": "english_v6_preserved"
+    },
+    "A16": {
+      "label_zh": "电子半导体与传感器件",
+      "label_en": "Electronics, Semiconductors and Sensor Devices",
+      "prototype_en": "semiconductor electronic device photodetector sensor flexible electronics transistor optoelectronic microelectrode",
+      "prototype_zh": "半导体 电子器件 光电探测器 传感器 柔性电子 晶体管 光电子 微电极",
+      "origin": "english_v6_preserved"
+    },
+    "A17": {
+      "label_zh": "光学光子、天线与射频",
+      "label_en": "Optics, Photonics, Antennas and Radio Frequency",
+      "prototype_en": "optical photonic laser antenna waveguide electromagnetic metasurface holographic terahertz microwave",
+      "prototype_zh": "光学 光子 激光 天线 波导 电磁 超表面 全息 太赫兹 微波 射频",
+      "origin": "english_v6_preserved"
+    },
+    "A18": {
+      "label_zh": "土木岩土与交通基础设施",
+      "label_en": "Civil, Geotechnical and Transport Infrastructure",
+      "prototype_en": "civil geotechnical pavement subgrade infrastructure railway highway concrete asphalt bridge",
+      "prototype_zh": "土木 岩土 路面 路基 基础设施 铁路 公路 混凝土 沥青 桥梁",
+      "origin": "english_v6_preserved"
+    },
+    "A19": {
+      "label_zh": "机械制造与工程装备",
+      "label_en": "Mechanical Manufacturing and Engineering Equipment",
+      "prototype_en": "mechanical manufacturing machining equipment compressor engine heat transfer industrial process",
+      "prototype_zh": "机械 制造 加工 装备 压缩机 发动机 传热 工业过程",
+      "origin": "english_v6_preserved"
+    },
+    "A20": {
+      "label_zh": "机器人、自动控制与自主系统",
+      "label_en": "Robotics, Automatic Control and Autonomous Systems",
+      "prototype_en": "robotics autonomous control navigation trajectory surgical robot unmanned system",
+      "prototype_zh": "机器人 自主控制 导航 轨迹 手术机器人 无人系统",
+      "origin": "english_v6_preserved"
+    },
+    "A21": {
+      "label_zh": "化学催化与碳资源转化",
+      "label_en": "Chemical Catalysis and Carbon-Resource Conversion",
+      "prototype_en": "catalysis catalyst CO2 capture conversion electrocatalysis photocatalysis chemical reaction",
+      "prototype_zh": "催化 催化剂 二氧化碳捕集 转化 电催化 光催化 化学反应",
+      "origin": "english_v6_preserved"
+    },
+    "A22": {
+      "label_zh": "分子生物学、遗传与细胞机制",
+      "label_en": "Molecular Biology, Genetics and Cellular Mechanisms",
+      "prototype_en": "gene DNA RNA transcription protein cell signaling molecular biology genetics epigenetics",
+      "prototype_zh": "基因 DNA RNA 转录 蛋白 细胞信号 分子生物学 遗传 表观遗传",
+      "origin": "english_v6_preserved"
+    },
+    "A23": {
+      "label_zh": "食品营养、天然产物与植物活性",
+      "label_en": "Food, Nutrition, Natural Products and Plant Bioactivity",
+      "prototype_en": "food nutrition antioxidant phytochemical extract diet natural product fruit vegetable probiotic",
+      "prototype_zh": "食品 营养 抗氧化 植物化学 提取物 膳食 天然产物 水果 蔬菜 益生菌",
+      "origin": "english_v6_preserved"
+    },
+    "A24": {
+      "label_zh": "经济政策、社会治理与法律",
+      "label_en": "Economic Policy, Social Governance and Law",
+      "prototype_en": "economics policy social welfare gender religion law governance rights insurance austerity",
+      "prototype_zh": "经济 政策 社会福利 性别 宗教 法律 治理 权利 保险 财政紧缩",
+      "origin": "english_v6_preserved"
+    },
+    "A25": {
+      "label_zh": "教育培训与科研能力建设",
+      "label_en": "Education, Training and Research Capacity Building",
+      "prototype_en": "education training students curriculum internship competence learning teaching research program",
+      "prototype_zh": "教育 培训 学生 课程 实习 能力 学习 教学 科研项目",
+      "origin": "english_v6_preserved"
+    },
+    "A26": {
+      "label_zh": "计算机科学、人工智能与数据分析",
+      "label_en": "Computer Science, Artificial Intelligence and Data Analytics",
+      "prototype_en": "artificial intelligence machine learning computer vision natural language processing software algorithm data",
+      "prototype_zh": "人工智能 机器学习 计算机视觉 自然语言处理 软件 算法 数据分析",
+      "origin": "english_v6_preserved"
+    },
+    "A27": {
+      "label_zh": "物理数学与基础科学",
+      "label_en": "Physics, Mathematics and Fundamental Science",
+      "prototype_en": "physics quantum mathematical statistical mechanics theoretical science thermodynamics entropy",
+      "prototype_zh": "物理 量子 数学 统计力学 理论科学 热力学 熵",
+      "origin": "english_v6_preserved"
+    },
+    "A28": {
+      "label_zh": "气候地球科学与自然灾害",
+      "label_en": "Climate, Earth Science and Natural Hazards",
+      "prototype_en": "climate geology earthquake landslide atmosphere ocean global warming hydrology meteorology",
+      "prototype_zh": "气候 地质 地震 滑坡 大气 海洋 全球变暖 水文 气象 自然灾害",
+      "origin": "english_v6_preserved"
+    },
+    "A29": {
+      "label_zh": "药物开发、递送与治疗材料",
+      "label_en": "Drug Development, Delivery and Therapeutic Materials",
+      "prototype_en": "drug delivery pharmaceutical liposome formulation drug development nanomedicine bioavailability therapeutic",
+      "prototype_zh": "药物递送 制药 脂质体 制剂 药物开发 纳米药物 生物利用度 治疗材料",
+      "origin": "english_v6_preserved"
+    },
+    "A30": {
+      "label_zh": "其他综合与难归类应用",
+      "label_en": "Other Integrated or Unclassified Applications",
+      "prototype_en": "general multidisciplinary broad application other domain",
+      "prototype_zh": "综合 多学科 其他领域 难归类",
+      "origin": "english_v6_preserved"
+    },
+    "A31": {
+      "label_zh": "配电网与分布式能源系统",
+      "label_en": "Distribution Grids and Distributed Energy Systems",
+      "prototype_en": "distribution network distributed generation feeder transformer area network reconfiguration",
+      "prototype_zh": "配电网 配电系统 分布式电源 台区 馈线 户变关系 配网重构",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A32": {
+      "label_zh": "输电、高压直流与换流系统",
+      "label_en": "Transmission, HVDC and Converter Systems",
+      "prototype_en": "transmission grid HVDC converter commutation failure UHV converter station",
+      "prototype_zh": "输电网 高压直流 HVDC 换流器 换相失败 柔性直流 特高压 换流站",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A33": {
+      "label_zh": "微电网与综合能源系统",
+      "label_en": "Microgrids and Integrated Energy Systems",
+      "prototype_en": "microgrid multi-microgrid integrated energy system energy hub virtual power plant",
+      "prototype_zh": "微电网 多微网 综合能源系统 能源枢纽 区域综合能源 虚拟电厂",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A34": {
+      "label_zh": "新能源发电、光伏与风电",
+      "label_en": "Renewable Generation, Photovoltaics and Wind Power",
+      "prototype_en": "renewable generation photovoltaic wind power solar generation forecasting",
+      "prototype_zh": "光伏 风电 新能源发电 可再生能源 风光 光伏集群 风电场",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A35": {
+      "label_zh": "储能、电动汽车与充换电",
+      "label_en": "Energy Storage, Electric Vehicles and Charging",
+      "prototype_en": "energy storage pumped storage electric vehicle charging V2G battery SOC",
+      "prototype_zh": "储能 抽水蓄能 电动汽车 充电桩 V2G 车网互动 电池 SOC",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A36": {
+      "label_zh": "电力市场、需求响应与能源交易",
+      "label_en": "Electricity Markets, Demand Response and Energy Trading",
+      "prototype_en": "electricity market demand response carbon market energy trading tariff ancillary service",
+      "prototype_zh": "电力市场 需求响应 碳市场 绿证 能源交易 辅助服务 输配电价",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A37": {
+      "label_zh": "电力设备运维、保护与故障恢复",
+      "label_en": "Power-Equipment Maintenance, Protection and Fault Recovery",
+      "prototype_en": "power equipment maintenance protection fault recovery transformer line condition assessment",
+      "prototype_zh": "继电保护 故障诊断 故障定位 故障恢复 设备运维 变压器 状态评价",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A38": {
+      "label_zh": "电力电子、逆变器与构网控制",
+      "label_en": "Power Electronics, Inverters and Grid-Forming Control",
+      "prototype_en": "power electronics inverter grid-forming virtual synchronous generator converter MPPT ride-through",
+      "prototype_zh": "逆变器 构网型 虚拟同步机 下垂控制 SVG 变流器 MPPT 低电压穿越",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A39": {
+      "label_zh": "区域经济、城市群与空间发展",
+      "label_en": "Regional Economy, Urban Agglomerations and Spatial Development",
+      "prototype_en": "regional economy urban agglomeration spatial development economic geography city network",
+      "prototype_zh": "区域经济 城市群 长三角 京津冀 珠三角 空间发展 区域差异 城市网络",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A40": {
+      "label_zh": "数字经济、技术创新与创新网络",
+      "label_en": "Digital Economy, Technological Innovation and Innovation Networks",
+      "prototype_en": "digital economy technological innovation patent innovation innovation network digital infrastructure",
+      "prototype_zh": "数字经济 技术创新 科技创新 专利创新 创新网络 数字基础设施",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A41": {
+      "label_zh": "城镇化、共同富裕与城乡融合",
+      "label_en": "Urbanization, Common Prosperity and Urban-Rural Integration",
+      "prototype_en": "urbanization common prosperity urban-rural integration population agglomeration",
+      "prototype_zh": "城镇化 新型城镇化 共同富裕 城乡融合 城市空间 人口集聚",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A42": {
+      "label_zh": "农业农村、土地与乡村振兴",
+      "label_en": "Agriculture, Rural Land and Rural Revitalization",
+      "prototype_en": "agriculture rural land transfer homestead cultivated land rural revitalization farmer",
+      "prototype_zh": "农业 农村 土地流转 宅基地 耕地 乡村振兴 农户 粮食",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A43": {
+      "label_zh": "产业结构、制造业与企业发展",
+      "label_en": "Industrial Structure, Manufacturing and Enterprise Development",
+      "prototype_en": "industrial structure manufacturing enterprise development industrial cluster supply chain",
+      "prototype_zh": "产业结构 制造业 企业发展 产业集群 产业转移 产业链 工业企业",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A44": {
+      "label_zh": "绿色低碳、生态保护与环境治理",
+      "label_en": "Green and Low-Carbon Development, Ecological and Environmental Governance",
+      "prototype_en": "green development low carbon carbon emission ecological protection environmental governance sustainability",
+      "prototype_zh": "绿色发展 低碳转型 碳排放 生态保护 环境治理 污染治理 碳中和",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A45": {
+      "label_zh": "旅游、文化与文旅融合",
+      "label_en": "Tourism, Culture and Culture-Tourism Integration",
+      "prototype_en": "tourism cultural tourism heritage rural tourism destination ecological tourism",
+      "prototype_zh": "旅游 文旅融合 旅游流 旅游经济 文化遗产 乡村旅游 旅游目的地",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A46": {
+      "label_zh": "交通物流与公共基础设施",
+      "label_en": "Transport, Logistics and Public Infrastructure",
+      "prototype_en": "transport logistics railway highway port accessibility infrastructure network",
+      "prototype_zh": "交通 高铁 公路 铁路 物流 基础设施 可达性 交通网络 港口",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A47": {
+      "label_zh": "公共服务、社会治理与民生",
+      "label_en": "Public Services, Social Governance and Livelihood",
+      "prototype_en": "public service social governance elderly care education equity social security community",
+      "prototype_zh": "公共服务 社会治理 养老服务 教育公平 民生福祉 社会保障 社区治理",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A48": {
+      "label_zh": "科技政策、科研机构与人才发展",
+      "label_en": "Science Policy, Research Institutions and Talent Development",
+      "prototype_en": "science policy research institution talent development research management think tank",
+      "prototype_zh": "科技政策 科研机构 人才培养 科研管理 科技伦理 科学家精神 智库",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A49": {
+      "label_zh": "航空航天、国防与高端装备",
+      "label_en": "Aerospace, Defense and Advanced Equipment",
+      "prototype_en": "aerospace hypersonic weapon guidance defense aircraft engine high-end equipment",
+      "prototype_zh": "航空航天 高超声速 武器 制导 防御系统 飞行器 航空发动机 高端装备",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A50": {
+      "label_zh": "金融贸易、投资与开放经济",
+      "label_en": "Finance, Trade, Investment and Open Economy",
+      "prototype_en": "finance investment trade Belt and Road capital market free trade export financing bank",
+      "prototype_zh": "金融 投资 贸易 一带一路 资本市场 自贸区 开放经济 出口 融资 银行",
+      "origin": "v7_added_from_chinese_corpus"
+    },
+    "A51": {
+      "label_zh": "资源能源、海洋与国土空间",
+      "label_en": "Resources, Energy, Oceans and Territorial Space",
+      "prototype_en": "energy resources minerals water resources ocean land space climate disaster geology",
+      "prototype_zh": "能源资源 矿产资源 水资源 海洋 国土空间 资源配置 气候 灾害 地质",
+      "origin": "v7_added_from_chinese_corpus"
+    }
+  }
+}
