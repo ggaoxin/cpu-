@@ -1992,8 +1992,10 @@ class SemanticApplicationService(ISemanticService):
         # （light 可能漏引言/RQ 段，mineru 全文能补；批量并发靠 /files group + PageBudgetPool）
         if not cleaned:
             _src = (request.params or {}).get("_source_pdf_path")
-            if _src and os.path.exists(_src):
-                logger.info("rq-detect LLM 判 0,回退 mineru 重抽重判: %s", _src)
+            if _src and os.path.exists(_src) and len(abstract) < 6000:
+                # 文本较短才重抽(疑似局部抽取);已是全文时重抽仅白耗一遍 mineru 解析
+                logger.info("rq-detect LLM 判 0,文本较短(%d字),回退 mineru 重抽重判: %s",
+                            len(abstract), _src)
                 _ab, _ft = _rq_mineru_refallback(_src)
                 if _ab:
                     full_text, abstract = _ft, _ab
@@ -3559,13 +3561,19 @@ class SemanticApplicationService(ISemanticService):
 
         defs = _extract_defs(text)
 
-        # 情况2：LLM 判 0 → 回退 mineru 重抽重判（light 可能漏段，mineru 全文补）
+        # 情况2：LLM 判 0 → 回退 mineru 重抽重判（light 可能漏段，mineru 全文补）。
+        # 仅当现有文本较短(疑似 PyMuPDF 局部抽取)才重抽——双栏/扫描 PDF 的首遍
+        # 解析本就已回退 mineru 全文，重抽得到相同文本只白耗一遍解析(约70s/篇)。
         if not defs and _src_path and os.path.exists(_src_path):
-            logger.info("concept-definition LLM 判 0,回退 mineru 重抽重判: %s", _src_path)
-            _mtxt = self._mineru_full_refallback(_src_path) or ""
-            if _mtxt and _mtxt != text:
-                text = _mtxt
-                defs = _extract_defs(text)
+            if len(text) < 6000:
+                logger.info("concept-definition LLM 判 0,文本较短(%d字),回退 mineru 重抽重判: %s",
+                            len(text), _src_path)
+                _mtxt = self._mineru_full_refallback(_src_path) or ""
+                if _mtxt and _mtxt != text:
+                    text = _mtxt
+                    defs = _extract_defs(text)
+            else:
+                logger.info("concept-definition LLM 判 0,文本已是全文(%d字),不重抽", len(text))
 
         # LLM 清洗定义句：抽取的 sent 可能粘定义结束后的非定义尾巴（如"其表达式
         # 如式(1)所示"/"有助于模型..."），清洗只留定义核心，再组装定位
