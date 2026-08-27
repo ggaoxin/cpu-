@@ -112,6 +112,11 @@ button:disabled { cursor: not-allowed !important; opacity: .48; transform: none 
 .evaluation-output-row span { color: #7d8a9e; font-size: 10.5px; white-space: nowrap; }
 .evaluation-result-box { min-height: 72px; margin-top: 10px; padding: 13px; color: #7c8a9e; background: #1f2632; border-radius: 9px; font-size: 11px; line-height: 1.7; }
 .ghost-btn.danger { color: #d54848; }
+/* 引用句「从文献文本自动提取」按钮：字段标签行右侧的轻量动作按钮 */
+.citation-extract-btn { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 5px; min-height: 26px; padding: 0 11px; color: #2f63f6; background: #f2f6ff; border: 1px solid #d4e0fc; border-radius: 7px; font-size: 11px; font-weight: 600; line-height: 1; white-space: nowrap; cursor: pointer; transition: .15s ease; }
+.citation-extract-btn i { font-style: normal; font-size: 12px; }
+.citation-extract-btn:hover { color: #1d4fd8; background: #e6eeff; border-color: #b8ccfb; }
+.citation-extract-btn:active { transform: scale(.96); }
 .range-hint { display: block; margin-top: 6px; color: #8c98aa; font-size: 11px; }
 .info-banner { padding: 12px; color: #315b8b; background: #edf6ff; border: 1px solid #cfe3f8; border-radius: 8px; line-height: 1.65; }
 .upload-zone { display: flex !important; min-height: 310px !important; align-items: center !important; justify-content: center !important; flex-direction: column; gap: 8px !important; color: #64748b !important; background: #fbfcff; border: 1px dashed #b9c8dc !important; border-radius: 10px; cursor: pointer; }
