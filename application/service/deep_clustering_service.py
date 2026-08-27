@@ -514,6 +514,23 @@ def execute_deep_clustering(
     selected = clustered["selected"]
     technical = clustered["technical"]
     application = clustered["application"]
+
+    # ---- 锚点辅助（可选）：训练样本/人工标注类目资源存在时，把小样本聚类
+    # 的主题锚定到人工标注类目标签（语义近邻匹配），避免自由聚类主题过于宽泛。
+    anchor_output: dict[str, Any] = {"enabled": False}
+    gold_path = None
+    try:
+        from infrastructure.clustering.anchor_labeling import resolve_gold_path, anchor_assist, aggregate_cluster_anchor
+        gold_path = resolve_gold_path(params.get("resolved_resources"))
+    except ImportError:
+        gold_path = None
+    if gold_path is not None:
+        anchor_output = anchor_assist(
+            normalized_papers, gold_path, selected_axis,
+            threshold=float(params.get("anchor_similarity_threshold", 0) or 0.45),
+        )
+    doc_anchors = anchor_output.get("document_anchors") or {}
+
     documents = [{
         "document_id": paper["document_id"],
         "title": paper["title"],
@@ -523,6 +540,7 @@ def execute_deep_clustering(
         "input_representation": paper["input_representation"],
         "technical": technical["doc_axis_info"][index] if technical else {},
         "application": application["doc_axis_info"][index] if application else {},
+        **(doc_anchors.get(str(paper["document_id"])) or {}),
     } for index, paper in enumerate(normalized_papers)]
     document_assignments = [{
         "document_id": item["document_id"],
@@ -533,7 +551,33 @@ def execute_deep_clustering(
         "similarity_to_centroid": (item["technical"] or item["application"]).get("score"),
         "key_evidence": (item["technical"] or item["application"]).get("key_evidence"),
         "input_representation": item["input_representation"],
+        "anchored_topic_id": (doc_anchors.get(str(item["document_id"])) or {}).get("anchored_topic_id"),
+        "anchored_topic_name": (doc_anchors.get(str(item["document_id"])) or {}).get("anchored_topic_name"),
+        "anchor_confidence": (doc_anchors.get(str(item["document_id"])) or {}).get("anchor_confidence"),
     } for item in documents]
+
+    # 簇级锚定：锚定主题替换宽泛的自由聚类主题（原主题保留在 original_topic_name）
+    if anchor_output.get("enabled"):
+        for axis_payload in (technical, application):
+            if not axis_payload or not axis_payload.get("clusters"):
+                continue
+            for cluster in axis_payload["clusters"]:
+                if str(cluster.get("cluster_id") or "") == "OUTLIER":
+                    continue
+                member_ids = [
+                    normalized_papers[i]["document_id"]
+                    for i in (cluster.get("doc_indices") or [])
+                    if isinstance(i, int) and 0 <= i < len(normalized_papers)
+                ]
+                cluster_anchor = aggregate_cluster_anchor(doc_anchors, member_ids)
+                if not cluster_anchor:
+                    continue
+                if cluster_anchor.get("anchor_status") == "anchored":
+                    # 高置信（票数份额≥0.5，gold 实测精度 99%）：锚定主题替换宽泛的自由聚类主题
+                    cluster["original_topic_name"] = cluster.get("topic_name")
+                    cluster["topic_name"] = cluster_anchor["anchored_topic_name"]
+                cluster.update(cluster_anchor)
+                cluster["anchored_member_ids"] = member_ids
 
     extraction = dict(clustered["axis_extraction"])
     selected_extractor = application_extractor if selected_axis == "application" else technical_extractor
@@ -550,6 +594,8 @@ def execute_deep_clustering(
     quality.update({
         "encoding_model": "bge-m3",
         "selected_axis": selected_axis,
+        "anchor_assisted": bool(anchor_output.get("enabled")),
+        "anchor_matched_document_count": anchor_output.get("matched_document_count", 0),
         "representation": clustered["representation"].get("representation"),
         "topic_library_used": False,
         "axis_extraction_mode": extraction.get("mode"),
@@ -649,6 +695,7 @@ def execute_deep_clustering(
         "documents": documents,
         "technical_topics": technical["clusters"] if technical else [],
         "application_topics": application["clusters"] if application else [],
+        "anchor_assist": anchor_output,
         "n": len(documents),
         "input_summary": {
             "document_count": len(documents),

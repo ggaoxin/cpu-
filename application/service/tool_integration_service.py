@@ -969,7 +969,12 @@ class ToolIntegrationService:
         excluded.update({"document_title", "scientific_document_full_text"})
         params = {key: value for key, value in payload.items() if key not in excluded and value is not None}
         resolved_resources: Dict[str, Any] = {}
-        for field in SEMANTIC_RESOURCE_FIELDS:
+        # deep-cluster 的训练样本/人工标注类目是可选资源（小样本聚类锚点辅助），
+        # 不在必填的 SEMANTIC_RESOURCE_FIELDS 里，这里一并解析给引擎。
+        resource_fields = set(SEMANTIC_RESOURCE_FIELDS)
+        if contract.tool_id == "deep-cluster":
+            resource_fields.update({"training_samples", "manually_labeled_category_data"})
+        for field in resource_fields:
             descriptor = payload.get(field)
             if not isinstance(descriptor, dict) or not descriptor.get("resource_id"):
                 continue

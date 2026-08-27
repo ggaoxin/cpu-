@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
 import type { InputMode } from '../types'
 import { databaseResourceCatalog } from '../data/database-preview'
-import { evaluateDeepCluster, listSemanticResources, uploadSemanticResource } from '../services/api'
+import { listSemanticResources, uploadSemanticResource } from '../services/api'
 
 type ResourceField = {
   key: string
@@ -78,11 +78,11 @@ const resourceGroups: Record<string, { title: string; description: string; field
     ],
   },
   'deep-cluster': {
-    title: '独立模型性能评测',
-    description: '仅用于独立模型评测',
+    title: '聚类锚点辅助资源',
+    description: '小样本聚类时将主题锚定到人工标注类目',
     fields: [
-      { key: 'training_samples', label: '训练样本', description: '评测语义表示与聚类参数', placeholder: '请选择训练样本版本' },
-      { key: 'manually_labeled_category_data', label: '人工标注类目标签数据', description: '作为聚类指标评测答案', placeholder: '请选择人工标注类目数据' },
+      { key: 'training_samples', label: '训练样本', description: '人工标注文献语义锚点库（1000 篇），聚类时通过语义相似度匹配', placeholder: '请选择训练样本版本' },
+      { key: 'manually_labeled_category_data', label: '人工标注类目标签数据', description: '聚类结果锚定的人工标注类目标签（主题名称来源）', placeholder: '请选择人工标注类目数据' },
     ],
   },
   'structured-review': {
@@ -97,9 +97,6 @@ const resourceGroups: Record<string, { title: string; description: string; field
 const sourceModes = reactive<Record<string, string>>({})
 const selectedResources = reactive<Record<string, string>>({})
 const uploadedResources = reactive<Record<string, File | null>>({})
-const evaluationOpen = ref(false)
-const evaluationRunning = ref(false)
-const evaluationMessage = ref('')
 const citationRawReference = ref('')
 const citationParseState = ref<'idle' | 'parsed' | 'partial' | 'empty'>('idle')
 const citationReferenceSource = ref<'paste' | 'upload'>('paste')
@@ -154,7 +151,6 @@ const requestPayload = computed<Record<string, unknown>>(() => {
   }
 
   currentGroup.value?.fields.forEach(field => {
-    if (props.toolId === 'deep-cluster') return
     const source = sourceModes[field.key]
     if (source === 'embedded') return
     payload[field.key] = source === 'upload'
@@ -286,30 +282,6 @@ async function saveResourceToDatabase(key: string) {
   }
 }
 
-async function runIndependentEvaluation() {
-  evaluationRunning.value = true
-  evaluationMessage.value = ''
-  try {
-    const payload = Object.fromEntries((currentGroup.value?.fields || []).map(field => [
-      field.key,
-      sourceModes[field.key] === 'upload'
-        ? uploadedResources[field.key]
-        : { source: 'database', resource_id: selectedResources[field.key] || null },
-    ]))
-    const response = await evaluateDeepCluster(payload)
-    const data = response.data || {}
-    const metrics = data.metrics || {}
-    evaluationMessage.value = [
-      `评测完成：${data.sample_count || 0} 条样本，${data.predicted_cluster_count || 0} 个预测类簇。`,
-      `ARI：${metrics.adjusted_rand_index ?? '未计算'}；NMI：${metrics.normalized_mutual_information ?? '未计算'}；轮廓系数：${metrics.silhouette_score ?? '未计算'}。`,
-    ].join('\n')
-  } catch (error) {
-    evaluationMessage.value = error instanceof Error ? error.message : '模型性能评测失败'
-  } finally {
-    evaluationRunning.value = false
-  }
-}
-
 function availableResources(key: string) {
   const resources = runtimeResourceCatalog[key] || []
   const wantedStatus = sourceModes[key] === 'history' ? 'history' : 'current'
@@ -356,9 +328,6 @@ watch(() => props.toolId, () => {
     sourceModes[field.key] = props.toolId === 'structured-review' ? 'embedded' : 'database'
     selectedResources[field.key] = availableResources(field.key)[0]?.id || ''
   })
-  evaluationOpen.value = false
-  evaluationRunning.value = false
-  evaluationMessage.value = ''
   citationRawReference.value = ''
   citationParseState.value = 'idle'
   citationReferenceSource.value = 'paste'
@@ -461,33 +430,22 @@ watchEffect(() => emit('update:payload', requestPayload.value))
   </div>
 
   <section v-else-if="toolId === 'deep-cluster'" class="deep-cluster-evaluation-section">
-    <div class="deep-cluster-evaluation-header">
-      <div><span class="independent-evaluation-badge">独立功能</span><div><b>模型性能评测</b><small>独立于普通文献聚类</small></div></div>
-      <button class="outline-btn" type="button" :aria-expanded="evaluationOpen" @click="evaluationOpen = !evaluationOpen">{{ evaluationOpen ? '收起评测设置' : '展开评测设置' }}</button>
-    </div>
-    <div class="evaluation-independence-note"><b>使用说明</b><span>没有训练样本和人工标注数据时，用户仍可正常上传文本或文件完成深度聚类。只有需要单独测试模型性能时，才使用下面的评测资源。</span></div>
-    <div v-if="evaluationOpen" class="deep-cluster-evaluation-body">
-      <div class="settings-title"><b>独立评测数据</b><span>仅发送至模型评测接口</span></div>
-      <div class="requirement-resource-grid">
-        <article v-for="field in currentGroup?.fields" :key="field.key" class="requirement-resource-item">
-          <div class="requirement-resource-heading"><div><b>{{ field.label }}</b></div></div>
-          <p>{{ field.description }}</p>
-          <div class="requirement-resource-controls">
-            <select v-model="selectedResources[field.key]" class="select">
-              <option value="" disabled>{{ field.placeholder }}</option>
-              <option v-for="item in availableResources(field.key)" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option>
-            </select>
-          </div>
-          <div v-if="selectedResource(field.key)" class="database-record-summary resource-record-summary">
-            <span>ID：{{ selectedResource(field.key)?.id }}</span><span>规模：{{ selectedResource(field.key)?.recordCount }}</span><span>语言：{{ selectedResource(field.key)?.language }}</span><span>更新：{{ selectedResource(field.key)?.updatedAt }}</span>
-          </div>
-        </article>
-      </div>
-      <div class="evaluation-output-row">
-        <div><b>评测输出</b><span>ARI、NMI、纯度、一致率与误差统计</span></div>
-        <button class="primary-btn" type="button" :disabled="evaluationRunning" @click="runIndependentEvaluation">{{ evaluationRunning ? '评测中…' : '运行模型性能评测' }}</button>
-      </div>
-      <div class="evaluation-result-box">{{ evaluationMessage || '尚未运行模型性能评测。该区域不会显示聚类业务结果。' }}</div>
+    <div class="settings-title"><b>{{ currentGroup?.title }}</b><span>{{ currentGroup?.description }}</span></div>
+    <div class="evaluation-independence-note"><b>使用说明</b><span>可选。上传少量文献聚类时，系统将待聚类文献与人工标注文献进行语义相似度计算，把聚类主题锚定到人工标注类目标签，避免小样本下聚类主题过于宽泛。不选择时按自由聚类生成主题。</span></div>
+    <div class="requirement-resource-grid">
+      <article v-for="field in currentGroup?.fields" :key="field.key" class="requirement-resource-item">
+        <div class="requirement-resource-heading"><div><b>{{ field.label }}</b></div></div>
+        <p>{{ field.description }}</p>
+        <div class="requirement-resource-controls">
+          <select v-model="selectedResources[field.key]" class="select">
+            <option value="" disabled>{{ field.placeholder }}</option>
+            <option v-for="item in availableResources(field.key)" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option>
+          </select>
+        </div>
+        <div v-if="selectedResource(field.key)" class="database-record-summary resource-record-summary">
+          <span>ID：{{ selectedResource(field.key)?.id }}</span><span>规模：{{ selectedResource(field.key)?.recordCount }}</span><span>语言：{{ selectedResource(field.key)?.language }}</span><span>更新：{{ selectedResource(field.key)?.updatedAt }}</span>
+        </div>
+      </article>
     </div>
   </section>
 
