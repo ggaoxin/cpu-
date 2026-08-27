@@ -662,7 +662,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
 
           <template v-if="toolId === 'deep-cluster' && mode === 'batch-text'">
             <div class="special-panel">
-              <div class="special-panel-head"><div><strong>文本与文献元数据</strong><span>逐条填写文本及对应元数据</span></div><div><button class="outline-btn" @click="addDoc">＋ 添加文本</button></div></div>
+              <div class="special-panel-head"><div><strong>文本与文献元数据</strong><span>逐条填写文本及对应元数据</span></div></div>
               <div v-if="!docs.length" class="empty-input"><b>尚未添加文本</b><span>至少添加 4 条，并为每条文本填写对应的文献元数据。</span><button class="outline-btn" @click="addDoc">＋ 添加第一条文本</button></div>
               <div v-for="(doc,index) in docs" :key="doc.id" class="document-card deep-cluster-document-card">
                 <div class="document-card-head"><b>文本 {{ index + 1 }}</b><button class="ghost-btn danger" @click="docs.splice(index,1)">删除</button></div>
@@ -677,6 +677,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                 </div>
                 <div class="field deep-cluster-text-field"><label><span class="label-main"><span class="required-mark">*</span> 文本</span><small>支持各类科技文本，最多 8000 字</small></label><textarea v-model="doc.text" class="textarea compact" maxlength="8000" placeholder="请输入完整文本"></textarea></div>
               </div>
+              <button v-if="docs.length" class="outline-btn deep-cluster-add-doc-btn" type="button" @click="addDoc">＋ 添加文本</button>
               <div class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
                 <div class="field"><label><span class="label-main">训练样本</span><small>可选</small></label><select v-model="selectedAnchorTrain" class="select"><option value="">不使用</option><option v-for="item in anchorTrainOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option></select></div>
                 <div class="field"><label><span class="label-main">人工标注类目标签数据</span><small>可选</small></label><select v-model="selectedAnchorGold" class="select"><option value="">不使用</option><option v-for="item in anchorGoldOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option></select></div>
@@ -690,7 +691,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
 
           <template v-else-if="toolId === 'structured-review' && mode === 'batch-text'">
             <div class="special-panel structured-review-document-set">
-              <div class="special-panel-head"><div><strong>文献集</strong><span>{{ docs.length }} 篇，至少需要 3 篇</span></div><div><button class="outline-btn" @click="addDoc">＋ 添加文献</button></div></div>
+              <div class="special-panel-head"><div><strong>文献集</strong><span>{{ docs.length }} 篇，至少需要 3 篇</span></div></div>
               <div v-if="!docs.length" class="empty-input"><b>尚未添加文献</b><span>逐篇录入文本及对应元数据。</span><button class="outline-btn" @click="addDoc">＋ 添加第一篇文献</button></div>
               <div v-for="(doc,index) in docs" :key="doc.id" class="document-card review-document-card-v634">
                 <div class="document-card-head"><b>文献 {{ index + 1 }} · {{ doc.id }}</b><button class="ghost-btn danger" @click="docs.splice(index,1)">删除</button></div>
@@ -706,6 +707,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                 </div>
                 <div class="field review-fulltext-v634"><label><span class="label-main"><span class="required-mark">*</span> 文本</span><small>支持各类科技文本，最多 8000 字</small></label><textarea v-model="doc.text" class="textarea compact" maxlength="8000" placeholder="请输入文本内容"></textarea></div>
               </div>
+              <button v-if="docs.length" class="outline-btn deep-cluster-add-doc-btn" type="button" @click="addDoc">＋ 添加文献</button>
             </div>
           </template>
 
