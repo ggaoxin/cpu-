@@ -422,7 +422,6 @@ watchEffect(() => emit('update:payload', requestPayload.value))
   </div>
 
   <div v-else-if="currentGroup && toolId !== 'structured-review'" class="settings-card requirement-supplement-card">
-    <div v-if="toolId !== 'citation-intent'" class="settings-title"><b>{{ currentGroup.title }}</b><span>{{ currentGroup.description }}</span></div>
     <div class="requirement-resource-grid" :class="{ single: currentGroup.fields.length === 1 }">
       <article v-for="field in currentGroup.fields" :key="field.key" class="requirement-resource-item">
         <div class="requirement-resource-heading">
