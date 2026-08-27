@@ -186,6 +186,8 @@ body.v690-general-ner-active .ner-results-table td,
 .dictionary-card { margin-top: 14px; padding: 14px; background: #fff; border: 1px solid #dce5f1; border-radius: 10px; }
 .dictionary-copy { margin: 0 0 12px; color: #65748a; font-size: 12px; line-height: 1.75; }
 .dictionary-status, .dictionary-custom { margin-top: 12px; }
+.dictionary-upload-field { display: flex; align-items: center; gap: 10px; }
+.dictionary-upload-field .resource-upload-zone { flex: 1; min-width: 0; }
 .dictionary-custom .textarea.compact { max-height: 180px; }
 .classification-label-note { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
 .classification-label-note span { color: #60728c; font-size: 12px; }
@@ -206,7 +208,7 @@ body.v690-general-ner-active .ner-results-table td,
 .history-grid { margin-top: 2px; }
 .sidebar .v752-nav-flyout { left: 250px; }
 .response-result-body { position: relative; }
-.response-result-body .console { margin: 0; min-height: 430px; max-height: none; border: 1px solid var(--code-border); border-radius: 8px; background: var(--code); }
+.response-result-body .console { margin: 0; min-height: 280px; max-height: 480px; overflow: auto; overscroll-behavior: contain; border: 1px solid var(--code-border); border-radius: 8px; background: var(--code); }
 .response-result-body .console.placeholder { display: grid; place-items: center; color: #8d98a9; }
 .result-copy { top: 8px; right: 8px; }
 
