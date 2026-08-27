@@ -355,7 +355,6 @@ watchEffect(() => emit('update:payload', requestPayload.value))
 
 <template>
   <div v-if="toolId === 'rq-detect'" class="settings-card requirement-supplement-card">
-    <div class="settings-title"><b>文本格式要求</b><span>保留章节层级与问题位置</span></div>
     <div class="field"><label><span class="label-main">文本格式要求</span><small>可选；未设置时自动识别</small></label><select v-model="textFormatRequirement" class="select"><option>自动识别</option><option>纯文本</option><option>章节结构文本</option><option>JSON 结构文本</option></select></div>
     <div class="format-example-box"><b>格式说明</b><span>纯文本可直接粘贴正文；章节结构文本应保留标题层级；JSON 结构文本应包含章节名称和正文内容。</span></div>
   </div>
