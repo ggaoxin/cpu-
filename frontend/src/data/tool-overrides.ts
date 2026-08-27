@@ -918,7 +918,6 @@ const finalOverrides: Record<string, Partial<ToolDefinition>> = {
   },
   'rq-detect': {
     inputModes: fourModes,
-    modeLabels: { text: '单文本片段', 'batch-text': '批量文本片段', file: '单文件', batch: '批量文件' },
     textEndpoint: '/api/v1/research-question/text',
     batchTextEndpoint: '/api/v1/research-question/texts',
     fileEndpoint: '/api/v1/research-question/file',
@@ -926,7 +925,6 @@ const finalOverrides: Record<string, Partial<ToolDefinition>> = {
   },
   'citation-sentiment': {
     inputModes: fourModes,
-    modeLabels: { text: '单条引用', 'batch-text': '批量引用', file: '单篇全文', batch: '批量全文' },
     textEndpoint: '/api/v1/citation-sentiment/text',
     batchTextEndpoint: '/api/v1/citation-sentiment/texts',
     fileEndpoint: '/api/v1/citation-sentiment/file',
@@ -934,7 +932,6 @@ const finalOverrides: Record<string, Partial<ToolDefinition>> = {
   },
   'citation-intent': {
     inputModes: fourModes,
-    modeLabels: { text: '单条引用', 'batch-text': '批量引用', file: '单篇全文', batch: '批量全文' },
     textEndpoint: '/api/v1/citation-intent/text',
     batchTextEndpoint: '/api/v1/citation-intent/texts',
     fileEndpoint: '/api/v1/citation-intent/file',
