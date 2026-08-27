@@ -70,36 +70,52 @@ const citationBatchItems = reactive<CitationBatchItem[]>([])
 const uploadedFiles = reactive<UploadedFileItem[]>([])
 let batchItemSequence = 0
 const form = reactive({ projectName: '', documentTitle: '', text: '', batchText: '', language: '自动识别', domain: '自动识别', threshold: '0.75', outputFormat: 'JSON', clusterDimension: 'technology', algorithm: '自动选择', clusterCount: '', historyId: '', topic: '' })
-const citationSingle = reactive({ documentText: '', citationSentence: '', previousContext: '', nextContext: '' })
+const citationSingle = reactive({ documentText: '' })
+type CitationCard = { id: number; marker: string; sentence: string; previousContext: string; nextContext: string }
+const citationCards = reactive<CitationCard[]>([])
+let citationCardSeq = 0
 
-// 引用句自动填充：文献文本是用户唯一需要输入的内容；引用句及上下文由系统从
-// 文献文本自动解析（定位首个含引用标记 [1]/[2,3]/[4-6] 的句子+前后句），填入
-// 需规规定的既有输入框（可见可改）；被引元数据由用户在下方补充。
+// 引用句自动解析：文献文本是用户唯一需要输入的内容；系统从文献文本解析出
+// 全部引用句（含引用标记的句子+前句/后句上下文），以卡片列表展示（可编辑/删除）；
+// 被引文献元数据由用户在下方补充。
 let citationAutoTimer: ReturnType<typeof setTimeout> | null = null
-let citationUserEdited = false   // 用户手改过引用句字段后不再自动覆盖
+let citationCardsEdited = false   // 用户增删改过卡片后不再自动覆盖
 const citationExtractedCount = ref(0)
 function autoExtractCitation() {
   const text = citationSingle.documentText.trim()
   if (!text) { citationExtractedCount.value = 0; return }
   const sentences = text.split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
   const markerRe = /\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/
-  const index = sentences.findIndex(s => markerRe.test(s))
-  citationExtractedCount.value = index < 0 ? 0 : sentences.filter(s => markerRe.test(s)).length
-  if (index < 0) return
-  citationSingle.citationSentence = sentences[index]
-  citationSingle.previousContext = index > 0 ? sentences[index - 1] : '（文档开头，无上文）'
-  citationSingle.nextContext = index + 1 < sentences.length ? sentences[index + 1] : '（文档结尾，无下文）'
+  const hits = sentences.map((s, i) => ({ s, i })).filter(({ s }) => markerRe.test(s))
+  citationExtractedCount.value = hits.length
+  if (!hits.length) return
+  citationCards.splice(0, citationCards.length, ...hits.map(({ s, i }) => ({
+    id: ++citationCardSeq,
+    marker: (s.match(markerRe) || [''])[0],
+    sentence: s,
+    previousContext: i > 0 ? sentences[i - 1] : '（文档开头，无上文）',
+    nextContext: i + 1 < sentences.length ? sentences[i + 1] : '（文档结尾，无下文）',
+  })))
 }
 watch(() => citationSingle.documentText, () => {
-  if (citationUserEdited) return
+  if (citationCardsEdited) return
   if (citationAutoTimer) clearTimeout(citationAutoTimer)
   citationAutoTimer = setTimeout(autoExtractCitation, 600)
 })
 
-function markCitationUserEdited() { citationUserEdited = true }
+function markCitationCardsEdited() { citationCardsEdited = true }
 function forceAutoExtractCitation() {
-  citationUserEdited = false
+  citationCardsEdited = false
   autoExtractCitation()
+}
+function removeCitationCard(id: number) {
+  markCitationCardsEdited()
+  const index = citationCards.findIndex(c => c.id === id)
+  if (index >= 0) citationCards.splice(index, 1)
+}
+function addCitationCard() {
+  markCitationCardsEdited()
+  citationCards.push({ id: ++citationCardSeq, marker: '', sentence: '', previousContext: '', nextContext: '' })
 }
 const supplementalPayload = ref<Record<string, unknown>>({})
 const labelLengthLimit = ref(12)
@@ -189,17 +205,16 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
   }
   if (props.toolId.startsWith('citation-')) {
     if (mode.value === 'text') {
-      if (props.toolId === 'citation-sentiment') values.scientific_document_full_text = citationSingle.documentText
-      else values.scientific_document_full_text = citationSingle.documentText
-      if (citationUserEdited) {
-        // 用户手改过引用句字段：精确按所填的单条引用识别（需规高级路径）
-        values.citation_sentence_and_context = [{
-          citation_sentence: citationSingle.citationSentence,
-          previous_context: citationSingle.previousContext,
-          next_context: citationSingle.nextContext,
-        }]
+      values.scientific_document_full_text = citationSingle.documentText
+      // 提交解析出的全部引用句卡片（每条含上下文）；用户增删改过以卡片为准
+      if (citationCards.length) {
+        values.citation_sentence_and_context = citationCards.map(card => ({
+          citation_sentence: card.sentence,
+          previous_context: card.previousContext,
+          next_context: card.nextContext,
+          citation_marker: card.marker || undefined,
+        }))
       }
-      // 未手改：不传 citation_sentence_and_context，由后端从文献文本解析全部引用句逐条识别
     } else if (mode.value === 'batch-text') {
       if (props.toolId === 'citation-sentiment') values.scientific_document_full_text = citationBatchItems.map(item => ({ text: item.documentText }))
       values.citation_sentence_and_context = citationBatchItems.map(item => ({
@@ -571,12 +586,9 @@ function validateRequiredInputs(): string {
   if (props.toolId.startsWith('citation-')) {
     if (mode.value === 'text') {
       if (props.toolId === 'citation-sentiment' && !citationSingle.documentText.trim()) return '请输入文献文本。'
-      if (!citationUserEdited) {
-        if (!citationExtractedCount.value) return '未在文献文本中发现引用标记（如 [1]、[2,3]），请检查文本或手动填写引用句。'
-      } else {
-        if (!citationSingle.citationSentence.trim()) return '请输入引用句文本。'
-        if (!citationSingle.previousContext.trim() || !citationSingle.nextContext.trim()) return '请同时填写引用句上文和下文。'
-      }
+      if (!citationCards.length) return '未解析出引用句：文献文本中未发现引用标记（如 [1]、[2,3]），可点击「从文献文本自动提取」或手动添加引用句。'
+      const invalidCard = citationCards.find(card => !card.sentence.trim() || !card.previousContext.trim() || !card.nextContext.trim())
+      if (invalidCard) return '存在引用句卡片未填写完整（引用句、上文、下文均需填写）。'
     } else if (mode.value === 'batch-text') {
       if (!citationBatchItems.length) return '请至少添加一条引用数据。'
       const invalidIndex = citationBatchItems.findIndex(item =>
@@ -760,8 +772,13 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
           <template v-else-if="toolId.startsWith('citation-') && mode === 'text'">
             <div class="citation-structured-input">
               <div v-if="toolId === 'citation-sentiment'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="citationSingle.documentText" class="textarea main-textarea" maxlength="8000" placeholder="请输入文献文本"></textarea></div>
-              <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><button type="button" class="citation-extract-btn" @click="forceAutoExtractCitation"><i>✦</i>从文献文本自动提取</button></label><textarea v-model="citationSingle.citationSentence" class="textarea compact" placeholder="输入文献文本后自动提取，也可手动填写" @input="markCitationUserEdited"></textarea><small v-if="!citationUserEdited && citationExtractedCount" class="range-hint">已从文献文本定位 {{ citationExtractedCount }} 条引用句，提交时将全部识别；下方展示第一条，手动修改后则仅识别所填的这一条。</small></div>
-              <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="citationSingle.previousContext" class="textarea compact citation-context-area" placeholder="输入文献文本后自动提取，也可手动填写" @input="markCitationUserEdited"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="citationSingle.nextContext" class="textarea compact citation-context-area" placeholder="输入文献文本后自动提取，也可手动填写" @input="markCitationUserEdited"></textarea></div></div>
+              <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句解析</span><button type="button" class="citation-extract-btn" @click="forceAutoExtractCitation"><i>✦</i>从文献文本自动提取</button></label><small v-if="citationExtractedCount" class="range-hint">已从文献文本解析出 {{ citationCards.length }} 条引用句（含上下文），提交时全部识别；卡片可编辑与删除。</small></div>
+              <div v-for="(card, index) in citationCards" :key="card.id" class="document-card citation-card">
+                <div class="document-card-head"><b>引用句 {{ index + 1 }} <span v-if="card.marker" class="citation-marker-badge">{{ card.marker }}</span></b><button class="ghost-btn danger" type="button" @click="removeCitationCard(card.id)">删除</button></div>
+                <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span></label><textarea v-model="card.sentence" class="textarea compact" placeholder="包含引文标记的引用句" @input="markCitationCardsEdited"></textarea></div>
+                <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="card.previousContext" class="textarea compact citation-context-area" placeholder="引用句前文" @input="markCitationCardsEdited"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="card.nextContext" class="textarea compact citation-context-area" placeholder="引用句后文" @input="markCitationCardsEdited"></textarea></div></div>
+              </div>
+              <button v-if="citationCards.length" class="outline-btn" type="button" @click="addCitationCard">＋ 添加引用句</button>
             </div>
           </template>
           <template v-else-if="toolId.startsWith('citation-') && mode === 'batch-text'">
