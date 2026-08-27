@@ -363,7 +363,6 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         </div>
       </div>
       <div class="citation-parsed-metadata">
-        <div class="citation-parsed-heading"><b>元数据信息（{{ citationMetadataList.length }} 条）</b><span>解析结果可直接校正</span></div>
         <div v-for="(entry, index) in citationMetadataList" :key="index" class="citation-metadata-entry">
           <div class="citation-metadata-entry-head"><b>条目 {{ index + 1 }}<span v-if="entry.reference_index"> [{{ entry.reference_index }}]</span></b><button class="ghost-btn danger" type="button" @click="removeCitationMetaEntry(index)">删除</button></div>
           <div class="citation-metadata-form-grid">
