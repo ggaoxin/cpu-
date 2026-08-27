@@ -466,17 +466,46 @@ class SemanticApplicationService(ISemanticService):
 
         # 2. LLM 凭自身 CLC 知识提议（不含候选，防锚定）；全文输入时附全文供 LLM 参考。
         # 先调用远端 GLM-5.2，成功后再加载体积较大的本地向量检索资源。
+        # ——例外：用户自定义 CLC 体系（已建索引）时，GLM 不可能凭参数知识知道自定义
+        # 分类号（其先验是中图法，会返回 TP/C 等内置码导致 resolve 失败），此时必须
+        # 先检索候选喂给 LLM——候选是自定义体系下唯一的事实来源，不存在锚定问题。
+        cross_lingual = bool(getattr(rule, "cross_lingual", False))
+        top_k = int((request.params or {}).get("top_k", 5))
+        custom_retriever = None
+        custom_candidates: list = []
+        if isinstance((request.params or {}).get("resolved_resources"), dict) \
+                and (request.params or {}).get("resolved_resources", {}).get("clc_labeled_data"):
+            from infrastructure.rag.clc_retriever import clc_retriever as _builtin
+            custom_retriever = self._resolve_clc_retriever(code, request, cross_lingual)
+            if custom_retriever is not _builtin:
+                custom_candidates = custom_retriever.retrieve(
+                    title, abstract, keywords, k=max(top_k, 12), cross_lingual=cross_lingual)
         system_prompt = self._system_prompt(rule, request)
         user_prompt = self._render_classification_user_prompt(title, abstract, keywords, full_text)
+        if custom_candidates:
+            lines = []
+            for i, cand in enumerate(custom_candidates):
+                path = " > ".join(cand.get("path_names") or []) or str(cand.get("full_path") or "")
+                lines.append(f"[{i + 1}] {cand.get('clc_code')} {cand.get('clc_name')}"
+                             + (f" | 路径: {path}" if path else ""))
+            user_prompt += (
+                "\n\n【重要】本次使用用户自定义分类体系（非中图法）。"
+                "main_code 与 auxiliary_codes 必须且只能从下列候选分类号中选择，"
+                "禁止使用任何不在候选中的分类号（包括你已知的中图法分类号）：\n"
+                + "\n".join(lines)
+            )
         data = self._glm.chat_json(system_prompt, user_prompt, timeout=120.0, max_tokens=1500)
         data = data.get("data", data) if isinstance(data, dict) else {}
 
-        # 3. 检索 top-K（仅用于输出 rag_top_k_candidates + 兜底，不喂给 LLM）
-        top_k = int((request.params or {}).get("top_k", 5))
-        cross_lingual = bool(getattr(rule, "cross_lingual", False))
-        retriever = self._resolve_clc_retriever(code, request, cross_lingual)
-        candidates = retriever.retrieve(title, abstract, keywords, k=top_k,
-                                        cross_lingual=cross_lingual)
+        # 3. 检索 top-K（仅用于输出 rag_top_k_candidates + 兜底，不喂给 LLM；
+        #    自定义体系路径已在第 2 步提前检索并喂给 LLM，此处复用）
+        retriever = custom_retriever if custom_retriever is not None else \
+            self._resolve_clc_retriever(code, request, cross_lingual)
+        if custom_candidates:
+            candidates = custom_candidates
+        else:
+            candidates = retriever.retrieve(title, abstract, keywords, k=top_k,
+                                            cross_lingual=cross_lingual)
 
         # 3b. 解析候选组合（1-3 组，按推荐度降序）；兼容旧版 main_code/auxiliary_codes 单组合响应
         combos_raw = data.get("combinations") or []
