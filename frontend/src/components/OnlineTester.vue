@@ -49,6 +49,7 @@ type CitationBatchItem = {
   citationSentence: string
   previousContext: string
   nextContext: string
+  sourceId?: number | null   // 自动展开来源:由哪张卡片提取生成(手工卡片为 null)
 }
 
 type UploadedFileItem = {
@@ -109,18 +110,39 @@ function forceAutoExtractCitation() {
   citationCardsEdited = false
   autoExtractCitation()
 }
-// 批量文本：从该条的文献文本提取首个引用句（含上下文）填入本条字段
+// 批量文本：从该条的文献文本提取全部引用句——第一条填入本卡，
+// 其余自动展开为同题目/同文献文本的新卡片（sourceId 标记来源，重复提取时先清理旧的）
 function autoExtractBatchCitation(item: CitationBatchItem) {
   const text = (item.documentText || '').trim()
   if (!text) { requestError.value = '请先填写本条的文献文本，再自动提取引用句。'; return }
   const sentences = text.split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
   const markerRe = /\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/
-  const index = sentences.findIndex(s => markerRe.test(s))
-  if (index < 0) { requestError.value = '本条文献文本中未发现引用标记（如 [1]），请手动填写引用句。'; return }
+  const hits = sentences.map((s, i) => ({ s, i })).filter(({ s }) => markerRe.test(s))
+  if (!hits.length) { requestError.value = '本条文献文本中未发现引用标记（如 [1]），请手动填写引用句。'; return }
   requestError.value = ''
-  item.citationSentence = sentences[index]
-  item.previousContext = index > 0 ? sentences[index - 1] : '（文档开头，无上文）'
-  item.nextContext = index + 1 < sentences.length ? sentences[index + 1] : '（文档结尾，无下文）'
+  const fill = (target: CitationBatchItem, hit: { s: string, i: number }) => {
+    target.citationSentence = hit.s
+    target.previousContext = hit.i > 0 ? sentences[hit.i - 1] : '（文档开头，无上文）'
+    target.nextContext = hit.i + 1 < sentences.length ? sentences[hit.i + 1] : '（文档结尾，无下文）'
+  }
+  fill(item, hits[0])
+  // 清掉本卡之前展开的旧卡片（重复点击幂等），再按剩余引用句展开
+  for (let i = citationBatchItems.length - 1; i >= 0; i -= 1) {
+    if (citationBatchItems[i].sourceId === item.id) citationBatchItems.splice(i, 1)
+  }
+  for (const hit of hits.slice(1)) {
+    const card: CitationBatchItem = {
+      id: ++batchItemSequence,
+      title: item.title,
+      documentText: item.documentText,
+      citationSentence: '',
+      previousContext: '',
+      nextContext: '',
+      sourceId: item.id,
+    }
+    fill(card, hit)
+    citationBatchItems.push(card)
+  }
 }
 function removeCitationCard(id: number) {
   markCitationCardsEdited()
