@@ -109,6 +109,19 @@ function forceAutoExtractCitation() {
   citationCardsEdited = false
   autoExtractCitation()
 }
+// 批量文本：从该条的文献文本提取首个引用句（含上下文）填入本条字段
+function autoExtractBatchCitation(item: CitationBatchItem) {
+  const text = (item.documentText || '').trim()
+  if (!text) { requestError.value = '请先填写本条的文献文本，再自动提取引用句。'; return }
+  const sentences = text.split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
+  const markerRe = /\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/
+  const index = sentences.findIndex(s => markerRe.test(s))
+  if (index < 0) { requestError.value = '本条文献文本中未发现引用标记（如 [1]），请手动填写引用句。'; return }
+  requestError.value = ''
+  item.citationSentence = sentences[index]
+  item.previousContext = index > 0 ? sentences[index - 1] : '（文档开头，无上文）'
+  item.nextContext = index + 1 < sentences.length ? sentences[index + 1] : '（文档结尾，无下文）'
+}
 function removeCitationCard(id: number) {
   markCitationCardsEdited()
   const index = citationCards.findIndex(c => c.id === id)
@@ -787,7 +800,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                 <div class="document-card-head"><b>引用数据 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" :disabled="citationBatchItems.length <= 1" @click="removeCitationBatchItem(item.id)">删除</button></div>
                 <div class="field"><label><span class="label-main">题目</span><small>可选；用于标识本条响应结果及可视化弹窗中的文献</small></label><input v-model="item.title" class="input" maxlength="300" placeholder="请输入本条文献题目" /></div>
                 <div v-if="toolId === 'citation-sentiment'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="item.documentText" class="textarea compact" maxlength="8000" placeholder="请输入本条引用所属的文献文本"></textarea></div>
-                <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span></label><textarea v-model="item.citationSentence" class="textarea compact citation-sentence-area" placeholder="请输入包含引文标记的引用句"></textarea></div>
+                <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><button v-if="toolId === 'citation-sentiment'" type="button" class="citation-extract-btn" @click="autoExtractBatchCitation(item)"><i>✦</i>从文献文本自动提取</button></label><textarea v-model="item.citationSentence" class="textarea compact citation-sentence-area" placeholder="可点击右上按钮从本条文献文本自动提取，也可手动填写"></textarea></div>
                 <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="item.previousContext" class="textarea compact citation-context-area" placeholder="请输入引用句前文"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="item.nextContext" class="textarea compact citation-context-area" placeholder="请输入引用句后文"></textarea></div></div>
               </div>
             </div>
