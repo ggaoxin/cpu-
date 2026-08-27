@@ -134,8 +134,6 @@ const requestPayload = computed<Record<string, unknown>>(() => {
         venue: entry.venue,
         doi: entry.doi,
       }))
-    } else if (props.mode === 'batch-text') {
-      payload.citation_metadata = citationBatchMetadataFile.value || parsedCitationBatchMetadata()
     } else {
       payload.citation_metadata = citationFallbackMetadataFile.value || citationFallbackMetadataText.value || { source: 'file_auto_parse' }
     }
@@ -336,7 +334,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
     <div class="format-example-box"><b>格式说明</b><span>纯文本可直接粘贴正文；章节结构文本应保留标题层级；JSON 结构文本应包含章节名称和正文内容。</span></div>
   </div>
 
-  <div v-if="(toolId === 'citation-sentiment' || toolId === 'citation-intent') && (mode === 'text' || mode === 'batch-text')" class="settings-card requirement-supplement-card citation-metadata-card">
+  <div v-if="(toolId === 'citation-sentiment' || toolId === 'citation-intent') && mode === 'text'" class="settings-card requirement-supplement-card citation-metadata-card">
     <div class="settings-title"><b>被引文献元数据</b><span>{{ mode === 'text' || mode === 'batch-text' ? '由用户填写或上传' : '从文件参考文献列表自动解析' }}</span></div>
 
     <div v-if="mode === 'text'" class="citation-manual-metadata-panel">

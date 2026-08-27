@@ -2,7 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import type { InputMode, ToolDefinition } from '../types'
 import { endpointFor, modesFor, pretty, requestPayloadFor, supportsVisualization } from '../utils/tooling'
-import { ApiRequestError, executeToolRequest, listCompatibleHistory, listDictionaries, listDocumentCollections, listSemanticResources, saveDictionary } from '../services/api'
+import { ApiRequestError, executeToolRequest, listCompatibleHistory, listDictionaries, listDocumentCollections, listSemanticResources, parseCitationMetadata, saveDictionary } from '../services/api'
 import { requirementInputsFor } from '../data/requirement-contracts'
 import ModeSwitch from './ModeSwitch.vue'
 import RequirementSupplement from './RequirementSupplement.vue'
@@ -42,6 +42,7 @@ type BatchTextItem = {
   text: string
 }
 
+type CitationMetaEntry = { reference_index: number | null; title: string; year: string; authorsText: string; venue: string; doi: string }
 type CitationBatchItem = {
   id: number
   title: string
@@ -50,6 +51,10 @@ type CitationBatchItem = {
   previousContext: string
   nextContext: string
   sourceId?: number | null   // 自动展开来源:由哪张卡片提取生成(手工卡片为 null)
+  refsText: string           // 本条引用的参考文献条目原文(粘贴)
+  metaList: CitationMetaEntry[]  // 解析出的被引文献元数据(可多条)
+  refsParsing: boolean
+  refsError: string
 }
 
 type UploadedFileItem = {
@@ -139,6 +144,10 @@ function autoExtractBatchCitation(item: CitationBatchItem) {
       previousContext: '',
       nextContext: '',
       sourceId: item.id,
+      refsText: item.refsText,
+      metaList: JSON.parse(JSON.stringify(item.metaList)),
+      refsParsing: false,
+      refsError: '',
     }
     fill(card, hit)
     citationBatchItems.push(card)
@@ -148,6 +157,33 @@ function removeCitationCard(id: number) {
   markCitationCardsEdited()
   const index = citationCards.findIndex(c => c.id === id)
   if (index >= 0) citationCards.splice(index, 1)
+}
+// 批量文本：解析本条引用数据的参考文献条目 → 多条可编辑元数据
+async function parseBatchCitationRefs(item: CitationBatchItem) {
+  const raw = (item.refsText || '').trim()
+  if (!raw) { item.refsError = '请先粘贴本条的参考文献条目'; return }
+  item.refsParsing = true
+  item.refsError = ''
+  try {
+    const response = await parseCitationMetadata(raw)
+    const entries = (response.data || []) as Array<Record<string, unknown>>
+    item.metaList = entries.map(entry => ({
+      reference_index: entry.reference_index ?? null,
+      title: String(entry.title || ''),
+      year: entry.year == null ? '' : String(entry.year),
+      authorsText: Array.isArray(entry.authors) ? entry.authors.join('; ') : String(entry.authors || ''),
+      venue: String(entry.venue || ''),
+      doi: String(entry.doi || ''),
+    }))
+    if (!item.metaList.length) item.refsError = '未能解析出任何条目，请检查格式'
+  } catch (error) {
+    item.refsError = error instanceof Error ? error.message : '解析失败，请检查条目格式'
+  } finally {
+    item.refsParsing = false
+  }
+}
+function removeBatchMetaEntry(item: CitationBatchItem, index: number) {
+  item.metaList.splice(index, 1)
 }
 const supplementalPayload = ref<Record<string, unknown>>({})
 const labelLengthLimit = ref(12)
@@ -250,6 +286,17 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
     } else if (mode.value === 'batch-text') {
       values.document_title = citationBatchItems.map(item => item.title.trim())
       if (props.toolId === 'citation-sentiment') values.scientific_document_full_text = citationBatchItems.map(item => ({ text: item.documentText }))
+      values.citation_metadata = citationBatchItems.map(item => item.metaList.map(entry => ({
+        citation_marker: entry.reference_index ? `[${entry.reference_index}]` : '',
+        reference_index: entry.reference_index,
+        authors: entry.authorsText.split(/[;；,，]/).map(s => s.trim()).filter(Boolean),
+        title: entry.title,
+        work_name: entry.title,
+        publication_year: entry.year,
+        year: entry.year,
+        venue: entry.venue,
+        doi: entry.doi,
+      })))
       values.citation_sentence_and_context = citationBatchItems.map(item => ({
         citation_sentence: item.citationSentence,
         previous_context: item.previousContext,
@@ -504,6 +551,10 @@ function addCitationBatchItem() {
     citationSentence: '',
     previousContext: '',
     nextContext: '',
+    refsText: '',
+    metaList: [],
+    refsParsing: false,
+    refsError: '',
   })
 }
 
@@ -625,6 +676,8 @@ function validateRequiredInputs(): string {
       if (invalidCard) return '存在引用句卡片未填写完整（引用句、上文、下文均需填写）。'
     } else if (mode.value === 'batch-text') {
       if (!citationBatchItems.length) return '请至少添加一条引用数据。'
+      const noMetaIndex = citationBatchItems.findIndex(item => !item.metaList.length)
+      if (noMetaIndex >= 0) return `第 ${noMetaIndex + 1} 条引用数据尚未解析被引文献元数据，请粘贴参考文献条目并点击「开始解析」。`
       const invalidIndex = citationBatchItems.findIndex(item =>
         (props.toolId === 'citation-sentiment' && !item.documentText.trim())
           || !item.citationSentence.trim()
@@ -824,6 +877,27 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                 <div v-if="toolId === 'citation-sentiment'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="item.documentText" class="textarea compact" maxlength="8000" placeholder="请输入本条引用所属的文献文本"></textarea></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><button v-if="toolId === 'citation-sentiment'" type="button" class="citation-extract-btn" @click="autoExtractBatchCitation(item)"><i>✦</i>从文献文本自动提取</button></label><textarea v-model="item.citationSentence" class="textarea compact citation-sentence-area" placeholder="可点击右上按钮从本条文献文本自动提取，也可手动填写"></textarea></div>
                 <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="item.previousContext" class="textarea compact citation-context-area" placeholder="请输入引用句前文"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="item.nextContext" class="textarea compact citation-context-area" placeholder="请输入引用句后文"></textarea></div></div>
+                <div class="citation-card-metadata">
+                  <div class="citation-metadata-section-head"><b><span class="required-mark">*</span> 被引文献元数据</b><span>粘贴本条引用的参考文献条目，支持多条</span></div>
+                  <textarea v-model="item.refsText" class="textarea compact citation-refs-area" placeholder="每行一条参考文献条目，例如：&#10;[3] Wang F, Li H. Neural Message Passing. ICML, 2020."></textarea>
+                  <div class="citation-parser-action-row">
+                    <span v-if="item.refsParsing" class="citation-parse-status">解析中…</span>
+                    <span v-else-if="item.refsError" class="citation-parse-status warning">! {{ item.refsError }}</span>
+                    <span v-else-if="item.metaList.length" class="citation-parse-status success">✓ 已解析 {{ item.metaList.length }} 条</span>
+                    <span v-else class="citation-parse-status">粘贴条目后，点击开始解析</span>
+                    <button class="outline-btn citation-parse-button" type="button" :disabled="item.refsParsing" @click="parseBatchCitationRefs(item)">{{ item.refsParsing ? '解析中…' : '开始解析' }}</button>
+                  </div>
+                  <div v-for="(entry, eIndex) in item.metaList" :key="eIndex" class="citation-metadata-entry">
+                    <div class="citation-metadata-entry-head"><b>条目 {{ eIndex + 1 }}<span v-if="entry.reference_index"> [{{ entry.reference_index }}]</span></b><button class="ghost-btn danger" type="button" @click="removeBatchMetaEntry(item, eIndex)">删除</button></div>
+                    <div class="citation-metadata-form-grid">
+                      <div class="field"><label><span class="label-main">发表年份</span></label><input v-model="entry.year" class="input" placeholder="例如：2024" /></div>
+                      <div class="field"><label><span class="label-main">作者</span></label><input v-model="entry.authorsText" class="input" placeholder="多个作者用分号分隔" /></div>
+                      <div class="field"><label><span class="label-main">文献题名</span></label><input v-model="entry.title" class="input" placeholder="请输入被引文献题名" /></div>
+                      <div class="field"><label><span class="label-main">期刊或会议</span></label><input v-model="entry.venue" class="input" placeholder="请输入期刊或会议名称" /></div>
+                      <div class="field"><label><span class="label-main">DOI</span><small>选填</small></label><input v-model="entry.doi" class="input" placeholder="例如：10.xxxx/xxxxx" /></div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </template>

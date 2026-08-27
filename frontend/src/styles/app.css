@@ -120,6 +120,10 @@ button:disabled { cursor: not-allowed !important; opacity: .48; transform: none 
 /* 单文本模式解析出的引用句卡片 */
 .citation-card { padding: 14px; margin-top: 14px; background: #fff; border: 1px solid #dce5f1; border-radius: 10px; }
 .citation-card .two-column { margin-top: 8px; }
+/* 批量卡片内嵌的被引文献元数据区 */
+.citation-card-metadata { margin-top: 4px; padding: 13px; background: #f4f7fc; border: 1px solid #dbe4f1; border-radius: 10px; }
+.citation-card-metadata .citation-refs-area { min-height: 80px; background: #fff; }
+.citation-card-metadata .citation-parser-action-row { margin: 8px 0 4px; }
 /* 被引文献元数据多条条目列表 */
 .citation-metadata-entry { padding: 12px; margin-top: 10px; background: #fff; border: 1px solid #dce5f1; border-radius: 10px; }
 .citation-metadata-entry-head { display: flex; min-height: 28px; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
