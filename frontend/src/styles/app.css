@@ -186,8 +186,11 @@ body.v690-general-ner-active .ner-results-table td,
 .dictionary-card { margin-top: 14px; padding: 14px; background: #fff; border: 1px solid #dce5f1; border-radius: 10px; }
 .dictionary-copy { margin: 0 0 12px; color: #65748a; font-size: 12px; line-height: 1.75; }
 .dictionary-status, .dictionary-custom { margin-top: 12px; }
-.dictionary-upload-field { display: flex; align-items: center; gap: 10px; }
-.dictionary-upload-field .resource-upload-zone { flex: 1; min-width: 0; }
+/* 词典上传区:取消按钮悬停显示(与响应复制按钮同款交互),上传框需 relative
+   锚定隐藏 input,否则 input 绝对定位漂移、点击后浏览器滚动聚焦导致整页跳底 */
+.dictionary-upload-field { position: relative; }
+.dictionary-upload-field .dictionary-cancel-btn { top: 6px; right: 6px; }
+.dictionary-upload-field:hover .dictionary-cancel-btn { opacity: 1; visibility: visible; transform: none; }
 .dictionary-custom .textarea.compact { max-height: 180px; }
 .classification-label-note { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
 .classification-label-note span { color: #60728c; font-size: 12px; }
@@ -300,7 +303,7 @@ body.v690-general-ner-active .ner-results-table td,
 .requirement-resource-controls { display: flex; grid-column: 1/-1; flex-direction: column; gap: 8px; margin-top: 10px; }
 .requirement-resource-summary, .resource-record-summary { grid-column: 1/-1; }
 .resource-source-select { color: #315b8b; background: #f7faff; }
-.resource-upload-zone { display: flex !important; min-height: 98px !important; align-items: center !important; justify-content: center !important; flex-direction: column; gap: 3px !important; margin: 0 !important; color: #66758a !important; background: #f9fbff; border: 1px dashed #b9c8dc !important; border-radius: 9px; cursor: pointer; text-align: center; }
+.resource-upload-zone { position: relative; display: flex !important; min-height: 98px !important; align-items: center !important; justify-content: center !important; flex-direction: column; gap: 3px !important; margin: 0 !important; color: #66758a !important; background: #f9fbff; border: 1px dashed #b9c8dc !important; border-radius: 9px; cursor: pointer; text-align: center; }
 .resource-upload-zone input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .resource-upload-zone > span { color: #376ef7; font-size: 20px; }
 .resource-upload-zone b { color: #40516c; font-size: 11.5px; }
