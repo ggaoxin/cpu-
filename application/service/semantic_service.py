@@ -1717,6 +1717,73 @@ class SemanticApplicationService(ISemanticService):
         result.raw = json.dumps(out, ensure_ascii=False)
         return result
 
+    @staticmethod
+    def _parse_json_sections(raw: str):
+        """解析 JSON 结构文本 → (展平正文, [(start, end, 章节路径)])。
+
+        兼容常见形态：list[{title, content}]、{sections|chapters:[...]}、嵌套
+        sections/subsections/children。解析失败返回 None（回落自动识别路径）。
+        章节路径供研究问题溯源精确定位（替代标题启发式重建）。
+        """
+        try:
+            data = json.loads(raw)
+        except (json.JSONDecodeError, ValueError):
+            return None
+        sections: list = []  # [(path, content)]
+
+        def _content_of(it: dict):
+            for key in ("content", "text", "body", "正文", "content_text", "full_text"):
+                value = it.get(key)
+                if isinstance(value, str) and value.strip():
+                    return value
+            return ""
+
+        def _title_of(it: dict) -> str:
+            for key in ("title", "section", "chapter", "heading", "name", "章节", "标题"):
+                value = it.get(key)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+            return ""
+
+        def _walk(node, prefix: str):
+            items = []
+            if isinstance(node, list):
+                items = node
+            elif isinstance(node, dict):
+                for key in ("sections", "chapters", "items", "data"):
+                    if isinstance(node.get(key), list):
+                        items = node[key]
+                        break
+                else:
+                    items = [node]
+            for it in items:
+                if isinstance(it, str):
+                    if it.strip():
+                        sections.append((prefix or "正文", it))
+                    continue
+                if not isinstance(it, dict):
+                    continue
+                title = _title_of(it)
+                path = f"{prefix} > {title}" if (prefix and title) else (title or prefix or "正文")
+                content = _content_of(it)
+                if content:
+                    sections.append((path, content))
+                for key in ("sections", "chapters", "subsections", "children"):
+                    if isinstance(it.get(key), list):
+                        _walk(it[key], path)
+
+        _walk(data, "")
+        if not sections:
+            return None
+        parts: list = []
+        spans: list = []
+        pos = 0
+        for path, content in sections:
+            parts.append(content)
+            spans.append((pos, pos + len(content), path))
+            pos += len(content) + 1  # 展平时以换行分隔
+        return "\n".join(parts), spans
+
     def _execute_rq_identify(self, code: str, request: SemanticRequest, fp, rule) -> SemanticResult:
         """研究问题句识别：LLM 识别 RQ 句+短语 → 后置字面校验（防幻觉）。
 
@@ -1725,6 +1792,15 @@ class SemanticApplicationService(ISemanticService):
         """
         result = SemanticResult(code=code, name=fp.name)
         abstract = (request.text or "").strip()
+        # 需规输入项 text_format_requirement：纯文本 / 章节结构文本 / JSON 结构文本 / 自动识别。
+        # 显式声明时按声明处理（见下方 full_text 与溯源分支）；JSON 结构文本解析
+        # 章节映射，问题溯源用精确章节路径替代标题启发式重建。
+        _format_req = str((request.params or {}).get("text_format_requirement") or "").strip()
+        _json_spans: list = []
+        if abstract[:1] in "{[" and _format_req in ("", "自动识别", "JSON 结构文本"):
+            _parsed = self._parse_json_sections(abstract)
+            if _parsed:
+                abstract, _json_spans = _parsed
         # 全文输入支持：文件路径或 mineru markdown 全文 → 截断 8000 字直送 LLM
         # （LLM 优先版：从全文找研究问题，不只看摘要）；字面校验对同一截断文本
         full_text = None
@@ -1769,6 +1845,14 @@ class SemanticApplicationService(ISemanticService):
         if not abstract:
             raise ValueError("研究问题识别需提供 text 字段（摘要文本）；mineru 重抽仍空")
 
+        # 显式声明「章节结构文本」：强制按结构化全文处理（标题层级路径溯源启用），
+        # 不依赖 _looks_like_full_document 启发式是否命中
+        if _format_req == "章节结构文本" and abstract:
+            full_text = abstract
+        # JSON 结构文本：展平文本直送 LLM；溯源优先用章节 spans，full_text 仅供
+        # 兜底（spans 未命中时归「全文」而非「摘要」）
+        if _json_spans:
+            full_text = abstract
         lang = (request.params or {}).get("lang", getattr(rule, "lang", "") or "zh")
         system_prompt = self._system_prompt(rule, request, lang)
         is_en = lang == "en"
@@ -1822,15 +1906,22 @@ class SemanticApplicationService(ISemanticService):
                 phrase_start = sent.find(phrase) if phrase else -1
                 abstract_label = "Abstract" if is_en else "摘要"
                 llm_section = (item.get("source_section") or "").strip()
-                if full_text and start is not None and start >= 0:
+                if _json_spans:
+                    # JSON 结构文本：句子在展平正文中的位置 → 精确章节路径
+                    heading_sec = next(
+                        (path for s, e, path in _json_spans if s <= start < e), "")
+                elif full_text and start is not None and start >= 0 and _format_req != "纯文本":
+                    # 章节结构文本/自动识别：标题层级启发式重建；
+                    # 纯文本声明则跳过（无结构可溯源）
                     heading_sec = self._rq_detect_section(full_text, start, abstract_label)
                 else:
                     heading_sec = ""
                 if heading_sec:
-                    # 结构化文档：优先用真实标题层级路径（如"（一）立项依据 / 1．研究背景与动机"）
+                    # 结构化文档：优先用真实标题层级路径（如“（一）立项依据 / 1．研究背景与动机”）
                     source_sections = [heading_sec]
-                elif llm_section:
-                    # 无明确标题（如整篇无 Abstract/引言 字样）：用 LLM 按段落语义判定的章节
+                elif llm_section and _format_req != "纯文本":
+                    # 无明确标题（如整篇无 Abstract/引言 字样）：用 LLM 按段落语义判定的章节。
+                    # 纯文本声明时跳过（用户声明无结构，LLM 从可见文字猜章节不可靠）
                     source_sections = [llm_section]
                 elif full_text:
                     source_sections = ["全文"]
