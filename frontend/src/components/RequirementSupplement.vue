@@ -126,7 +126,15 @@ const requestPayload = computed<Record<string, unknown>>(() => {
 
   if (props.toolId === 'citation-sentiment' || props.toolId === 'citation-intent') {
     if (props.mode === 'text') {
-      // 文本模式已简化：被引元数据由后端从「参考文献条目」自动解析，不再手填
+      payload.citation_metadata = [{
+        citation_marker: citationMetadata.marker,
+        authors: citationMetadata.authors.split(/[;,；，]/).map(item => item.trim()).filter(Boolean),
+        work_name: citationMetadata.title,
+        publication_year: citationMetadata.year,
+        venue: citationMetadata.venue,
+        doi: citationMetadata.doi,
+        raw_reference: citationRawReference.value,
+      }]
     } else if (props.mode === 'batch-text') {
       payload.citation_metadata = citationBatchMetadataFile.value || parsedCitationBatchMetadata()
     } else {
@@ -351,8 +359,8 @@ watchEffect(() => emit('update:payload', requestPayload.value))
     <div class="format-example-box"><b>格式说明</b><span>纯文本可直接粘贴正文；章节结构文本应保留标题层级；JSON 结构文本应包含章节名称和正文内容。</span></div>
   </div>
 
-  <div v-if="(toolId === 'citation-sentiment' || toolId === 'citation-intent') && mode === 'batch-text'" class="settings-card requirement-supplement-card citation-metadata-card">
-    <div class="settings-title"><b>被引文献元数据</b><span>批量模式由用户填写或上传；文本模式由系统从参考文献条目自动解析</span></div>
+  <div v-if="(toolId === 'citation-sentiment' || toolId === 'citation-intent') && (mode === 'text' || mode === 'batch-text')" class="settings-card requirement-supplement-card citation-metadata-card">
+    <div class="settings-title"><b>被引文献元数据</b><span>{{ mode === 'text' || mode === 'batch-text' ? '由用户填写或上传' : '从文件参考文献列表自动解析' }}</span></div>
 
     <div v-if="mode === 'text'" class="citation-manual-metadata-panel">
       <div class="citation-metadata-section-head"><b><span class="required-mark">*</span> 参考文献原始条目</b><span>必填；可选择粘贴或上传，解析后核对识别结果</span></div>

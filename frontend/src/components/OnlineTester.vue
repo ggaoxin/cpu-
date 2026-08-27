@@ -70,19 +70,21 @@ const citationBatchItems = reactive<CitationBatchItem[]>([])
 const uploadedFiles = reactive<UploadedFileItem[]>([])
 let batchItemSequence = 0
 const form = reactive({ projectName: '', documentTitle: '', text: '', batchText: '', language: '自动识别', domain: '自动识别', threshold: '0.75', outputFormat: 'JSON', clusterDimension: 'technology', algorithm: '自动选择', clusterCount: '', historyId: '', topic: '' })
-const citationSingle = reactive({ documentText: '' })
-const citationReferences = ref('')
-const referencesFileName = ref('')
+const citationSingle = reactive({ documentText: '', citationSentence: '', previousContext: '', nextContext: '' })
 
-function handleReferencesFile(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0] || null
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = () => {
-    citationReferences.value = String(reader.result || '')
-    referencesFileName.value = file.name
-  }
-  reader.readAsText(file, 'utf-8')
+// 引用句自动填充：从文献文本定位首个含引用标记（[1]/[2,3]/[4-6]）的句子，
+// 连同前句/后句填入需规规定的既有输入框（用户可再手工修正）
+function autoExtractCitation() {
+  const text = citationSingle.documentText.trim()
+  if (!text) { requestError.value = '请先输入文献文本，再自动提取引用句。'; return }
+  const sentences = text.split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
+  const markerRe = /\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/
+  const index = sentences.findIndex(s => markerRe.test(s))
+  if (index < 0) { requestError.value = '未在文献文本中发现引用标记（如 [1]、[2,3]），请手动填写引用句。'; return }
+  requestError.value = ''
+  citationSingle.citationSentence = sentences[index]
+  citationSingle.previousContext = index > 0 ? sentences[index - 1] : '（文档开头，无上文）'
+  citationSingle.nextContext = index + 1 < sentences.length ? sentences[index + 1] : '（文档结尾，无下文）'
 }
 const supplementalPayload = ref<Record<string, unknown>>({})
 const labelLengthLimit = ref(12)
@@ -172,9 +174,12 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
   }
   if (props.toolId.startsWith('citation-')) {
     if (mode.value === 'text') {
-      // 文本模式简化输入：文献文本 + 参考文献条目，其余参数（引用句上下文、被引元数据）由后端自动派生
-      values.scientific_document_full_text = citationSingle.documentText
-      values.reference_entries = citationReferences.value
+      if (props.toolId === 'citation-sentiment') values.scientific_document_full_text = citationSingle.documentText
+      values.citation_sentence_and_context = [{
+        citation_sentence: citationSingle.citationSentence,
+        previous_context: citationSingle.previousContext,
+        next_context: citationSingle.nextContext,
+      }]
     } else if (mode.value === 'batch-text') {
       if (props.toolId === 'citation-sentiment') values.scientific_document_full_text = citationBatchItems.map(item => ({ text: item.documentText }))
       values.citation_sentence_and_context = citationBatchItems.map(item => ({
@@ -545,8 +550,9 @@ function validateRequiredInputs(): string {
 
   if (props.toolId.startsWith('citation-')) {
     if (mode.value === 'text') {
-      if (!citationSingle.documentText.trim()) return '请输入文献文本。'
-      if (!citationReferences.value.trim()) return '请提供参考文献条目（粘贴或上传），系统将自动解析元数据并定位引用句。'
+      if (props.toolId === 'citation-sentiment' && !citationSingle.documentText.trim()) return '请输入文献文本。'
+      if (!citationSingle.citationSentence.trim()) return '请输入引用句文本（可点击「从文献文本自动提取」自动填充）。'
+      if (!citationSingle.previousContext.trim() || !citationSingle.nextContext.trim()) return '请同时填写引用句上文和下文（自动提取会一并填充）。'
     } else if (mode.value === 'batch-text') {
       if (!citationBatchItems.length) return '请至少添加一条引用数据。'
       const invalidIndex = citationBatchItems.findIndex(item =>
@@ -729,8 +735,9 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
 
           <template v-else-if="toolId.startsWith('citation-') && mode === 'text'">
             <div class="citation-structured-input">
-              <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字；系统将自动定位引用句及其上下文</small></label><textarea v-model="citationSingle.documentText" class="textarea main-textarea" maxlength="8000" placeholder="请输入包含引用标记（如 [1]、[2,3]）的文献文本"></textarea></div>
-              <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 参考文献条目</span><small>粘贴或上传条目，系统自动解析被引文献元数据（作者/题名/年份/来源/DOI）</small></label><textarea v-model="citationReferences" class="textarea compact citation-context-area" placeholder="每行一条参考文献条目，例如：&#10;[1] 张三, 李四. 深度学习方法研究[J]. 计算机学报, 2023.&#10;[2] Smith J, et al. A survey of NLP. ACL, 2020."></textarea><label class="resource-upload-zone citation-refs-upload"><input type="file" accept=".txt,.md" @change="handleReferencesFile" /><span>⇧</span><b>上传条目文件</b><small>{{ referencesFileName || '支持 TXT/MD，读取后填入上方文本框' }}</small></label></div>
+              <div v-if="toolId === 'citation-sentiment'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="citationSingle.documentText" class="textarea main-textarea" maxlength="8000" placeholder="请输入文献文本"></textarea></div>
+              <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><button type="button" class="ghost-btn" @click="autoExtractCitation">⤓ 从文献文本自动提取</button></label><textarea v-model="citationSingle.citationSentence" class="textarea compact" placeholder="请输入包含引文标记的引用句，或点击右上按钮从文献文本自动提取"></textarea></div>
+              <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="citationSingle.previousContext" class="textarea compact citation-context-area" placeholder="请输入引用句前文"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="citationSingle.nextContext" class="textarea compact citation-context-area" placeholder="请输入引用句后文"></textarea></div></div>
             </div>
           </template>
           <template v-else-if="toolId.startsWith('citation-') && mode === 'batch-text'">
