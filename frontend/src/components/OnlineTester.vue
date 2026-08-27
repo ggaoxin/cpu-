@@ -44,6 +44,7 @@ type BatchTextItem = {
 
 type CitationBatchItem = {
   id: number
+  title: string
   documentText: string
   citationSentence: string
   previousContext: string
@@ -130,7 +131,7 @@ const previewSentence = computed(() => {
   return s.length > 1000 ? s.slice(0, 1000) + '…' : s
 })
 const selectedDictionary = computed(() => savedDictionaryOptions.value.find(item => item.id === selectedDictionaryId.value))
-const documentTitleToolIds = new Set(['zh-classify', 'en-classify', 'domain-classify', 'zh-keyword', 'en-keyword', 'rq-detect', 'zh-abstract-move', 'en-abstract-move'])
+const documentTitleToolIds = new Set(['zh-classify', 'en-classify', 'domain-classify', 'zh-keyword', 'en-keyword', 'rq-detect', 'zh-abstract-move', 'en-abstract-move', 'citation-sentiment', 'citation-intent'])
 const needsDocumentTitle = computed(() => documentTitleToolIds.has(props.toolId))
 
 // 深度聚类锚点资源（训练样本/人工标注类目，随「文本与文献元数据」面板展示）
@@ -212,6 +213,7 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
         }))
       }
     } else if (mode.value === 'batch-text') {
+      values.document_title = citationBatchItems.map(item => item.title.trim())
       if (props.toolId === 'citation-sentiment') values.scientific_document_full_text = citationBatchItems.map(item => ({ text: item.documentText }))
       values.citation_sentence_and_context = citationBatchItems.map(item => ({
         citation_sentence: item.citationSentence,
@@ -247,7 +249,7 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
     if (mode.value === 'batch') values[primaryField] = uploadedFiles.map(item => item.file)
   }
   if (needsDocumentTitle.value && mode.value === 'text') values.document_title = form.documentTitle
-  if (needsDocumentTitle.value && mode.value === 'batch-text') values.document_title = batchTexts.map(item => item.title.trim())
+  if (needsDocumentTitle.value && mode.value === 'batch-text' && !props.toolId.startsWith('citation-')) values.document_title = batchTexts.map(item => item.title.trim())
   if (props.toolId === 'definition-detect') {
     values.domain_label = form.domain || '自动识别'
     values.output_format_requirement = form.outputFormat
@@ -462,6 +464,7 @@ function removeBatchText(id: number) {
 function addCitationBatchItem() {
   citationBatchItems.push({
     id: ++batchItemSequence,
+    title: '',
     documentText: '',
     citationSentence: '',
     previousContext: '',
@@ -767,6 +770,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
 
           <template v-else-if="toolId.startsWith('citation-') && mode === 'text'">
             <div class="citation-structured-input">
+              <div class="field document-title-field"><label><span class="label-main">题目</span><small>可选；用于标识响应结果及可视化弹窗中的当前文献</small></label><input v-model="form.documentTitle" class="input" maxlength="300" placeholder="请输入题目" /></div>
               <div v-if="toolId === 'citation-sentiment'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="citationSingle.documentText" class="textarea main-textarea" maxlength="8000" placeholder="请输入文献文本"></textarea></div>
               <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句解析</span><button type="button" class="citation-extract-btn" @click="forceAutoExtractCitation"><i>✦</i>从文献文本自动提取</button></label><small v-if="citationExtractedCount" class="range-hint">已从文献文本解析出 {{ citationCards.length }} 条引用句（含上下文），提交时全部识别；卡片可编辑与删除。</small></div>
               <div v-for="(card, index) in citationCards" :key="card.id" class="document-card citation-card">
@@ -781,6 +785,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
               <div class="special-panel-head"><div><strong>批量引用数据</strong><span>已添加 {{ citationBatchItems.length }} 条，每条作为一个独立任务</span></div><button class="outline-btn" type="button" @click="addCitationBatchItem">＋ 添加引用数据</button></div>
               <div v-for="(item,index) in citationBatchItems" :key="item.id" class="document-card batch-text-item-card citation-batch-item-card">
                 <div class="document-card-head"><b>引用数据 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" :disabled="citationBatchItems.length <= 1" @click="removeCitationBatchItem(item.id)">删除</button></div>
+                <div class="field"><label><span class="label-main">题目</span><small>可选；用于标识本条响应结果及可视化弹窗中的文献</small></label><input v-model="item.title" class="input" maxlength="300" placeholder="请输入本条文献题目" /></div>
                 <div v-if="toolId === 'citation-sentiment'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="item.documentText" class="textarea compact" maxlength="8000" placeholder="请输入本条引用所属的文献文本"></textarea></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span></label><textarea v-model="item.citationSentence" class="textarea compact citation-sentence-area" placeholder="请输入包含引文标记的引用句"></textarea></div>
                 <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="item.previousContext" class="textarea compact citation-context-area" placeholder="请输入引用句前文"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="item.nextContext" class="textarea compact citation-context-area" placeholder="请输入引用句后文"></textarea></div></div>
