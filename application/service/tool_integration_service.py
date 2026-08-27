@@ -34,6 +34,93 @@ DOMAIN_CODE_MAP = {
     "environmental_science": "32",
 }
 
+# ------------------------------------------------------------------ #
+# 引用句识别文本模式自动派生：文献文本 + 参考文献条目 → 引用句上下文 + 被引元数据
+# ------------------------------------------------------------------ #
+_CITE_MARKER_RE = re.compile(r"\[(\d+(?:\s*[,，\-–~]\s*\d+)*)\]")
+
+
+def _split_sentences_for_citation(text: str) -> list:
+    """中英混排分句(句末标点或换行),供引用句定位与上下文截取。"""
+    parts = re.split(r"(?<=[。！？!?])\s*|(?<=\.)\s+|\n+", text)
+    return [p.strip() for p in parts if p and p.strip()]
+
+
+def _extract_citation_contexts(document_text: str, limit: int = 30) -> list:
+    """定位带引用标记([1]/[2,3]/[4-6])的句子,取前句/后句为上下文。
+
+    返回 contexts 条目(含 citation_sentence/previous_context/next_context/
+    citation_marker 与内部 _marker_nums),超出 limit 截断。
+    """
+    sentences = _split_sentences_for_citation(document_text)
+    contexts = []
+    for i, sent in enumerate(sentences):
+        markers = _CITE_MARKER_RE.findall(sent)
+        if not markers:
+            continue
+        nums = []
+        for m in markers:
+            for part in re.split(r"[,，]", m):
+                part = part.strip()
+                if re.fullmatch(r"\d+\s*[-–~]\s*\d+", part):
+                    a, b = re.split(r"[-–~]", part)
+                    nums.extend(range(int(a), int(b) + 1))
+                elif part.isdigit():
+                    nums.append(int(part))
+        if not nums:
+            continue
+        contexts.append({
+            "citation_sentence": sent,
+            "previous_context": sentences[i - 1] if i > 0 else "（文档开头，无上文）",
+            "next_context": sentences[i + 1] if i + 1 < len(sentences) else "（文档结尾，无下文）",
+            "citation_marker": f"[{markers[0]}]",
+            "_marker_nums": sorted(set(nums)),
+        })
+        if len(contexts) >= limit:
+            break
+    return contexts
+
+
+def _parse_reference_entries(entries_raw: str) -> list:
+    """GLM 解析参考文献条目原文 → 结构化元数据列表(按条目序号)。
+
+    兼容逐行条目与单行长文本(按 [n]/n. 序号切分),单次 GLM 调用批量解析,
+    上限 60 条。解析结果带 reference_index 供引用标记匹配。
+    """
+    from infrastructure.llm.glm_client import glm_client
+    lines = [l.strip() for l in entries_raw.splitlines() if l.strip()]
+    if len(lines) <= 1 and entries_raw.strip():
+        lines = [s.strip() for s in re.split(r"(?=\[\d+\])|(?=\d+[.、]\s)", entries_raw) if s.strip()]
+    if not lines:
+        return []
+    lines = lines[:60]
+    system = ("你是参考文献解析器。把用户给出的每条参考文献条目解析为结构化字段，"
+              "严格按条目原文，不得编造。返回 JSON {data:[{index, authors, title, year, venue, doi}]}："
+              "index=条目序号(条目开头的[n]或n.的数字,无序号按顺序1起)；authors=作者数组(原文人名)；"
+              "title=题名；year=发表年份整数(无则null)；venue=期刊/会议/出版社；doi=DOI(无则空串)。")
+    user = "解析以下参考文献条目：\n" + "\n".join(lines)
+    out = glm_client.chat_json(system, user, timeout=90.0, max_tokens=4000)
+    data = out.get("data", out) if isinstance(out, dict) else []
+    metadata = []
+    for pos, item in enumerate(data if isinstance(data, list) else [], start=1):
+        if not isinstance(item, dict):
+            continue
+        try:
+            idx = int(item.get("index") or pos)
+        except (TypeError, ValueError):
+            idx = pos
+        metadata.append({
+            "citation_id": f"cite-{idx}",
+            "reference_index": idx,
+            "authors": item.get("authors") if isinstance(item.get("authors"), list) else
+                       ([str(item.get("authors"))] if item.get("authors") else []),
+            "title": str(item.get("title") or ""),
+            "year": item.get("year"),
+            "venue": str(item.get("venue") or ""),
+            "doi": str(item.get("doi") or ""),
+        })
+    return metadata
+
 # Public V7.74 field used as the actual document/text input for each tool.
 # These names are intentionally duplicated from config.vue_contracts only as a
 # defensive adapter table: the public request is preserved in the task record,
@@ -49,6 +136,7 @@ PRIMARY_TEXT_FIELDS = {
     "en-keyword": "english_scientific_abstract",
     "rq-detect": "scientific_document_fragment",
     "citation-sentiment": "scientific_document_full_text",
+    "citation-intent": "scientific_document_full_text",
     "definition-detect": "scientific_document_fragment_or_batch_text",
     "general-ner": "bilingual_scientific_document_text",
     "research-ner": "academic_abstract_or_technical_report_text",
@@ -151,6 +239,16 @@ class ToolIntegrationService:
         request_id = _id("req")
         contract = get_contract(tool_id)
         payload = self._adapt_vue_payload(contract, dict(payload or {}))
+        # 引用工具文本模式自动派生：文献文本+参考文献条目 → 引用句上下文+被引元数据
+        # （用户只需提供两项输入；手动提供 citation_sentence_and_context 时不覆盖）
+        if tool_id.startswith("citation-") and str(payload.get("input_type") or "text") == "text":
+            try:
+                self._derive_citation_inputs(payload)
+            except ValueError as exc:
+                fallback_type = str(payload.get("input_type") or "text")
+                return self._validation_error(contract, request_id, fallback_type, started, str(exc))
+            except Exception as exc:  # noqa: BLE001 - 派生失败回落手动输入校验
+                logger.warning("引用句自动派生异常：%s", exc)
         workspace_id = workspace_id or settings.DEFAULT_WORKSPACE_ID
         input_type = str(payload.get("input_type") or ("files" if file_inputs else "text"))
         try:
@@ -1044,6 +1142,49 @@ class ToolIntegrationService:
     @staticmethod
     def _meta(payload: Dict[str, Any]) -> Dict[str, str]:
         return {"domain": str(payload.get("domain") or payload.get("discipline") or "auto")}
+
+    def _derive_citation_inputs(self, payload: Dict[str, Any]) -> None:
+        """引用工具文本模式自动派生：文献文本 + 参考文献条目 → 其余全部参数。
+
+        用户只需提供 scientific_document_full_text（文献文本）与 reference_entries
+        （参考文献条目原文，粘贴或上传）。派生：
+        ① 引用句及上下文（正则定位 [n] 标记句 + 前后句）
+        ② 被引文献元数据（GLM 解析条目 → 作者/题名/年份/来源/DOI）
+        ③ 标记号 ↔ 条目序号匹配（citation_id = cite-<n>）
+        已手动提供 citation_sentence_and_context 时不覆盖（高级路径保留）。
+        """
+        if payload.get("citation_sentence_and_context"):
+            return
+        document_text = str(
+            payload.get("scientific_document_full_text") or payload.get("text") or ""
+        ).strip()
+        entries_raw = payload.get("reference_entries")
+        if isinstance(entries_raw, dict):  # 文件上传场景 {file_name, text_content}
+            entries_raw = entries_raw.get("text_content") or entries_raw.get("content") or ""
+        entries_raw = str(entries_raw or "").strip()
+        if not document_text:
+            return  # 无文献文本：回落手动输入校验
+        contexts = _extract_citation_contexts(document_text)
+        if not contexts:
+            raise ValueError(
+                "未能从文献文本中定位引用句（未发现 [n] 形式的引用标记）；"
+                "请确认文本包含引用标记，或手动提供引用句及上下文"
+            )
+        if not entries_raw:
+            raise ValueError(
+                "请提供参考文献条目（粘贴条目文本或上传条目文件），"
+                "系统将自动解析被引文献元数据"
+            )
+        metadata = _parse_reference_entries(entries_raw)
+        if not metadata:
+            raise ValueError("参考文献条目解析失败，请检查条目格式")
+        # 引用句按标记号匹配元数据；未匹配到条目的引用句仍保留（元数据留空由引擎降级）
+        for ctx in contexts:
+            nums = ctx.pop("_marker_nums", None) or []
+            ctx["citation_id"] = f"cite-{nums[0]}" if nums else "cite-0"
+            ctx["matched_reference"] = nums[0] in {m.get("reference_index") for m in metadata}
+        payload["citation_sentence_and_context"] = contexts
+        payload["citation_metadata"] = metadata
 
     def _payload_error(self, contract: ToolContract, payload: Dict[str, Any]) -> Optional[str]:
         # 在线测试中的手工文本统一限制为 8000 个清洗后字符。
