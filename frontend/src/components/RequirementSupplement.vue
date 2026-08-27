@@ -448,11 +448,13 @@ watchEffect(() => emit('update:payload', requestPayload.value))
             <option value="" disabled>{{ field.placeholder }}</option>
             <option v-for="item in availableResources(field.key)" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option>
           </select>
-          <label v-else class="resource-upload-zone">
-            <input :ref="el => setResourceFileInput(field.key, el)" type="file" :accept="field.accept || '.json,.jsonl,.csv,.xlsx,.txt'" @change="handleResourceUpload($event, field.key)" />
-            <span>⇧</span><b>{{ uploadedResources[field.key]?.name || `点击上传${field.label}` }}</b><small>支持 JSON、JSONL、CSV、XLSX、TXT</small>
-          </label>
-          <button v-if="sourceModes[field.key] === 'upload' && uploadedResources[field.key]" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearUploadedResource(field.key)">✕ 取消</button>
+          <div v-else class="resource-upload-wrap">
+            <label class="resource-upload-zone">
+              <input :ref="el => setResourceFileInput(field.key, el)" type="file" :accept="field.accept || '.json,.jsonl,.csv,.xlsx,.txt'" @change="handleResourceUpload($event, field.key)" />
+              <span>⇧</span><b>{{ uploadedResources[field.key]?.name || `点击上传${field.label}` }}</b><small>支持 JSON、JSONL、CSV、XLSX、TXT</small>
+            </label>
+            <button v-if="uploadedResources[field.key]" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearUploadedResource(field.key)">✕ 取消</button>
+          </div>
         </div>
         <div v-if="sourceModes[field.key] === 'upload'" class="requirement-resource-summary"><span>入库方式</span><em>上传成功后生成资源编号并保存为可复用数据库资源</em><button type="button" class="primary-btn" :disabled="savingResourceKey === field.key || !uploadedResources[field.key]" @click="saveResourceToDatabase(field.key)">{{ savingResourceKey === field.key ? '保存中…' : '保存到数据库' }}</button><div v-if="resourceSaveError" class="info-banner error" style="margin-top:8px">{{ resourceSaveError }}</div></div>
       </article>
