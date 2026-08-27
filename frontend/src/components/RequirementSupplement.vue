@@ -77,14 +77,6 @@ const resourceGroups: Record<string, { title: string; description: string; field
       { key: 'domain_labeled_training_data', label: '领域标注训练数据', description: '支撑实体识别与本体映射', placeholder: '请选择当前领域标注训练数据', required: true },
     ],
   },
-  'deep-cluster': {
-    title: '聚类锚点辅助资源',
-    description: '小样本聚类时将主题锚定到人工标注类目',
-    fields: [
-      { key: 'training_samples', label: '训练样本', description: '人工标注文献语义锚点库（1000 篇），聚类时通过语义相似度匹配', placeholder: '请选择训练样本版本' },
-      { key: 'manually_labeled_category_data', label: '人工标注类目标签数据', description: '聚类结果锚定的人工标注类目标签（主题名称来源）', placeholder: '请选择人工标注类目数据' },
-    ],
-  },
   'structured-review': {
     title: '综述文献元数据',
     description: '提供综述溯源所需元数据',
@@ -428,26 +420,6 @@ watchEffect(() => emit('update:payload', requestPayload.value))
     <div class="settings-title"><b>文献元数据</b><span>随指定文献集参数一并读取</span></div>
     <div class="info-banner">系统从科技文献检索结果集、科技情报平台、科研管理系统或知识库读取题名、作者、年份、来源、关键词和文献编号。</div>
   </div>
-
-  <section v-else-if="toolId === 'deep-cluster'" class="deep-cluster-evaluation-section">
-    <div class="settings-title"><b>{{ currentGroup?.title }}</b><span>{{ currentGroup?.description }}</span></div>
-    <div class="evaluation-independence-note"><b>使用说明</b><span>可选。上传少量文献聚类时，系统将待聚类文献与人工标注文献进行语义相似度计算，把聚类主题锚定到人工标注类目标签，避免小样本下聚类主题过于宽泛。不选择时按自由聚类生成主题。</span></div>
-    <div class="requirement-resource-grid">
-      <article v-for="field in currentGroup?.fields" :key="field.key" class="requirement-resource-item">
-        <div class="requirement-resource-heading"><div><b>{{ field.label }}</b></div></div>
-        <p>{{ field.description }}</p>
-        <div class="requirement-resource-controls">
-          <select v-model="selectedResources[field.key]" class="select">
-            <option value="" disabled>{{ field.placeholder }}</option>
-            <option v-for="item in availableResources(field.key)" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option>
-          </select>
-        </div>
-        <div v-if="selectedResource(field.key)" class="database-record-summary resource-record-summary">
-          <span>ID：{{ selectedResource(field.key)?.id }}</span><span>规模：{{ selectedResource(field.key)?.recordCount }}</span><span>语言：{{ selectedResource(field.key)?.language }}</span><span>更新：{{ selectedResource(field.key)?.updatedAt }}</span>
-        </div>
-      </article>
-    </div>
-  </section>
 
   <div v-else-if="currentGroup && toolId !== 'structured-review'" class="settings-card requirement-supplement-card">
     <div v-if="toolId !== 'citation-intent'" class="settings-title"><b>{{ currentGroup.title }}</b><span>{{ currentGroup.description }}</span></div>

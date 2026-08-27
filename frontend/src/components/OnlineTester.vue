@@ -2,7 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import type { InputMode, ToolDefinition } from '../types'
 import { endpointFor, modesFor, pretty, requestPayloadFor, supportsVisualization } from '../utils/tooling'
-import { ApiRequestError, executeToolRequest, listCompatibleHistory, listDictionaries, listDocumentCollections, saveDictionary } from '../services/api'
+import { ApiRequestError, executeToolRequest, listCompatibleHistory, listDictionaries, listDocumentCollections, listSemanticResources, saveDictionary } from '../services/api'
 import { requirementInputsFor } from '../data/requirement-contracts'
 import ModeSwitch from './ModeSwitch.vue'
 import RequirementSupplement from './RequirementSupplement.vue'
@@ -91,6 +91,25 @@ const selectedDictionary = computed(() => savedDictionaryOptions.value.find(item
 const documentTitleToolIds = new Set(['zh-classify', 'en-classify', 'domain-classify', 'zh-keyword', 'en-keyword', 'rq-detect', 'zh-abstract-move', 'en-abstract-move'])
 const needsDocumentTitle = computed(() => documentTitleToolIds.has(props.toolId))
 
+// 深度聚类锚点资源（训练样本/人工标注类目，随「文本与文献元数据」面板展示）
+type AnchorResourceOption = { id: string; name: string; version: string }
+const anchorTrainOptions = ref<AnchorResourceOption[]>([])
+const anchorGoldOptions = ref<AnchorResourceOption[]>([])
+const selectedAnchorTrain = ref('')
+const selectedAnchorGold = ref('')
+watch(() => props.toolId, async toolId => {
+  if (toolId !== 'deep-cluster') return
+  try {
+    const response = await listSemanticResources()
+    const items = (response.data || []) as Array<Record<string, unknown>>
+    const toOption = (item: Record<string, unknown>) => ({ id: String(item.id), name: String(item.name), version: String(item.version) })
+    anchorTrainOptions.value = items.filter(item => item.resource_key === 'training_samples').map(toOption)
+    anchorGoldOptions.value = items.filter(item => item.resource_key === 'manually_labeled_category_data').map(toOption)
+    selectedAnchorTrain.value = anchorTrainOptions.value[0]?.id || ''
+    selectedAnchorGold.value = anchorGoldOptions.value[0]?.id || ''
+  } catch { /* 资源拉取失败不阻断聚类 */ }
+}, { immediate: true })
+
 const onlineRequestValues = computed<Record<string, unknown>>(() => {
   const values: Record<string, unknown> = { ...supplementalPayload.value }
   const primaryField = props.tool.params?.[0]?.[0]
@@ -117,6 +136,9 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
     values.clustering_algorithm_type = form.algorithm
     values.cluster_count = form.clusterCount === '' ? null : Number(form.clusterCount)
     values.output_format = form.outputFormat
+    // 锚点辅助资源（可选）：选择后小样本聚类主题锚定到人工标注类目
+    values.training_samples = { source: 'database', resource_id: selectedAnchorTrain.value || null }
+    values.manually_labeled_category_data = { source: 'database', resource_id: selectedAnchorGold.value || null }
     return values
   }
   if (props.toolId === 'structured-review') {
@@ -655,6 +677,10 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                 </div>
                 <div class="field deep-cluster-text-field"><label><span class="label-main"><span class="required-mark">*</span> 文本</span><small>支持各类科技文本，最多 8000 字</small></label><textarea v-model="doc.text" class="textarea compact" maxlength="8000" placeholder="请输入完整文本"></textarea></div>
               </div>
+              <div class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
+                <div class="field"><label><span class="label-main">训练样本</span><small>可选</small></label><select v-model="selectedAnchorTrain" class="select"><option value="">不使用</option><option v-for="item in anchorTrainOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option></select></div>
+                <div class="field"><label><span class="label-main">人工标注类目标签数据</span><small>可选</small></label><select v-model="selectedAnchorGold" class="select"><option value="">不使用</option><option v-for="item in anchorGoldOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option></select></div>
+              </div>
             </div>
           </template>
 
@@ -741,6 +767,10 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                       <div class="field"><label><span class="label-main">关键词</span><small>可选</small></label><input v-model="item.keywords" class="input" placeholder="多个关键词使用逗号分隔" /></div>
                     </div>
                   </article>
+                  <div class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
+                    <div class="field"><label><span class="label-main">训练样本</span><small>可选</small></label><select v-model="selectedAnchorTrain" class="select"><option value="">不使用</option><option v-for="item in anchorTrainOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option></select></div>
+                    <div class="field"><label><span class="label-main">人工标注类目标签数据</span><small>可选</small></label><select v-model="selectedAnchorGold" class="select"><option value="">不使用</option><option v-for="item in anchorGoldOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option></select></div>
+                  </div>
                 </template>
                 <template v-else>
                   <article v-for="(item,index) in uploadedFiles" :key="item.id" class="selected-file-row"><i>{{ index + 1 }}</i><span class="selected-file-type">{{ item.type }}</span><div><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }} · 等待提交</small></div><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article>
