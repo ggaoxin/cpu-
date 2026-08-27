@@ -304,7 +304,7 @@ body.v690-general-ner-active .ner-results-table td,
 }
 
 /* 甲方评审缺失项：统一的资源选择、格式配置与结构化输入组件。 */
-.requirement-supplement-card { display: flex; flex-direction: column; gap: 0; margin-top: 20px; }
+.requirement-supplement-card { display: flex; flex-direction: column; gap: 0; }
 .requirement-resource-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; align-items: start; }
 .requirement-resource-grid.single { grid-template-columns: 1fr; }
 .requirement-resource-item { display: grid; min-width: 0; grid-template-columns: max-content minmax(0,1fr); column-gap: 12px; }
