@@ -255,6 +255,16 @@ function handleResourceUpload(event: Event, key: string) {
   uploadedResources[key] = (event.target as HTMLInputElement).files?.[0] || null
 }
 
+// 每字段记录文件 input 引用,取消时同步清空原生 value(否则重选同一文件不触发 change)
+const resourceFileInputs: Record<string, HTMLInputElement | null> = {}
+function setResourceFileInput(key: string, el: unknown) {
+  resourceFileInputs[key] = (el as HTMLInputElement) || null
+}
+function clearUploadedResource(key: string) {
+  uploadedResources[key] = null
+  if (resourceFileInputs[key]) resourceFileInputs[key]!.value = ''
+}
+
 async function saveResourceToDatabase(key: string) {
   const file = uploadedResources[key]
   if (!file) { resourceSaveError.value = '请先选择要上传的资源文件'; return }
@@ -439,9 +449,10 @@ watchEffect(() => emit('update:payload', requestPayload.value))
             <option v-for="item in availableResources(field.key)" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option>
           </select>
           <label v-else class="resource-upload-zone">
-            <input type="file" :accept="field.accept || '.json,.jsonl,.csv,.xlsx,.txt'" @change="handleResourceUpload($event, field.key)" />
+            <input :ref="el => setResourceFileInput(field.key, el)" type="file" :accept="field.accept || '.json,.jsonl,.csv,.xlsx,.txt'" @change="handleResourceUpload($event, field.key)" />
             <span>⇧</span><b>{{ uploadedResources[field.key]?.name || `点击上传${field.label}` }}</b><small>支持 JSON、JSONL、CSV、XLSX、TXT</small>
           </label>
+          <button v-if="sourceModes[field.key] === 'upload' && uploadedResources[field.key]" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearUploadedResource(field.key)">✕ 取消</button>
         </div>
         <div v-if="sourceModes[field.key] === 'upload'" class="requirement-resource-summary"><span>入库方式</span><em>上传成功后生成资源编号并保存为可复用数据库资源</em><button type="button" class="primary-btn" :disabled="savingResourceKey === field.key || !uploadedResources[field.key]" @click="saveResourceToDatabase(field.key)">{{ savingResourceKey === field.key ? '保存中…' : '保存到数据库' }}</button><div v-if="resourceSaveError" class="info-banner error" style="margin-top:8px">{{ resourceSaveError }}</div></div>
       </article>
