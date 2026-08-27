@@ -1158,10 +1158,6 @@ class ToolIntegrationService:
         document_text = str(
             payload.get("scientific_document_full_text") or payload.get("text") or ""
         ).strip()
-        entries_raw = payload.get("reference_entries")
-        if isinstance(entries_raw, dict):  # 文件上传场景 {file_name, text_content}
-            entries_raw = entries_raw.get("text_content") or entries_raw.get("content") or ""
-        entries_raw = str(entries_raw or "").strip()
         if not document_text:
             return  # 无文献文本：回落手动输入校验
         contexts = _extract_citation_contexts(document_text)
@@ -1170,21 +1166,29 @@ class ToolIntegrationService:
                 "未能从文献文本中定位引用句（未发现 [n] 形式的引用标记）；"
                 "请确认文本包含引用标记，或手动提供引用句及上下文"
             )
-        if not entries_raw:
-            raise ValueError(
-                "请提供参考文献条目（粘贴条目文本或上传条目文件），"
-                "系统将自动解析被引文献元数据"
-            )
-        metadata = _parse_reference_entries(entries_raw)
-        if not metadata:
-            raise ValueError("参考文献条目解析失败，请检查条目格式")
+        # 元数据取用优先级：用户已补充的 citation_metadata > 参考文献条目解析 > 报错
+        metadata = payload.get("citation_metadata")
+        if not (isinstance(metadata, list) and metadata):
+            entries_raw = payload.get("reference_entries")
+            if isinstance(entries_raw, dict):  # 文件上传场景 {file_name, text_content}
+                entries_raw = entries_raw.get("text_content") or entries_raw.get("content") or ""
+            entries_raw = str(entries_raw or "").strip()
+            if not entries_raw:
+                raise ValueError(
+                    "请补充被引文献元数据（粘贴/上传参考文献条目），或提供 reference_entries"
+                )
+            metadata = _parse_reference_entries(entries_raw)
+            if not metadata:
+                raise ValueError("参考文献条目解析失败，请检查条目格式")
+            payload["citation_metadata"] = metadata
         # 引用句按标记号匹配元数据；未匹配到条目的引用句仍保留（元数据留空由引擎降级）
+        ref_indexes = {m.get("reference_index") for m in payload.get("citation_metadata") or []
+                       if isinstance(m, dict) and m.get("reference_index")}
         for ctx in contexts:
             nums = ctx.pop("_marker_nums", None) or []
             ctx["citation_id"] = f"cite-{nums[0]}" if nums else "cite-0"
-            ctx["matched_reference"] = nums[0] in {m.get("reference_index") for m in metadata}
+            ctx["matched_reference"] = nums[0] in ref_indexes if ref_indexes else None
         payload["citation_sentence_and_context"] = contexts
-        payload["citation_metadata"] = metadata
 
     def _payload_error(self, contract: ToolContract, payload: Dict[str, Any]) -> Optional[str]:
         # 在线测试中的手工文本统一限制为 8000 个清洗后字符。
