@@ -72,19 +72,32 @@ let batchItemSequence = 0
 const form = reactive({ projectName: '', documentTitle: '', text: '', batchText: '', language: '自动识别', domain: '自动识别', threshold: '0.75', outputFormat: 'JSON', clusterDimension: 'technology', algorithm: '自动选择', clusterCount: '', historyId: '', topic: '' })
 const citationSingle = reactive({ documentText: '', citationSentence: '', previousContext: '', nextContext: '' })
 
-// 引用句自动填充：从文献文本定位首个含引用标记（[1]/[2,3]/[4-6]）的句子，
-// 连同前句/后句填入需规规定的既有输入框（用户可再手工修正）
+// 引用句自动填充：文献文本是用户唯一需要输入的内容；引用句及上下文由系统从
+// 文献文本自动解析（定位首个含引用标记 [1]/[2,3]/[4-6] 的句子+前后句），填入
+// 需规规定的既有输入框（可见可改）；被引元数据由用户在下方补充。
+let citationAutoTimer: ReturnType<typeof setTimeout> | null = null
+let citationUserEdited = false   // 用户手改过引用句字段后不再自动覆盖
 function autoExtractCitation() {
   const text = citationSingle.documentText.trim()
-  if (!text) { requestError.value = '请先输入文献文本，再自动提取引用句。'; return }
+  if (!text) return
   const sentences = text.split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
   const markerRe = /\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/
   const index = sentences.findIndex(s => markerRe.test(s))
-  if (index < 0) { requestError.value = '未在文献文本中发现引用标记（如 [1]、[2,3]），请手动填写引用句。'; return }
-  requestError.value = ''
+  if (index < 0) return
   citationSingle.citationSentence = sentences[index]
   citationSingle.previousContext = index > 0 ? sentences[index - 1] : '（文档开头，无上文）'
   citationSingle.nextContext = index + 1 < sentences.length ? sentences[index + 1] : '（文档结尾，无下文）'
+}
+watch(() => citationSingle.documentText, () => {
+  if (citationUserEdited) return
+  if (citationAutoTimer) clearTimeout(citationAutoTimer)
+  citationAutoTimer = setTimeout(autoExtractCitation, 600)
+})
+
+function markCitationUserEdited() { citationUserEdited = true }
+function forceAutoExtractCitation() {
+  citationUserEdited = false
+  autoExtractCitation()
 }
 const supplementalPayload = ref<Record<string, unknown>>({})
 const labelLengthLimit = ref(12)
@@ -736,8 +749,8 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
           <template v-else-if="toolId.startsWith('citation-') && mode === 'text'">
             <div class="citation-structured-input">
               <div v-if="toolId === 'citation-sentiment'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="citationSingle.documentText" class="textarea main-textarea" maxlength="8000" placeholder="请输入文献文本"></textarea></div>
-              <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><button type="button" class="ghost-btn" @click="autoExtractCitation">⤓ 从文献文本自动提取</button></label><textarea v-model="citationSingle.citationSentence" class="textarea compact" placeholder="请输入包含引文标记的引用句，或点击右上按钮从文献文本自动提取"></textarea></div>
-              <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="citationSingle.previousContext" class="textarea compact citation-context-area" placeholder="请输入引用句前文"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="citationSingle.nextContext" class="textarea compact citation-context-area" placeholder="请输入引用句后文"></textarea></div></div>
+              <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><button type="button" class="ghost-btn" @click="forceAutoExtractCitation">⤓ 从文献文本自动提取</button></label><textarea v-model="citationSingle.citationSentence" class="textarea compact" placeholder="输入文献文本后自动提取，也可手动填写" @input="markCitationUserEdited"></textarea></div>
+              <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="citationSingle.previousContext" class="textarea compact citation-context-area" placeholder="输入文献文本后自动提取，也可手动填写" @input="markCitationUserEdited"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="citationSingle.nextContext" class="textarea compact citation-context-area" placeholder="输入文献文本后自动提取，也可手动填写" @input="markCitationUserEdited"></textarea></div></div>
             </div>
           </template>
           <template v-else-if="toolId.startsWith('citation-') && mode === 'batch-text'">
