@@ -120,6 +120,10 @@ button:disabled { cursor: not-allowed !important; opacity: .48; transform: none 
 /* 单文本模式解析出的引用句卡片 */
 .citation-card { padding: 14px; margin-top: 10px; background: #fff; border: 1px solid #dce5f1; border-radius: 10px; }
 .citation-card .two-column { margin-top: 8px; }
+/* 被引文献元数据多条条目列表 */
+.citation-metadata-entry { padding: 12px; margin-top: 10px; background: #fff; border: 1px solid #dce5f1; border-radius: 10px; }
+.citation-metadata-entry-head { display: flex; min-height: 28px; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.citation-metadata-entry-head b { color: #2c405e; font-size: 13px; }
 .range-hint { display: block; margin-top: 6px; color: #8c98aa; font-size: 11px; }
 .info-banner { padding: 12px; color: #315b8b; background: #edf6ff; border: 1px solid #cfe3f8; border-radius: 8px; line-height: 1.65; }
 .upload-zone { display: flex !important; min-height: 310px !important; align-items: center !important; justify-content: center !important; flex-direction: column; gap: 8px !important; color: #64748b !important; background: #fbfcff; border: 1px dashed #b9c8dc !important; border-radius: 10px; cursor: pointer; }

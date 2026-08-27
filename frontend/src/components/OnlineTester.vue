@@ -113,10 +113,6 @@ function removeCitationCard(id: number) {
   const index = citationCards.findIndex(c => c.id === id)
   if (index >= 0) citationCards.splice(index, 1)
 }
-function addCitationCard() {
-  markCitationCardsEdited()
-  citationCards.push({ id: ++citationCardSeq, marker: '', sentence: '', previousContext: '', nextContext: '' })
-}
 const supplementalPayload = ref<Record<string, unknown>>({})
 const labelLengthLimit = ref(12)
 const labelLanguageType = ref('auto')
@@ -778,7 +774,6 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span></label><textarea v-model="card.sentence" class="textarea compact" placeholder="包含引文标记的引用句" @input="markCitationCardsEdited"></textarea></div>
                 <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="card.previousContext" class="textarea compact citation-context-area" placeholder="引用句前文" @input="markCitationCardsEdited"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="card.nextContext" class="textarea compact citation-context-area" placeholder="引用句后文" @input="markCitationCardsEdited"></textarea></div></div>
               </div>
-              <button v-if="citationCards.length" class="outline-btn" type="button" @click="addCitationCard">＋ 添加引用句</button>
             </div>
           </template>
           <template v-else-if="toolId.startsWith('citation-') && mode === 'batch-text'">

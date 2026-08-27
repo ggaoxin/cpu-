@@ -89,6 +89,15 @@ export async function executeToolRequest(
   return parseResponse(await fetch(apiUrl(endpoint), init))
 }
 
+export async function parseCitationMetadata(entriesText: string) {
+  const response = await fetch(apiUrl('/api/v1/citation-metadata/parse'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ entries_text: entriesText }),
+  })
+  return parseResponse(response)
+}
+
 export async function listSemanticResources() {
   const response = await fetch(apiUrl('/api/v1/semantic-resources?status=current&limit=500'), {
     headers: { Accept: 'application/json' },

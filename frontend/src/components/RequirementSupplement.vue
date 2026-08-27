@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
 import type { InputMode } from '../types'
 import { databaseResourceCatalog } from '../data/database-preview'
-import { listSemanticResources, uploadSemanticResource } from '../services/api'
+import { listSemanticResources, parseCitationMetadata, uploadSemanticResource } from '../services/api'
 
 type ResourceField = {
   key: string
@@ -97,14 +97,11 @@ const citationBatchMetadataText = ref('')
 const citationBatchMetadataFile = ref<File | null>(null)
 const citationFallbackMetadataText = ref('')
 const citationFallbackMetadataFile = ref<File | null>(null)
-const citationMetadata = reactive({
-  marker: '',
-  authors: '',
-  title: '',
-  year: '',
-  venue: '',
-  doi: '',
-})
+// 被引文献元数据（多条）：参考文献条目整段粘贴/上传 → 后端 GLM 批量解析 → 可编辑列表
+type CitationMetaEntry = { reference_index: number | null; title: string; year: string; authorsText: string; venue: string; doi: string }
+const citationMetadataList = ref<CitationMetaEntry[]>([])
+const citationParsing = ref(false)
+const citationParseError = ref('')
 const textFormatRequirement = ref('自动识别')
 const runtimeResourceCatalog = reactive<Record<string, typeof databaseResourceCatalog[string]>>({})
 const resourceLoadError = ref('')
@@ -126,15 +123,17 @@ const requestPayload = computed<Record<string, unknown>>(() => {
 
   if (props.toolId === 'citation-sentiment' || props.toolId === 'citation-intent') {
     if (props.mode === 'text') {
-      payload.citation_metadata = [{
-        citation_marker: citationMetadata.marker,
-        authors: citationMetadata.authors.split(/[;,；，]/).map(item => item.trim()).filter(Boolean),
-        work_name: citationMetadata.title,
-        publication_year: citationMetadata.year,
-        venue: citationMetadata.venue,
-        doi: citationMetadata.doi,
-        raw_reference: citationRawReference.value,
-      }]
+      payload.citation_metadata = citationMetadataList.value.map(entry => ({
+        citation_marker: entry.reference_index ? `[${entry.reference_index}]` : '',
+        reference_index: entry.reference_index,
+        authors: entry.authorsText.split(/[;；,，]/).map(item => item.trim()).filter(Boolean),
+        title: entry.title,
+        work_name: entry.title,
+        publication_year: entry.year,
+        year: entry.year,
+        venue: entry.venue,
+        doi: entry.doi,
+      }))
     } else if (props.mode === 'batch-text') {
       payload.citation_metadata = citationBatchMetadataFile.value || parsedCitationBatchMetadata()
     } else {
@@ -162,62 +161,40 @@ function switchCitationReferenceSource(source: 'paste' | 'upload') {
   citationRawReference.value = ''
   citationUploadName.value = ''
   citationParseState.value = 'idle'
-  Object.assign(citationMetadata, { marker: '', authors: '', title: '', year: '', venue: '', doi: '' })
+  citationMetadataList.value = []
 }
 
-function parseCitationReference() {
+async function parseCitationReference() {
   const raw = citationRawReference.value.trim()
   if (!raw) {
     citationParseState.value = 'empty'
     return
   }
-
-  const parsed = {
-    marker: '',
-    authors: '',
-    title: '',
-    year: '',
-    venue: '',
-    doi: '',
+  citationParsing.value = true
+  citationParseError.value = ''
+  try {
+    const response = await parseCitationMetadata(raw)
+    const entries = (response.data || []) as Array<Record<string, unknown>>
+    citationMetadataList.value = entries.map(entry => ({
+      reference_index: entry.reference_index ?? null,
+      title: String(entry.title || ''),
+      year: entry.year == null ? '' : String(entry.year),
+      authorsText: Array.isArray(entry.authors) ? entry.authors.join('; ') : String(entry.authors || ''),
+      venue: String(entry.venue || ''),
+      doi: String(entry.doi || ''),
+    }))
+    citationParseState.value = citationMetadataList.value.length ? 'parsed' : 'empty'
+    if (!citationMetadataList.value.length) citationParseError.value = '未能解析出任何条目，请检查条目格式'
+  } catch (error) {
+    citationParseState.value = 'empty'
+    citationParseError.value = error instanceof Error ? error.message : '解析失败，请检查条目格式'
+  } finally {
+    citationParsing.value = false
   }
-  let content = raw.replace(/\s+/g, ' ').trim()
+}
 
-  const markerMatch = content.match(/^\s*(\[[^\]]+\]|【[^】]+】|\(\d+\)|\d+[.)、])\s*/)
-  if (markerMatch) {
-    parsed.marker = markerMatch[1]
-    content = content.slice(markerMatch[0].length).trim()
-  }
-
-  const doiMatch = content.match(/(?:https?:\/\/doi\.org\/|doi\s*[:：]?\s*)?(10\.\d{4,9}\/[-._;()/:A-Z0-9]+)/i)
-  if (doiMatch) parsed.doi = doiMatch[1].replace(/[.,;，；。]+$/, '')
-
-  const yearMatches = [...content.matchAll(/(?:19|20)\d{2}/g)]
-  if (yearMatches.length) parsed.year = yearMatches[yearMatches.length - 1][0]
-
-  const chineseTypeMatch = content.match(/^(.+?)[.。]\s*(.+?)\s*\[([JMCDBPR])\]\s*[.。]?\s*(.+)$/i)
-  if (chineseTypeMatch) {
-    parsed.authors = cleanCitationPart(chineseTypeMatch[1])
-    parsed.title = cleanCitationPart(chineseTypeMatch[2])
-    const venuePart = chineseTypeMatch[4].split(/[,，]/)[0]
-    parsed.venue = cleanCitationPart(venuePart)
-  } else {
-    const segments = content
-      .replace(doiMatch?.[0] || '', '')
-      .split(/[.。]\s+/)
-      .map(cleanCitationPart)
-      .filter(Boolean)
-
-    if (segments.length >= 2) {
-      parsed.authors = segments[0]
-      parsed.title = segments[1]
-      const remaining = segments.slice(2).join('. ')
-      parsed.venue = cleanCitationPart(remaining.split(/[,，](?=\s*(?:19|20)\d{2})/)[0])
-    }
-  }
-
-  Object.assign(citationMetadata, parsed)
-  const coreFields = [parsed.authors, parsed.title, parsed.year]
-  citationParseState.value = coreFields.every(Boolean) ? 'parsed' : 'partial'
+function removeCitationMetaEntry(index: number) {
+  citationMetadataList.value.splice(index, 1)
 }
 
 async function handleCitationReferenceFile(event: Event) {
@@ -338,7 +315,7 @@ watch(() => props.toolId, () => {
   citationBatchMetadataFile.value = null
   citationFallbackMetadataText.value = ''
   citationFallbackMetadataFile.value = null
-  Object.assign(citationMetadata, { marker: '', authors: '', title: '', year: '', venue: '', doi: '' })
+  citationMetadataList.value = []
   textFormatRequirement.value = '自动识别'
 }, { immediate: true })
 
@@ -370,30 +347,32 @@ watchEffect(() => emit('update:payload', requestPayload.value))
           <button type="button" :class="{ active: citationReferenceSource === 'upload' }" @click="switchCitationReferenceSource('upload')">上传条目</button>
         </div>
         <div v-if="citationReferenceSource === 'paste'" class="field full citation-reference-paste-field">
-          <label><span class="label-main">粘贴完整参考文献</span><small>支持常见中英文参考文献格式</small></label>
-          <textarea v-model="citationRawReference" class="textarea compact" placeholder="例如：[12] 张三，李四. 科技文献语义分析研究[J]. 情报学报，2024，43(2)：120-130."></textarea>
+          <label><span class="label-main">粘贴参考文献条目</span><small>支持一次粘贴多条（每行一条），中英文格式均可</small></label>
+          <textarea v-model="citationRawReference" class="textarea compact" rows="5" placeholder="每行一条参考文献，例如：&#10;[1] 张三，李四. 科技文献语义分析研究[J]. 情报学报，2024，43(2)：120-130.&#10;[2] Smith J, et al. A survey of NLP. ACL, 2020."></textarea>
         </div>
         <label v-else class="resource-upload-zone citation-reference-upload-zone">
           <input type="file" accept=".txt,.json,.jsonl,.csv" @change="handleCitationReferenceFile" />
           <span>⇧</span><b>{{ citationUploadName || '点击上传参考文献条目' }}</b><small>支持 TXT、JSON、JSONL、CSV</small>
         </label>
         <div class="citation-parser-action-row">
-          <span v-if="citationParseState === 'parsed'" class="citation-parse-status success">✓ 已完成解析，请核对下方信息</span>
-          <span v-else-if="citationParseState === 'partial'" class="citation-parse-status warning">! 已解析部分信息，请补充缺失字段</span>
-          <span v-else-if="citationParseState === 'empty'" class="citation-parse-status warning">! 请先粘贴或上传参考文献条目</span>
+          <span v-if="citationParsing" class="citation-parse-status">解析中…（大模型解析多条条目约需数秒）</span>
+          <span v-else-if="citationParseState === 'parsed'" class="citation-parse-status success">✓ 已解析 {{ citationMetadataList.length }} 条，请核对下方信息</span>
+          <span v-else-if="citationParseState === 'empty'" class="citation-parse-status warning">! {{ citationParseError || '请先粘贴或上传参考文献条目' }}</span>
           <span v-else class="citation-parse-status">粘贴或上传条目后，点击开始解析</span>
-          <button class="outline-btn citation-parse-button" type="button" @click="parseCitationReference">开始解析</button>
+          <button class="outline-btn citation-parse-button" type="button" :disabled="citationParsing" @click="parseCitationReference">{{ citationParsing ? '解析中…' : '开始解析' }}</button>
         </div>
       </div>
       <div class="citation-parsed-metadata">
-        <div class="citation-parsed-heading"><b>元数据信息</b><span>解析结果不完整时可直接校正</span></div>
-        <div class="citation-metadata-form-grid">
-          <div class="field"><label><span class="label-main">引文标记</span></label><input v-model="citationMetadata.marker" class="input" placeholder="例如：[12]" /></div>
-          <div class="field"><label><span class="label-main">发表年份</span></label><input v-model="citationMetadata.year" class="input" placeholder="例如：2024" /></div>
-          <div class="field"><label><span class="label-main">作者</span></label><input v-model="citationMetadata.authors" class="input" placeholder="多个作者用分号分隔" /></div>
-          <div class="field"><label><span class="label-main">文献题名</span></label><input v-model="citationMetadata.title" class="input" placeholder="请输入被引文献题名" /></div>
-          <div class="field"><label><span class="label-main">期刊或会议</span></label><input v-model="citationMetadata.venue" class="input" placeholder="请输入期刊或会议名称" /></div>
-          <div class="field"><label><span class="label-main">DOI</span><small>选填</small></label><input v-model="citationMetadata.doi" class="input" placeholder="例如：10.xxxx/xxxxx" /></div>
+        <div class="citation-parsed-heading"><b>元数据信息（{{ citationMetadataList.length }} 条）</b><span>解析结果可直接校正</span></div>
+        <div v-for="(entry, index) in citationMetadataList" :key="index" class="citation-metadata-entry">
+          <div class="citation-metadata-entry-head"><b>条目 {{ index + 1 }}<span v-if="entry.reference_index"> [{{ entry.reference_index }}]</span></b><button class="ghost-btn danger" type="button" @click="removeCitationMetaEntry(index)">删除</button></div>
+          <div class="citation-metadata-form-grid">
+            <div class="field"><label><span class="label-main">发表年份</span></label><input v-model="entry.year" class="input" placeholder="例如：2024" /></div>
+            <div class="field"><label><span class="label-main">作者</span></label><input v-model="entry.authorsText" class="input" placeholder="多个作者用分号分隔" /></div>
+            <div class="field"><label><span class="label-main">文献题名</span></label><input v-model="entry.title" class="input" placeholder="请输入被引文献题名" /></div>
+            <div class="field"><label><span class="label-main">期刊或会议</span></label><input v-model="entry.venue" class="input" placeholder="请输入期刊或会议名称" /></div>
+            <div class="field"><label><span class="label-main">DOI</span><small>选填</small></label><input v-model="entry.doi" class="input" placeholder="例如：10.xxxx/xxxxx" /></div>
+          </div>
         </div>
       </div>
     </div>

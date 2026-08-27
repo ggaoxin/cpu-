@@ -748,6 +748,25 @@ for route_path, (route_tool_id, route_multiple) in FILE_ROUTES.items():
     router.add_api_route(route_path, _file_endpoint(route_tool_id, route_multiple), methods=["POST"], summary=route_tool_id)
 
 
+@router.post("/citation-metadata/parse")
+def parse_citation_metadata(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
+    """参考文献条目批量解析（GLM）：粘贴整段参考文献列表 → 结构化元数据数组。
+
+    供引用句识别前端「被引文献元数据」面板使用：支持多条中英文条目混排。
+    """
+    entries_text = str(payload.get("entries_text") or "").strip()
+    if not entries_text:
+        raise HTTPException(status_code=422, detail="请提供参考文献条目文本")
+    from application.service.tool_integration_service import _parse_reference_entries
+    try:
+        metadata = _parse_reference_entries(entries_text)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=422, detail=f"条目解析失败：{exc}") from exc
+    if not metadata:
+        raise HTTPException(status_code=422, detail="未能解析出任何条目，请检查条目格式")
+    return {"code": 0, "message": f"已解析 {len(metadata)} 条参考文献", "data": metadata}
+
+
 @router.post("/cluster/deep/evaluate")
 async def evaluate_deep_cluster(
     request: Request,
