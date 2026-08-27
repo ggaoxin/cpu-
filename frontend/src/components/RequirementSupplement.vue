@@ -445,9 +445,6 @@ watchEffect(() => emit('update:payload', requestPayload.value))
           </label>
         </div>
         <div v-if="sourceModes[field.key] === 'upload'" class="requirement-resource-summary"><span>入库方式</span><em>上传成功后生成资源编号并保存为可复用数据库资源</em><button type="button" class="primary-btn" :disabled="savingResourceKey === field.key || !uploadedResources[field.key]" @click="saveResourceToDatabase(field.key)">{{ savingResourceKey === field.key ? '保存中…' : '保存到数据库' }}</button><div v-if="resourceSaveError" class="info-banner error" style="margin-top:8px">{{ resourceSaveError }}</div></div>
-        <div v-else-if="selectedResource(field.key)" class="database-record-summary resource-record-summary">
-          <span>ID：{{ selectedResource(field.key)?.id }}</span><span>规模：{{ selectedResource(field.key)?.recordCount }}</span><span>语言：{{ selectedResource(field.key)?.language }}</span><span>更新：{{ selectedResource(field.key)?.updatedAt }}</span>
-        </div>
       </article>
     </div>
   </div>
