@@ -168,7 +168,8 @@ body.v690-general-ner-active .ner-results-table td,
   vertical-align: top;
 }
 .citation-batch-panel { display: flex; flex-direction: column; gap: 0; }
-.citation-batch-item-card { padding: 16px; }
+.citation-batch-item-card { display: flex; flex-direction: column; gap: 18px; padding: 16px; }
+.citation-batch-item-card .document-card-head { margin-bottom: 0; }
 .citation-batch-item-card .citation-sentence-area { min-height: 92px; }
 .single-file-upload-zone { min-height: 210px !important; }
 .batch-file-upload-zone { min-height: 165px !important; margin-bottom: 12px !important; background: #fff; }
@@ -352,7 +353,7 @@ body.v690-general-ner-active .ner-results-table td,
 .cluster-phrase-preview-row span { padding: 3px 7px; color: #526d99; background: #edf3ff; border-radius: 999px; font-size: 9.5px; }
 .format-example-box { display: flex; align-items: flex-start; gap: 12px; margin-top: 12px; padding: 11px 12px; color: #60728c; background: #fff; border: 1px solid #e1e8f2; border-radius: 8px; font-size: 11.5px; line-height: 1.65; }
 .format-example-box b { flex: 0 0 auto; color: #315b8b; }
-.citation-structured-input { display: flex; flex-direction: column; gap: 26px; }
+.citation-structured-input { display: flex; flex-direction: column; gap: 14px; }
 .citation-context-area { min-height: 120px; }
 .citation-metadata-json { margin-top: 14px; }
 .json-textarea { font-family: Consolas, 'SFMono-Regular', monospace; font-size: 11.5px; }
