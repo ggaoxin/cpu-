@@ -767,6 +767,55 @@ def parse_citation_metadata(payload: Dict[str, Any] = Body(...)) -> Dict[str, An
     return {"code": 0, "message": f"已解析 {len(metadata)} 条参考文献", "data": metadata}
 
 
+@router.post("/relation/dependency-preview")
+def relation_dependency_preview(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
+    """依存句法分析预览:基于上游 NER 记录的实体与语境,用 GLM 快速生成依存弧。
+
+    供实体关系识别输入区展示:用户选择上游记录后即可看到
+    依存句法分析结果(中心词/依存关系/依存词),无需提交。
+    """
+    record_id = str(payload.get("upstream_entity_record_id") or "").strip()
+    if not record_id:
+        raise HTTPException(status_code=422, detail="请选择上游实体记录")
+    service = get_integration_service()
+    record = service.repository.get_result(record_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="上游记录不存在")
+    result = record.get("result") or {}
+    entities = result.get("entities") or result.get("entity_results") or []
+    if not isinstance(entities, list) or not entities:
+        raise HTTPException(status_code=422, detail="上游记录无已识别实体")
+    # 取实体语境句子作为分析文本
+    contexts = []
+    for ent in entities:
+        if isinstance(ent, dict) and ent.get("context"):
+            ctx = str(ent["context"]).strip()
+            if ctx and ctx not in contexts and not ctx.startswith("/tmp/"):
+                contexts.append(ctx)
+    text = " ".join(contexts[:5])[:2000]  # 最多5句,2000字
+    if not text:
+        # 无语境时用实体列表组合
+        text = " ".join(str(e.get("text") or "") for e in entities[:20] if isinstance(e, dict))
+    if not text:
+        raise HTTPException(status_code=422, detail="无可用文本进行依存句法分析")
+    # GLM 快速依存句法分析
+    from infrastructure.llm.glm_client import glm_client
+    system = (
+        "你是中文依存句法分析专家。对给定文本做依存句法分析,输出依存弧列表。\n"
+        "每条弧:head(中心词/支配词)、relation(依存关系类型,如:主谓关系/动宾关系/定语/状语/并列关系/介宾关系)、"
+        "dependent(依存词/从属词)、sentence_id(句子编号,SENT-001格式)。\n"
+        "只输出JSON:{\"data\":[{\"head\":\"\",\"relation\":\"\",\"dependent\":\"\",\"sentence_id\":\"SENT-001\"}]}"
+    )
+    try:
+        out = glm_client.chat_json(system, f"分析以下文本的依存句法:\n{text}", timeout=30.0, max_tokens=2000)
+        arcs = out.get("data", out) if isinstance(out, dict) else []
+        if not isinstance(arcs, list):
+            arcs = []
+        return {"code": 0, "message": f"已生成 {len(arcs)} 条依存弧", "data": arcs}
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=f"依存句法分析失败: {exc}") from exc
+
+
 @router.post("/cluster/deep/evaluate")
 async def evaluate_deep_cluster(
     request: Request,

@@ -207,25 +207,33 @@ const previewSentence = computed(() => {
   return s.length > 1000 ? s.slice(0, 1000) + '…' : s
 })
 
-// 依存句法预览:基于已识别实体生成实体对列表(输入区展示,让用户看到将分析哪些关系)
-const dependencyPreviewPairs = computed(() => {
-  const record = selectedNerRecord.value
-  if (!record || !record.entities || record.entities.length < 2) return []
-  const entities = record.entities.slice(0, 8) // 最多展示8个实体的配对
-  const pairs = []
-  for (let i = 0; i < entities.length; i++) {
-    for (let j = i + 1; j < entities.length; j++) {
-      pairs.push({
-        id: `PAIR_${pairs.length + 1}`,
-        head: entities[i].text,
-        headType: entities[i].type,
-        tail: entities[j].text,
-        tailType: entities[j].type,
-      })
+// 依存句法预览:选择上游记录后调后端 GLM 生成真实依存弧
+const dependencyPreviewArcs = ref<any[]>([])
+const dependencyPreviewLoading = ref(false)
+const dependencyPreviewError = ref('')
+watch(selectedNerRecordId, async recordId => {
+  dependencyPreviewArcs.value = []
+  dependencyPreviewError.value = ''
+  if (!recordId || props.toolId !== 'relation-extract') return
+  dependencyPreviewLoading.value = true
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/v1/relation/dependency-preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ upstream_entity_record_id: recordId }),
+    })
+    const data = await response.json()
+    if (data.code === 0) {
+      dependencyPreviewArcs.value = data.data || []
+    } else {
+      dependencyPreviewError.value = data.detail || data.message || '依存句法分析失败'
     }
+  } catch (error) {
+    dependencyPreviewError.value = error instanceof Error ? error.message : '依存句法分析请求失败'
+  } finally {
+    dependencyPreviewLoading.value = false
   }
-  return pairs.slice(0, 12) // 最多展示12对
-})
+}, { immediate: true })
 const selectedDictionary = computed(() => savedDictionaryOptions.value.find(item => item.id === selectedDictionaryId.value))
 const documentTitleToolIds = new Set(['zh-classify', 'en-classify', 'domain-classify', 'zh-keyword', 'en-keyword', 'rq-detect', 'zh-abstract-move', 'en-abstract-move', 'citation-sentiment', 'citation-intent'])
 const needsDocumentTitle = computed(() => documentTitleToolIds.has(props.toolId))
@@ -797,17 +805,23 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                 <div class="relation-sentence-preview"><b>原始句子文本</b><p>{{ previewSentence }}</p></div>
                 <div class="relation-entity-preview"><div><b>已识别实体列表</b><span>{{ selectedNerRecord.entities.length }} 个实体</span></div><ul><li v-for="entity in selectedNerRecord.entities" :key="`${entity.type}-${entity.text}`"><strong>{{ entity.text }}</strong><span>{{ entity.type }}</span></li></ul></div>
               </div>
-              <div v-if="dependencyPreviewPairs.length" class="relation-dependency-preview">
-                <div class="settings-title"><b>依存句法分析预览</b><span>基于上游实体的实体对构造,提交后系统自动执行完整依存句法分析</span></div>
-                <div class="relation-dependency-pairs">
-                  <div v-for="pair in dependencyPreviewPairs" :key="pair.id" class="relation-dependency-pair">
-                    <span class="pair-id">{{ pair.id }}</span>
-                    <span class="pair-entity">{{ pair.head }} <small>{{ pair.headType }}</small></span>
-                    <span class="pair-arrow">←关系→</span>
-                    <span class="pair-entity">{{ pair.tail }} <small>{{ pair.tailType }}</small></span>
-                  </div>
+              <div v-if="dependencyPreviewLoading" class="info-banner"><b>依存句法分析中...</b><span>正在对上游实体文本执行依存句法分析,约需数秒</span></div>
+              <div v-else-if="dependencyPreviewError" class="info-banner relation-dependency-note"><b>依存句法预览不可用</b><span>{{ dependencyPreviewError }}</span></div>
+              <div v-else-if="dependencyPreviewArcs.length" class="relation-dependency-preview">
+                <div class="settings-title"><b>依存句法分析结果</b><span>共 {{ dependencyPreviewArcs.length }} 条依存弧,提交后系统基于此执行关系抽取</span></div>
+                <div class="relation-dependency-scroll">
+                  <table class="relation-dependency-table">
+                    <thead><tr><th style="width:14%">句子编号</th><th style="width:24%">中心词</th><th style="width:22%">依存关系</th><th style="width:24%">依存词</th></tr></thead>
+                    <tbody>
+                      <tr v-for="(arc, index) in dependencyPreviewArcs" :key="index">
+                        <td>{{ arc.sentence_id || '—' }}</td>
+                        <td><b>{{ arc.head || '—' }}</b></td>
+                        <td><span class="relation-dependency-label">{{ arc.relation || '—' }}</span></td>
+                        <td><b>{{ arc.dependent || '—' }}</b></td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-                <div class="info-banner relation-dependency-note"><b>说明</b><span>以上为系统将分析的实体对预览。提交后,工具对原始句子自动执行完整依存句法分析(句法弧、依存路径),并基于句法结构判定实体间关系,无需用户提供依存句法结果。</span></div>
               </div>
               <div v-else class="info-banner relation-dependency-note"><b>内部自动处理</b><span>提交后，实体关系识别工具将对原始句子自动执行依存句法分析、实体对构造和关系判定，无需用户提供依存句法结果。</span></div>
             </div>
