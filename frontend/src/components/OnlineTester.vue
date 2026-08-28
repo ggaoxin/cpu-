@@ -217,7 +217,7 @@ watch(selectedNerRecordId, async recordId => {
   if (!recordId || props.toolId !== 'relation-extract') return
   dependencyPreviewLoading.value = true
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/v1/relation/dependency-preview', {
+    const response = await fetch('/api/v1/relation/dependency-preview', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ upstream_entity_record_id: recordId }),
