@@ -28,7 +28,9 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
         return _moves(raw, tool_id, payload)
     if tool_id in {"zh-classify", "en-classify"}:
         result = _classification(raw, tool_id)
-        result.setdefault("document_title", payload.get("document_title") or payload.get("title") or "")
+        # 用户题目优先于引擎原始数据(引擎可能带空 document_title,setdefault 会被挡住)
+        if payload.get("document_title") or payload.get("title"):
+            result["document_title"] = payload.get("document_title") or payload.get("title")
         result.setdefault("classification_confidence", _confidence(result.get("primary_classification") or {}, 0.0))
         if tool_id == "en-classify":
             if not result.get("literature_distribution_analysis_report"):

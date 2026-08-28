@@ -329,10 +329,21 @@ const nestedParameterTypes: Record<string, string> = {
 }
 
 function parameterValueType(value: unknown) {
-  if (Array.isArray(value)) return value.length && typeof value[0] === 'object' ? 'object[]' : 'array'
+  if (Array.isArray(value)) {
+    if (!value.length) return 'string[]'
+    if (typeof value[0] === 'object') return 'object[]'
+    if (typeof value[0] === 'string') return 'string[]'
+    return 'array'
+  }
   if (value === null) return 'null'
   if (typeof value === 'number') return Number.isInteger(value) ? 'integer' : 'number'
-  if (typeof value === 'object') return 'object'
+  if (typeof value === 'object') {
+    // 文件上传占位(File 对象或 @文件名 字符串标记)
+    const v = value as Record<string, unknown>
+    if (v instanceof File || (v.file instanceof File) || (typeof v.file === 'string' && v.file.startsWith('@'))) return 'file'
+    return 'object'
+  }
+  if (typeof value === 'string' && value.startsWith('@')) return 'file'
   return typeof value
 }
 
@@ -369,7 +380,14 @@ export function requestParameterRowsFor(tool: ToolDefinition, mode: InputMode) {
   const payload = payloadFor(tool, mode)
   const declared = new Map((tool.params || []).map(row => [row[0], row]))
   return Object.entries(payload).flatMap(([key, value]) => {
-    const top = declared.get(key) || [key, parameterValueType(value), 'optional', key]
+    const declared_row = declared.get(key) || [key, parameterValueType(value), 'optional', key]
+    // 联合类型按当前模式的实际载荷收窄:文本模式只显示 string,批量显示 string[],
+    // 文件模式显示 file——各模式各写各的,不把其他模式的类型混进来
+    const actualType = parameterValueType(value)
+    let top = declared_row
+    if (declared_row[1] && declared_row[1].includes('|') && actualType && !actualType.includes('|')) {
+      top = [declared_row[0], actualType, declared_row[2], declared_row[3]]
+    }
     return [top, ...nestedParameterRows(value, key, top[2], tool.requirementKey || '')]
   }) as Array<[string, string, string, string]>
 }

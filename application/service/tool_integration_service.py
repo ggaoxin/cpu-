@@ -711,6 +711,13 @@ class ToolIntegrationService:
                 adapted.setdefault("documents", public_value)
             elif isinstance(public_value, str):
                 adapted.setdefault("text", public_value)
+            elif isinstance(public_value, list) and len(public_value) == 1:
+                # text 模式收到单元素列表(如 domain_scientific_literature_data:[{...}]):
+                # 解包取该元素的文本,否则 input_type=text 时不走 texts 映射,文本丢失
+                only = public_value[0] if isinstance(public_value[0], dict) else {"text": public_value[0]}
+                single_text = ToolIntegrationService._document_text(only) if isinstance(public_value[0], dict) else str(public_value[0] or "")
+                if single_text:
+                    adapted.setdefault("text", single_text)
 
         if adapted.get("document_title") is not None:
             adapted.setdefault("title", adapted.get("document_title"))
@@ -845,6 +852,8 @@ class ToolIntegrationService:
         texts = payload.get("document_set") or payload.get("documents") or payload.get("texts")
         if isinstance(texts, list):
             items = []
+            # 批量题目逐条映射:document_title 为列表时按下标对应各篇文献
+            batch_titles = payload.get("document_title") if isinstance(payload.get("document_title"), list) else None
             for index, value in enumerate(texts):
                 if isinstance(value, dict):
                     text = self._document_text(value)
@@ -854,6 +863,8 @@ class ToolIntegrationService:
                     text = str(value or "").strip()
                     input_id = f"text{index + 1}"
                     source = {"input_id": input_id}
+                if batch_titles and index < len(batch_titles) and str(batch_titles[index] or "").strip():
+                    source["title"] = str(batch_titles[index])
                 if text:
                     items.append(InputItem(input_id, text, source))
             return items
@@ -975,12 +986,20 @@ class ToolIntegrationService:
         if contract.tool_id in {"zh-classify", "en-classify", "domain-classify"}:
             if text.lstrip().startswith("{"):
                 return text
-            if not (payload.get("title") or payload.get("abstract") or payload.get("keywords")):
+            # 批量模式 document_title 为逐篇列表,不能当单字符串拼 JSON(list.strip 崩溃);
+            # 逐篇题目由 _inputs 按 document_title[index] 映射到各条的 source.title
+            _title = payload.get("title")
+            _abstract = payload.get("abstract")
+            _keywords = payload.get("keywords")
+            _title = _title if isinstance(_title, str) else ""
+            _abstract = _abstract if isinstance(_abstract, str) else ""
+            _keywords = _keywords if isinstance(_keywords, list) else []
+            if not (_title or _abstract or _keywords):
                 return text
             return json.dumps({
-                "title": payload.get("title", ""),
-                "abstract": payload.get("abstract") or text,
-                "keywords": payload.get("keywords") or [],
+                "title": _title,
+                "abstract": _abstract or text,
+                "keywords": _keywords,
             }, ensure_ascii=False)
         if not contract.collection_tool and text.lstrip().startswith("{"):
             try:

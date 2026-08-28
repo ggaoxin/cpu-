@@ -639,53 +639,60 @@ const domainNerPreviewResponse = {
 
 const reviewerSupplementParams: Record<string, ToolDefinition['params']> = {
   'zh-classify': [
-    ['clc_labeled_data', 'resource', 'required', '标准中图分类号标注数据，可选择数据库当前资源或上传新资源'],
+    ['document_title', 'string|string[]', 'required', '文献题目；标识响应结果与可视化弹窗中的当前文献'],
+    ['clc_labeled_data', 'resource', 'required', '标准中图分类号标注数据。【直接影响】即分类标准本身（40912 条中图类目+向量索引），候选与最终分类号全部来自它；可换用户自建类目体系'],
   ],
   'en-classify': [
-    ['clc_standard_resource', 'resource', 'required', '中图分类标准数据及版本'],
-    ['cross_language_mapping_rules', 'resource', 'required', '英文科研术语到中图分类体系的映射规则'],
+    ['document_title', 'string|string[]', 'required', '文献题目；标识响应结果与可视化弹窗中的当前文献'],
+    ['clc_labeled_data', 'resource', 'required', '标准中图分类号标注数据。【直接影响】bge-m3 跨语言索引让英文文献直接映射到中文类目，是跨语言分类的答案空间'],
   ],
   'domain-classify': [
-    ['domain_scientific_literature_data', 'resource', 'required', '领域专业科技文献数据'],
-    ['domain_classification_rules', 'resource', 'required', '专业领域一级、二级、三级分类规则'],
-    ['manually_labeled_training_data', 'resource', 'required', '专业领域人工标注训练数据'],
+    ['document_title', 'string|string[]', 'required', '文献题目；标识响应结果与可视化弹窗中的当前文献'],
+    ['professional_domain', 'string', 'required', '目标专业领域（01-32）'],
+    ['domain_classification_rules', 'resource', 'required', '领域分类规则。【直接影响判定口径】领域清单、领域↔中图类号段映射、三级类号粒度要求；用户上传自定义版本可按自己的领域理解判定'],
+    ['manually_labeled_training_data', 'resource', 'required', '人工标注训练数据。【辅助影响】64 条标注样本注入提示词作 few-shot 参考，校准标注风格与粒度'],
+  ],
+  'zh-keyword': [
+    ['document_title', 'string|string[]', 'required', '文献题目；标识响应结果与可视化弹窗中的当前文献'],
+    ['domain_terminology_dictionary', 'resource', 'optional', '可选领域术语词典。【辅助影响】命中术语加权并归一到规范表达；不提供按内置权重排序'],
   ],
   'en-keyword': [
-    ['domain_terminology_library', 'resource', 'optional', '英文领域术语库，用于缩写识别、消歧和术语规范化'],
-    ['classification_mapping_table', 'resource', 'optional', '英文关键词到科研分类标签的映射表'],
+    ['document_title', 'string|string[]', 'required', '文献题目；标识响应结果与可视化弹窗中的当前文献'],
+    ['domain_terminology_library', 'resource', 'required', '领域术语库。【直接影响】英文术语归一（normalized_term）的依据，术语消歧与规范化的主要来源'],
+    ['classification_standard_mapping_table', 'resource', 'required', '分类标准映射表。【直接影响】关键词到中图类目映射（classification_mapping 字段）的唯一来源'],
   ],
   'rq-detect': [
-    ['text_format', 'string', 'required', '文本格式：auto、plain_text、sectioned_text 或 structured_json'],
-    ['document_scope', 'string', 'optional', '分析范围：full_document、abstract_and_introduction 或 selected_sections'],
+    ['document_title', 'string|string[]', 'required', '文献题目；标识响应结果与可视化弹窗中的当前文献'],
+    ['text_format_requirement', 'string', 'optional', '选填，文本格式要求。【直接影响溯源方式】纯文本跳过章节解析；章节结构文本启用标题路径溯源；JSON 结构文本按章节精确归属'],
   ],
   'citation-sentiment': [
-    ['citation_sentence', 'string', 'conditional', '单文本模式：包含引文标记的引用句'],
-    ['previous_context', 'string', 'optional', '引用句上文'],
-    ['next_context', 'string', 'optional', '引用句下文'],
-    ['citations', 'object[]', 'conditional', '批量文本模式：多条引用句及其上下文'],
-    ['citation_metadata', 'object[]|file', 'conditional', '文本模式由用户填写或上传；文件模式默认从参考文献列表自动解析，解析失败时补充或上传'],
+    ['document_title', 'string|string[]', 'required', '文献题目；标识响应结果与可视化弹窗中的当前文献'],
+    ['scientific_document_full_text', 'string|file|object[]', 'required', '文献文本或文件'],
+    ['reference_entries', 'string|file', 'required', '参考文献原始条目。【直接影响】大模型批量解析出被引文献元数据并按标记号匹配'],
+    ['citation_sentence_and_context', 'object|object[]', 'conditional', '引用句及上下文。【自动派生】系统从文献文本自动定位生成；手动提供时以所填为准'],
+    ['citation_metadata', 'object|object[]|file', 'conditional', '被引文献元数据。【自动派生】由参考文献条目解析得到'],
   ],
   'citation-intent': [
-    ['citation_sentence', 'string', 'conditional', '单文本模式：包含引文标记的引用句'],
-    ['previous_context', 'string', 'optional', '引用句上文'],
-    ['next_context', 'string', 'optional', '引用句下文'],
-    ['citations', 'object[]', 'conditional', '批量文本模式：多条引用句及其上下文'],
-    ['citation_metadata', 'object[]|file', 'conditional', '文本模式由用户填写或上传；文件模式默认从参考文献列表自动解析，解析失败时补充或上传'],
-    ['preprocessed_training_set', 'resource', 'required', '已完成清洗、标签统一和类别平衡的引用意图训练集'],
+    ['document_title', 'string|string[]', 'required', '文献题目；标识响应结果与可视化弹窗中的当前文献'],
+    ['scientific_document_full_text', 'string|file|object[]', 'required', '文献文本或文件'],
+    ['reference_entries', 'string|file', 'required', '参考文献原始条目。【直接影响】解析被引文献元数据并按标记号匹配'],
+    ['citation_sentence_and_context', 'object|object[]', 'conditional', '引用句及上下文。【自动派生】系统自动定位生成；手动提供时以所填为准'],
+    ['citation_metadata', 'object|object[]|file', 'conditional', '被引文献元数据。【自动派生】由参考文献条目解析得到'],
+    ['preprocessed_training_set', 'resource', 'required', '预处理后的训练集。【辅助影响（证据/规则）】引用意图判定规则包：抽取正则、三类意图定义、关键词打分规则；注入提示词约束判定口径并后置校验调分，不训练模型'],
   ],
   'general-ner': [
-    ['general_annotated_corpus', 'resource', 'required', '通用领域标注语料'],
+    ['general_domain_annotated_corpus', 'resource', 'required', '通用领域标注语料。【辅助影响】实体标准术语归一/映射（standard_term_mappings）的依据'],
   ],
   'research-ner': [
-    ['multi_domain_research_corpus', 'resource', 'required', '多领域科研语料'],
-    ['research_labeled_data', 'resource', 'required', '科研实体人工标注数据'],
+    ['multi_domain_scientific_corpus', 'resource', 'required', '多领域科研语料。【辅助影响】科研实体判定规则与识别口径，注入提示词约束'],
+    ['manually_labeled_data', 'resource', 'required', '人工标注数据。【辅助影响】标注样本作 few-shot 参考校准实体边界'],
   ],
   'domain-ner': [
-    ['ontology_classification_system', 'resource', 'required', '专业领域本体分类体系'],
-    ['domain_labeled_training_data', 'resource', 'required', '专业领域实体标注训练数据'],
+    ['ontology_classification_system', 'resource', 'required', '本体分类体系。【直接影响】实体类型体系的答案空间：限定可识别类型、层级与知识库映射；换本体=换实体类型体系'],
+    ['domain_labeled_training_data', 'resource', 'required', '领域标注训练数据。【直接影响】领域实体判定规则与本体映射的规则来源'],
   ],
   'relation-extract': [
-    ['upstream_ner_record_id', 'string', 'required', '数据库中已完成的命名实体识别历史记录编号'],
+    ['upstream_ner_record_id', 'string', 'required', '上游实体记录：已完成的命名实体识别结果编号，在其上抽取关系三元组'],
   ],
 }
 

@@ -217,9 +217,11 @@ class SemanticApplicationService(ISemanticService):
         if not context:
             return base
         return (
-            f"{base}\n\n以下为本次请求明确选择的资源版本及其可读取内容。"
-            "将其作为分类/术语/标注约束；资源块内若有更具体的范围约束说明"
-            "（如【用户上传 CLC 资源】），以其为准，不得编造资源中不存在的事实：\n"
+            f"{base}\n\n以下为本次请求明确选择的资源版本及其可读取内容，"
+            "代表用户单位的自定义口径。**优先级规则：资源块内的补充规则、范围约束、"
+            "术语规范与基础提示词冲突时，以资源块为准**（如【用户上传 CLC 资源】的"
+            "范围约束、用户规则中的强制分类指令、术语规范中的规范名映射），"
+            "不得编造资源中不存在的事实：\n"
             f"{context}"
         )
 
@@ -1067,9 +1069,59 @@ class SemanticApplicationService(ISemanticService):
 
         # 英文关键词：批量场景重写 + CLC 映射并发（降时延：N 词串行 rerank→并发 max）
         _en_clc_map = {}
+        # 用户上传的分类标准映射表(显式 term→clc_code 条目)——按数量分级:
+        # ① 显式命中(任意规模):term 完全匹配 → 确定性直接覆盖(用户给了明确映射
+        #    就不该再让检索猜)
+        # ② 大表(>50 条):构建向量索引(外部知识库),关键词近邻检索用户术语,
+        #    相似度达标即用该条映射(中图分类资源同款分级设计)
+        # ③ 小表(≤50 条):维持提示词注入(_resource_context 原路径),软影响
+        _user_map_index = {}
+        _user_map_vecs = None
+        _user_map_rows = []
+        _resolved = (request.params or {}).get("resolved_resources") or {}
+        _map_res = _resolved.get("classification_standard_mapping_table") if isinstance(_resolved, dict) else None
+        if isinstance(_map_res, dict) and is_en:
+            from pathlib import Path as _Path
+            from config.settings import settings as _st
+            _uri = str(_map_res.get("storage_uri") or "")
+            _mp = _st.PROJECT_ROOT / _uri.removeprefix("project://") if _uri.startswith("project://") else _Path(_uri)
+            if _mp.is_file():
+                try:
+                    _mdata = json.loads(_mp.read_text(encoding="utf-8-sig", errors="replace"))
+                    _raw_rows = (_mdata.get("entries") or _mdata.get("mappings") or []) \
+                        if isinstance(_mdata, dict) else (_mdata if isinstance(_mdata, list) else [])
+                    _rows = [e for e in _raw_rows
+                             if isinstance(e, dict) and e.get("term") and e.get("clc_code")]
+                    for _e in _rows:
+                        _user_map_index[str(_e["term"]).casefold()] = {
+                            "system": "CLC", "code": str(_e["clc_code"]),
+                            "label": str(_e.get("clc_name") or _e.get("name") or ""),
+                            "classification_path": _e.get("classification_path") or [],
+                            "confidence": 1.0,
+                            "mapping_engine": "user_resource_direct",
+                            "dense_score": 1.0, "scene": "用户映射表直接覆盖",
+                        }
+                    if len(_rows) > 50:
+                        # 大表:用户术语建 m3 向量索引(按资源ID缓存,避免重复编码)
+                        _cache_key = f"kwmap_{_map_res.get('id')}_{_map_res.get('content_hash') or len(_rows)}"
+                        _cached = getattr(SemanticApplicationService, "_user_map_cache", None) or {}
+                        if _cache_key in _cached:
+                            _user_map_vecs, _user_map_rows = _cached[_cache_key]
+                        else:
+                            from infrastructure.rag.m3_encoder import m3_encoder as _m3
+                            import numpy as _np
+                            _terms = [str(e["term"]) for e in _rows]
+                            _user_map_vecs = _m3.encode(_terms)
+                            _user_map_rows = _rows
+                            if len(_cached) > 4:
+                                _cached.clear()
+                            _cached[_cache_key] = (_user_map_vecs, _user_map_rows)
+                            SemanticApplicationService._user_map_cache = _cached
+                except Exception:  # noqa: BLE001
+                    pass
         if is_en and cleaned:
             from concurrent.futures import ThreadPoolExecutor
-            _en_terms = [c["keyword"] for c in cleaned]
+            _en_terms = [c["keyword"] for c in cleaned if c["keyword"].casefold() not in _user_map_index]
             _en_ctxs = {c["keyword"]: self._term_context(c["keyword"], searchable_text) for c in cleaned}
             _en_scenes = self._llm_scene_rewrite_batch(_en_terms, _en_ctxs, title)
             def _map_one(kw):
@@ -1080,6 +1132,30 @@ class SemanticApplicationService(ISemanticService):
                     return kw, None
             with ThreadPoolExecutor(max_workers=min(6, len(_en_terms) or 1), thread_name_prefix="clc-map") as _ex:
                 _en_clc_map = dict(list(_ex.map(_map_one, _en_terms)))
+            for _uk, _uv in _user_map_index.items():
+                _en_clc_map[_uk] = _uv
+            # 大表向量索引:剩余词近邻匹配用户术语(≥0.62 视为同术语)
+            if _user_map_vecs is not None and _user_map_vecs.size:
+                import numpy as _np2
+                _remain = [c["keyword"] for c in cleaned
+                           if c["keyword"].casefold() not in _user_map_index]
+                if _remain:
+                    from infrastructure.rag.m3_encoder import m3_encoder as _m3e
+                    _qv = _m3e.encode(_remain)
+                    _sims = _qv @ _user_map_vecs.T
+                    for _ri, _kw in enumerate(_remain):
+                        _best = int(_np2.argmax(_sims[_ri]))
+                        if float(_sims[_ri][_best]) >= 0.62:
+                            _e = _user_map_rows[_best]
+                            _en_clc_map[_kw] = {
+                                "system": "CLC", "code": str(_e["clc_code"]),
+                                "label": str(_e.get("clc_name") or _e.get("name") or ""),
+                                "classification_path": _e.get("classification_path") or [],
+                                "confidence": round(float(_sims[_ri][_best]), 4),
+                                "mapping_engine": "user_resource_index",
+                                "dense_score": round(float(_sims[_ri][_best]), 4),
+                                "scene": "用户映射表向量索引近邻",
+                            }
         keyword_rows = []
         searchable = searchable_text.casefold()
         for rank, item in enumerate(cleaned, start=1):
@@ -1100,7 +1176,7 @@ class SemanticApplicationService(ISemanticService):
                 "custom_dictionary_hit": bool(item.get("custom_dictionary_hit")),
                 "matched_dictionary_term_id": item.get("dictionary_term_id"),
                 "weight_change": _number_or_default(item.get("weight_change"), 0),
-                "classification_mapping": _en_clc_map.get(keyword) if is_en else None,
+                "classification_mapping": (_en_clc_map.get(keyword) or _en_clc_map.get(keyword.casefold())) if is_en else None,
                 "source_position": {
                     "start": start if start >= 0 else None,
                     "end": start + len(keyword) if start >= 0 else None,
@@ -3483,6 +3559,17 @@ class SemanticApplicationService(ISemanticService):
 
     # ==================== 概念定义识别 ==================== #
 
+    _DOMAIN_LABEL_NAMES = {
+        "01": "数学与计算科学", "02": "力学与工程力学", "03": "物理学与应用物理", "04": "化学与化学科学",
+        "05": "天文学与空间科学", "06": "地球科学与地质资源", "07": "测绘遥感与地理信息", "08": "气象海洋科学",
+        "09": "生物科学与生物技术", "10": "医学与卫生健康", "11": "药学与毒理学", "12": "农业科学与农业工程",
+        "13": "林业畜牧兽医与水产", "14": "材料科学与材料工程", "15": "矿业与矿物加工", "16": "石油与天然气工程",
+        "17": "冶金与金属加工", "18": "机械工程与智能制造", "19": "仪器仪表与计量检测", "20": "能源与动力工程",
+        "21": "核科学与核工程", "22": "电气工程与电力系统", "23": "电子通信与半导体", "24": "自动化与控制工程",
+        "25": "人工智能与计算机技术", "26": "化学工程与过程工业", "27": "轻工食品与纺织", "28": "建筑与土木工程",
+        "29": "水利与水电工程", "30": "交通运输工程", "31": "航空航天工程", "32": "环境与安全工程",
+    }
+
     def _execute_concept_definition(self, code: str, request: SemanticRequest, fp, rule) -> SemanticResult:
         """概念定义识别：极速版取全文→清洗→按句号分块→批量 LLM 抽取定义句
         (sentence+concept+pattern 一步到位)→合并去重。light 漏抽/LLM 判 0 →
@@ -3495,6 +3582,15 @@ class SemanticApplicationService(ISemanticService):
         result = SemanticResult(code=code, name=fp.name)
         params = request.params or {}
         _src_path = params.get("_source_pdf_path")
+        # 需规输入项 domain_label / output_format_requirement:
+        # - domain_label【辅助影响】注入提示词作为领域语境(概念判定优先该领域术语),并随结果返回
+        # - output_format_requirement【直接影响输出结构】JSON(默认)/CSV(附 csv_content)/
+        #   数据库写入结构(附 database_records,DB 就绪字段命名)
+        domain_label = str(params.get("domain_label") or "").strip()
+        domain_name = self._DOMAIN_LABEL_NAMES.get(domain_label, "")
+        if not domain_name and domain_label and domain_label != "自动识别":
+            domain_name = domain_label  # 兼容直接传领域名称
+        output_format = str(params.get("output_format_requirement") or "JSON").strip() or "JSON"
         text = (request.text or "").strip()
 
         # 兼容直接传 PDF/MD 路径
@@ -3512,8 +3608,11 @@ class SemanticApplicationService(ISemanticService):
             chunks = self._definition_chunks(cleaned)
             if not chunks:
                 return []
+            domain_hint = ("\n文献所属领域：" + domain_name + "。概念判定优先考虑该领域的专业术语与表达习惯。"
+                           if domain_name else "")
             sysp = (
-                "你是科技文献概念定义识别专家。从给定文本中抽取概念定义句。\n"
+                "你是科技文献概念定义识别专家。从给定文本中抽取概念定义句。"
+                f"{domain_hint}\n"
                 "定义句：解释某个概念/术语是什么的句子——X是指Y / X指Y / X是一种Y / "
                 "X定义为Y / X即Y / X称为Y / X指的是Y / X属于Y的类别。\n"
                 "非定义句（不抽）：描述重要性/作用/意义（X是...的关键/重要环节/前提/核心）；"
@@ -3659,10 +3758,47 @@ class SemanticApplicationService(ISemanticService):
                 "confidence": item["confidence"],
             })
 
+        # 需规参数回传与输出格式化:domain_label 随结果返回;output_format_requirement
+        # 决定附加输出结构(CSV 文本 / 数据库写入结构记录)。out 原为定义条目列表,
+        # 带需规参数时包装为 {definitions: [...], ...附加字段} 的 dict。
+        fmt = output_format.upper()
+        need_extra = bool(domain_label) and (domain_label != "自动识别")
+        if need_extra or (fmt.startswith("CSV") or "数据库" in output_format or "DATABASE" in fmt):
+            packed: Dict[str, Any] = {"definitions": out}
+            if need_extra:
+                packed["domain_label"] = domain_label
+                packed["domain_name"] = domain_name or ""
+                for item in out:
+                    if isinstance(item, dict):
+                        item.setdefault("domain_label", domain_label)
+            if fmt.startswith("CSV") and out:
+                import io as _io
+                import csv as _csv
+                buf = _io.StringIO()
+                writer = _csv.writer(buf)
+                writer.writerow(["concept", "definition_sentence", "pattern", "confidence"])
+                for item in out:
+                    writer.writerow([item.get("concept"), item.get("sentence"),
+                                     item.get("pattern"), item.get("confidence")])
+                packed["csv_content"] = buf.getvalue()
+                packed["output_format"] = "csv"
+            elif ("数据库" in output_format or "DATABASE" in fmt) and out:
+                packed["database_records"] = [{
+                    "concept_id": f"cdef_{index:04d}",
+                    "concept": item.get("concept"),
+                    "definition_sentence": item.get("sentence"),
+                    "definition_pattern": item.get("pattern"),
+                    "confidence": item.get("confidence"),
+                    "domain_label": domain_label or None,
+                } for index, item in enumerate(out, start=1)]
+                packed["output_format"] = "database"
+            out = packed
         result.success = True
         result.data = out
-        result.confidence = sum(x["confidence"] for x in out) / max(len(out), 1)
-        result.raw = json.dumps({"n_definitions": len(out)}, ensure_ascii=False)
+        defs_for_conf = out.get("definitions") if isinstance(out, dict) else out
+        result.confidence = sum(x["confidence"] for x in defs_for_conf or []) / max(len(defs_for_conf or []), 1)
+        result.raw = json.dumps({"n_definitions": len(defs_for_conf or []),
+                                 "domain_label": domain_label, "output_format": output_format}, ensure_ascii=False)
         return result
 
     def _clean_definition_text(self, text: str) -> str:
