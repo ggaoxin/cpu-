@@ -38,3 +38,4 @@ runtime/exports/
 models/
 # CLC 向量索引（~585M）：GitHub Release 附件 clc-vectors.tar.gz，解压到 rag_store/clc_rag/
 rag_store/clc_rag/
+output/
