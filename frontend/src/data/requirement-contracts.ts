@@ -265,11 +265,15 @@ export const requirementContracts: Record<string, RequirementContract> = {
   'relation-extract': {
     inputs: [
       ['upstream_ner_record_id', 'string', 'required', '上游实体记录编号。数据库中已完成的命名实体识别结果记录(rec_ 前缀),后端据此读取原始句子和实体列表,在其上抽取实体间关系三元组'],
+      ['dependency_parse', 'object[]', 'optional', '依存句法分析结果。选择上游实体记录后系统自动生成并展示;包含句子编号、中心词、依存关系和依存词,用于支撑关系抽取的句法分析'],
+      ['dependency_parse[].sentence_id', 'string', 'optional', '句子编号(如 "SENT-001")'],
+      ['dependency_parse[].head', 'string', 'optional', '中心词(依存弧的支配词)'],
+      ['dependency_parse[].relation', 'string', 'optional', '依存关系类型(如"定语""主谓关系")'],
+      ['dependency_parse[].dependent', 'string', 'optional', '依存词(依存弧的从属词)'],
+      ['dependency_paths', 'object[]', 'optional', '实体关系三元组对应的依存句法路径,由系统自动生成'],
     ],
     outputs: [
       ['relation_triples', 'object[]', '实体关系三元组'],
-      ['dependency_parse', 'object[]', '依存句法分析结果,包含句子编号、中心词、依存关系和依存词'],
-      ['dependency_paths', 'object[]', '实体关系三元组对应的依存句法路径'],
       ['context_fragments', 'object[]', '上下文片段'],
       ['confidence', 'number', '置信度评分'],
       ['rdf_representation', 'string | object', '关系三元组对应的 RDF 表示'],
