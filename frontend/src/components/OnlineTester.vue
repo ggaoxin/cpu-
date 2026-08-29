@@ -185,6 +185,28 @@ async function parseBatchCitationRefs(item: CitationBatchItem) {
 function removeBatchMetaEntry(item: CitationBatchItem, index: number) {
   item.metaList.splice(index, 1)
 }
+// 深度聚类锚点资源上传:上传后注册为数据库资源并自动选中
+async function uploadAnchorResource(resourceKey: string, event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  try {
+    const formData = new FormData()
+    formData.append('resource_key', resourceKey)
+    formData.append('upload', file)
+    const response = await fetch('/api/v1/semantic-resources/upload', { method: 'POST', body: formData })
+    const data = await response.json()
+    if (data.code === 0) {
+      const rid = data.data?.resource_id
+      await loadAnchorOptions()
+      if (resourceKey === 'training_samples') selectedAnchorTrain.value = rid
+      else selectedAnchorGold.value = rid
+    } else {
+      requestError.value = data.detail || '上传失败'
+    }
+  } catch (error) {
+    requestError.value = error instanceof Error ? error.message : '上传请求失败'
+  }
+}
 const supplementalPayload = ref<Record<string, unknown>>({})
 const labelLengthLimit = ref(12)
 const labelLanguageType = ref('auto')
@@ -1005,14 +1027,14 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                       <div class="field"><label><span class="label-main">关键词</span><small>可选</small></label><input v-model="item.keywords" class="input" placeholder="多个关键词使用逗号分隔" /></div>
                     </div>
                   </article>
-                  <div class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
-                    <div class="field"><label><span class="label-main">训练样本</span><small>可选</small></label><select v-model="selectedAnchorTrain" class="select"><option value="">不使用</option><option v-for="item in anchorTrainOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option></select></div>
-                    <div class="field"><label><span class="label-main">人工标注类目标签数据</span><small>可选</small></label><select v-model="selectedAnchorGold" class="select"><option value="">不使用</option><option v-for="item in anchorGoldOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option></select></div>
-                  </div>
                 </template>
                 <template v-else>
                   <article v-for="(item,index) in uploadedFiles" :key="item.id" class="selected-file-row"><i>{{ index + 1 }}</i><span class="selected-file-type">{{ item.type }}</span><div><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }} · 等待提交</small></div><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article>
                 </template>
+              </div>
+              <div v-if="toolId === 'deep-cluster'" class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
+                <div class="field"><label><span class="label-main">训练样本</span><small>可选；内置或用户上传</small></label><div class="relation-anchor-row"><select v-model="selectedAnchorTrain" class="select"><option value="">不使用</option><option v-for="item in anchorTrainOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option></select><label class="anchor-upload-btn"><input type="file" accept=".json,.jsonl,.csv" @change="uploadAnchorResource('training_samples', )" /><span>⇧ 上传</span></label></div></div>
+                <div class="field"><label><span class="label-main">人工标注类目标签数据</span><small>可选；内置或用户上传</small></label><div class="relation-anchor-row"><select v-model="selectedAnchorGold" class="select"><option value="">不使用</option><option v-for="item in anchorGoldOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option></select><label class="anchor-upload-btn"><input type="file" accept=".json,.jsonl,.csv" @change="uploadAnchorResource('manually_labeled_category_data', )" /><span>⇧ 上传</span></label></div></div>
               </div>
             </div>
           </template>
