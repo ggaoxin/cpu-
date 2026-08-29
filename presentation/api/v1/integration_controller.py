@@ -1023,10 +1023,31 @@ def compatible_history(
         for record in repository.list_results(task["id"]):
             result = record.get("result") if isinstance(record.get("result"), dict) else {}
             request_payload = task.get("request_payload") if isinstance(task.get("request_payload"), dict) else {}
+            # 记录命名:文本输入用题目,文件输入用文件名,方便用户选择
+            _rp = request_payload
+            _name = ""
+            if isinstance(_rp, dict):
+                # 文件输入:file_inputs 或 files 里的 file_name
+                _files = _rp.get("files") or []
+                if isinstance(_files, list) and _files:
+                    _first = _files[0]
+                    if isinstance(_first, dict):
+                        _name = str(_first.get("file_name") or "")[:60]
+                if not _name:
+                    _titles = _rp.get("document_title") or _rp.get("title")
+                    if isinstance(_titles, list) and _titles:
+                        _name = str(_titles[0] or "")[:60]
+                    elif isinstance(_titles, str):
+                        _name = _titles[:60]
+                if not _name:
+                    # 从结果回填的 document.title
+                    _name = str((result.get("document") or {}).get("title") or "")[:60]
+            if not _name:
+                _name = str(task.get("created_at") or "")[:19]
             option = {
                 "task_id": task["id"], "record_id": record["id"], "tool_id": task["tool_id"],
                 "status": task["status"], "created_at": task["created_at"],
-                "label": f"{task['tool_id']} · {task['created_at']} · {record['id']}",
+                "label": _name,
             }
             if upstream_type == "entity":
                 task_item = repository.get_task_item(str(record.get("task_item_id") or ""))

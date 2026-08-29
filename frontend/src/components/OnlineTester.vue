@@ -796,7 +796,11 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
             <div class="field-heading"><b><span class="required-mark">*</span> 上游实体记录</b><span>必填；读取句子与实体，自动分析依存句法</span></div>
             <div class="database-selector-panel relation-ner-selector">
               <div class="database-selector-heading"><b>选择已完成的命名实体识别记录</b></div>
-              <select v-model="selectedNerRecordId" class="select"><option v-for="item in nerHistoryOptions" :key="item.id" :value="item.id">{{ item.taskName }} · {{ item.id }}</option></select>
+              <select v-model="selectedNerRecordId" class="select">
+                <option v-if="!nerHistoryOptions.length" value="" disabled>暂无已完成的命名实体识别记录</option>
+                <option v-for="item in nerHistoryOptions" :key="item.id" :value="item.id">{{ item.taskName || '未命名记录' }}</option>
+              </select>
+              <div v-if="!nerHistoryOptions.length" class="info-banner" style="margin-top:8px"><b>暂无数据</b><span>请先在"中英文通用领域命名实体识别"等工具中完成至少一次识别,再回来选择上游记录</span></div>
               <div v-if="selectedNerRecord" class="database-task-summary relation-record-summary">
                 <span><small>识别类型</small><b>{{ selectedNerRecord.nerType }}</b></span><span><small>文献编号</small><b>{{ selectedNerRecord.documentId }}</b></span><span><small>句子编号</small><b>{{ selectedNerRecord.sentenceId }}</b></span><span><small>完成时间</small><b>{{ selectedNerRecord.completedAt }}</b></span>
               </div>
