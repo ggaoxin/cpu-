@@ -663,8 +663,9 @@ def execute_deep_clustering(
                     topic_name = str(cluster.get("topic_name") or cluster.get("cluster_id"))
                 else:  # 技术轴 topic_name 为 sparse token 拼接（如"training / our"），改用代表短语命名
                     topic_name = "、".join(rep_terms) if rep_terms else str(cluster.get("cluster_id"))
+                import datetime as _dt; _t = _dt.datetime.now().strftime("%Y-%m-%d %H:%M")
                 payload = {
-                    "name": topic_name,
+                    "name": f"{topic_name} · {_t}",
                     "description": (
                         f"深度聚类{axis_label}文献集 · {code} · 簇{cluster.get('cluster_id')}"
                         f" · {','.join(rep_terms)}"

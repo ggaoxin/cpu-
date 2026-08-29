@@ -1042,8 +1042,12 @@ def compatible_history(
                 if not _name:
                     # 从结果回填的 document.title
                     _name = str((result.get("document") or {}).get("title") or "")[:60]
+            # NER 记录名加时间后缀(题目/文件名 · 年-月-日 时:分)
+            _time = str(task.get("created_at") or "")[:16].replace("T", " ")
             if not _name:
-                _name = str(task.get("created_at") or "")[:19]
+                _name = _time
+            elif _time:
+                _name = f"{_name} · {_time}"
             option = {
                 "task_id": task["id"], "record_id": record["id"], "tool_id": task["tool_id"],
                 "status": task["status"], "created_at": task["created_at"],
@@ -1077,11 +1081,16 @@ def compatible_history(
                         "cluster_id": cluster.get("cluster_id"),
                         "phrases": [t for t in (_clean_cluster_term(v) for v in (cluster.get("representative_terms") or cluster.get("keywords") or [])) if t],
                     })
+                _dim = str(result.get("cluster_dimension") or result.get("dimension") or "")
+                _dim_label = "技术路线聚类" if _dim.startswith("tech") else ("应用场景聚类" if _dim.startswith("app") else "深度聚类")
+                _doc_count = (result.get("input_summary") or {}).get("document_count") or len(phrase_sets)
+                _time = str(task.get("created_at") or "")[:16].replace("T", " ")
                 option.update({
                     "dimension": result.get("cluster_dimension") or result.get("dimension"),
-                    "document_count": (result.get("input_summary") or {}).get("document_count"),
+                    "document_count": _doc_count,
                     "cluster_count": len(phrase_sets),
                     "phrase_sets": phrase_sets,
+                    "label": f"{_dim_label}({_doc_count}篇) · {_time}",
                 })
             options.append(option)
     return {"code": 0, "data": options, "meta": {"downstream_tool": downstream_tool, "upstream_type": upstream_type}}

@@ -2958,7 +2958,42 @@ class SemanticApplicationService(ISemanticService):
         """甲方契约入口：只接收深度聚类输出的类簇短语集合。"""
         from application.service.cluster_labeling_service import execute_cluster_labeling
 
-        return execute_cluster_labeling(code, request, fp, self._glm)
+        result = execute_cluster_labeling(code, request, fp, self._glm)
+
+        # 后处理:用生成的最终标签更新聚类沉淀的文献集名称(标签 · 时间)
+        try:
+            labels = (result.data or {}).get("labels") or []
+            if labels:
+                from infrastructure.database.resource_repository import DatabaseResourceRepository
+                from infrastructure.database.connection import Database
+                db = Database()
+                db.initialize()
+                repo = DatabaseResourceRepository(db)
+                collections = repo.list_collections("default", limit=200) if hasattr(repo, "list_collections") else []
+                for coll in collections:
+                    desc = str(coll.get("description") or "")
+                    name = str(coll.get("name") or "")
+                    # 匹配文献集(描述含深度聚类字样)
+                    if "深度聚类" not in desc:
+                        continue
+                    # 从名称中提取时间部分(·后面)
+                    time_part = name.split("·")[-1].strip() if "·" in name else ""
+                    # 找到该文献集对应的标签(按簇ID或名称匹配)
+                    for lb in labels:
+                        lb_name = str(lb.get("label") or "").strip()
+                        if not lb_name:
+                            continue
+                        # 尝试按簇ID匹配
+                        cid = str(lb.get("cluster_id") or "")
+                        if cid and cid in desc:
+                            new_name = f"{lb_name} · {time_part}" if time_part else lb_name
+                            if new_name != name:
+                                repo.update_collection_name(str(coll.get("id")), new_name)
+                                break
+        except Exception as exc:
+            import logging; logging.getLogger(__name__).warning("标签生成后更新文献集名失败: %s", exc)
+
+        return result
 
     def _execute_structured_review(self, code: str, request: SemanticRequest, fp, rule) -> SemanticResult:
         """按需规顺序执行：研究问题抽取 → 问题聚类 → 方法匹配 → 综述。"""

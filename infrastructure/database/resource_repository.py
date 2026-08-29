@@ -112,6 +112,14 @@ class DatabaseResourceRepository(IResourceRepository):
             )
         return rows
 
+    def update_collection_name(self, collection_id: str, name: str) -> None:
+        """更新文献集名称(聚类标签生成后用最终标签重命名)。"""
+        with self.db.session() as session:
+            session.execute(
+                "UPDATE document_collections SET name = %s WHERE id = %s",
+                (name, collection_id),
+            )
+
     def get_collection(self, collection_id: str) -> Optional[Dict[str, Any]]:
         with self.db.session() as session:
             collection = session.fetchone(
