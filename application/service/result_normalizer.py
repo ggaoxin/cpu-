@@ -179,6 +179,29 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
 # 语步类别 → 规范化标签（中英文摘要语步识别的 GLM 输出是「类别→文本」扁平 dict，
 # 不是 moves 列表；这里给出有序类别集合，供 _moves 把扁平 dict 还原成结构化 moves）。
 _MOVE_CATEGORIES_ZH = ["研究背景", "研究目的", "研究方法", "研究结果", "研究结论"]
+
+
+def _title_text(*values: Any) -> str:
+    """取第一个非空字符串作标题;批量模式 document_title 是列表,不能平铺当标题。"""
+    for value in values:
+        if isinstance(value, str) and value.strip():
+            return value
+    return ""
+
+
+def _detect_language(text: Any) -> str:
+    """按字符构成判断文本主语言：CJK 汉字与拉丁字母数量比较。
+
+    摘要语步工具的中英文页面共用引擎，document.language 不能按工具页面写死，
+    要按输入文本实际语言输出（英文摘要进中文页 → language=en）。
+    """
+    if not isinstance(text, str) or not text.strip():
+        return ""
+    cjk = sum(1 for ch in text if "\u4e00" <= ch <= "\u9fff")
+    latin = sum(1 for ch in text if ch.isascii() and ch.isalpha())
+    if cjk == 0 and latin == 0:
+        return ""
+    return "zh" if cjk >= latin else "en"
 _MOVE_CATEGORIES_EN = ["Background", "Objective", "Methods", "Results", "Conclusion"]
 
 
@@ -279,8 +302,10 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
             if lbl and lbl not in statistics:
                 statistics[lbl] = _counter.get(lbl, 0)
     document = data.get("document") if isinstance(data.get("document"), dict) else {}
-    document.setdefault("title", payload.get("project_name") or payload.get("document_title") or payload.get("title") or "")
-    document.setdefault("language", "en" if tool_id == "en-abstract-move" else "zh")
+    document.setdefault("title", _title_text(payload.get("project_name"), payload.get("document_title"), payload.get("title")))
+    # language 按输入文本实际语言判定（而非按工具页面写死）；引擎已显式给出时保留引擎值
+    _detected_lang = _detect_language(document.get("abstract") or payload.get("text") or payload.get("project_document_text") or payload.get("abstract"))
+    document.setdefault("language", _detected_lang or ("en" if tool_id == "en-abstract-move" else "zh"))
     # 摘要原文：引擎输出不回传输入文本，这里从请求 payload 补回，供前端可视化弹窗
     # 按字符范围定位每个语步（move.text 在 abstract 内 indexOf 算起止）。
     # 单篇 text / 基金项目 project_document_text；data.document.abstract 优先。
@@ -301,6 +326,13 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     # 前端专用渲染与 move_segments 投影均只读 moves 数组，不读顶层平铺）。
     for _cat in _MOVE_CATEGORIES_ZH + _MOVE_CATEGORIES_EN:
         result.pop(_cat, None)
+    # 跨语言输入提示：中文页收到纯英文文本(或反向)时告知用户切换识别页
+    if _detected_lang and tool_id in {"zh-abstract-move", "en-abstract-move"}:
+        _expected_lang = "en" if tool_id == "en-abstract-move" else "zh"
+        if _detected_lang != _expected_lang:
+            _lang_name = "英文" if _detected_lang == "en" else "中文"
+            _page_name = "英文摘要语步识别" if _detected_lang == "en" else "中文摘要语步识别"
+            result["language_mismatch"] = f"检测到输入文本为{_lang_name}，请切换到{_page_name}功能页后重新识别"
     if tool_id == "fund-move":
         result.setdefault("writeback", {"status": "not_requested", "project_record_id": None, "performance_evaluation_task_id": None})
     return result

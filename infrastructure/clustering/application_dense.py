@@ -355,7 +355,9 @@ def _candidate(
         labels = _spectral(graph, k, seed)
         used = "spectral_local_graph_application_v2"
         rerun = None
-    silhouette = float(silhouette_score(matrix, labels, metric="cosine"))
+    # k=1（全部归一簇）时无轮廓系数，置 None 避免 sklearn 报错。
+    silhouette = float(silhouette_score(matrix, labels, metric="cosine")) \
+        if len(set(labels.tolist())) >= 2 else None
     rng = np.random.default_rng(seed)
     stability_values = []
     for _ in range(3):
@@ -371,7 +373,9 @@ def _candidate(
     counts = Counter(labels.tolist())
     balance = float(min(counts.values()) / max(counts.values()))
     undersized = sum(value for value in counts.values() if value < min_cluster_size) / len(labels)
-    score = 0.50 * silhouette + 0.25 * stability + 0.25 * balance - 0.70 * undersized
+    silhouette_part = 0.0 if silhouette is None else silhouette
+    stability_part = 0.0 if stability is None else stability
+    score = 0.50 * silhouette_part + 0.25 * stability_part + 0.25 * balance - 0.70 * undersized
     warnings = []
     if undersized:
         warnings.append(
@@ -473,7 +477,8 @@ def _louvain_candidate(
     for cluster_index, community in enumerate(communities):
         for node in community:
             labels[int(node)] = cluster_index
-    silhouette = float(silhouette_score(matrix, labels, metric="cosine"))
+    silhouette = float(silhouette_score(matrix, labels, metric="cosine")) \
+        if len(set(labels.tolist())) >= 2 else None
     counts = Counter(labels.tolist())
     balance = float(min(counts.values()) / max(counts.values()))
     undersized = sum(value for value in counts.values() if value < min_cluster_size) / n
@@ -492,7 +497,7 @@ def _louvain_candidate(
         stability=None,
         balance=balance,
         undersized_document_ratio=float(undersized),
-        selection_score=float(0.60 * silhouette + 0.40 * balance - 0.70 * undersized),
+        selection_score=float((0.60 * silhouette if silhouette is not None else 0.0) + 0.40 * balance - 0.70 * undersized),
         warnings=warnings,
     )
 
@@ -545,7 +550,8 @@ def cluster_application_dense(
             )
         if chosen is None:
             if cluster_count is not None:
-                ks = [max(2, min(int(cluster_count), n - 1))]
+                # 用户指定簇数：最低 1（支持全部文献归为一类），最高 n-1。
+                ks = [max(1, min(int(cluster_count), n - 1))]
             else:
                 upper = min(n - 1, max(2, min(12, round(math.sqrt(n) * 2))))
                 ks = list(range(2, upper + 1))

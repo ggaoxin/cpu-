@@ -350,7 +350,8 @@ def _candidate(matrix: np.ndarray, method: str, k: int, min_cluster_size: int, s
         labels, used, warnings = _run_hdbscan(matrix, min_cluster_size)
         runner = lambda values: _run_hdbscan(values, min_cluster_size)[0]
         actual = len(set(labels[labels >= 0].tolist()))
-        k = actual
+        # 全噪声时 actual=0，回落到 1（类簇数量最低为 1，不能为 0/负）。
+        k = max(1, actual)
     else:
         raise ValueError(f"Unsupported clustering algorithm: {method}")
     silhouette = _safe_silhouette(matrix, labels)
@@ -411,7 +412,8 @@ def _choose_candidate(
     if n == 1:
         return Candidate(np.array([0]), algorithm, "single_cluster", 1, None, 1.0, 1.0, 0.0, 1.0, [])
     if requested_k is not None:
-        requested_k = max(2, min(int(requested_k), n - 1))
+        # 用户指定簇数：最低 1（支持全部文献归为一类），最高 n-1。
+        requested_k = max(1, min(int(requested_k), n - 1))
     if algorithm not in {"auto", "kmeans", "agglomerative", "hierarchical", "hdbscan"}:
         raise ValueError("algorithm must be auto, kmeans, agglomerative, hierarchical, or hdbscan")
     if algorithm == "hdbscan":
@@ -518,7 +520,8 @@ def _projection(matrix: np.ndarray, labels: Sequence[str], papers: Sequence[dict
 def _quality_metrics(matrix: np.ndarray, labels: np.ndarray, candidate: Candidate) -> dict[str, Any]:
     mask = labels >= 0
     clean_labels = labels[mask]
-    cluster_count = len(set(clean_labels.tolist()))
+    # 全噪声时 clean_labels 为空，len(set())=0；回落到 1 保证 cluster_count 最低为 1。
+    cluster_count = max(1, len(set(clean_labels.tolist())))
     ch = db = None
     if mask.sum() > cluster_count >= 2:
         dimensions = min(10, matrix.shape[1], int(mask.sum()) - 1)

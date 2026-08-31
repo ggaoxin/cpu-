@@ -90,16 +90,28 @@ def normalize_meta(entries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 def detect_taxonomy_kind(entries: Any) -> str:
     """判定用户上传 CLC 数据的结构类型，供分治（不改原数据）。
 
-    - labeled_papers：文献标注样本（首条有 ch_name|en_name + main_classification.clc_code）
+    - labeled_papers：文献标注样本（首条有 ch_name|en_name + main_classification.clc_code，
+      或顶层 manual_category_id + manual_category_name）
     - taxonomy_complete：分类树且父链可上溯覆盖≥60%（parent_code 显式在集合内或前缀可推导）
     - taxonomy_scattered：有 clc_code+clc_name 但父链覆盖<60%（散点，建库会让 resolve_code 上溯失效）
     - unknown：非 CLC 数据
     """
+    if isinstance(entries, dict):
+        # 包装对象解包：{label_version, document_labels:[...]} → 条目列表
+        entries = next(
+            (entries[k] for k in ("document_labels", "labels", "entries", "items", "data", "records")
+             if isinstance(entries.get(k), list)),
+            None,
+        )
     if not isinstance(entries, list) or not entries:
         return "unknown"
     first = entries[0] if isinstance(entries[0], dict) else {}
     code = str(first.get("clc_code", "")).strip()
     name = str(first.get("clc_name", "")).strip()
+    if not code or not name:
+        # 字段别名（code/name、manual_category_id/manual_category_name 等）→ 分类表
+        code = str(first.get("manual_category_id") or first.get("code") or "").strip()
+        name = str(first.get("manual_category_name") or first.get("name") or "").strip()
     if code and name:
         codes = {str(e.get("clc_code", "")).strip() for e in entries
                  if isinstance(e, dict) and e.get("clc_code")}
@@ -119,9 +131,13 @@ def detect_taxonomy_kind(entries: Any) -> str:
         coverage = has_parent / n if n else 0
         return "taxonomy_complete" if coverage >= 0.6 else "taxonomy_scattered"
     # labeled_papers：文献标注样本
-    title = str(first.get("ch_name") or first.get("en_name") or "").strip()
+    title = str(first.get("ch_name") or first.get("en_name")
+                or first.get("title") or first.get("document_id") or "").strip()
     main = first.get("main_classification")
-    main_code = str(main.get("clc_code") or "").strip() if isinstance(main, dict) else ""
+    if not isinstance(main, dict):
+        main = first.get("manual_category") if isinstance(first.get("manual_category"), dict) else {}
+    main_code = str(main.get("clc_code") or main.get("code") or "").strip() \
+        or str(first.get("manual_category_id") or "").strip()
     if title and main_code:
         return "labeled_papers"
     return "unknown"

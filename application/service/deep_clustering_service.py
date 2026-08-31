@@ -148,16 +148,19 @@ def _optional_float(params: dict[str, Any], name: str) -> float | None:
     return parsed
 
 
-def _optional_cluster_count(params: dict[str, Any]) -> int | None:
+def _optional_cluster_count(params: dict[str, Any], file_count: int = 0) -> int | None:
     value = params.get("cluster_count")
     if value in (None, "", "auto", 0, "0"):
         return None
     try:
         parsed = int(value)
     except (TypeError, ValueError) as exc:
-        raise ValueError("cluster_count 必须为大于等于2的整数或 auto。") from exc
-    if parsed < 2:
-        raise ValueError("cluster_count 必须大于等于2。")
+        raise ValueError("cluster_count 必须为整数或 auto。") from exc
+    # 类簇数量约束：最低 1，最高不超过输入文件数（file_count>0 时校验上限）。
+    if parsed < 1:
+        raise ValueError("cluster_count 必须大于等于 1。")
+    if file_count > 0 and parsed > file_count:
+        raise ValueError(f"cluster_count 不能超过输入文献数量（当前 {file_count} 篇）。")
     return parsed
 
 
@@ -338,7 +341,9 @@ def _calibrate_k_via_glm(
         and selection_score >= _K_MIN_ALGO_SCORE
     )
     final_k_raw = k_algo if trust_algo else k_llm
-    result["final_k"] = min(final_k_raw, n - 1)  # GLM 判 k=n 时 clamp 到算法上限
+    # 类簇数量约束 [1, n-1]：max(1,...) 防御 n-1 在极端情况下为 0/负，
+    # 确保 k_selection.final_k 对外字段永不为 0/负数。
+    result["final_k"] = max(1, min(final_k_raw, n - 1))  # GLM 判 k=n 时 clamp 到算法上限
     if result["final_k"] != k_algo:
         result["calibrated"] = True
     return result
@@ -370,7 +375,7 @@ def execute_deep_clustering(
         raise ValueError(
             "algorithm 必须为 auto、kmeans、spectral、agglomerative、hierarchical 或 hdbscan。"
         )
-    cluster_count = _optional_cluster_count(params)
+    cluster_count = _optional_cluster_count(params, len(papers))
     if algorithm == "hdbscan" and cluster_count is not None:
         raise ValueError("HDBSCAN 自动确定类簇数量，不能同时设置 cluster_count。")
     try:

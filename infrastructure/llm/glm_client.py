@@ -100,8 +100,22 @@ class GLMClient:
                     logger.warning("GLM 限流(429)，%ds 后重试 %d/2", wait, attempt + 1)
                     _time.sleep(wait)
                     continue
+                # 429 不一定是限流:智谱 1113(余额不足)等也返回 429,透出真实原因避免误导
+                detail = ""
+                body = getattr(exc, "body", None) or getattr(exc, "response", None)
+                try:
+                    import json as _json
+                    raw = getattr(exc, "message", "") or str(body)
+                    if isinstance(body, dict):
+                        raw = _json.dumps(body, ensure_ascii=False)
+                    for _code, _msg in (("1113", "余额不足或无可用资源包"), ("1301", "内容不合规"), ("1214", "并发超限")):
+                        if _code in raw or _msg in raw:
+                            detail = f"（真实原因：{_msg}，请到开放平台检查账户）"
+                            break
+                except Exception:  # noqa: BLE001
+                    pass
                 raise RuntimeError(
-                    f"[限流429] GLM接口限流，请降低 GLM_MAX_CONCURRENCY(当前{settings.GLM_MAX_CONCURRENCY})或稍后重试"
+                    f"[限流429] GLM接口限流，请降低 GLM_MAX_CONCURRENCY(当前{settings.GLM_MAX_CONCURRENCY})或稍后重试{detail}"
                 ) from exc
             except openai.APITimeoutError as exc:
                 raise RuntimeError("[超时] GLM接口请求超时，可能模型繁忙或 timeout 过小") from exc

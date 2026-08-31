@@ -57,9 +57,15 @@ def save_result_projection(session: Any, record: ResultRecord) -> None:
 
 def _save_moves(session: Any, record_id: str, result: Dict[str, Any], _: str) -> None:
     document = result.get("document") if isinstance(result.get("document"), dict) else {}
+    # 标题防御:只接受非空字符串。批量文本模式 payload.document_title 是逐篇列表,
+    # 空 title 时 `or` 回退会把列表写进单列(实测 MySQL 1241 错误),这里显式判型。
+    _title = document.get("title")
+    if not (isinstance(_title, str) and _title.strip()):
+        _fallback = result.get("document_title")
+        _title = _fallback if isinstance(_fallback, str) and _fallback.strip() else None
     session.execute(
         "INSERT INTO move_results (result_record_id, document_title, project_title, statistics_json, move_count, sentence_count, input_type, overall_confidence, document_language) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (record_id, document.get("title") or result.get("document_title"), result.get("project_title"),
+        (record_id, _title, result.get("project_title"),
          _dump(result.get("move_statistics") or {}), result.get("move_count"), result.get("sentence_count"),
          result.get("input_type"), _number(result.get("confidence")), document.get("language")),
     )

@@ -197,12 +197,15 @@ def _candidate(
         labels = _spectral(affinity, k, seed)
         used = "spectral_sparse_graph"
         stability = _stability(affinity, labels, k, seed)
-    silhouette = float(silhouette_score(compact, labels, metric="cosine"))
+    # k=1（全部归一簇）时无轮廓系数，silhouette 置 None 避免 sklearn 报错。
+    silhouette = float(silhouette_score(compact, labels, metric="cosine")) \
+        if len(set(labels.tolist())) >= 2 else None
     counts = Counter(labels.tolist())
     balance = float(min(counts.values()) / max(counts.values()))
     undersized = sum(value for value in counts.values() if value < min_cluster_size) / len(labels)
     stability_part = 0.0 if stability is None else stability
-    score = 0.60 * silhouette + 0.25 * stability_part + 0.15 * balance - 0.60 * undersized
+    silhouette_part = 0.0 if silhouette is None else silhouette
+    score = 0.60 * silhouette_part + 0.25 * stability_part + 0.15 * balance - 0.60 * undersized
     warnings = []
     if undersized:
         warnings.append(
@@ -251,7 +254,8 @@ def cluster_technical_sparse(
     else:
         method = "kmeans" if requested == "kmeans" else "spectral"
         if cluster_count is not None:
-            ks = [max(2, min(int(cluster_count), n - 1))]
+            # 用户指定簇数：最低 1（支持全部文献归为一类），最高 n-1。
+            ks = [max(1, min(int(cluster_count), n - 1))]
         else:
             upper = min(n - 1, max(2, min(12, round(math.sqrt(n) * 2))))
             ks = list(range(2, upper + 1))

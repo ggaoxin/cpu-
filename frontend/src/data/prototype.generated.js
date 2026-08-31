@@ -66,9 +66,9 @@ export const tools = {
         demoText: "智能制造场景中的金属表面缺陷具有尺度差异大、边缘模糊和背景纹理复杂等特点，现有视觉检测方法容易出现漏检和误检。为提高复杂工业表面微小缺陷的识别精度与检测效率，本文研究多尺度特征增强与关键区域自适应建模问题。提出一种融合轻量级卷积网络和动态注意力机制的缺陷检测模型，通过多尺度特征聚合、区域权重分配和边界约束学习增强缺陷表征。在三个公开工业缺陷数据集上的实验结果表明，该模型的平均检测精度较主流基线方法提高3.8个百分点，同时保持较低的推理延迟。研究结果说明，所提出的方法能够兼顾检测精度与计算效率，适用于复杂生产环境下的在线质量检测。",
         demoBatchTexts: [{"id": "text1", "text": "多中心医学影像数据能够提升疾病识别模型的泛化能力，但隐私限制和机构间数据分布差异使集中式训练难以实施。为在不共享原始影像的前提下提高跨机构分类性能，本文研究面向非独立同分布数据的联邦协同学习问题。提出一种结合动态客户端加权和特征原型对齐的联邦医学影像分类方法，通过局部模型训练、原型聚合与一致性约束减小机构间差异。在四家机构构成的多中心实验中，该方法的平均分类准确率较传统联邦平均方法提高4.2个百分点，并降低了不同机构间的性能波动。实验结果表明，该方法能够在保护数据隐私的同时增强多中心医学影像模型的稳定性与泛化能力。"}, {"id": "text2", "text": "城市道路交通状态同时受到空间拓扑、周期规律和突发事件影响，传统时间序列模型难以充分刻画路段之间的动态传播关系。为提高复杂路网中短时交通流预测的准确性，本文研究时空依赖关系的联合表示与自适应更新问题。提出一种融合动态图神经网络和门控时序编码器的预测模型，利用可学习邻接矩阵捕捉路段关联，并通过多尺度时间窗口提取周期与趋势特征。在两个公开交通数据集上的实验显示，该模型在15分钟、30分钟和60分钟预测任务中均取得更低的平均绝对误差。研究表明，动态空间关系建模与多尺度时序表示能够有效提升城市交通流预测的精度和鲁棒性。"}, {"id": "text3", "text": "锂离子电池在长期循环过程中呈现容量非线性衰减和工况差异，导致剩余寿命预测结果容易受到噪声与分布偏移影响。为提升不同运行条件下电池寿命预测的可靠性，本文研究退化特征提取与跨工况迁移建模问题。构建一种融合变分模态分解、双向时序网络和域适配约束的剩余寿命预测方法，从电压与容量曲线中提取多尺度退化特征并完成跨工况知识迁移。在多组电池循环实验数据上的验证结果表明，该方法的预测误差低于对比模型，并在早期循环阶段保持稳定的寿命估计能力。结果说明，所提出的方法能够提高电池健康管理中的预测精度，为储能系统维护决策提供有效支持。"}],
         demoBatchResults: [{"id": "text1", "text": "多中心医学影像数据能够提升疾病识别模型的泛化能力，但隐私限制和机构间数据分布差异使集中式训练难以实施。为在不共享原始影像的前提下提高跨机构分类性能，本文研究面向非独立同分布数据的联邦协同学习问题。提出一种结合动态客户端加权和特征原型对齐的联邦医学影像分类方法，通过局部模型训练、原型聚合与一致性约束减小机构间差异。在四家机构构成的多中心实验中，该方法的平均分类准确率较传统联邦平均方法提高4.2个百分点，并降低了不同机构间的性能波动。实验结果表明，该方法能够在保护数据隐私的同时增强多中心医学影像模型的稳定性与泛化能力。", "source": "generated_text", "moves": [{"label": "研究背景", "text": "多中心医学影像数据能够提升疾病识别模型的泛化能力，但隐私限制和机构间数据分布差异使集中式训练难以实施。", "sentence_indices": [1], "confidence": 0.98}, {"label": "研究目的", "text": "为在不共享原始影像的前提下提高跨机构分类性能，本文研究面向非独立同分布数据的联邦协同学习问题。", "sentence_indices": [2], "confidence": 0.97}, {"label": "研究方法", "text": "提出一种结合动态客户端加权和特征原型对齐的联邦医学影像分类方法，通过局部模型训练、原型聚合与一致性约束减小机构间差异。", "sentence_indices": [3], "confidence": 0.98}, {"label": "研究结果", "text": "在四家机构构成的多中心实验中，该方法的平均分类准确率较传统联邦平均方法提高4.2个百分点，并降低了不同机构间的性能波动。", "sentence_indices": [4], "confidence": 0.97}, {"label": "研究结论", "text": "实验结果表明，该方法能够在保护数据隐私的同时增强多中心医学影像模型的稳定性与泛化能力。", "sentence_indices": [5], "confidence": 0.96}]}, {"id": "text2", "text": "城市道路交通状态同时受到空间拓扑、周期规律和突发事件影响，传统时间序列模型难以充分刻画路段之间的动态传播关系。为提高复杂路网中短时交通流预测的准确性，本文研究时空依赖关系的联合表示与自适应更新问题。提出一种融合动态图神经网络和门控时序编码器的预测模型，利用可学习邻接矩阵捕捉路段关联，并通过多尺度时间窗口提取周期与趋势特征。在两个公开交通数据集上的实验显示，该模型在15分钟、30分钟和60分钟预测任务中均取得更低的平均绝对误差。研究表明，动态空间关系建模与多尺度时序表示能够有效提升城市交通流预测的精度和鲁棒性。", "source": "generated_text", "moves": [{"label": "研究背景", "text": "城市道路交通状态同时受到空间拓扑、周期规律和突发事件影响，传统时间序列模型难以充分刻画路段之间的动态传播关系。", "sentence_indices": [1], "confidence": 0.98}, {"label": "研究目的", "text": "为提高复杂路网中短时交通流预测的准确性，本文研究时空依赖关系的联合表示与自适应更新问题。", "sentence_indices": [2], "confidence": 0.97}, {"label": "研究方法", "text": "提出一种融合动态图神经网络和门控时序编码器的预测模型，利用可学习邻接矩阵捕捉路段关联，并通过多尺度时间窗口提取周期与趋势特征。", "sentence_indices": [3], "confidence": 0.99}, {"label": "研究结果", "text": "在两个公开交通数据集上的实验显示，该模型在15分钟、30分钟和60分钟预测任务中均取得更低的平均绝对误差。", "sentence_indices": [4], "confidence": 0.97}, {"label": "研究结论", "text": "研究表明，动态空间关系建模与多尺度时序表示能够有效提升城市交通流预测的精度和鲁棒性。", "sentence_indices": [5], "confidence": 0.96}]}, {"id": "text3", "text": "锂离子电池在长期循环过程中呈现容量非线性衰减和工况差异，导致剩余寿命预测结果容易受到噪声与分布偏移影响。为提升不同运行条件下电池寿命预测的可靠性，本文研究退化特征提取与跨工况迁移建模问题。构建一种融合变分模态分解、双向时序网络和域适配约束的剩余寿命预测方法，从电压与容量曲线中提取多尺度退化特征并完成跨工况知识迁移。在多组电池循环实验数据上的验证结果表明，该方法的预测误差低于对比模型，并在早期循环阶段保持稳定的寿命估计能力。结果说明，所提出的方法能够提高电池健康管理中的预测精度，为储能系统维护决策提供有效支持。", "source": "generated_text", "moves": [{"label": "研究背景", "text": "锂离子电池在长期循环过程中呈现容量非线性衰减和工况差异，导致剩余寿命预测结果容易受到噪声与分布偏移影响。", "sentence_indices": [1], "confidence": 0.98}, {"label": "研究目的", "text": "为提升不同运行条件下电池寿命预测的可靠性，本文研究退化特征提取与跨工况迁移建模问题。", "sentence_indices": [2], "confidence": 0.97}, {"label": "研究方法", "text": "构建一种融合变分模态分解、双向时序网络和域适配约束的剩余寿命预测方法，从电压与容量曲线中提取多尺度退化特征并完成跨工况知识迁移。", "sentence_indices": [3], "confidence": 0.98}, {"label": "研究结果", "text": "在多组电池循环实验数据上的验证结果表明，该方法的预测误差低于对比模型，并在早期循环阶段保持稳定的寿命估计能力。", "sentence_indices": [4], "confidence": 0.97}, {"label": "研究结论", "text": "结果说明，所提出的方法能够提高电池健康管理中的预测精度，为储能系统维护决策提供有效支持。", "sentence_indices": [5], "confidence": 0.96}]}],
-        demoTextResult: {"code": 200, "message": "success", "data": {"tool": "中文摘要语步识别", "document": {"abstract": "智能制造场景中的金属表面缺陷具有尺度差异大、边缘模糊和背景纹理复杂等特点，现有视觉检测方法容易出现漏检和误检。为提高复杂工业表面微小缺陷的识别精度与检测效率，本文研究多尺度特征增强与关键区域自适应建模问题。提出一种融合轻量级卷积网络和动态注意力机制的缺陷检测模型，通过多尺度特征聚合、区域权重分配和边界约束学习增强缺陷表征。在三个公开工业缺陷数据集上的实验结果表明，该模型的平均检测精度较主流基线方法提高3.8个百分点，同时保持较低的推理延迟。研究结果说明，所提出的方法能够兼顾检测精度与计算效率，适用于复杂生产环境下的在线质量检测。", "abstract_complete": true, "language": "zh", "source": "generated_text"}, "moves": [{"label": "研究背景", "text": "智能制造场景中的金属表面缺陷具有尺度差异大、边缘模糊和背景纹理复杂等特点，现有视觉检测方法容易出现漏检和误检。", "sentence_indices": [1], "confidence": 0.98}, {"label": "研究目的", "text": "为提高复杂工业表面微小缺陷的识别精度与检测效率，本文研究多尺度特征增强与关键区域自适应建模问题。", "sentence_indices": [2], "confidence": 0.97}, {"label": "研究方法", "text": "提出一种融合轻量级卷积网络和动态注意力机制的缺陷检测模型，通过多尺度特征聚合、区域权重分配和边界约束学习增强缺陷表征。", "sentence_indices": [3], "confidence": 0.99}, {"label": "研究结果", "text": "在三个公开工业缺陷数据集上的实验结果表明，该模型的平均检测精度较主流基线方法提高3.8个百分点，同时保持较低的推理延迟。", "sentence_indices": [4], "confidence": 0.98}, {"label": "研究结论", "text": "研究结果说明，所提出的方法能够兼顾检测精度与计算效率，适用于复杂生产环境下的在线质量检测。", "sentence_indices": [5], "confidence": 0.97}], "move_count": 5, "sentence_count": 5}, "meta": {"request_id": "req_text_202607180001", "data_source": "synthetic", "elapsed_ms": 684}},
-        demoFileResult: {"code": 200, "message": "success", "data": {"tool": "中文摘要语步识别", "document": {"title": "强化多视图多模态网络的社交媒体机器人检测", "abstract": "社交媒体机器人的快速增长虽然促进了信息传播，但也带来了隐私泄露和虚假信息传播等问题。因此，开发更加有效的机器人检测方法至关重要。提出了一种新颖的基于多头注意力机制和多视图集成分类的检测模型BotAttVCDN。该模型通过结合多模态数据，学习不同视图在标签空间中的重要性和相关性，有效捕捉多模态数据之间的关系，以提高分类性能。在Cresci-2015、TwiBot-20和TwiBot-22数据集上的实验结果表明，BotAttVCDN在分类准确率和F1-score方面均优于现有的13个基线模型，包括BotMOE和BotRGCN等，此外，通过结合注意力机制权重分配热图和SHAP分析，验证了BotAttVCDN模型不仅有效提升了社交媒体机器人检测的准确度和F1-socre，还显著增强了可解释性，使得决策过程更加透明和易于理解。这表明，该模型在应对多样化和复杂化的社交媒体机器人检测任务中具有较高的竞争力和优越性。", "abstract_complete": true, "language": "zh"}, "moves": [{"label": "研究背景", "text": "社交媒体机器人的快速增长虽然促进了信息传播，但也带来了隐私泄露和虚假信息传播等问题。", "sentence_indices": [1], "confidence": 0.99}, {"label": "研究目的", "text": "因此，开发更加有效的机器人检测方法至关重要。", "sentence_indices": [2], "confidence": 0.96}, {"label": "研究方法", "text": "提出了一种新颖的基于多头注意力机制和多视图集成分类的检测模型BotAttVCDN。该模型通过结合多模态数据，学习不同视图在标签空间中的重要性和相关性，有效捕捉多模态数据之间的关系，以提高分类性能。", "sentence_indices": [3, 4], "confidence": 0.99}, {"label": "研究结果", "text": "在Cresci-2015、TwiBot-20和TwiBot-22数据集上的实验结果表明，BotAttVCDN在分类准确率和F1-score方面均优于现有的13个基线模型，包括BotMOE和BotRGCN等，此外，通过结合注意力机制权重分配热图和SHAP分析，验证了BotAttVCDN模型不仅有效提升了社交媒体机器人检测的准确度和F1-socre，还显著增强了可解释性，使得决策过程更加透明和易于理解。", "sentence_indices": [5], "confidence": 0.99}, {"label": "研究结论", "text": "这表明，该模型在应对多样化和复杂化的社交媒体机器人检测任务中具有较高的竞争力和优越性。", "sentence_indices": [6], "confidence": 0.98}], "move_count": 5, "sentence_count": 6}, "meta": {"request_id": "req_file_202607180001", "elapsed_ms": 862}},
-        response: {"code": 200, "message": "batch_completed", "data": {"batch_id": "batch_move_202607180001", "input_type": "files", "total": 2, "success_count": 2, "failed_count": 0, "results": [{"index": 1, "file_name": "paper_01.pdf", "status": "success", "document_title": "强化多视图多模态网络的社交媒体机器人检测", "moves": [{"label": "研究背景", "text": "社交媒体机器人的快速增长虽然促进了信息传播，但也带来了隐私泄露和虚假信息传播等问题。", "sentence_indices": [1], "confidence": 0.99}, {"label": "研究目的", "text": "因此，开发更加有效的机器人检测方法至关重要。", "sentence_indices": [2], "confidence": 0.96}, {"label": "研究方法", "text": "提出了一种新颖的基于多头注意力机制和多视图集成分类的检测模型BotAttVCDN。该模型通过结合多模态数据，学习不同视图在标签空间中的重要性和相关性，有效捕捉多模态数据之间的关系，以提高分类性能。", "sentence_indices": [3, 4], "confidence": 0.99}, {"label": "研究结果", "text": "在Cresci-2015、TwiBot-20和TwiBot-22数据集上的实验结果表明，BotAttVCDN在分类准确率和F1-score方面均优于现有的13个基线模型，包括BotMOE和BotRGCN等，此外，通过结合注意力机制权重分配热图和SHAP分析，验证了BotAttVCDN模型不仅有效提升了社交媒体机器人检测的准确度和F1-socre，还显著增强了可解释性，使得决策过程更加透明和易于理解。", "sentence_indices": [5], "confidence": 0.99}, {"label": "研究结论", "text": "这表明，该模型在应对多样化和复杂化的社交媒体机器人检测任务中具有较高的竞争力和优越性。", "sentence_indices": [6], "confidence": 0.98}]}, {"index": 2, "file_name": "paper_02.docx", "status": "success", "document_title": "示例科技论文", "moves": [{"label": "研究背景", "confidence": 0.95}, {"label": "研究目的", "confidence": 0.93}, {"label": "研究方法", "confidence": 0.97}, {"label": "研究结果", "confidence": 0.96}, {"label": "研究结论", "confidence": 0.94}]}]}, "meta": {"elapsed_ms": 1538, "max_concurrency": 3}}
+        demoTextResult: {"code": 0, "message": "success", "data": {"tool": "中文摘要语步识别", "document": {"abstract": "智能制造场景中的金属表面缺陷具有尺度差异大、边缘模糊和背景纹理复杂等特点，现有视觉检测方法容易出现漏检和误检。为提高复杂工业表面微小缺陷的识别精度与检测效率，本文研究多尺度特征增强与关键区域自适应建模问题。提出一种融合轻量级卷积网络和动态注意力机制的缺陷检测模型，通过多尺度特征聚合、区域权重分配和边界约束学习增强缺陷表征。在三个公开工业缺陷数据集上的实验结果表明，该模型的平均检测精度较主流基线方法提高3.8个百分点，同时保持较低的推理延迟。研究结果说明，所提出的方法能够兼顾检测精度与计算效率，适用于复杂生产环境下的在线质量检测。", "abstract_complete": true, "language": "zh", "source": "generated_text"}, "moves": [{"label": "研究背景", "text": "智能制造场景中的金属表面缺陷具有尺度差异大、边缘模糊和背景纹理复杂等特点，现有视觉检测方法容易出现漏检和误检。", "sentence_indices": [1], "confidence": 0.98}, {"label": "研究目的", "text": "为提高复杂工业表面微小缺陷的识别精度与检测效率，本文研究多尺度特征增强与关键区域自适应建模问题。", "sentence_indices": [2], "confidence": 0.97}, {"label": "研究方法", "text": "提出一种融合轻量级卷积网络和动态注意力机制的缺陷检测模型，通过多尺度特征聚合、区域权重分配和边界约束学习增强缺陷表征。", "sentence_indices": [3], "confidence": 0.99}, {"label": "研究结果", "text": "在三个公开工业缺陷数据集上的实验结果表明，该模型的平均检测精度较主流基线方法提高3.8个百分点，同时保持较低的推理延迟。", "sentence_indices": [4], "confidence": 0.98}, {"label": "研究结论", "text": "研究结果说明，所提出的方法能够兼顾检测精度与计算效率，适用于复杂生产环境下的在线质量检测。", "sentence_indices": [5], "confidence": 0.97}], "move_count": 5, "sentence_count": 5}, "meta": {"request_id": "req_text_202607180001", "data_source": "synthetic", "elapsed_ms": 684}},
+        demoFileResult: {"code": 0, "message": "success", "data": {"tool": "中文摘要语步识别", "document": {"title": "强化多视图多模态网络的社交媒体机器人检测", "abstract": "社交媒体机器人的快速增长虽然促进了信息传播，但也带来了隐私泄露和虚假信息传播等问题。因此，开发更加有效的机器人检测方法至关重要。提出了一种新颖的基于多头注意力机制和多视图集成分类的检测模型BotAttVCDN。该模型通过结合多模态数据，学习不同视图在标签空间中的重要性和相关性，有效捕捉多模态数据之间的关系，以提高分类性能。在Cresci-2015、TwiBot-20和TwiBot-22数据集上的实验结果表明，BotAttVCDN在分类准确率和F1-score方面均优于现有的13个基线模型，包括BotMOE和BotRGCN等，此外，通过结合注意力机制权重分配热图和SHAP分析，验证了BotAttVCDN模型不仅有效提升了社交媒体机器人检测的准确度和F1-socre，还显著增强了可解释性，使得决策过程更加透明和易于理解。这表明，该模型在应对多样化和复杂化的社交媒体机器人检测任务中具有较高的竞争力和优越性。", "abstract_complete": true, "language": "zh"}, "moves": [{"label": "研究背景", "text": "社交媒体机器人的快速增长虽然促进了信息传播，但也带来了隐私泄露和虚假信息传播等问题。", "sentence_indices": [1], "confidence": 0.99}, {"label": "研究目的", "text": "因此，开发更加有效的机器人检测方法至关重要。", "sentence_indices": [2], "confidence": 0.96}, {"label": "研究方法", "text": "提出了一种新颖的基于多头注意力机制和多视图集成分类的检测模型BotAttVCDN。该模型通过结合多模态数据，学习不同视图在标签空间中的重要性和相关性，有效捕捉多模态数据之间的关系，以提高分类性能。", "sentence_indices": [3, 4], "confidence": 0.99}, {"label": "研究结果", "text": "在Cresci-2015、TwiBot-20和TwiBot-22数据集上的实验结果表明，BotAttVCDN在分类准确率和F1-score方面均优于现有的13个基线模型，包括BotMOE和BotRGCN等，此外，通过结合注意力机制权重分配热图和SHAP分析，验证了BotAttVCDN模型不仅有效提升了社交媒体机器人检测的准确度和F1-socre，还显著增强了可解释性，使得决策过程更加透明和易于理解。", "sentence_indices": [5], "confidence": 0.99}, {"label": "研究结论", "text": "这表明，该模型在应对多样化和复杂化的社交媒体机器人检测任务中具有较高的竞争力和优越性。", "sentence_indices": [6], "confidence": 0.98}], "move_count": 5, "sentence_count": 6}, "meta": {"request_id": "req_file_202607180001", "elapsed_ms": 862}},
+        response: {"code": 0, "message": "batch_completed", "data": {"batch_id": "batch_move_202607180001", "input_type": "files", "total": 2, "success_count": 2, "failed_count": 0, "results": [{"index": 1, "file_name": "paper_01.pdf", "status": "success", "document_title": "强化多视图多模态网络的社交媒体机器人检测", "moves": [{"label": "研究背景", "text": "社交媒体机器人的快速增长虽然促进了信息传播，但也带来了隐私泄露和虚假信息传播等问题。", "sentence_indices": [1], "confidence": 0.99}, {"label": "研究目的", "text": "因此，开发更加有效的机器人检测方法至关重要。", "sentence_indices": [2], "confidence": 0.96}, {"label": "研究方法", "text": "提出了一种新颖的基于多头注意力机制和多视图集成分类的检测模型BotAttVCDN。该模型通过结合多模态数据，学习不同视图在标签空间中的重要性和相关性，有效捕捉多模态数据之间的关系，以提高分类性能。", "sentence_indices": [3, 4], "confidence": 0.99}, {"label": "研究结果", "text": "在Cresci-2015、TwiBot-20和TwiBot-22数据集上的实验结果表明，BotAttVCDN在分类准确率和F1-score方面均优于现有的13个基线模型，包括BotMOE和BotRGCN等，此外，通过结合注意力机制权重分配热图和SHAP分析，验证了BotAttVCDN模型不仅有效提升了社交媒体机器人检测的准确度和F1-socre，还显著增强了可解释性，使得决策过程更加透明和易于理解。", "sentence_indices": [5], "confidence": 0.99}, {"label": "研究结论", "text": "这表明，该模型在应对多样化和复杂化的社交媒体机器人检测任务中具有较高的竞争力和优越性。", "sentence_indices": [6], "confidence": 0.98}]}, {"index": 2, "file_name": "paper_02.docx", "status": "success", "document_title": "示例科技论文", "moves": [{"label": "研究背景", "confidence": 0.95}, {"label": "研究目的", "confidence": 0.93}, {"label": "研究方法", "confidence": 0.97}, {"label": "研究结果", "confidence": 0.96}, {"label": "研究结论", "confidence": 0.94}]}]}, "meta": {"elapsed_ms": 1538, "max_concurrency": 3}}
       },
       "en-abstract-move": {
         "group": "语步识别工具",
@@ -325,7 +325,7 @@ export const tools = {
                 }
         ],
         "demoTextResult": {
-                "code": 200,
+                "code": 0,
                 "message": "success",
                 "data": {
                         "tool": "英文摘要语步识别",
@@ -387,7 +387,7 @@ export const tools = {
                 }
         },
         "demoFileResult": {
-                "code": 200,
+                "code": 0,
                 "message": "success",
                 "data": {
                         "tool": "英文摘要语步识别",
@@ -448,7 +448,7 @@ export const tools = {
                 }
         },
         "response": {
-                "code": 200,
+                "code": 0,
                 "message": "batch_completed",
                 "data": {
                         "batch_id": "batch_move_en_202607190001",
@@ -629,7 +629,7 @@ export const tools = {
         "fileProcessingHint": "上传后自动解析基金项目文档、提取章节结构并识别五类语步",
         "batchProcessingHint": "批量接口按文件分别完成章节提取、内容分块、五类语步识别与来源章节溯源，并返回逐文件结果。",
         "demoFileResult": {
-                "code": 200,
+                "code": 0,
                 "message": "success",
                 "data": {
                         "tool": "中文基金项目语步识别",
@@ -746,7 +746,7 @@ export const tools = {
                 }
         },
         "response": {
-                "code": 200,
+                "code": 0,
                 "message": "batch_completed",
                 "data": {
                         "batch_id": "batch_fund_file_202607190002",
@@ -759,7 +759,7 @@ export const tools = {
                                         "index": 1,
                                         "file_name": "多模态场景下约束生成个性化推荐方法研究.pdf",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "中文基金项目语步识别",
                                                 "document": {
@@ -874,7 +874,7 @@ export const tools = {
                                         "index": 2,
                                         "file_name": "fund_project_02.pdf",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "中文基金项目语步识别",
                                                 "document": {
@@ -1056,7 +1056,7 @@ export const tools = {
                 ]
         },
         "demoTextResult": {
-                "code": 200,
+                "code": 0,
                 "message": "success",
                 "data": {
                         "tool": "中文科技文献分类",
@@ -1114,7 +1114,7 @@ export const tools = {
                 }
         },
         "demoFileResult": {
-                "code": 200,
+                "code": 0,
                 "message": "success",
                 "data": {
                         "tool": "中文科技文献分类",
@@ -1174,7 +1174,7 @@ export const tools = {
                 }
         },
         "response": {
-                "code": 200,
+                "code": 0,
                 "message": "batch_completed",
                 "data": {
                         "batch_id": "batch_classify_zh_file_202607190001",
@@ -1187,7 +1187,7 @@ export const tools = {
                                         "index": 1,
                                         "file_name": "强化多视图多模态网络的社交媒体机器人检测.pdf",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "中文科技文献分类",
                                                 "input_type": "file",
@@ -1245,7 +1245,7 @@ export const tools = {
                                         "index": 2,
                                         "file_name": "复杂工业表面微小缺陷检测方法.txt",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "中文科技文献分类",
                                                 "input_type": "file",
@@ -1328,7 +1328,7 @@ export const tools = {
                         "sha256": "c2125d1a7652661ed4b43889eb4d7dc87255ae3b87b5656801f85b60e3df3e16",
                         "fnv1a32": "13b35303",
                         "result": {
-                                "code": 200,
+                                "code": 0,
                                 "message": "success",
                                 "data": {
                                         "tool": "中文科技文献分类",
@@ -1394,7 +1394,7 @@ export const tools = {
                         "sha256": "8ff6b6a7d2f45c3c57b8058849e95175f0ebf32876173d0637a1e8f4b3704f61",
                         "fnv1a32": "a8f1e419",
                         "result": {
-                                "code": 200,
+                                "code": 0,
                                 "message": "success",
                                 "data": {
                                         "tool": "中文科技文献分类",
@@ -1621,7 +1621,7 @@ export const tools = {
                 }
         ],
         "demoBatchTextResult": {
-                "code": 200,
+                "code": 0,
                 "message": "batch_completed",
                 "data": {
                         "batch_id": "batch_classify_zh_text_202607190001",
@@ -1634,7 +1634,7 @@ export const tools = {
                                         "index": 1,
                                         "input_id": "text1",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "中文科技文献分类",
                                                 "input_type": "text",
@@ -1690,7 +1690,7 @@ export const tools = {
                                         "index": 2,
                                         "input_id": "text2",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "中文科技文献分类",
                                                 "input_type": "text",
@@ -1743,7 +1743,7 @@ export const tools = {
                                         "index": 3,
                                         "input_id": "text3",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "中文科技文献分类",
                                                 "input_type": "text",
@@ -1823,7 +1823,7 @@ export const tools = {
                 }
         },
         "demoBatchFileResult": {
-                "code": 200,
+                "code": 0,
                 "message": "batch_completed",
                 "data": {
                         "batch_id": "batch_classify_zh_file_202607190001",
@@ -1836,7 +1836,7 @@ export const tools = {
                                         "index": 1,
                                         "file_name": "强化多视图多模态网络的社交媒体机器人检测.pdf",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "中文科技文献分类",
                                                 "input_type": "file",
@@ -1894,7 +1894,7 @@ export const tools = {
                                         "index": 2,
                                         "file_name": "复杂工业表面微小缺陷检测方法.txt",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "中文科技文献分类",
                                                 "input_type": "file",
@@ -2026,7 +2026,7 @@ export const tools = {
                         "sha256": "6f6f55bc4c5556fdbdad09d2d51ca05bd8da9adb8e992d5fb0b85cac0f28cda5",
                         "fnv1a32": "15a27ddf",
                         "result": {
-                                "code": 200,
+                                "code": 0,
                                 "message": "success",
                                 "data": {
                                         "tool": "英文科技文献分类",
@@ -2093,7 +2093,7 @@ export const tools = {
                         "sha256": "a16f4a14a9457f96fa487abb0c3acf34894835349f1a2839447e67ed49d32d46",
                         "fnv1a32": "8e512625",
                         "result": {
-                                "code": 200,
+                                "code": 0,
                                 "message": "success",
                                 "data": {
                                         "tool": "英文科技文献分类",
@@ -2376,7 +2376,7 @@ export const tools = {
                 }
         ],
         "demoTextResult": {
-                "code": 200,
+                "code": 0,
                 "message": "success",
                 "data": {
                         "tool": "英文科技文献分类",
@@ -2435,7 +2435,7 @@ export const tools = {
                 }
         },
         "demoBatchTextResult": {
-                "code": 200,
+                "code": 0,
                 "message": "batch_completed",
                 "data": {
                         "batch_id": "batch_classify_en_text_202607190001",
@@ -2448,7 +2448,7 @@ export const tools = {
                                         "index": 1,
                                         "input_id": "text1",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "英文科技文献分类",
                                                 "input_type": "text",
@@ -2505,7 +2505,7 @@ export const tools = {
                                         "index": 2,
                                         "input_id": "text2",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "英文科技文献分类",
                                                 "input_type": "text",
@@ -2550,7 +2550,7 @@ export const tools = {
                                         "index": 3,
                                         "input_id": "text3",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "英文科技文献分类",
                                                 "input_type": "text",
@@ -2638,7 +2638,7 @@ export const tools = {
                 }
         },
         "demoFileResult": {
-                "code": 200,
+                "code": 0,
                 "message": "success",
                 "data": {
                         "tool": "英文科技文献分类",
@@ -2699,7 +2699,7 @@ export const tools = {
                 }
         },
         "demoBatchFileResult": {
-                "code": 200,
+                "code": 0,
                 "message": "batch_completed",
                 "data": {
                         "batch_id": "batch_classify_en_file_202607190001",
@@ -2712,7 +2712,7 @@ export const tools = {
                                         "index": 1,
                                         "file_name": "MOGONET.pdf",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "英文科技文献分类",
                                                 "input_type": "file",
@@ -2771,7 +2771,7 @@ export const tools = {
                                         "index": 2,
                                         "file_name": "HGTS-Former.txt",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "英文科技文献分类",
                                                 "input_type": "file",
@@ -2861,7 +2861,7 @@ export const tools = {
                 }
         },
         "response": {
-                "code": 200,
+                "code": 0,
                 "message": "batch_completed",
                 "data": {
                         "batch_id": "batch_classify_en_file_202607190001",
@@ -2874,7 +2874,7 @@ export const tools = {
                                         "index": 1,
                                         "file_name": "MOGONET.pdf",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "英文科技文献分类",
                                                 "input_type": "file",
@@ -2933,7 +2933,7 @@ export const tools = {
                                         "index": 2,
                                         "file_name": "HGTS-Former.txt",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "英文科技文献分类",
                                                 "input_type": "file",
@@ -3123,7 +3123,7 @@ export const tools = {
                         "sha256": "6f6f55bc4c5556fdbdad09d2d51ca05bd8da9adb8e992d5fb0b85cac0f28cda5",
                         "fnv1a32": "15a27ddf",
                         "result": {
-                                "code": 200,
+                                "code": 0,
                                 "message": "success",
                                 "data": {
                                         "tool": "专业领域科技文献分类",
@@ -3251,7 +3251,7 @@ export const tools = {
                         "sha256": "f31aba4e320cb861933ff91ee245803a24b3799e343de4b7674596a85776961d",
                         "fnv1a32": "ab759b29",
                         "result": {
-                                "code": 200,
+                                "code": 0,
                                 "message": "success",
                                 "data": {
                                         "tool": "专业领域科技文献分类",
@@ -4246,7 +4246,7 @@ export const tools = {
                 }
         ],
         "demoTextResult": {
-                "code": 200,
+                "code": 0,
                 "message": "success",
                 "data": {
                         "tool": "专业领域科技文献分类",
@@ -4366,7 +4366,7 @@ export const tools = {
                 }
         },
         "demoBatchTextResult": {
-                "code": 200,
+                "code": 0,
                 "message": "batch_completed",
                 "data": {
                         "batch_id": "batch_domain_classify_text_202607190010",
@@ -4379,7 +4379,7 @@ export const tools = {
                                         "index": 1,
                                         "input_id": "text1",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "text",
@@ -4458,7 +4458,7 @@ export const tools = {
                                         "index": 2,
                                         "input_id": "text2",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "text",
@@ -4537,7 +4537,7 @@ export const tools = {
                                         "index": 3,
                                         "input_id": "text3",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "text",
@@ -4616,7 +4616,7 @@ export const tools = {
                                         "index": 4,
                                         "input_id": "text4",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "text",
@@ -4695,7 +4695,7 @@ export const tools = {
                                         "index": 5,
                                         "input_id": "text5",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "text",
@@ -4774,7 +4774,7 @@ export const tools = {
                                         "index": 6,
                                         "input_id": "text6",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "text",
@@ -4853,7 +4853,7 @@ export const tools = {
                                         "index": 7,
                                         "input_id": "text7",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "text",
@@ -4932,7 +4932,7 @@ export const tools = {
                                         "index": 8,
                                         "input_id": "text8",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "text",
@@ -5011,7 +5011,7 @@ export const tools = {
                                         "index": 9,
                                         "input_id": "text9",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "text",
@@ -5090,7 +5090,7 @@ export const tools = {
                                         "index": 10,
                                         "input_id": "text10",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "text",
@@ -5260,7 +5260,7 @@ export const tools = {
                 }
         },
         "demoFileResult": {
-                "code": 200,
+                "code": 0,
                 "message": "success",
                 "data": {
                         "tool": "专业领域科技文献分类",
@@ -5382,7 +5382,7 @@ export const tools = {
                 }
         },
         "demoBatchFileResult": {
-                "code": 200,
+                "code": 0,
                 "message": "batch_completed",
                 "data": {
                         "batch_id": "batch_domain_classify_file_202607190002",
@@ -5395,7 +5395,7 @@ export const tools = {
                                         "index": 1,
                                         "file_name": "MOGONET_domain_classification.pdf",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "file",
@@ -5509,7 +5509,7 @@ export const tools = {
                                         "index": 2,
                                         "file_name": "Federated_Medical_Imaging_Classification.txt",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "file",
@@ -5672,7 +5672,7 @@ export const tools = {
                 }
         },
         "response": {
-                "code": 200,
+                "code": 0,
                 "message": "batch_completed",
                 "data": {
                         "batch_id": "batch_domain_classify_file_202607190002",
@@ -5685,7 +5685,7 @@ export const tools = {
                                         "index": 1,
                                         "file_name": "MOGONET_domain_classification.pdf",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "file",
@@ -5799,7 +5799,7 @@ export const tools = {
                                         "index": 2,
                                         "file_name": "Federated_Medical_Imaging_Classification.txt",
                                         "status": "success",
-                                        "code": 200,
+                                        "code": 0,
                                         "result": {
                                                 "tool": "专业领域科技文献分类",
                                                 "input_type": "file",
@@ -6431,7 +6431,7 @@ export const deepClusterRuntime = {
     "similarity_metric": "cosine"
   },
   "response": {
-    "code": 200,
+    "code": 0,
     "message": "clustering_completed",
     "data": {
       "tool": "深度聚类工具",
@@ -7176,7 +7176,7 @@ export const deepClusterRuntime = {
     "expert_knowledge_graph.pdf"
   ],
   "demoBatchTextResult": {
-    "code": 200,
+    "code": 0,
     "message": "clustering_completed",
     "data": {
       "tool": "深度聚类工具",
@@ -7744,7 +7744,7 @@ export const deepClusterRuntime = {
     }
   },
   "demoBatchFileResult": {
-    "code": 200,
+    "code": 0,
     "message": "clustering_completed",
     "data": {
       "tool": "深度聚类工具",
@@ -8230,7 +8230,7 @@ export const clusterLabelRuntimeResponses = {
     }
   ],
   "batchText": {
-    "code": 200,
+    "code": 0,
     "message": "success",
     "data": {
       "tool": "聚类标签生成工具",
@@ -8386,7 +8386,7 @@ export const clusterLabelRuntimeResponses = {
     }
   },
   "batchFile": {
-    "code": 200,
+    "code": 0,
     "message": "success",
     "data": {
       "tool": "聚类标签生成工具",
@@ -8542,7 +8542,7 @@ export const clusterLabelRuntimeResponses = {
     }
   },
   "history": {
-    "code": 200,
+    "code": 0,
     "message": "success",
     "data": {
       "tool": "聚类标签生成工具",
@@ -8884,7 +8884,7 @@ export const structuredReviewRuntime = {
     }
   ],
   "batchText": {
-    "code": 200,
+    "code": 0,
     "message": "success",
     "data": {
       "tool": "结构化自动综述工具",
@@ -9124,7 +9124,7 @@ export const structuredReviewRuntime = {
     }
   },
   "batchFile": {
-    "code": 200,
+    "code": 0,
     "message": "success",
     "data": {
       "tool": "结构化自动综述工具",
@@ -9355,7 +9355,7 @@ export const structuredReviewRuntime = {
     }
   },
   "collection": {
-    "code": 200,
+    "code": 0,
     "message": "success",
     "data": {
       "tool": "结构化自动综述工具",

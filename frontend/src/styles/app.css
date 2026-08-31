@@ -36,8 +36,16 @@ button:disabled { cursor: not-allowed !important; opacity: .48; transform: none 
 .api-mode-btn.active { color: var(--primary); background: #fff; border-color: #cad9ff; box-shadow: 0 2px 8px rgba(47,99,246,.12); }
 .response-source-note { margin: 0 0 12px; padding: 10px 12px; color: #5f7190; background: #f4f8ff; border: 1px solid #d9e6fb; border-radius: 8px; font-size: 12px; line-height: 1.6; }
 .hover-copy-box { position: relative; }
-.hover-copy-btn { position: absolute; top: 8px; right: 8px; z-index: 3; min-height: 24px; padding: 0 7px; color: #d8e0eb; background: rgba(42,50,64,.92); border: 1px solid rgba(148,163,184,.36); border-radius: 5px; font-size: 10.5px; cursor: pointer; opacity: 0; visibility: hidden; transform: translateY(-2px); transition: .14s ease; }
+.hover-copy-btn { position: absolute; top: 8px; right: 8px; z-index: 3; display: inline-flex; align-items: center; justify-content: center; gap: 3px; min-height: 24px; padding: 0 7px; color: #d8e0eb; background: rgba(42,50,64,.92); border: 1px solid rgba(148,163,184,.36); border-radius: 5px; font-size: 10.5px; line-height: 1; cursor: pointer; opacity: 0; visibility: hidden; transform: translateY(-2px); transition: .14s ease; }
 .hover-copy-box:hover > .hover-copy-btn, .hover-copy-btn:focus { opacity: 1; visibility: visible; transform: none; }
+/* 说明文字换行时保持短语整体不断开(如"已选择 N 个文件") */
+.nowrap-chunk { white-space: nowrap !important; }
+/* 调用示例:窄屏标题栏放不下「复制代码」按钮(会被压成竖排文字) → 收进代码块右上角,与响应示例同款 */
+.call-copy-btn { display: none; }
+@media (max-width: 900px) {
+  .call-sample-header-v773 > .call-copy-header-btn { display: none !important; }
+  .call-copy-btn { display: inline-flex !important; opacity: 1 !important; visibility: visible !important; transform: none !important; }
+}
 .toast.show { display: block; opacity: 1; transform: translate(-50%,0); }
 .test-card-header { display: flex; min-height: 38px; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .test-card-title { flex: 0 0 auto; white-space: nowrap; }
@@ -73,6 +81,8 @@ button:disabled { cursor: not-allowed !important; opacity: .48; transform: none 
 .settings-title, .special-panel-head, .field-heading { display: flex; min-height: 34px; align-items: baseline; justify-content: space-between; gap: 14px; margin-bottom: 13px; }
 .settings-title b { flex: 0 0 auto; color: #29405f; font-size: 13px; white-space: nowrap; }
 .special-panel-head strong, .field-heading b { color: #29405f; font-size: 15px; }
+/* 面板标题行操作按钮(如"＋ 添加文本"):文字单行、保持右侧位置不换行,标题区收缩让位 */
+.special-panel-head > button, .special-panel-head > .file-add-button { flex: 0 0 auto; white-space: nowrap; }
 .special-panel-head > div:first-child { display: flex; min-width: 0; align-items: baseline; gap: 10px; }
 .special-panel-head > div:first-child > strong { flex: 0 0 auto; white-space: nowrap; }
 .special-panel-head > div:first-child > span { min-width: 0; text-align: right; }
@@ -92,6 +102,9 @@ button:disabled { cursor: not-allowed !important; opacity: .48; transform: none 
 .deep-cluster-metadata-grid { gap: 12px 15px; }
 /* 锚点资源选择器与上方文献卡片保持间距（分隔线 + 留白） */
 .deep-cluster-anchor-grid { margin-top: 18px; padding-top: 16px; border-top: 1px solid #edf1f6; }
+/* 概念定义识别:领域标签/输出格式要求两个下拉框等高对齐(测试反馈:一高一低不美观) */
+.definition-basic-options .field > label { align-items: center; }
+.definition-basic-options .field > label > small { white-space: nowrap; }
 /* 卡片列表底部的常驻添加按钮（替代原右上角入口） */
 .deep-cluster-add-doc-btn { display: block; width: 100%; margin-top: 14px; }
 .deep-cluster-text-field { margin-top: 15px; padding-top: 14px; border-top: 1px solid #edf1f6; }
@@ -130,8 +143,11 @@ button:disabled { cursor: not-allowed !important; opacity: .48; transform: none 
 .citation-metadata-entry-head b { color: #2c405e; font-size: 13px; }
 .range-hint { display: block; margin-top: 6px; color: #8c98aa; font-size: 11px; }
 .info-banner { padding: 12px; color: #315b8b; background: #edf6ff; border: 1px solid #cfe3f8; border-radius: 8px; line-height: 1.65; }
+.info-banner.warning { color: #8a5a12; background: #fdf6e8; border-color: #f0dcae; }
 .upload-zone { display: flex !important; min-height: 310px !important; align-items: center !important; justify-content: center !important; flex-direction: column; gap: 8px !important; color: #64748b !important; background: #fbfcff; border: 1px dashed #b9c8dc !important; border-radius: 10px; cursor: pointer; }
 .upload-zone input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+/* 上传区内文字与图标/标题一致居中(覆盖表单标签 small 的右对齐规则) */
+.upload-zone > b, .upload-zone > small { text-align: center !important; white-space: normal !important; }
 .upload-icon { display: grid; width: 44px; height: 44px; place-items: center; color: #376ef7; background: #edf3ff; border-radius: 50%; font-size: 24px; }
 .batch-text-panel, .batch-file-panel { background: #f7f9fc; }
 .batch-text-item-card { position: relative; border-color: #dbe4f0; box-shadow: 0 4px 12px rgba(41,64,95,.035); }
@@ -226,7 +242,7 @@ body.v690-general-ner-active .ner-results-table td,
 .relation-source-card { display: flex; flex-direction: column; gap: 12px; }
 .relation-source-card .field-heading { margin-bottom: 0; }
 .history-grid { margin-top: 2px; }
-.sidebar .v752-nav-flyout { left: 250px; }
+.v752-nav-flyout { left: 250px; }
 .response-result-body { position: relative; }
 .response-result-body .console { margin: 0; min-height: 280px; max-height: 480px; overflow: auto; overscroll-behavior: contain; border: 1px solid var(--code-border); border-radius: 8px; background: var(--code); }
 .response-result-body .console.placeholder { display: grid; place-items: center; color: #8d98a9; }
@@ -320,6 +336,8 @@ body.v690-general-ner-active .ner-results-table td,
 .requirement-resource-controls { display: flex; grid-column: 1/-1; flex-direction: column; gap: 8px; margin-top: 10px; }
 /* 上传框自身的取消按钮:锚定上传框右上角(非整个控件列),悬停浮现 */
 .resource-upload-wrap { position: relative; }
+.anchor-upload-actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.anchor-upload-actions .primary-btn { min-height: 36px; padding: 0 18px; font-size: 12px; }
 .resource-upload-wrap .resource-cancel-btn { top: 6px; right: 6px; }
 .resource-upload-wrap:hover .resource-cancel-btn { opacity: 1; visibility: visible; transform: none; }
 .requirement-resource-summary, .resource-record-summary { grid-column: 1/-1; }
@@ -1002,8 +1020,153 @@ body.v699-relation-active .relation-tab-btn { width: 25%; min-width: 0; flex: 1 
 .relation-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 @media (max-width: 900px) { .relation-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
 
-.relation-anchor-row { display: flex; gap: 8px; align-items: center; }
-.relation-anchor-row .select { flex: 1; min-width: 0; }
-.anchor-upload-btn { flex: 0 0 auto; display: inline-flex; align-items: center; padding: 0 12px; min-height: 46px; color: #2f63f6; background: #f2f6ff; border: 1px solid #d4e0fc; border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer; }
-.anchor-upload-btn input { display: none; }
-.anchor-upload-btn:hover { background: #e6eeff; }
+
+/* ================================================================
+   移动端适配层（iOS Safari / Android WebView / 鸿蒙 ArkWeb）
+   框架级:单栏布局 + 侧栏抽屉;交互级:hover 按钮触屏常显、滚动条可见、
+   触摸目标 ≥44px、输入 16px 防 iOS 聚焦缩放。
+   ================================================================ */
+.mobile-sidebar-backdrop { display: none; }
+
+@media (max-width: 900px) {
+  /* 单栏:去掉桌面端 1180px 最小宽度强制,内容占满屏宽。
+     选择器带 body.figma-ui-v717 前缀提升特异性,压过原型样式里的 !important 补丁 */
+  body.figma-ui-v717 .platform-frame-v640 { width: 100% !important; }
+  body.figma-ui-v717 .platform-frame-v640 .app { min-width: 0 !important; grid-template-columns: minmax(0, 1fr) !important; height: 100vh; height: 100dvh; }
+  /* 侧栏改为抽屉:默认收起,sidebar-open 滑出 */
+  body.figma-ui-v717 .platform-frame-v640 .sidebar {
+    position: fixed !important; top: 0; left: 0; z-index: 60 !important;
+    width: min(78vw, 300px) !important; min-width: 0 !important; max-width: none !important;
+    height: 100vh !important; height: 100dvh !important;
+    /* 覆盖原型 max-width:820px 里 max-height:58px 的顶部细条旧方案,抽屉全高且可滚动 */
+    max-height: none !important; min-height: 0 !important; overflow-y: auto !important; overflow-x: hidden !important;
+    padding-top: env(safe-area-inset-top);
+    transform: translateX(-102%); transition: transform .22s ease;
+    background: #fff; box-shadow: none;
+  }
+  body.figma-ui-v717 .platform-frame-v640.sidebar-open .sidebar { transform: none; box-shadow: 0 0 40px rgba(15,23,42,.28); }
+  body.figma-ui-v717 .platform-frame-v640.sidebar-open .mobile-sidebar-backdrop {
+    display: block; position: fixed; inset: 0; z-index: 55; background: rgba(15,23,42,.4);
+  }
+  /* 抽屉收起时的悬浮导航入口(仅移动端显示) */
+  .mobile-nav-fab {
+    display: inline-flex; position: fixed; top: calc(10px + env(safe-area-inset-top)); left: 10px; z-index: 50;
+    min-height: 42px; align-items: center; padding: 0 14px; color: #fff; background: #2f63f6;
+    border: 0; border-radius: 21px; box-shadow: 0 4px 14px rgba(47,99,246,.35);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  /* 三级弹出菜单不再 left:250px 超出屏幕,改为侧栏内全宽 */
+  body.figma-ui-v717 .v752-nav-flyout { left: 8px !important; right: 8px !important; width: auto !important; max-width: none !important; }
+  /* 内容区:全宽内滚,底部留安全区 */
+  body.figma-ui-v717 .content-wrap { height: 100vh !important; height: 100dvh !important; padding: 10px 10px calc(18px + env(safe-area-inset-bottom)) !important; }
+  /* 双栏表单/资源网格并成单栏 */
+  .two-column, .requirement-resource-grid, .database-task-summary, .citation-metadata-form-grid { grid-template-columns: minmax(0, 1fr) !important; }
+  /* 标签右侧说明允许换行,避免窄屏溢出 */
+  .field > label > small, .settings-title span, .special-panel-head span, .field-heading span { white-space: normal; }
+  /* 说明过长时整段折到标签下一行左对齐(不再与标签同行挤向屏幕右缘) */
+  .field > label, .cluster-label-field-v705 > label, .settings-title, .field-heading,
+  .special-panel-head > div:first-child { flex-wrap: wrap; }
+  .field > label > small, .cluster-label-field-v705 > label > small, .settings-title span,
+  .field-heading span, .special-panel-head > div:first-child > span { text-align: left; }
+  /* 功能特点/适用场景在窄屏纵向堆叠并允许换行(桌面端保持单行省略) */
+  body.figma-ui-v717 .main-card > .hero .tag-row { flex-flow: column nowrap !important; }
+  body.figma-ui-v717 .main-card > .hero .tag-row > .tag-box {
+    display: flex !important; max-width: 100% !important; flex-wrap: wrap;
+    white-space: normal !important; align-items: baseline; gap: 8px;
+  }
+  body.figma-ui-v717 .main-card > .hero .tag-row > .tag-box > span {
+    flex: 1 1 auto !important; min-width: 0; white-space: normal !important;
+    word-break: break-word; line-height: 1.6;
+  }
+  /* 触摸目标加大到接近 44pt/48dp 标准 */
+  .hover-copy-btn { min-height: 40px !important; min-width: 40px !important; padding: 0 10px !important; }
+  body.figma-ui-v717 .api-mode-btn { min-height: 44px !important; }
+  .response-card-actions-v645 button { min-height: 40px; }
+  /* 响应结果操作按钮:窄屏改两行网格——下载/可视化整组居中,清除结果单独一行居中 */
+  .response-card-actions-v645 { display: grid !important; grid-template-columns: auto auto; justify-content: center; column-gap: 10px; row-gap: 6px; }
+  .response-card-actions-v645 #clearBtn { grid-column: 1 / -1; justify-self: center; }
+  body.figma-ui-v717 .primary-btn { min-height: 44px !important; }
+  .outline-btn, .ghost-btn, .call-type-btn-v770, .api-mode-btn { min-height: 42px !important; }
+  .numeric-stepper-controls button { min-height: 34px !important; min-width: 34px !important; font-size: 13px !important; }
+  .menu-icon { min-width: 40px; min-height: 40px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  /* 弹窗在窄屏占满留边距 */
+  .visual-modal-mask { padding: 10px; }
+  .visual-modal-body, .visualization-modal-body-v645 { max-height: calc(100dvh - 90px); }
+  /* 表格横向滚动区在窄屏可被察觉 */
+  .relation-dependency-scroll, .visualization-modal-body-v645 .table-card, .table-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  /* 可视化弹窗:窄屏表格给最小宽度,列不再被压成逐字竖排;各表格容器统一横向滚动 */
+  .visualization-modal-body-v645 table { min-width: 680px !important; }
+  .visualization-modal-body-v645 table th { white-space: nowrap !important; }
+  .visualization-modal-body-v645 .fund-move-src-cell-v663 { white-space: nowrap !important; }
+  .visualization-modal-body-v645 [class*="table-wrap"],
+  .visualization-modal-body-v645 [class*="-scroll"] { overflow-x: auto !important; max-width: 100% !important; -webkit-overflow-scrolling: touch; }
+  /* 统计卡窄屏保持 2×2,不再被压成单列长条 */
+  .visualization-modal-body-v645 [class*="summary-grid"] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
+/* 触屏设备(hover:none):hover 唤出的复制/取消按钮常显 + 滚动条可见 */
+@media (hover: none) {
+  .hover-copy-btn, .resource-cancel-btn, .resource-upload-wrap:hover .resource-cancel-btn {
+    opacity: 1 !important; visibility: visible !important; transform: none !important;
+  }
+  .platform-frame-v640 .sidebar, .content-wrap, .request-card .form-grid,
+  .response-result-body, .response-result-body .console, .visual-modal-body,
+  .visualization-modal-body-v645, .relation-dependency-scroll, pre {
+    scrollbar-width: auto !important;
+  }
+  .platform-frame-v640 .sidebar::-webkit-scrollbar, .content-wrap::-webkit-scrollbar,
+  .request-card .form-grid::-webkit-scrollbar, .response-result-body::-webkit-scrollbar,
+  .response-result-body .console::-webkit-scrollbar, .relation-dependency-scroll::-webkit-scrollbar {
+    width: 5px !important; height: 5px !important; display: block !important;
+  }
+  .platform-frame-v640 .sidebar::-webkit-scrollbar-thumb, .content-wrap::-webkit-scrollbar-thumb,
+  .response-result-body::-webkit-scrollbar-thumb, .relation-dependency-scroll::-webkit-scrollbar-thumb {
+    background: rgba(120,135,160,.45); border-radius: 3px;
+  }
+}
+
+/* iOS:输入控件字号 ≥16px,防 Safari 聚焦自动放大整页 */
+@media (max-width: 900px) {
+  .input, .select, .textarea { font-size: 16px !important; }
+  .numeric-stepper-input { font-size: 16px !important; }
+}
+
+/* backdrop-filter 不支持的老内核(X5 等):提高遮罩不透明度保证可读性 */
+@supports not ((backdrop-filter: blur(3px)) or (-webkit-backdrop-filter: blur(3px))) {
+  .visual-modal-mask { background: rgba(18,25,38,.82); }
+}
+
+/* :has() 不支持的老内核(Safari<15.4 / X5):表格行分隔退化为基础边框 */
+@supports not selector(:has(*)) {
+  .visualization-modal-body-v645 table tbody tr + tr > td { border-top: 1px solid #d7e0ec !important; }
+}
+
+/* 桌面端:☰ 收起导航 → 隐藏左栏,内容占满全宽 */
+@media (min-width: 901px) {
+  body.figma-ui-v717 .platform-frame-v640.sidebar-collapsed .app { grid-template-columns: 0 minmax(0, 1fr) !important; }
+  body.figma-ui-v717 .platform-frame-v640.sidebar-collapsed .sidebar { display: none !important; }
+}
+/* 悬浮导航按钮:桌面端侧栏展开时不显示,收起后作为重新展开入口 */
+@media (min-width: 901px) {
+  .mobile-nav-fab { display: none !important; }
+  .platform-frame-v640.sidebar-collapsed .mobile-nav-fab {
+    display: inline-flex !important; position: fixed; top: 14px; left: 10px; z-index: 50;
+  }
+}
+
+/* 图表 SVG 文字字体栈补齐移动端回退(iOS PingFang / 鸿蒙 HarmonyOS Sans) */
+.scatter text, .line-chart text, .relation-graph text {
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'HarmonyOS Sans', 'Noto Sans CJK SC', system-ui, sans-serif;
+}
+
+/* 侧栏:语义计算工具库置顶后,原型装饰菜单弱化为非交互展示
+   (测试反馈:Safari 上点了 12 个装饰菜单没反应,误以为功能点打不开) */
+.menu-row-decorative { color: #a6b1c2 !important; cursor: default; }
+.menu-row-decorative .chev { display: none !important; }
+.sidebar-decorative-label { padding: 14px 16px 6px; color: #93a2b8; font-size: 10.5px; letter-spacing: .04em; border-top: 1px solid #eef2f7; }
+.sidebar-decorative-sections { margin-top: 6px; }
+/* 侧栏滚动条可见(细条):原本全隐藏导致真实工具在折叠区下方时用户不知道能滚 */
+.platform-frame-v640 .sidebar { scrollbar-width: thin; }
+.platform-frame-v640 .sidebar::-webkit-scrollbar { width: 4px !important; display: block !important; }
+.platform-frame-v640 .sidebar::-webkit-scrollbar-thumb { background: rgba(120,135,160,.35); border-radius: 2px; }
+.platform-frame-v640 .sidebar::-webkit-scrollbar-track { background: transparent; }

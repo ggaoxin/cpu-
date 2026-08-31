@@ -1,5 +1,8 @@
 import type { InputMode } from '../types'
 import { pureBatchTextByTool, pureSingleTextByTool } from './pure-text-demo.ts'
+// 真实接口采集的响应快照（由 scripts/collect-real-responses.mjs 生成）。
+// 优先于下方 alignXxx 合成数据，保证响应示例与真实接口输出一致。
+import realResponses from './real-responses.generated.json' with { type: 'json' }
 
 type AnyRecord = Record<string, any>
 
@@ -106,66 +109,144 @@ const enClassificationPapers = pureBatchTextByTool['en-classify'].map((item, ind
   ][index],
 }))
 
-const zhAbstractMoves = [
-  [
-    ['研究背景', '高校体育场馆管理正由经验管理向数据驱动的智慧治理转变。'],
-    ['研究目的', '探究大数据赋能高校体育场馆智慧化建设的作用机理、现实困境与实现路径。'],
-    ['研究方法', '采用文献资料法和逻辑分析法开展归纳分析。'],
-    ['研究结果', '数据汇聚可重塑管理决策并优化资源配置，但数据治理和协同机制仍不完善。'],
-    ['研究结论', '应构建数据治理体系并创新运营管理机制，促进高校体育场馆可持续发展。'],
-  ],
-  [
-    ['研究背景', '传统地震动选取依赖固定震级、距离分组和专家经验，难以客观反映记录间关联。'],
-    ['研究目的', '建立聚类分析与主成分分析相结合的自适应地震动记录选取方法。'],
-    ['研究方法', '对2157组PEER地震动记录按震级和震中距聚类，并结合场地类别和主成分排序。'],
-    ['研究结果', '地震动记录被划分为四组，并得到不同场地类别下的排序与推荐结果。'],
-    ['研究结论', '该方法可为考虑不同结构需求参数的工程结构时程分析提供输入地震动。'],
-  ],
-  [
-    ['研究背景', '糖尿病肾病的关键衰老相关分泌蛋白基因及其治疗价值仍需系统识别。'],
-    ['研究目的', '鉴定糖尿病肾病关键基因并探索其分子机制和潜在治疗价值。'],
-    ['研究方法', '采用WGCNA、113种机器学习算法、GSEA、药物富集和分子对接进行综合分析。'],
-    ['研究结果', '筛选得到八个关键基因，其中VWF具有较好的诊断与潜在靶向治疗价值。'],
-    ['研究结论', '研究为糖尿病肾病的精准诊疗与靶点发现提供了新的候选依据。'],
-  ],
+// abstract-move 专用演示摘要：每篇都是含 5 个语步的完整摘要，语步切分带
+// 在摘要中的字符 start/end 偏移，供响应示例按 V7.74 schema 还原 moves。
+// 不复用 zhPapers/enPapers（其摘要未必 5 句齐全，且被分类/关键词等工具共用）。
+type AbstractMovePaper = {
+  title: string
+  abstract: string
+  language: 'zh' | 'en'
+  moves: Array<{ label: string; text: string; start: number; end: number; confidence: number }>
+}
+
+const zhAbstractMovePapers: AbstractMovePaper[] = [
+  {
+    title: '大数据赋能高校体育场馆智慧化建设的现实困境与路径研究',
+    abstract: '高校体育场馆管理正由经验管理向数据驱动的智慧治理转变，但仍面临数据孤岛与决策滞后等现实困境。本研究探究大数据赋能高校体育场馆智慧化建设的作用机理、现实困境与实现路径。采用文献资料法和逻辑分析法，围绕数据治理与运营协同开展归纳分析。研究发现，数据要素汇聚能够重塑管理决策并优化资源配置，但数据治理体系与协同机制仍不完善。由此提出应构建数据治理体系并创新运营管理机制，以促进高校体育场馆可持续发展。',
+    language: 'zh',
+    moves: [
+      { label: '研究背景', text: '高校体育场馆管理正由经验管理向数据驱动的智慧治理转变，但仍面临数据孤岛与决策滞后等现实困境。', start: 0, end: 46, confidence: 0.92 },
+      { label: '研究目的', text: '本研究探究大数据赋能高校体育场馆智慧化建设的作用机理、现实困境与实现路径。', start: 46, end: 83, confidence: 0.9 },
+      { label: '研究方法', text: '采用文献资料法和逻辑分析法，围绕数据治理与运营协同开展归纳分析。', start: 83, end: 115, confidence: 0.88 },
+      { label: '研究结果', text: '研究发现，数据要素汇聚能够重塑管理决策并优化资源配置，但数据治理体系与协同机制仍不完善。', start: 115, end: 159, confidence: 0.91 },
+      { label: '研究结论', text: '由此提出应构建数据治理体系并创新运营管理机制，以促进高校体育场馆可持续发展。', start: 159, end: 197, confidence: 0.89 },
+    ],
+  },
+  {
+    title: '地震动记录选取的新视角：大数据与机器学习',
+    abstract: '传统地震动选取依赖固定震级、距离分组和专家经验，难以客观反映记录间关联规律。本研究建立聚类分析与主成分分析相结合的自适应地震动记录选取方法。对2157组PEER地震动记录按震级和震中距聚类，并结合场地类别和主成分排序。地震动记录被划分为四组，并得到不同场地类别下的排序与推荐结果。该方法可为考虑不同结构需求参数的工程结构时程分析提供输入地震动。',
+    language: 'zh',
+    moves: [
+      { label: '研究背景', text: '传统地震动选取依赖固定震级、距离分组和专家经验，难以客观反映记录间关联规律。', start: 0, end: 39, confidence: 0.91 },
+      { label: '研究目的', text: '本研究建立聚类分析与主成分分析相结合的自适应地震动记录选取方法。', start: 39, end: 66, confidence: 0.9 },
+      { label: '研究方法', text: '对2157组PEER地震动记录按震级和震中距聚类，并结合场地类别和主成分排序。', start: 66, end: 97, confidence: 0.89 },
+      { label: '研究结果', text: '地震动记录被划分为四组，并得到不同场地类别下的排序与推荐结果。', start: 97, end: 127, confidence: 0.9 },
+      { label: '研究结论', text: '该方法可为考虑不同结构需求参数的工程结构时程分析提供输入地震动。', start: 127, end: 157, confidence: 0.88 },
+    ],
+  },
+  {
+    title: '基于WGCNA和113种机器学习算法鉴定糖尿病肾病关键基因',
+    abstract: '糖尿病肾病的关键衰老相关分泌蛋白基因及其治疗价值仍需系统识别。本研究鉴定糖尿病肾病关键基因并探索其分子机制和潜在治疗价值。采用WGCNA、113种机器学习算法、GSEA、药物富集和分子对接进行综合分析。筛选得到八个关键基因，其中VWF具有较好的诊断与潜在靶向治疗价值。研究为糖尿病肾病的精准诊疗与靶点发现提供了新的候选依据。',
+    language: 'zh',
+    moves: [
+      { label: '研究背景', text: '糖尿病肾病的关键衰老相关分泌蛋白基因及其治疗价值仍需系统识别。', start: 0, end: 30, confidence: 0.9 },
+      { label: '研究目的', text: '本研究鉴定糖尿病肾病关键基因并探索其分子机制和潜在治疗价值。', start: 30, end: 56, confidence: 0.89 },
+      { label: '研究方法', text: '采用WGCNA、113种机器学习算法、GSEA、药物富集和分子对接进行综合分析。', start: 56, end: 86, confidence: 0.88 },
+      { label: '研究结果', text: '筛选得到八个关键基因，其中VWF具有较好的诊断与潜在靶向治疗价值。', start: 86, end: 112, confidence: 0.91 },
+      { label: '研究结论', text: '研究为糖尿病肾病的精准诊疗与靶点发现提供了新的候选依据。', start: 112, end: 138, confidence: 0.87 },
+    ],
+  },
 ]
 
-const enAbstractMoves = [
-  [
-    ['Background', 'Reinforcement learning can enhance VLM reasoning, but its effective mechanisms and limitations remain underexplored.'],
-    ['Objective', 'The study investigates the behavioral difference between RL models and their base counterparts.'],
-    ['Method', 'Training dynamics and multi-sampling behavior are compared, followed by Multi-Group Policy Optimization.'],
-    ['Result', 'GRPO shows diversity collapse, while MUPO improves reasoning diversity and benchmark performance.'],
-    ['Conclusion', 'Encouraging divergent solution paths improves the balance between accuracy and scalability.'],
-  ],
-  [
-    ['Background', 'Diffusion models suffer from high latency because iterative denoising repeatedly executes the same network.'],
-    ['Objective', 'The study seeks to reduce diffusion inference cost without sacrificing generation quality.'],
-    ['Method', 'Timestep-specific block masks, loss scaling, feature reuse, and mask rectification are jointly applied.'],
-    ['Result', 'The method provides substantial speedups across DDPM, LDM, DiT, and PixArt architectures.'],
-    ['Conclusion', 'Per-timestep computational paths offer an efficient and architecture-agnostic acceleration route.'],
-  ],
-  [
-    ['Background', 'Video reasoning with VLMs is constrained by temporal and spatial redundancy.'],
-    ['Objective', 'The work aims to allocate visual computation to the most informative frames and tokens.'],
-    ['Method', 'TRIAGE combines frame-level budgeting with relevance- and diversity-aware token allocation.'],
-    ['Result', 'The framework reduces token count, inference time, and memory while preserving benchmark performance.'],
-    ['Conclusion', 'Hierarchical visual budgeting is an effective training-free strategy for efficient video reasoning.'],
-  ],
+const enAbstractMovePapers: AbstractMovePaper[] = [
+  {
+    title: 'All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models',
+    abstract: 'Reinforcement learning can enhance vision-language model reasoning, but the effective mechanisms and limitations of multi-step sampling remain underexplored. This study investigates the behavioral difference between reinforcement-learning models and their base counterparts. Training dynamics and multi-sampling behavior are compared, followed by Multi-Group Policy Optimization. GRPO shows diversity collapse, while MUPO improves reasoning diversity and benchmark performance. Encouraging divergent solution paths improves the balance between accuracy and scalability.',
+    language: 'en',
+    moves: [
+      { label: 'Background', text: 'Reinforcement learning can enhance vision-language model reasoning, but the effective mechanisms and limitations of multi-step sampling remain underexplored.', start: 0, end: 156, confidence: 0.92 },
+      { label: 'Objective', text: 'This study investigates the behavioral difference between reinforcement-learning models and their base counterparts.', start: 158, end: 273, confidence: 0.9 },
+      { label: 'Method', text: 'Training dynamics and multi-sampling behavior are compared, followed by Multi-Group Policy Optimization.', start: 275, end: 378, confidence: 0.89 },
+      { label: 'Result', text: 'GRPO shows diversity collapse, while MUPO improves reasoning diversity and benchmark performance.', start: 380, end: 476, confidence: 0.91 },
+      { label: 'Conclusion', text: 'Encouraging divergent solution paths improves the balance between accuracy and scalability.', start: 478, end: 568, confidence: 0.88 },
+    ],
+  },
+  {
+    title: 'Timestep-Aware Block Masking for Efficient Diffusion Model Inference',
+    abstract: 'Diffusion models suffer from high latency because iterative denoising repeatedly executes the same network. This work seeks to reduce diffusion inference cost without sacrificing generation quality. Timestep-specific block masks, loss scaling, feature reuse, and mask rectification are jointly applied. The method provides substantial speedups across DDPM, LDM, DiT, and PixArt architectures. Per-timestep computational paths offer an efficient and architecture-agnostic acceleration route.',
+    language: 'en',
+    moves: [
+      { label: 'Background', text: 'Diffusion models suffer from high latency because iterative denoising repeatedly executes the same network.', start: 0, end: 105, confidence: 0.91 },
+      { label: 'Objective', text: 'This work seeks to reduce diffusion inference cost without sacrificing generation quality.', start: 106, end: 186, confidence: 0.9 },
+      { label: 'Method', text: 'Timestep-specific block masks, loss scaling, feature reuse, and mask rectification are jointly applied.', start: 187, end: 285, confidence: 0.89 },
+      { label: 'Result', text: 'The method provides substantial speedups across DDPM, LDM, DiT, and PixArt architectures.', start: 286, end: 372, confidence: 0.9 },
+      { label: 'Conclusion', text: 'Per-timestep computational paths offer an efficient and architecture-agnostic acceleration route.', start: 373, end: 462, confidence: 0.88 },
+    ],
+  },
+  {
+    title: 'TRIAGE: Hierarchical Visual Budgeting for Efficient Video Reasoning',
+    abstract: 'Video reasoning with vision-language models is constrained by temporal and spatial redundancy. The work aims to allocate visual computation to the most informative frames and tokens. TRIAGE combines frame-level budgeting with relevance- and diversity-aware token allocation. The framework reduces token count, inference time, and memory while preserving benchmark performance. Hierarchical visual budgeting is an effective training-free strategy for efficient video reasoning.',
+    language: 'en',
+    moves: [
+      { label: 'Background', text: 'Video reasoning with vision-language models is constrained by temporal and spatial redundancy.', start: 0, end: 86, confidence: 0.9 },
+      { label: 'Objective', text: 'The work aims to allocate visual computation to the most informative frames and tokens.', start: 87, end: 167, confidence: 0.89 },
+      { label: 'Method', text: 'TRIAGE combines frame-level budgeting with relevance- and diversity-aware token allocation.', start: 168, end: 257, confidence: 0.88 },
+      { label: 'Result', text: 'The framework reduces token count, inference time, and memory while preserving benchmark performance.', start: 258, end: 357, confidence: 0.91 },
+      { label: 'Conclusion', text: 'Hierarchical visual budgeting is an effective training-free strategy for efficient video reasoning.', start: 358, end: 450, confidence: 0.87 },
+    ],
+  },
 ]
 
 function alignAbstract(response: AnyRecord, english: boolean, startIndex = 0) {
   const result = clone(response)
+  const papers = english ? enAbstractMovePapers : zhAbstractMovePapers
   payloads(result).forEach((data, index) => {
-    const papers = english ? enPapers : zhPapers
     const profileIndex = (startIndex + index) % papers.length
     const paper = papers[profileIndex]
-    const moves = (english ? enAbstractMoves : zhAbstractMoves)[profileIndex]
-    data.document = { ...(data.document || {}), abstract: paper.abstract, abstract_complete: true, language: english ? 'en' : 'zh', source: paper.sourceFile }
-    data.moves = moves.map(([label, text], moveIndex) => ({ label, text, sentence_indices: [moveIndex + 1], confidence: Number((0.98 - moveIndex * 0.01).toFixed(2)) }))
-    data.move_count = data.moves.length
-    data.sentence_count = data.moves.length
+    // V7.74 schema：moves 含 move_code/move_name/label/text/sentence_indices(从0起)/
+    // start/end/confidence；data 含 move_count/sentence_count/move_statistics/
+    // move_confidence/input_type/confidence。文本模式不暴露文件来源(source)。
+    const moves = paper.moves.map((move, moveIndex) => ({
+      move_code: move.label,
+      move_name: move.label,
+      label: move.label,
+      text: move.text,
+      sentence_indices: [moveIndex],
+      start: move.start,
+      end: move.end,
+      confidence: move.confidence,
+    }))
+    const moveStatistics: AnyRecord = {}
+    const moveConfidence: AnyRecord = {}
+    for (const move of moves) {
+      moveStatistics[move.label] = (moveStatistics[move.label] || 0) + 1
+      moveConfidence[move.label] = move.confidence
+    }
+    const overallConfidence = Number((moves.reduce((sum, m) => sum + m.confidence, 0) / moves.length).toFixed(3))
+    data.document = { title: paper.title, abstract: paper.abstract, abstract_complete: true, language: paper.language }
+    data.moves = moves
+    data.move_count = moves.length
+    data.sentence_count = moves.length
+    data.input_type = 'text'
+    data.confidence = overallConfidence
+    data.move_statistics = moveStatistics
+    data.move_confidence = moveConfidence
   })
+  // meta 改为 V7.74 真实链路风格，去掉合成标记 data_source:"synthetic"。
+  result.meta = {
+    request_id: `req_demo_abstract_${english ? 'en' : 'zh'}_${startIndex}`,
+    schema_version: '1.0',
+    model_version: 'semantic-toolkit-2026.08',
+    elapsed_ms: 1180 + startIndex * 60,
+    created_at: '2026-08-30T02:01:50.850021+00:00',
+    database_dialect: 'mysql',
+    task_id: `tsk_demo_abstract_${english ? 'en' : 'zh'}_${startIndex}`,
+    input_type: 'text',
+    total: 1,
+    success_count: 1,
+    failed_count: 0,
+    record_id: `rec_demo_abstract_${english ? 'en' : 'zh'}_${startIndex}`,
+  }
   return result
 }
 
@@ -757,7 +838,25 @@ function cleanClassificationResponse(toolId: string, response: AnyRecord, mode: 
   return stripFileMetadataForTextMode(result, mode)
 }
 
+/**
+ * 取真实接口采集的响应快照。mode 映射：text→text，batch-text→batch-text，
+ * file→text（文件模式复用单篇真实响应作示例），batch→batch-text。
+ * deep-cluster/cluster-label/structured-review 只有 batch-text 快照。
+ * 无快照（采集失败）返回 null，调用方回退到 alignXxx 合成数据。
+ */
+function realResponseForMode(toolId: string, mode: InputMode): AnyRecord | null {
+  const entry = (realResponses as AnyRecord)?.[toolId]
+  if (!entry) return null
+  const key = mode === 'text' || mode === 'file' ? 'text' : 'batch-text'
+  const real = entry[key]
+  if (!real) return null
+  return clone(real)
+}
+
 export function alignDemoSemanticResponseForMode(toolId: string, response: unknown, mode: InputMode) {
+  // 优先用真实接口采集的响应快照（schema 与真实接口一致，甲方可复现）
+  const real = realResponseForMode(toolId, mode)
+  if (real) return cleanClassificationResponse(toolId, real, mode)
   const aligned = alignSingle(toolId, response as AnyRecord)
   if ((mode === 'text' || mode === 'file') && payloads(aligned).length > 1) {
     const rows = payloads(aligned)
@@ -832,8 +931,8 @@ export const demoReviewPayload = {
 
 export function demoApiPayloadForTool(toolId: string): AnyRecord | undefined {
   const payloadsByTool: Record<string, AnyRecord> = {
-    'zh-abstract-move': { input_type: 'text', text: zhPapers[0].abstract, language: 'zh', return_confidence: true, aggregate_by_move: true },
-    'en-abstract-move': { input_type: 'text', text: enPapers[0].abstract, language: 'en', return_confidence: true, aggregate_by_move: true },
+    'zh-abstract-move': { input_type: 'text', text: zhAbstractMovePapers[0].abstract, language: 'zh', return_confidence: true, aggregate_by_move: true },
+    'en-abstract-move': { input_type: 'text', text: enAbstractMovePapers[0].abstract, language: 'en', return_confidence: true, aggregate_by_move: true },
     'fund-move': { input_type: 'text', project_name: 'TiAl合金中氢原子团簇的第一性原理计算及实验研究', text: 'TiAl合金是一种在汽车及航空航天等领域具有广阔应用前景的轻质高强结构材料。本项目拟采用第一性原理计算和必要的实验方法，研究α2相、γ相及α2/γ界面中的氢原子团簇行为和氢脆微观机理。', aggregate_by_move: true, return_source_section: true },
     'zh-classify': { input_type: 'text', document_title: zhPapers[1].title, chinese_scientific_document_text: zhPapers[1].abstract, clc_labeled_data: { source: 'database', resource_id: 'RES-BUNDLED-CLC-ZH' } },
     'en-classify': { input_type: 'text', document_title: enClassificationPapers[0].title, english_scientific_document_text: enClassificationPapers[0].abstract, clc_labeled_data: { source: 'database', resource_id: 'RES-BUNDLED-CLC-ZH' } },

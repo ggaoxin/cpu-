@@ -158,12 +158,50 @@ REQUIRED_RESOURCE_FIELDS = {
 
 SEMANTIC_RESOURCE_FIELDS = frozenset(field for fields in REQUIRED_RESOURCE_FIELDS.values() for field in fields)
 
+
+def _extract_domain_term_entries(payload: Dict[str, Any]) -> list:
+    """解包"领域术语资源"嵌套格式为词典条目列表 [{term, weight}]。
+
+    支持格式：
+    {
+      "domain_term_resource": {"材料科学": {"term_list": ["晶格缺陷", ...], "base_weight": 1.7}, ...},
+      "general_sci_term": ["实验结果", ...],
+      "general_weight": 1.0
+    }
+    """
+    entries: list = []
+    resource = payload.get("domain_term_resource")
+    if isinstance(resource, dict):
+        for _domain, spec in resource.items():
+            if not isinstance(spec, dict):
+                continue
+            weight = spec.get("base_weight")
+            for term in spec.get("term_list") or []:
+                text = str(term or "").strip()
+                if text:
+                    entries.append({"term": text, "weight": weight})
+    general = payload.get("general_sci_term")
+    if isinstance(general, list):
+        general_weight = payload.get("general_weight")
+        for term in general:
+            text = str(term or "").strip()
+            if text:
+                entries.append({"term": text, "weight": general_weight})
+    return entries
+
+
 _TASK_EXECUTOR = ThreadPoolExecutor(max_workers=settings.ASYNC_WORKERS, thread_name_prefix="semantic-task")
 
 # 进程级 GLM 并发闸口：解决 _TASK_EXECUTOR(4) × group线程池(6) 嵌套导致的线程爆炸。
 # 多个批量任务同时跑时，全进程在途 GLM 调用总数不超过此值，钳制 GLM QPS 不超限。
 # 阻塞在信号量上的线程不占 CPU（OS 级 wait），仅占线程栈内存。
 _GLM_SEMAPHORE = threading.BoundedSemaphore(settings.GLM_MAX_CONCURRENCY)
+
+
+def _today_str() -> str:
+    """当前日期 YYYY-MM-DD(发表时间不得晚于今天的一致判据)。"""
+    from datetime import date
+    return date.today().isoformat()
 
 
 def _id(prefix: str) -> str:
@@ -569,6 +607,10 @@ class ToolIntegrationService:
         intentionally copied only for the item currently being normalized.
         """
         value = dict(payload)
+        # 批量模式 document_title 是逐篇列表:平铺进单篇结果会让 normalizer/projection
+        # 把列表当单值标题写入(实测 MySQL 1241)。单篇真实题目以 source.title 为准。
+        if isinstance(value.get("document_title"), list):
+            value["document_title"] = None
         if not group:
             return value
         source = group[0].source if len(group) == 1 else {}
@@ -719,8 +761,8 @@ class ToolIntegrationService:
                 if single_text:
                     adapted.setdefault("text", single_text)
 
-        if adapted.get("document_title") is not None:
-            adapted.setdefault("title", adapted.get("document_title"))
+        if isinstance(adapted.get("document_title"), str) and adapted["document_title"].strip():
+            adapted.setdefault("title", adapted["document_title"])
         if adapted.get("professional_domain") is not None:
             adapted.setdefault("domain", adapted.get("professional_domain"))
         if adapted.get("domain_label") is not None:
@@ -1100,6 +1142,25 @@ class ToolIntegrationService:
                 resolved_resources[field] = resource
         if resolved_resources:
             params["resolved_resources"] = resolved_resources
+        # zh-keyword 前端发送 domain_terminology_dictionary（Vue 公共字段名），后端
+        # 历史上只认 dictionary_id / custom_dictionary——字段名不匹配导致用户词典
+        # 完全不生效（custom_dictionary_hit 恒为 false）。此处归一成既有两条路径。
+        if contract.tool_id in {"zh-keyword", "en-keyword"}:
+            dtd = payload.get("domain_terminology_dictionary")
+            if isinstance(dtd, dict):
+                dtd_mode = str(dtd.get("use_mode") or dtd.get("source") or "").strip()
+                if dtd_mode == "saved" and dtd.get("resource_id"):
+                    payload.setdefault("dictionary_id", dtd.get("resource_id"))
+                elif dtd_mode == "custom":
+                    custom_terms = dtd.get("terms") or []
+                    payload.setdefault("custom_dictionary", {
+                        "dictionary_name": dtd.get("dictionary_name") or dtd.get("name"),
+                        "weight_boost": dtd.get("weight_boost", 0.08),
+                        "terms": custom_terms,
+                        # 上传的词典文件：_store_uploaded_resource 的 descriptor 顶层带
+                        # text_content（解码后的文件内容），交由下方 text_content 解析
+                        "text_content": str(dtd.get("text_content") or ""),
+                    })
         if contract.tool_id in {"zh-keyword", "en-keyword"} and payload.get("dictionary_id"):
             selected = self.resource_repository.get_dictionary(
                 str(payload["dictionary_id"]),
@@ -1128,7 +1189,8 @@ class ToolIntegrationService:
                     if isinstance(decoded, list):
                         terms = decoded
                     elif isinstance(decoded, dict):
-                        terms = decoded.get("terms") or []
+                        # 领域术语资源嵌套格式：{domain_term_resource:{领域:{term_list,base_weight}}, general_sci_term}
+                        terms = _extract_domain_term_entries(decoded) or decoded.get("terms") or []
                 except json.JSONDecodeError:
                     terms = [item.strip() for item in re.split(r"[\r\n,，;；]+", raw_text) if item.strip()]
             if terms:
@@ -1304,8 +1366,11 @@ class ToolIntegrationService:
                 if not isinstance(metadata, list) or len(metadata) != len(documents):
                     return "document_metadata 必须与科技文献文本逐篇对应"
                 for index, item in enumerate(metadata):
-                    if not isinstance(item, dict) or not str(item.get("document_id") or "").strip() or not str(item.get("publication_date") or "").strip():
+                    # 文献编号认 id 别名（前端历史版本/第三方调用可能发 id）
+                    if not isinstance(item, dict) or not str(item.get("document_id") or item.get("id") or "").strip() or not str(item.get("publication_date") or "").strip():
                         return f"第 {index + 1} 篇文献的文献编号和发表时间为必填项"
+                    if str(item.get("publication_date") or "").strip() > _today_str():
+                        return f"第 {index + 1} 篇文献的发表时间不能晚于今天"
         if contract.tool_id == "structured-review":
             if not str(payload.get("topic_or_keywords") or "").strip():
                 return "topic_or_keywords 为必填项"

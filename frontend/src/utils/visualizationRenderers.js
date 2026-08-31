@@ -203,7 +203,7 @@ function renderAbstractMove(response, english = false) {
   }
   const resultRows = records.flatMap(record => {
     const moves = array(record.payload.moves)
-    return moves.map((item, index) => `<tr class="${index === 0 ? 'fund-move-project-start-v663 ' : ''}fund-move-project-${record.index % 2 === 0 ? 'odd' : 'even'}-v663">${index === 0 ? `<td class="fund-move-project-name-v663" rowspan="${moves.length}">${renderTextWithMath(documentLabel(record))}</td>` : ''}<td><span class="fund-move-label-badge-v663">${escapeHtml(item.label || '—')}</span></td><td>${escapeHtml(charRange(item, record))}</td><td>${renderTextWithMath(item.text || item.sentence || '—')}</td><td>${confidence(item.confidence)}</td></tr>`)
+    return moves.map((item, index) => `<tr class="${index === 0 ? 'fund-move-project-start-v663 ' : ''}fund-move-project-${record.index % 2 === 0 ? 'odd' : 'even'}-v663">${index === 0 ? `<td class="fund-move-project-name-v663" rowspan="${moves.length}">${renderTextWithMath(documentLabel(record))}</td>` : ''}<td><span class="fund-move-label-badge-v663">${escapeHtml(item.label || '—')}</span></td><td class="fund-move-src-cell-v663">${escapeHtml(charRange(item, record))}</td><td>${renderTextWithMath(item.text || item.sentence || '—')}</td><td>${confidence(item.confidence)}</td></tr>`)
   }).join('')
   return `<div class="fund-move-visual-v663">
     ${summaryCards([

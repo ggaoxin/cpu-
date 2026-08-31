@@ -109,6 +109,14 @@ class SemanticApplicationService(ISemanticService):
             entries = json.loads(excerpt)
         except (json.JSONDecodeError, ValueError):
             return None
+        # 包装对象解包：{label_version, document_labels:[...]} → 取条目列表，
+        # 否则 dict 直接 return None，用户分类体系完全注入不进 prompt。
+        if isinstance(entries, dict):
+            entries = next(
+                (entries[k] for k in ("document_labels", "labels", "entries", "items", "data", "records")
+                 if isinstance(entries.get(k), list)),
+                None,
+            )
         if not isinstance(entries, list) or not entries:
             return None
         from infrastructure.rag.clc_meta_builder import detect_taxonomy_kind
@@ -170,12 +178,16 @@ class SemanticApplicationService(ISemanticService):
         for e in sample:
             if not isinstance(e, dict):
                 continue
-            title = str(e.get("ch_name") or e.get("en_name") or "").strip()
+            title = str(e.get("ch_name") or e.get("en_name") or e.get("title")
+                        or e.get("document_id") or "").strip()
             abstract = str(e.get("ch_abstract") or e.get("en_abstract") or "").strip()[:200]
             kw = SemanticApplicationService._parse_clc_keywords(e.get("keywords"))
             main = e.get("main_classification") if isinstance(e.get("main_classification"), dict) else {}
-            code = str(main.get("clc_code") or "").strip()
-            name = str(main.get("clc_name") or "").strip()
+            # 分类字段别名：嵌套 main_classification / 顶层 manual_category_id 等
+            code = str(main.get("clc_code") or e.get("manual_category_id")
+                       or e.get("clc_code") or "").strip()
+            name = str(main.get("clc_name") or e.get("manual_category_name")
+                       or e.get("clc_name") or "").strip()
             path = str(main.get("classification_path") or " / ".join(main.get("path_names") or []) or "").strip()
             reason = str(e.get("selection_reason") or "").strip()[:120]
             rec = (f"- 标题：{title}\n  摘要：{abstract}\n  关键词：{kw}\n"
@@ -192,8 +204,10 @@ class SemanticApplicationService(ISemanticService):
         codes = []
         for e in entries:
             if isinstance(e, dict):
-                c = str(e.get("clc_code") or "").strip()
-                if c:
+                # 分类号字段别名（clc_code / manual_category_id / code 等）
+                c = str(e.get("clc_code") or e.get("manual_category_id")
+                        or e.get("classification_code") or e.get("code") or "").strip()
+                if c and c not in codes:
                     codes.append(c)
         if len(codes) > limit:
             codes = random.Random(42).sample(codes, limit)
@@ -305,6 +319,19 @@ class SemanticApplicationService(ISemanticService):
         import re as _re
         abstract = _re.sub(r'(?i)\s*(?:code|project\s+page|source\s+code)\s*(?:is\s+)?(?:at|available(?:\s+(?:at|online))?|on\s+github)?\s*[:]?\s*https?://\S+\.?', '', abstract)
         abstract = _re.sub(r'(?i)\s*https?://(?:www\.)?(?:github|gitlab|bitbucket|huggingface)\.co(?:m|\.io)/\S+\.?', '', abstract)
+        # 脏输入归一（测试缺陷用例：制表符/多余换行/LaTeX 公式导致分句器碎片化、语步漏检）：
+        # ① $...$、$$...$$、\begin{equation}...\end{equation} 公式块内部换行压成单空格
+        # ② 制表符/全角空格/连续空格压成单空格 ③ 多余空行合并为单个换行
+        def _flatten_math(_m: "_re.Match") -> str:
+            return _re.sub(r'\s+', ' ', _m.group(0))
+        abstract = _re.sub(r'\$\$[\s\S]+?\$\$|\$[^$\n]+\$', _flatten_math, abstract)
+        # LaTeX 环境整块压平:① \begin{...} 到最近的 \end{...} 内部换行压成空格
+        # ② 剩余的环境边界行(\end{cases}\n\end{equation})再拼接成单行
+        abstract = _re.sub(r'\\begin\{[a-zA-Z*]+\}[\s\S]*?\\end\{[a-zA-Z*]+\}', _flatten_math, abstract)
+        abstract = _re.sub(r'\n(?=\\(?:begin|end)\{)', ' ', abstract)
+        abstract = _re.sub(r'[ \t\u3000]+', ' ', abstract)
+        abstract = _re.sub(r'\s*\n\s*', '\n', abstract)
+        abstract = _re.sub(r'\n{2,}', '\n', abstract)
         abstract = abstract.strip()
 
         # 加载训练用 RuleLib（与运行时同一 YAML）
@@ -447,6 +474,42 @@ class SemanticApplicationService(ISemanticService):
                         code, list(resolved.keys()))
         return clc_retriever
 
+    def _user_scope_retriever(self, request: SemanticRequest):
+        """从用户选择的 clc_labeled_data 资源条目构建作用域检索器(无索引路径)。
+
+        返回 UserCLCScopeRetriever 或 None(资源不可读/无有效条目时回退内置)。
+        """
+        resolved = (request.params or {}).get("resolved_resources") or {}
+        resource = resolved.get("clc_labeled_data") if isinstance(resolved, dict) else None
+        if not isinstance(resource, dict):
+            logger.warning("CLC 用户作用域检索器未生效：clc_labeled_data 资源未解析到，回退内置库")
+            return None
+        uri = str(resource.get("storage_uri") or "")
+        if not uri:
+            logger.warning("CLC 用户作用域检索器未生效：资源无 storage_uri，回退内置库")
+            return None
+        from pathlib import Path
+        from config.settings import settings as _settings
+        path = _settings.PROJECT_ROOT / uri.removeprefix("project://") if uri.startswith("project://") else Path(uri)
+        if not path.is_file() or path.suffix.lower() not in {".json", ".jsonl"}:
+            logger.warning("CLC 用户作用域检索器未生效：资源文件不存在或非 json/jsonl(%s)，回退内置库", path)
+            return None
+        try:
+            text = path.read_text(encoding="utf-8-sig", errors="replace").strip()
+            entries = [json.loads(line) for line in text.splitlines() if line.strip()] \
+                if path.suffix.lower() == ".jsonl" else json.loads(text)
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
+            logger.warning("CLC 用户作用域检索器未生效：资源文件读取/解析失败(%s)，回退内置库", exc)
+            return None
+        from infrastructure.rag.clc_user_scope import UserCLCScopeRetriever
+        try:
+            retriever = UserCLCScopeRetriever(entries)
+        except ValueError as exc:
+            logger.warning("用户 CLC 资源条目不可用作作用域(%s)，回退内置库。请检查条目是否含 clc_code/clc_name（或别名 code/name）字段", exc)
+            return None
+        logger.info("CLC 用户作用域检索器生效:%d 个用户条目", len(retriever._order))
+        return retriever
+
     def _execute_classification(self, code: str, request: SemanticRequest, fp, rule) -> SemanticResult:
         """自动分类管线：LLM 优先（凭 CLC 知识提议）→ 后置校验（resolve_code 防幻觉）。
 
@@ -478,10 +541,19 @@ class SemanticApplicationService(ISemanticService):
         if isinstance((request.params or {}).get("resolved_resources"), dict) \
                 and (request.params or {}).get("resolved_resources", {}).get("clc_labeled_data"):
             from infrastructure.rag.clc_retriever import clc_retriever as _builtin
-            custom_retriever = self._resolve_clc_retriever(code, request, cross_lingual)
-            if custom_retriever is not _builtin:
+            resolved_retriever = self._resolve_clc_retriever(code, request, cross_lingual)
+            if resolved_retriever is not _builtin:
+                custom_retriever = resolved_retriever
                 custom_candidates = custom_retriever.retrieve(
                     title, abstract, keywords, k=max(top_k, 12), cross_lingual=cross_lingual)
+            else:
+                # 用户选了资源但未建向量索引(散点表/小表/标注样本):用资源条目本身构建
+                # 作用域检索器,resolve_code/children 均对用户条目生效——否则后置校验会把
+                # 用户分类号上溯成内置中图法码,表现为"选了用户上传资源仍按后台分类"
+                custom_retriever = self._user_scope_retriever(request)
+                if custom_retriever is not None:
+                    custom_candidates = custom_retriever.retrieve(
+                        title, abstract, keywords, k=max(top_k, 12), cross_lingual=cross_lingual)
         system_prompt = self._system_prompt(rule, request)
         user_prompt = self._render_classification_user_prompt(title, abstract, keywords, full_text)
         if custom_candidates:
@@ -1037,20 +1109,28 @@ class SemanticApplicationService(ISemanticService):
                 if _t is None:
                     _kept.extend(_grp)
                     continue
-                _fit = [c for c in _grp if c.get("fitness", 0.5) >= _FITNESS_MIN]   # 门槛:不适配本文剔除
-                if not _fit:
-                    continue                                                        # 整类不适配本文
-                _fit.sort(key=lambda x: (x.get("fitness", 0), x.get("stat_conf", 0)), reverse=True)
-                _kept.append(_fit[0])                                              # 类内最优必留
-                if (len(_fit) >= 2
-                        and _fit[1].get("fitness", 0) >= _fit[0].get("fitness", 0) - _DYNAMIC_GAP):
-                    _kept.append(_fit[1])                                          # 次优贴近最优才留(动态1或2)
+                # 用户词典命中的词豁免类内筛选（用户显式给的术语必须保留，
+                # 不能被"每类只留最优"挤掉——否则词典命中了也不出现在结果里）
+                _dict_hits = [c for c in _grp if c.get("custom_dictionary_hit")]
+                _rest = [c for c in _grp if not c.get("custom_dictionary_hit")]
+                _fit = [c for c in _rest if c.get("fitness", 0.5) >= _FITNESS_MIN]   # 门槛:不适配本文剔除
+                if _fit:
+                    _fit.sort(key=lambda x: (x.get("fitness", 0), x.get("stat_conf", 0)), reverse=True)
+                    _kept.append(_fit[0])                                          # 类内最优必留
+                    if (len(_fit) >= 2
+                            and _fit[1].get("fitness", 0) >= _fit[0].get("fitness", 0) - _DYNAMIC_GAP):
+                        _kept.append(_fit[1])                                      # 次优贴近最优才留(动态1或2)
+                _kept.extend(_dict_hits)                                           # 词典命中词全保留
             cleaned = _kept
         # 最终置信度=内容适配度 fitness；用户词典 boost 经 weight_change 叠加
         #（custom_terms 无 fitness，保留 boost 后的 weight 不变）
         for _item in cleaned:
             if "fitness" in _item:
                 _item["weight"] = round(min(_item["fitness"] + _item.get("weight_change", 0), 0.95), 3)
+                # 用户词典命中的词置信度下限 0.75：用户显式收录的术语重要性有保障，
+                # 不因 LLM 误判"内容适配度"而输出刺眼低分
+                if _item.get("custom_dictionary_hit"):
+                    _item["weight"] = max(_item["weight"], 0.75)
 
         # 排序：preserve_order=true 时置信度按 0.05 分档降序为主，档内按摘要出现顺序（稳定）；
         #       false 时纯置信度降序。
@@ -2625,6 +2705,31 @@ class SemanticApplicationService(ISemanticService):
             raise ValueError("基金项目语步识别需提供 text 字段（全文）")
 
         move_types = ["立项依据", "研究目标", "技术实施方案", "预期成果", "应用价值"]
+
+        # 基金类文本预检（测试缺陷:普通科技摘要被虚构出基金语步）:
+        # 基金申请书/申报书/任务书/结题报告必有申报结构词且篇幅较长;
+        # 普通科技摘要/论文不满足,五类语步全部为空,不进 LLM 强行解读。
+        _fund_kw = ("立项依据", "申请书", "申报书", "任务书", "结题", "验收", "考核指标",
+                    "技术路线", "预期成果", "申请经费", "资助经费", "可行性分析", "依托单位",
+                    "项目摘要", "研究基础", "年度研究计划")
+        _kw_hits = sum(1 for _k in _fund_kw if _k in full_text)
+        _is_fund_text = (len(full_text) >= 1500 and _kw_hits >= 2) or _kw_hits >= 4
+        if not _is_fund_text:
+            _empty_moves = [{"move_type": _mt, "content": "", "sources": [], "source_sections": [],
+                             "n_fragments": 0, "confidence": None} for _mt in move_types]
+            result.success = True
+            result.data = {
+                "moves": _empty_moves,
+                "confidence": None,
+                "document": {},
+                "document_type_check": "非基金类文本：输入不是基金申请书/项目申报书/任务书/结题报告等基金类文本，未识别到基金语步",
+            }
+            result.evidence = []
+            result.confidence = None
+            result.raw = json.dumps({"moves": _empty_moves, "n_chars": len(full_text),
+                                     "mode": "not_fund_text", "n_units": 0}, ensure_ascii=False)
+            logger.info("基金语步预检:非基金类文本(%d 字,%d 个申报结构词命中),跳过识别", len(full_text), _kw_hits)
+            return result
         summary_prompt = rule.raw.get("summary_prompt", rule.system_prompt)
         system_prompt = self._system_prompt(rule, request)
         aggregated = {mt: [] for mt in move_types}

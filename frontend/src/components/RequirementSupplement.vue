@@ -217,6 +217,21 @@ async function handleCitationReferenceFile(event: Event) {
   citationRawReference.value = String(rawReference).trim()
 }
 
+const citationReferenceFileInput = ref<HTMLInputElement | null>(null)
+const citationBatchMetadataFileInput = ref<HTMLInputElement | null>(null)
+const citationFallbackMetadataFileInput = ref<HTMLInputElement | null>(null)
+function clearCitationReferenceFile() {
+  citationUploadName.value = ''
+  citationRawReference.value = ''
+  citationParseState.value = 'idle'
+  if (citationReferenceFileInput.value) citationReferenceFileInput.value.value = ''
+}
+function clearCitationMetadataFile(target: 'batch' | 'fallback') {
+  if (target === 'batch') citationBatchMetadataFile.value = null
+  else citationFallbackMetadataFile.value = null
+  const el = target === 'batch' ? citationBatchMetadataFileInput.value : citationFallbackMetadataFileInput.value
+  if (el) el.value = ''
+}
 function handleCitationMetadataFile(event: Event, target: 'batch' | 'fallback') {
   const file = (event.target as HTMLInputElement).files?.[0] || null
   if (target === 'batch') citationBatchMetadataFile.value = file
@@ -348,10 +363,13 @@ watchEffect(() => emit('update:payload', requestPayload.value))
           <label><span class="label-main">粘贴参考文献条目</span><small>支持一次粘贴多条（每行一条），中英文格式均可</small></label>
           <textarea v-model="citationRawReference" class="textarea compact" rows="5" placeholder="每行一条参考文献，例如：&#10;[1] 张三，李四. 科技文献语义分析研究[J]. 情报学报，2024，43(2)：120-130.&#10;[2] Smith J, et al. A survey of NLP. ACL, 2020."></textarea>
         </div>
-        <label v-else class="resource-upload-zone citation-reference-upload-zone">
-          <input type="file" accept=".txt,.json,.jsonl,.csv" @change="handleCitationReferenceFile" />
-          <span>⇧</span><b>{{ citationUploadName || '点击上传参考文献条目' }}</b><small>支持 TXT、JSON、JSONL、CSV</small>
-        </label>
+        <div v-else class="resource-upload-wrap">
+          <label class="resource-upload-zone citation-reference-upload-zone">
+            <input ref="citationReferenceFileInput" type="file" accept=".txt,.json,.jsonl,.csv" @change="handleCitationReferenceFile" />
+            <span>⇧</span><b>{{ citationUploadName || '点击上传参考文献条目' }}</b><small>支持 TXT、JSON、JSONL、CSV</small>
+          </label>
+          <button v-if="citationUploadName" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearCitationReferenceFile">✕ 取消</button>
+        </div>
         <div class="citation-parser-action-row">
           <span v-if="citationParsing" class="citation-parse-status">解析中…（大模型解析多条条目约需数秒）</span>
           <span v-else-if="citationParseState === 'parsed'" class="citation-parse-status success">✓ 已解析 {{ citationMetadataList.length }} 条，请核对下方信息</span>
@@ -377,10 +395,13 @@ watchEffect(() => emit('update:payload', requestPayload.value))
     <div v-else-if="mode === 'batch-text'" class="citation-manual-metadata-panel">
       <div class="citation-metadata-section-head"><b>提供批量被引文献元数据</b><span>按引文标记或记录编号与每条引用文本关联</span></div>
       <div class="field citation-metadata-json"><label><span class="label-main"><span class="required-mark">*</span> 批量参考文献元数据</span><small>可以粘贴 JSON 数组，或直接上传元数据文件</small></label><textarea v-model="citationBatchMetadataText" class="textarea compact json-textarea" placeholder='[{"citation_marker":"[12]","raw_reference":"Zhang XX, Li XX..."}]'></textarea></div>
-      <label class="resource-upload-zone citation-metadata-upload-zone">
-        <input type="file" accept=".json,.jsonl,.csv,.xlsx,.txt" @change="handleCitationMetadataFile($event, 'batch')" />
-        <span>⇧</span><b>{{ citationBatchMetadataFile?.name || '上传批量被引文献元数据' }}</b><small>支持 JSON、JSONL、CSV、XLSX、TXT</small>
-      </label>
+      <div class="resource-upload-wrap">
+        <label class="resource-upload-zone citation-metadata-upload-zone">
+          <input ref="citationBatchMetadataFileInput" type="file" accept=".json,.jsonl,.csv,.xlsx,.txt" @change="handleCitationMetadataFile($event, 'batch')" />
+          <span>⇧</span><b>{{ citationBatchMetadataFile?.name || '上传批量被引文献元数据' }}</b><small>支持 JSON、JSONL、CSV、XLSX、TXT</small>
+        </label>
+        <button v-if="citationBatchMetadataFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearCitationMetadataFile('batch')">✕ 取消</button>
+      </div>
     </div>
 
   </div>
@@ -394,10 +415,13 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         <option value="upload">上传元数据文件进行补充或校正</option>
       </select>
     </div>
-    <label v-if="sourceModes.document_metadata === 'upload'" class="resource-upload-zone">
-      <input type="file" accept=".json,.jsonl,.csv,.xlsx" @change="handleResourceUpload($event, 'document_metadata')" />
-      <span>⇧</span><b>点击上传文献元数据</b><small>支持 JSON、JSONL、CSV、XLSX</small>
-    </label>
+    <div v-if="sourceModes.document_metadata === 'upload'" class="resource-upload-wrap">
+      <label class="resource-upload-zone">
+        <input :ref="el => setResourceFileInput('document_metadata', el)" type="file" accept=".json,.jsonl,.csv,.xlsx" @change="handleResourceUpload($event, 'document_metadata')" />
+        <span>⇧</span><b>{{ uploadedResources['document_metadata']?.name || '点击上传文献元数据' }}</b><small>支持 JSON、JSONL、CSV、XLSX</small>
+      </label>
+      <button v-if="uploadedResources['document_metadata']" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearUploadedResource('document_metadata')">✕ 取消</button>
+    </div>
     <div class="info-banner">元数据按文献编号或文件名与文献集逐篇关联；缺失字段由文件解析结果补充。</div>
   </div>
 
@@ -421,7 +445,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
           </select>
           <select v-if="sourceModes[field.key] !== 'upload'" v-model="selectedResources[field.key]" class="select">
             <option value="" disabled>{{ field.placeholder }}</option>
-            <option v-for="item in availableResources(field.key)" :key="item.id" :value="item.id">{{ item.name }} · {{ item.version }}</option>
+            <option v-for="item in availableResources(field.key)" :key="item.id" :value="item.id">{{ item.name }}{{ item.version && item.version !== 'bundled' ? ' · ' + item.version : '' }}</option>
           </select>
           <div v-else class="resource-upload-wrap">
             <label class="resource-upload-zone">

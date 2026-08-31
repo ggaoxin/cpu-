@@ -50,8 +50,8 @@ def execute_structured_review(
     documents = engine.normalize_documents(raw_documents, metadata)
     if metadata and isinstance(metadata, list):
         metadata_ids = {
-            str(item.get("document_id")) for item in metadata
-            if isinstance(item, dict) and item.get("document_id")
+            str(item.get("document_id") or item.get("id")) for item in metadata
+            if isinstance(item, dict) and (item.get("document_id") or item.get("id"))
         }
         missing_ids = [item.document_id for item in documents if item.document_id not in metadata_ids]
         if missing_ids:

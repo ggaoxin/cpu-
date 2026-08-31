@@ -44,7 +44,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
   },
   'en-abstract-move': {
     inputs: [
-            ['document_title', 'string | string[]', 'required', '文献题目'],
+            ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
             ['english_scientific_abstract', 'string | string[] | file | file[]', 'required', '英文科技论文摘要(含 SCI/EI 期刊及国际会议论文)'],
     ],
     outputs: [
@@ -70,7 +70,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
   // ==================== 自动分类 ==================== #
   'zh-classify': {
     inputs: [
-            ['document_title', 'string | string[]', 'required', '文献题目'],
+            ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
             ['chinese_scientific_document_text', 'string | string[] | file | file[]', 'required', '中文科技文献文本'],
       ...resourceDescriptorRows('clc_labeled_data',
         '中图分类标准数据引用。决定分类答案空间:内置资源含 40912 条中图类目及向量索引',
@@ -85,7 +85,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
   },
   'en-classify': {
     inputs: [
-            ['document_title', 'string | string[]', 'required', '文献题目'],
+            ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
             ['english_scientific_document_text', 'string | string[] | file | file[]', 'required', '英文科技文献文本'],
       ...resourceDescriptorRows('clc_labeled_data',
         '中图分类标准数据引用(与中文分类共用同一资源)。内置 bge-m3 跨语言索引支持英文→中文类目直接映射',
@@ -100,7 +100,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
   },
   'domain-classify': {
     inputs: [
-            ['document_title', 'string | string[]', 'required', '文献题目'],
+            ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
             ['domain_scientific_literature_data', 'string | string[] | file | file[]', 'required', '专业领域科技文献文本'],
       ['professional_domain', 'string', 'required', '目标专业领域编码,取值 "01"–"32"(如 "14"=材料科学与材料工程);在该领域语境下执行中图法三级分类'],
       ...resourceDescriptorRows('domain_classification_rules',
@@ -121,7 +121,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
   // ==================== 关键词识别 ==================== #
   'zh-keyword': {
     inputs: [
-            ['document_title', 'string | string[]', 'required', '文献题目'],
+            ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
             ['chinese_scientific_abstract', 'string | string[] | file | file[]', 'required', '中文科技文献摘要'],
       ['dictionary_id', 'string', 'optional', '用户词典编号(可选)。已保存词典的编号;词典术语在原文逐字出现时加权提升并归一到规范表达'],
       ['custom_dictionary', 'object', 'optional', '直接提交的自定义词典(与 dictionary_id 二选一)'],
@@ -132,7 +132,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
   },
   'en-keyword': {
     inputs: [
-            ['document_title', 'string | string[]', 'required', '文献题目'],
+            ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
             ['english_scientific_abstract', 'string | string[] | file | file[]', 'required', '英文科研文献摘要'],
       ...resourceDescriptorRows('domain_terminology_library',
         '领域术语库引用。英文术语归一(normalized_term)与消歧的主要来源',
@@ -147,7 +147,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
   // ==================== 研究问题识别 ==================== #
   'rq-detect': {
     inputs: [
-            ['document_title', 'string | string[]', 'required', '文献题目'],
+            ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
             ['scientific_document_fragment', 'string | string[] | file | file[]', 'required', '科技文献文本片段或全文'],
       ['text_format_requirement', 'string', 'optional', '文本格式声明,影响溯源方式。枚举:"自动识别"(默认)、"纯文本"(跳过章节解析)、"章节结构文本"(启用标题路径溯源)、"JSON 结构文本"(按章节结构精确归属)'],
     ],
@@ -162,7 +162,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
   // ==================== 引用句识别 ==================== #
   'citation-sentiment': {
     inputs: [
-            ['document_title', 'string | string[]', 'required', '文献题目'],
+            ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
             ['scientific_document_full_text', 'string | string[] | file | file[]', 'required', '文献全文文本'],
       ['reference_entries', 'string | file', 'required', '参考文献原始条目(每行一条,支持多条)。系统据此自动解析被引文献元数据(作者/题名/年份/来源/DOI),并按引用标记号与条目序号匹配'],
       ['citation_sentence_and_context', 'object[]', 'conditional', '引用句及上下文(自动派生,无需手填)。系统从文献文本定位含引用标记的句子并取前后句;手动提供时以所填为准'],
@@ -184,7 +184,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
   },
   'citation-intent': {
     inputs: [
-            ['document_title', 'string | string[]', 'required', '文献题目'],
+            ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
             ['scientific_document_full_text', 'string | string[] | file | file[]', 'required', '文献全文文本或文件'],
       ['reference_entries', 'string | file', 'required', '参考文献原始条目(每行一条)。同引用情感识别'],
       ['citation_sentence_and_context', 'object[]', 'conditional', '引用句及上下文(自动派生)。结构同引用情感识别'],

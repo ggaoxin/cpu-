@@ -17,6 +17,9 @@ const groups = (generatedGroups as ToolGroup[]).map((group) => ({
   items: group.items.map(([id, label]) => [id, tools[id]?.title || label] as [string, string])
 }))
 const activeId = ref('zh-abstract-move')
+// 侧栏开关:桌面端=收起/展开左栏;移动端(≤900px)=抽屉滑出/收起
+const sidebarOpen = ref(true)
+if (typeof window !== 'undefined' && window.innerWidth <= 900) sidebarOpen.value = false
 const content = ref<HTMLElement | null>(null)
 const modalOpen = ref(false)
 const modalPreview = ref(false)
@@ -25,6 +28,8 @@ const tool = computed(() => tools[activeId.value])
 
 function selectTool(id: string) {
   activeId.value = id
+  // 移动端选择工具后自动收回抽屉侧栏
+  if (window.innerWidth <= 900) sidebarOpen.value = false
   modalOpen.value = false
   modalPreview.value = false
   nextTick(() => content.value?.scrollTo({ top: 0 }))
@@ -39,9 +44,11 @@ function previewVisualization(mode: InputMode) {
 </script>
 
 <template>
-  <div class="platform-frame-v640">
+  <div class="platform-frame-v640" :class="{ 'sidebar-open': sidebarOpen, 'sidebar-collapsed': !sidebarOpen }">
+    <div v-if="sidebarOpen" class="mobile-sidebar-backdrop" @click="sidebarOpen = false"></div>
+    <button v-else class="mobile-nav-fab" type="button" aria-label="打开导航" @click="sidebarOpen = true">☰ 导航</button>
     <div class="app">
-      <ToolSidebar :groups="groups" :active-id="activeId" @select="selectTool" />
+      <ToolSidebar :groups="groups" :active-id="activeId" @select="selectTool" @toggle="sidebarOpen = !sidebarOpen" />
       <main ref="content" class="content-wrap">
         <div class="page-shell">
           <div class="breadcrumb"><span>算法中心</span><span class="slash">/</span><span>语义计算工具库</span><span class="slash">/</span><strong>{{ tool.title }}</strong></div>

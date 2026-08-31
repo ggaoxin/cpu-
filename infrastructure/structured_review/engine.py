@@ -144,8 +144,10 @@ class StructuredReviewEngine:
                 }
         else:
             for row in metadata_rows or []:
-                if isinstance(row, Mapping) and row.get("document_id"):
-                    metadata_map[str(row["document_id"])] = dict(row)
+                # 文献编号认 id 别名（与下方 documents 的别名归一保持一致）
+                if isinstance(row, Mapping) and (row.get("document_id") or row.get("id")):
+                    key = str(row.get("document_id") or row.get("id"))
+                    metadata_map[key] = dict(row)
 
         documents: List[ReviewDocument] = []
         seen: set[str] = set()

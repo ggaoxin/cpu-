@@ -70,6 +70,8 @@ class Settings:
         if value.strip()
     ]
     MAX_UPLOAD_SIZE_MB: int = int(os.getenv("MAX_UPLOAD_SIZE_MB", "50"))
+    # 批量文件单次提交数量上限（在线测试与 API 一致）
+    MAX_BATCH_FILES: int = int(os.getenv("MAX_BATCH_FILES", "20"))
 
     # ---- 路径（全部 PROJECT_ROOT 相对，可被 .env 覆盖；项目自包含）----
     PROJECT_ROOT: Path = PROJECT_ROOT

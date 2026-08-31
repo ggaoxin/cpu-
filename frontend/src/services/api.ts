@@ -86,7 +86,17 @@ export async function executeToolRequest(
     ;(init.headers as Record<string, string>)['Content-Type'] = 'application/json'
     init.body = JSON.stringify(jsonSafeValue(payload))
   }
-  return parseResponse(await fetch(apiUrl(endpoint), init))
+  // 超时保护:深度聚类/批量任务可能运行数分钟,给 15 分钟硬超时,
+  // 避免 >50MB 上传或后端阻塞时前端 fetch 永久挂起、页面无法恢复
+  init.signal = AbortSignal.timeout(15 * 60 * 1000)
+  try {
+    return parseResponse(await fetch(apiUrl(endpoint), init))
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      throw new ApiRequestError('请求超时（15 分钟）：任务未在时限内完成，请减少批量规模后重试', 408, null)
+    }
+    throw error
+  }
 }
 
 export async function parseCitationMetadata(entriesText: string) {

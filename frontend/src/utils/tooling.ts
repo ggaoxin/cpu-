@@ -147,6 +147,53 @@ function strictRequirementPayload(tool: ToolDefinition, mode: InputMode) {
   return Object.fromEntries(inputs.map((row, index) => [row[0], requirementExampleValue(row[0], row[1], mode, tool, index === 0)]))
 }
 
+/**
+ * 自构造的简短 batch 输入（<8000 字符），用于 payloadFor 默认结构跑不通的工具：
+ * ① citation 的 batch 后端要求 citation_sentence_and_context + citation_metadata，
+ *    默认 payloadFor 只传 citations/全文，会缺字段或超 8000 字符；
+ * ② domain-classify 的 batch 需要 domain_scientific_literature_data 批量结构。
+ * 这些输入与采集脚本（collect-real-responses.mjs）共用，保证调用示例输入 ↔
+ * 响应示例输出自洽，甲方可复现。
+ */
+export const CUSTOM_BATCH_PAYLOADS: Record<string, Record<string, unknown>> = {
+  '/api/v1/citation-sentiment/text': {
+    input_type: 'texts',
+    document_title: ['文献A', '文献B'],
+    citation_sentence_and_context: [
+      { id: 'CIT001', citation_sentence: '已有研究表明该方法在小样本场景下泛化能力不足[1]。', previous_context: '针对图像分类任务，', next_context: '因此本文提出新的数据增强策略。', citation_marker: '[1]' },
+      { id: 'CIT002', citation_sentence: 'Smith等人[2]的工作证实了注意力机制能提升检测精度。', previous_context: '在目标检测领域，', next_context: '受此启发，我们设计了多尺度注意力模块。', citation_marker: '[2]' },
+    ],
+    citation_metadata: [
+      { citation_marker: '[1]', authors: '张三', work_name: '图像分类方法研究', publication_year: '2024' },
+      { citation_marker: '[2]', authors: 'Smith J', work_name: 'Attention for detection', publication_year: '2023' },
+    ],
+  },
+  '/api/v1/citation-intent/text': {
+    input_type: 'texts',
+    document_title: ['文献A', '文献B'],
+    citation_sentence_and_context: [
+      { id: 'CIT001', citation_sentence: '已有研究表明该方法在小样本场景下泛化能力不足[1]。', previous_context: '针对图像分类任务，', next_context: '因此本文提出新的数据增强策略。', citation_marker: '[1]' },
+      { id: 'CIT002', citation_sentence: 'Smith等人[2]的工作证实了注意力机制能提升检测精度。', previous_context: '在目标检测领域，', next_context: '受此启发，我们设计了多尺度注意力模块。', citation_marker: '[2]' },
+    ],
+    citation_metadata: [
+      { citation_marker: '[1]', authors: '张三', work_name: '图像分类方法研究', publication_year: '2024' },
+      { citation_marker: '[2]', authors: 'Smith J', work_name: 'Attention for detection', publication_year: '2023' },
+    ],
+    preprocessed_training_set: { source: 'database', resource_id: 'RES-BUNDLED-CITATION-INTENT' },
+  },
+  '/api/v1/classify/domain/text': {
+    input_type: 'texts',
+    document_title: ['糖尿病肾病基因研究', '工业表面缺陷检测'],
+    domain_scientific_literature_data: [
+      { id: 'DOC1', text: '研究从GEO数据库获取糖尿病肾病转录组数据，利用WGCNA构建共表达网络，整合113种机器学习算法筛选特征基因，鉴定出VWF等关键基因。' },
+      { id: 'DOC2', text: '提出融合轻量级卷积网络和动态注意力机制的缺陷检测模型，通过多尺度特征聚合增强缺陷表征，在工业缺陷数据集上提高检测精度。' },
+    ],
+    professional_domain: 'biomedical_informatics',
+    domain_classification_rules: { source: 'database', resource_id: 'RES-BUNDLED-DOMAIN-RULE' },
+    manually_labeled_training_data: { source: 'database', resource_id: 'RES-BUNDLED-DOMAIN-GOLD' },
+  },
+}
+
 export function payloadFor(tool: ToolDefinition, mode: InputMode): Record<string, unknown> {
   const base = typeof tool.payload === 'object' && tool.payload ? { ...tool.payload } : {}
   const configuration = Object.fromEntries(Object.entries(base).filter(([key]) => !['input_type', 'text', 'texts', 'title', 'abstract', 'keywords', 'documents', 'file', 'files', 'collection_id', 'cluster_task_id', 'citation_sentence', 'previous_context', 'next_context', 'citations'].includes(key)))
@@ -217,6 +264,12 @@ export function payloadFor(tool: ToolDefinition, mode: InputMode): Record<string
     }
     if (mode === 'file') return { project_document_text: '@fund_project.pdf' }
     if (mode === 'batch') return { project_document_text: ['@fund_project_01.pdf', '@fund_project_02.docx'] }
+  }
+  // 自构造的简短 batch 输入优先（与响应示例采集同源，保证可复现）；
+  // 必须在 strictRequirementPayload 之前，否则会被其提前返回的占位结构覆盖。
+  if (mode === 'batch-text') {
+    const customBatch = CUSTOM_BATCH_PAYLOADS[String(tool.textEndpoint || '')]
+    if (customBatch) return { ...customBatch }
   }
   const strictPayload = strictRequirementPayload(tool, mode)
   if (strictPayload) return strictPayload

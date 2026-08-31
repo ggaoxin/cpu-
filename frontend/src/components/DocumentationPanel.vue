@@ -25,10 +25,10 @@ async function copy(value: string, name: string) { try { await navigator.clipboa
         <button class="call-type-btn-v770" :class="{ active: callType === 'api' }" @click="callType = 'api'">API 调用</button>
         <button class="call-type-btn-v770" :class="{ active: callType === 'sdk' }" @click="callType = 'sdk'">SDK 调用</button>
       </div>
-      <button class="outline-btn" type="button" @click="copy(callCode, '调用示例已复制')">⧉ 复制代码</button>
+      <button class="outline-btn call-copy-header-btn" type="button" @click="copy(callCode, '调用示例已复制')">⧉ 复制代码</button>
     </div>
     <ModeSwitch v-model="mode" :modes="modes" :tool="tool" :kind="callType === 'api' ? 'API 调用输入方式' : 'SDK 调用输入方式'" />
-    <div class="code-box"><pre>{{ callCode }}</pre></div>
+    <div class="code-box hover-copy-box"><pre>{{ callCode }}</pre><button class="hover-copy-btn call-copy-btn" type="button" @click="copy(callCode, '调用示例已复制')">⧉ 复制</button></div>
   </section>
 
   <section v-if="tool.documentType === 'deep-cluster'" class="section">

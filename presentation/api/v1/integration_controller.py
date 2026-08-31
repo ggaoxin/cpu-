@@ -114,6 +114,32 @@ def _glm_abstract_callable():
     return _call
 
 
+async def _abstract_text_from_plain(tmp_path: str, filename: str) -> tuple[str, str]:
+    """".txt/.docx/.md 等纯文本格式的摘要提取:整文即候选文本。
+
+    短文（≤2000 字）通常就是用户准备的摘要文本，整文直接作摘要；
+    长文（全文）用 DocumentParser.parse_text 按中文论文结构（标题/摘要：/关键词：）
+    提取标题与摘要，未命中时截前 2000 字兜底。
+    """
+    from infrastructure.document_parser.upload_reader import extract_bytes
+    try:
+        text = extract_bytes(Path(tmp_path).read_bytes(), filename).strip()
+    except ValueError:
+        raise
+    if not text:
+        return "", ""
+    if len(text) <= 2000:
+        return text, ""
+    try:
+        from infrastructure.document_parser.document_parser import DocumentParser
+        parsed = DocumentParser().parse_text(text)
+        abstract = (parsed.get("abstract") or "").strip()
+        title = (parsed.get("title") or "").strip()
+        return (abstract or text[:2000]), title
+    except Exception:  # noqa: BLE001
+        return text[:2000], ""
+
+
 def _extract_abstract_via_pymupdf(tmp_path: str) -> tuple[str, str]:
     """PyMuPDF 文本层 + DocumentParser 正则提取摘要（毫秒级）。
 
@@ -231,16 +257,22 @@ def _extract_abstract_via_rules(tmp_path: str) -> str:
     return ""
 
 
-async def _abstract_text(processor, tmp_path: str, content: bytes | None = None) -> tuple[str, str]:
+async def _abstract_text(processor, tmp_path: str, content: bytes | None = None, filename: str = "") -> tuple[str, str]:
     """摘要文本+标题提取。light 模式优先 paper_abstract_extractor（规则优先+评分+
     LLM 兜底，毫秒级正则，无 :8899）；扫描件/封面无摘要/低置信时回退 mineru
     process_pdf 保质量。full 模式直接走 mineru。返回 (abstract, title)。
 
+    非 PDF 格式（.txt/.docx/.md 等）不走 PDF 管线（实测 pdfplumber 直接崩溃）：
+    先 extract_bytes 抽纯文本，短文（≤2000 字，通常就是摘要本身）整文作摘要，
+    长文（全文粘贴）用 DocumentParser.parse_text 做摘要/标题结构化提取。
     paper_abstract_extractor 只提 abstract 不提 title；light 命中时 title 留空，
     前端按文件名展示规则（record.file_name 优先）显示文件名。content 参数保留兼容
     但不再使用（paper_abstract_extractor 从 tmp_path 路径读 PDF）。"""
     abstract = ""
     title = ""
+    suffix = Path(filename or "").suffix.lower()
+    if suffix and suffix != ".pdf":
+        return await _abstract_text_from_plain(tmp_path, filename)
     if settings.PDF_EXTRACT_MODE == "light":
         abstract = await asyncio.to_thread(_extract_abstract_via_rules, tmp_path)
         if not abstract:
@@ -288,7 +320,7 @@ async def _extract_abstract_only(
                 tmp.write(content)
                 tmp_path = tmp.name
             try:
-                abstract, title = await _abstract_text(processor, tmp_path, content)
+                abstract, title = await _abstract_text(processor, tmp_path, content, upload.filename or "")
                 results.append({
                     "file_name": upload.filename or "upload.pdf",
                     "media_type": upload.content_type or "application/pdf",
@@ -321,7 +353,7 @@ async def _extract_abstract_only(
     async def process_one(upload: StarletteUploadFile, tmp_path: str, content: bytes, pages: int) -> Dict[str, str]:
         await asyncio.to_thread(pool.acquire, pages)
         try:
-            abstract, title = await _abstract_text(processor, tmp_path, content)
+            abstract, title = await _abstract_text(processor, tmp_path, content, upload.filename or "")
             return {
                 "file_name": upload.filename or "upload.pdf",
                 "media_type": upload.content_type or "application/pdf",
@@ -414,7 +446,9 @@ async def _store_uploaded_resource(
     except UnicodeDecodeError:
         pass
     from application.service.tool_integration_service import SEMANTIC_RESOURCE_FIELDS
-    if field in SEMANTIC_RESOURCE_FIELDS:
+    # deep-cluster 的可选锚点资源(训练样本/人工标注类目)同样支持独立上传入库
+    registerable = SEMANTIC_RESOURCE_FIELDS | {"training_samples", "manually_labeled_category_data"}
+    if field in registerable:
         meta = {"content_type": upload.content_type, "size_bytes": len(content)}
         record_count = None
         verdict = None
@@ -426,6 +460,8 @@ async def _store_uploaded_resource(
                 verdict = compute_clc_verdict(entries, len(content))
                 meta["clc_verdict"] = verdict
                 record_count = verdict["record_count"]
+            elif field in {"training_samples", "manually_labeled_category_data"}:
+                record_count = len(entries)
         except Exception:  # noqa: BLE001
             pass
         stored = service.resource_repository.register_semantic_resource(
@@ -681,6 +717,12 @@ def _file_endpoint(tool_id: str, multiple: bool):
             raise HTTPException(status_code=422, detail=f"缺少上传字段：{field}")
         if not multiple and len(uploads) != 1:
             raise HTTPException(status_code=422, detail="单文件接口只能上传一个文件")
+        # 批量文件数量上限（边界异常用例预期：提交后返回明确错误提示 code=42201）
+        if len(uploads) > settings.MAX_BATCH_FILES:
+            raise HTTPException(
+                status_code=422,
+                detail=f"批量文件数量不能超过 {settings.MAX_BATCH_FILES} 个（错误码 42201），本次共 {len(uploads)} 个",
+            )
         payload: Dict[str, Any] = {}
         uploaded_resources: Dict[str, Any] = {}
         primary_ids = {id(upload) for upload in uploads}
