@@ -546,6 +546,16 @@ function mapCollectionItem(item: any) {
   }
 }
 
+// 展示层时间格式化：ISO 串(2026-09-01T09:15:46.138858+00:00)只保留日期+时分
+// （2026-09-01 09:15）。按原字符串字面截断而非 new Date() 本地时区转换，
+// 避免时区偏移；传给后端的原始字段不做任何改动。
+function formatDateTime(value: unknown): string {
+  const text = String(value ?? '').trim()
+  if (!text) return '—'
+  const match = text.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})/)
+  return match ? `${match[1]} ${match[2]}` : text
+}
+
 // 结构化综述至少需要 3 篇文献：下拉只保留满足数量的文献集，
 // 避免选中后提交才报"至少需要 3 项输入数据"。
 function mapUsableCollections(data: any[]) {
@@ -919,7 +929,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
               </select>
               <div v-if="!nerHistoryOptions.length" class="info-banner" style="margin-top:8px"><b>暂无数据</b><span>请先在"中英文通用领域命名实体识别"等工具中完成至少一次识别,再回来选择上游记录</span></div>
               <div v-if="selectedNerRecord" class="database-task-summary relation-record-summary">
-                <span><small>识别类型</small><b>{{ selectedNerRecord.nerType }}</b></span><span><small>文献编号</small><b>{{ selectedNerRecord.documentId }}</b></span><span><small>句子编号</small><b>{{ selectedNerRecord.sentenceId }}</b></span><span><small>完成时间</small><b>{{ selectedNerRecord.completedAt }}</b></span>
+                <span><small>识别类型</small><b>{{ selectedNerRecord.nerType }}</b></span><span><small>文献编号</small><b>{{ selectedNerRecord.documentId }}</b></span><span><small>句子编号</small><b>{{ selectedNerRecord.sentenceId }}</b></span><span><small>完成时间</small><b>{{ formatDateTime(selectedNerRecord.completedAt) }}</b></span>
               </div>
               <div v-if="selectedNerRecord" class="relation-readonly-preview">
                 <div class="settings-title"><b>上游数据只读预览</b><span>数据库自动读取，仅供查看</span></div>
@@ -968,7 +978,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                 </select>
                 <div v-if="!clusterTaskOptions.length" class="info-banner" style="margin-top:8px"><b>暂无数据</b><span>请先在"深度聚类工具"中完成至少一次聚类,再回来选择任务</span></div>
                 <div v-if="selectedClusterTask" class="database-task-summary">
-                  <span><small>聚类维度</small><b>{{ selectedClusterTask.dimension }}</b></span><span><small>文献数量</small><b>{{ selectedClusterTask.documentCount }} 篇</b></span><span><small>类簇数量</small><b>{{ selectedClusterTask.clusterCount }} 个</b></span><span><small>完成时间</small><b>{{ selectedClusterTask.completedAt }}</b></span>
+                  <span><small>聚类维度</small><b>{{ selectedClusterTask.dimension }}</b></span><span><small>文献数量</small><b>{{ selectedClusterTask.documentCount }} 篇</b></span><span><small>类簇数量</small><b>{{ selectedClusterTask.clusterCount }} 个</b></span><span><small>完成时间</small><b>{{ formatDateTime(selectedClusterTask.completedAt) }}</b></span>
                 </div>
                 <div v-if="selectedClusterTask" class="cluster-phrase-preview">
                   <div class="cluster-phrase-preview-title"><b>类簇短语预览</b><span>数据库将返回完整的类簇短语集合</span></div>
@@ -1164,14 +1174,14 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                 <div class="database-selector-heading"><b><span class="required-mark">*</span> 选择已有文献集</b><span>必填</span></div>
                 <select v-model="selectedCollectionId" class="select"><option v-if="!documentCollectionOptions.length" value="" disabled>暂无文献数据集</option><option v-for="collection in documentCollectionOptions" :key="collection.id" :value="collection.id">{{ collection.name }} · {{ collection.documentCount }} 篇<template v-if="collection.topicSimilarity != null"> · 相似度 {{ collection.topicSimilarity }}</template></option></select>
                 <div v-if="!documentCollectionOptions.length" class="info-banner" style="margin-top:8px"><b>暂无数据</b><span>暂无满足数量要求的文献数据集（综述至少需要 3 篇文献，不足 3 篇的文献集已过滤）；请先在"聚类标签生成工具"中完成标签生成或更换包含 3 篇以上文献的文献集</span></div>
-                <div v-if="selectedCollection" class="database-task-summary collection-summary"><span><small>数据来源</small><b>{{ selectedCollection.source }}</b></span><span><small>文献数量</small><b>{{ selectedCollection.documentCount }} 篇</b></span><span><small>时间范围</small><b>{{ selectedCollection.timeRange }}</b></span><span><small>更新时间</small><b>{{ selectedCollection.updatedAt }}</b></span></div>
+                <div v-if="selectedCollection" class="database-task-summary collection-summary"><span><small>数据来源</small><b>{{ selectedCollection.source }}</b></span><span><small>文献数量</small><b>{{ selectedCollection.documentCount }} 篇</b></span><span><small>时间范围</small><b>{{ selectedCollection.timeRange }}</b></span><span><small>更新时间</small><b>{{ formatDateTime(selectedCollection.updatedAt) }}</b></span></div>
                 <div class="info-banner">系统根据文献集编号读取每篇文献的文本和对应元数据；用户不需要手工填写数据库编号或文本。</div>
               </div>
               <div v-else class="database-selector-panel">
                 <div class="database-selector-heading"><b><span class="required-mark">*</span> 选择已完成的深度聚类任务</b><span>必填</span></div>
                 <select v-model="selectedClusterTaskId" class="select"><option v-if="!clusterTaskOptions.length" value="" disabled>暂无已完成的深度聚类任务</option><option v-for="task in clusterTaskOptions" :key="task.id" :value="task.id">{{ task.name }} · {{ task.id }}</option></select>
                 <div v-if="!clusterTaskOptions.length" class="info-banner" style="margin-top:8px"><b>暂无数据</b><span>请先在"深度聚类工具"中完成至少一次聚类,再回来选择任务</span></div>
-                <div v-if="selectedClusterTask" class="database-task-summary"><span><small>聚类维度</small><b>{{ selectedClusterTask.dimension }}</b></span><span><small>文献数量</small><b>{{ selectedClusterTask.documentCount }} 篇</b></span><span><small>类簇数量</small><b>{{ selectedClusterTask.clusterCount }} 个</b></span><span><small>完成时间</small><b>{{ selectedClusterTask.completedAt }}</b></span></div>
+                <div v-if="selectedClusterTask" class="database-task-summary"><span><small>聚类维度</small><b>{{ selectedClusterTask.dimension }}</b></span><span><small>文献数量</small><b>{{ selectedClusterTask.documentCount }} 篇</b></span><span><small>类簇数量</small><b>{{ selectedClusterTask.clusterCount }} 个</b></span><span><small>完成时间</small><b>{{ formatDateTime(selectedClusterTask.completedAt) }}</b></span></div>
                 <div class="info-banner">系统使用任务编号读取关联类簇和短语集合，任务编号仅用于数据库关联。</div>
               </div>
             </div>
@@ -1181,7 +1191,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
 
 
           <div v-if="toolId === 'zh-keyword'" class="settings-card generic-settings">
-            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="field"><label><span class="label-main">词典使用方式</span><small>区分数据库资源与用户录入</small></label><select v-model="dictionaryMode" class="select"><option value="system">使用系统预置术语词典（默认）</option><option value="saved">从数据库选择已保存的用户词典</option><option value="custom">新建或上传用户自定义领域词典</option></select></div><div v-if="dictionaryMode === 'system'" class="info-banner dictionary-status">✓ 默认状态：使用系统预置术语词典，不提交用户词典参数。</div><div v-else-if="dictionaryMode === 'saved'" class="database-selector-panel"><div class="database-selector-heading"><b>选择已保存的用户领域词典</b></div><select v-model="selectedDictionaryId" class="select"><option v-for="item in savedDictionaryOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.termCount }} 词</option></select><div v-if="selectedDictionary" class="database-record-summary"><span>术语数量：{{ selectedDictionary.termCount }}</span><span>更新时间：{{ selectedDictionary.updatedAt }}</span></div></div><div v-else class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>上传用户词典文件</b><small>{{ customDictionaryFile ? customDictionaryFile.name : '上传后保存到数据库并生成词典编号' }}</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div><div class="field full dictionary-save-row"><button type="button" class="primary-btn" :disabled="savingDict" @click="saveCustomDictionary">{{ savingDict ? '保存中…' : '保存词典到数据库' }}</button></div></div></div>
+            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="field"><label><span class="label-main">词典使用方式</span><small>区分数据库资源与用户录入</small></label><select v-model="dictionaryMode" class="select"><option value="system">使用系统预置术语词典（默认）</option><option value="saved">从数据库选择已保存的用户词典</option><option value="custom">新建或上传用户自定义领域词典</option></select></div><div v-if="dictionaryMode === 'system'" class="info-banner dictionary-status">✓ 默认状态：使用系统预置术语词典，不提交用户词典参数。</div><div v-else-if="dictionaryMode === 'saved'" class="database-selector-panel"><div class="database-selector-heading"><b>选择已保存的用户领域词典</b></div><select v-model="selectedDictionaryId" class="select"><option v-for="item in savedDictionaryOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.termCount }} 词</option></select><div v-if="selectedDictionary" class="database-record-summary"><span>术语数量：{{ selectedDictionary.termCount }}</span><span>更新时间：{{ formatDateTime(selectedDictionary.updatedAt) }}</span></div></div><div v-else class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>上传用户词典文件</b><small>{{ customDictionaryFile ? customDictionaryFile.name : '上传后保存到数据库并生成词典编号' }}</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div><div class="field full dictionary-save-row"><button type="button" class="primary-btn" :disabled="savingDict" @click="saveCustomDictionary">{{ savingDict ? '保存中…' : '保存词典到数据库' }}</button></div></div></div>
           </div>
 
         </div>

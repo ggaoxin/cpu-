@@ -445,7 +445,9 @@ watchEffect(() => emit('update:payload', requestPayload.value))
           </select>
           <select v-if="sourceModes[field.key] !== 'upload'" v-model="selectedResources[field.key]" class="select">
             <option value="" disabled>{{ field.placeholder }}</option>
-            <option v-for="item in availableResources(field.key)" :key="item.id" :value="item.id">{{ item.name }}{{ item.version && item.version !== 'bundled' ? ' · ' + item.version : '' }}</option>
+            <!-- 展示层只渲染资源文件名：version 是内容摘要随机串（如 789b9168abd6），
+                 不展示给用户；option value 仍传完整资源ID，接口参数不受影响 -->
+            <option v-for="item in availableResources(field.key)" :key="item.id" :value="item.id">{{ item.name }}</option>
           </select>
           <div v-else class="resource-upload-wrap">
             <label class="resource-upload-zone">
