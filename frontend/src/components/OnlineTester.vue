@@ -438,18 +438,17 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
   if (needsDocumentTitle.value && mode.value === 'batch-text' && !props.toolId.startsWith('citation-')) values.document_title = batchTexts.map(item => item.title.trim())
   if (props.toolId === 'domain-classify') values.professional_domain = form.domain
   if (props.toolId === 'zh-keyword') {
+    // 系统预置模式不携带词典字段（后端 dictionary_usage=null、全部未命中属预期）
     if (dictionaryMode.value === 'system') {
-      values.domain_terminology_dictionary = { use_mode: 'system', source: 'system' }
+      // 无词典参数
     } else if (dictionaryMode.value === 'saved') {
-      values.domain_terminology_dictionary = {
-        use_mode: 'saved',
-        source: 'database',
-        resource_id: selectedDictionaryId.value,
-      }
+      // 请求模板白名单（strictRequirementPayload）只认合同字段 dictionary_id /
+      // custom_dictionary：此前发 domain_terminology_dictionary 会被整字段过滤，
+      // 后端收不到词典（dictionary_usage=null、命中全 false）。选中已存词典时
+      // 必须完整携带资源ID。
+      values.dictionary_id = selectedDictionaryId.value
     } else {
-      values.domain_terminology_dictionary = {
-        use_mode: 'custom',
-        source: customDictionaryFile.value ? 'upload' : 'user_input',
+      values.custom_dictionary = {
         dictionary_name: customDictionaryName.value,
         weight_boost: Number(weightBoost.value),
         terms: customDictionaryTerms.value.split(/[,，;；\n]/).map(item => item.trim()).filter(Boolean),

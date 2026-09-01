@@ -830,17 +830,33 @@ def _keywords(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
             "rank": value.get("rank", index + 1),
             "terminology_source": value.get("terminology_source") or value.get("source"),
         })
-    is_english = any(item.get("term") for item in items) or payload.get("english_scientific_abstract") is not None
+    # 语言判定：优先显式入参字段（英文工具主字段存在即英文），否则按文本中文
+    # 字符占比推断。此前用 any(item.get("term")) 判定——关键词行恒带 term 字段，
+    # 导致中文摘要恒被标成 "en"，干扰语言相关展示与词典链路校验。
+    if payload.get("chinese_scientific_abstract") is not None:
+        is_english = False
+    elif payload.get("english_scientific_abstract") is not None:
+        is_english = True
+    else:
+        sample = str(payload.get("text") or "")
+        cjk_count = sum(1 for ch in sample if "一" <= ch <= "鿿")
+        is_english = bool(sample.strip()) and cjk_count * 2 < len(sample.strip())
     document = data.get("document") if isinstance(data.get("document"), dict) else {}
     document.setdefault("title", payload.get("document_title") or payload.get("title") or "")
     document.setdefault("language", "en" if is_english else "zh")
+    statistics = data.get("statistics") if isinstance(data.get("statistics"), dict) else {}
+    statistics.setdefault("keyword_count", len(items))
+    statistics.setdefault(
+        "user_dict_hit_count",
+        sum(1 for item in items if item.get("custom_dictionary_hit")),
+    )
     result = {
         **data,
         "document": document,
         "input_type": payload.get("input_type"),
         "keywords": items,
         "keywords_or_topic_phrases": items,
-        "statistics": data.get("statistics") or {"keyword_count": len(items)},
+        "statistics": statistics,
         "dictionary_usage": data.get("dictionary_usage"),
     }
     result["keyword_count"] = len(items)

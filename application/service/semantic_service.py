@@ -1289,7 +1289,12 @@ class SemanticApplicationService(ISemanticService):
                 "name": custom_dictionary.get("name"),
                 "matched_term_count": len(matched_terms),
             } if custom_terms else None,
-            "statistics": {"keyword_count": len(keyword_rows)},
+            "statistics": {
+                "keyword_count": len(keyword_rows),
+                # 词典命中数：custom_dictionary_hit=true 的关键词条数（页面顶部
+                # 「用户词典命中」卡片数据源）
+                "user_dict_hit_count": sum(1 for row in keyword_rows if row.get("custom_dictionary_hit")),
+            },
         }
         result.evidence = [{"dropped": d} for d in dropped] if dropped else []
         result.confidence = cleaned[0].get("weight") if cleaned else None
