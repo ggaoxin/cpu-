@@ -188,11 +188,15 @@ class StructuredReviewEngine:
         documents: Sequence[ReviewDocument],
         topic: str,
     ) -> List[ResearchQuestionCandidate]:
+        # 证据实体注册表：同一段原文切片（同文档同起止）只生成唯一 evidence_id，
+        # 后续相同切片复用该 ID，由多个业务节点（RQxx/Mxx）在 supported_nodes 共同引用。
+        evidence_registry: Dict[Tuple[str, int, int], str] = {}
+
         def extract_one(document_index: int, document: ReviewDocument) -> List[ResearchQuestionCandidate]:
             extracted = self._extract_with_llm(document, topic)
-            valid = self._validate_extracted(document, extracted, document_index)
+            valid = self._validate_extracted(document, extracted, document_index, evidence_registry)
             if not valid:
-                valid = self._fallback_extract(document, topic, document_index)
+                valid = self._fallback_extract(document, topic, document_index, evidence_registry)
             return valid
 
         candidates: List[ResearchQuestionCandidate] = []
@@ -213,6 +217,29 @@ class StructuredReviewEngine:
         if not candidates:
             raise ValueError("未能从文献集中识别出有原文证据的研究问题")
         return candidates
+
+    @staticmethod
+    def _register_evidence(
+        registry: Dict[Tuple[str, int, int], str],
+        document: ReviewDocument,
+        quote: str,
+        start: int,
+        end: int,
+        evidence_id: str,
+    ) -> ReviewEvidence:
+        """按（文档, 起点, 终点）注册证据：同一切片复用已有 evidence_id，
+        不再复制生成内容完全重复的多条证据实体（如 EV-001-M01/EV-001-M02）。"""
+        existing_id = registry.get((document.document_id, start, end))
+        if existing_id is not None:
+            return ReviewEvidence(
+                evidence_id=existing_id, document_id=document.document_id,
+                quote=quote, start=start, end=end,
+            )
+        registry[(document.document_id, start, end)] = evidence_id
+        return ReviewEvidence(
+            evidence_id=evidence_id, document_id=document.document_id,
+            quote=quote, start=start, end=end,
+        )
 
     def _extract_with_llm(self, document: ReviewDocument, topic: str) -> List[Dict[str, Any]]:
         if self.glm is None:
@@ -298,6 +325,7 @@ class StructuredReviewEngine:
         document: ReviewDocument,
         rows: Sequence[Mapping[str, Any]],
         document_index: int,
+        evidence_registry: Dict[Tuple[str, int, int], str],
     ) -> List[ResearchQuestionCandidate]:
         results: List[ResearchQuestionCandidate] = []
         seen: set[str] = set()
@@ -313,12 +341,9 @@ class StructuredReviewEngine:
                 continue
             seen.add(key)
             quote, start, end = located
-            question_evidence = ReviewEvidence(
-                evidence_id=f"EV-{document_index:03d}-Q{item_index:02d}",
-                document_id=document.document_id,
-                quote=quote,
-                start=start,
-                end=end,
+            question_evidence = self._register_evidence(
+                evidence_registry, document, quote, start, end,
+                f"EV-{document_index:03d}-Q{item_index:02d}",
             )
             method = _clean(row.get("method") or row.get("research_method"))
             method_location = self._locate_quote(
@@ -328,12 +353,9 @@ class StructuredReviewEngine:
             method_evidence = None
             if method and method_location is not None:
                 method_quote, method_start, method_end = method_location
-                method_evidence = ReviewEvidence(
-                    evidence_id=f"EV-{document_index:03d}-M{item_index:02d}",
-                    document_id=document.document_id,
-                    quote=method_quote,
-                    start=method_start,
-                    end=method_end,
+                method_evidence = self._register_evidence(
+                    evidence_registry, document, method_quote, method_start, method_end,
+                    f"EV-{document_index:03d}-M{item_index:02d}",
                 )
             elif method:
                 # 方法没有逐字证据时不输出方法，避免模型生成无法溯源的内容。
@@ -354,6 +376,7 @@ class StructuredReviewEngine:
         document: ReviewDocument,
         topic: str,
         document_index: int,
+        evidence_registry: Dict[Tuple[str, int, int], str],
     ) -> List[ResearchQuestionCandidate]:
         sentences = _sentences(document.text)
         if not sentences:
@@ -374,19 +397,18 @@ class StructuredReviewEngine:
             method = _fallback_method_text(method_row[0]) if method_row else ""
             method_evidence = None
             if method_row:
-                method_evidence = ReviewEvidence(
-                    evidence_id=f"EV-{document_index:03d}-M{item_index:02d}",
-                    document_id=document.document_id,
-                    quote=method_row[0], start=method_row[1], end=method_row[2],
+                # 多个问题可能共用同一条最近方法句：注册表保证该切片只有一个证据 ID
+                method_evidence = self._register_evidence(
+                    evidence_registry, document, method_row[0], method_row[1], method_row[2],
+                    f"EV-{document_index:03d}-M{item_index:02d}",
                 )
             results.append(ResearchQuestionCandidate(
                 candidate_id=f"RQC-{document_index:03d}-{item_index:02d}",
                 document_id=document.document_id,
                 question=_fallback_question_text(sentence),
-                question_evidence=ReviewEvidence(
-                    evidence_id=f"EV-{document_index:03d}-Q{item_index:02d}",
-                    document_id=document.document_id,
-                    quote=sentence, start=start, end=end,
+                question_evidence=self._register_evidence(
+                    evidence_registry, document, sentence, start, end,
+                    f"EV-{document_index:03d}-Q{item_index:02d}",
                 ),
                 method=method,
                 method_evidence=method_evidence,
@@ -465,11 +487,16 @@ class StructuredReviewEngine:
         for cluster_index, indices in enumerate(ordered_groups, start=1):
             members = [candidates[index] for index in indices]
             label, summary = self._induce_cluster(topic, members)
-            cohesion = None
+            # 簇内聚度始终输出浮点值：单例簇按自身余弦相似度取 1.0；
+            # 计算失败输出 -1.0 异常标记（正常值域 [0,1]），不返回 null。
+            cohesion = 1.0
             if len(indices) > 1:
-                block = matrix[indices] @ matrix[indices].T
-                values = block[np.triu_indices(len(indices), 1)]
-                cohesion = round(float(np.mean(values)), 6) if len(values) else None
+                try:
+                    block = matrix[indices] @ matrix[indices].T
+                    values = block[np.triu_indices(len(indices), 1)]
+                    cohesion = round(float(np.mean(values)), 6) if len(values) else 1.0
+                except Exception:  # noqa: BLE001 - 编码矩阵异常时不允许输出 null
+                    cohesion = -1.0
             clusters.append(ResearchQuestionCluster(
                 cluster_id=f"PC-{cluster_index:03d}", label=label, summary=summary,
                 candidates=members, cohesion=cohesion,

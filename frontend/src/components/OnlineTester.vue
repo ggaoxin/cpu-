@@ -536,6 +536,12 @@ function mapCollectionItem(item: any) {
   }
 }
 
+// 结构化综述至少需要 3 篇文献：下拉只保留满足数量的文献集，
+// 避免选中后提交才报"至少需要 3 项输入数据"。
+function mapUsableCollections(data: any[]) {
+  return (data || []).map(mapCollectionItem).filter(item => Number(item.documentCount) >= 3)
+}
+
 async function loadRuntimeDatabaseOptions() {
   const [dictionaryResponse, collectionResponse, clusterResponse, nerResponse] = await Promise.allSettled([
     listDictionaries(),
@@ -550,7 +556,7 @@ async function loadRuntimeDatabaseOptions() {
         }))
     : []
   documentCollectionOptions.value = collectionResponse.status === 'fulfilled'
-    ? (collectionResponse.value.data || []).map(mapCollectionItem)
+    ? mapUsableCollections(collectionResponse.value.data)
     : []
   clusterTaskOptions.value = clusterResponse.status === 'fulfilled'
     ? (clusterResponse.value.data || []).map((item: any) => ({
@@ -611,7 +617,7 @@ watch(() => form.topic, (topic) => {
   topicRefreshTimer = setTimeout(async () => {
     try {
       const response = await listDocumentCollections(topic)
-      documentCollectionOptions.value = (response.data || []).map(mapCollectionItem)
+      documentCollectionOptions.value = mapUsableCollections(response.data)
       if (!documentCollectionOptions.value.some(item => item.id === selectedCollectionId.value)) {
         selectedCollectionId.value = documentCollectionOptions.value[0]?.id || ''
       }
@@ -778,6 +784,13 @@ function validateRequiredInputs(): string {
       const invalidIndex = uploadedFiles.findIndex(item => !item.documentId.trim() || !item.publicationDate)
       if (invalidIndex >= 0) return `请完整填写文件${invalidIndex + 1}的文献编号和发表时间。`
     }
+    // 类簇数量约束：最低 1、最高不超过输入文献数（留空=自动确定），提交前拦截
+    if (form.clusterCount !== '' && form.clusterCount !== null) {
+      const count = Number(form.clusterCount)
+      const total = mode.value === 'batch' ? uploadedFiles.length : docs.length
+      if (!Number.isInteger(count) || count < 1) return '类簇数量必须是不小于 1 的整数（留空时自动确定）。'
+      if (total && count > total) return `类簇数量不能超过输入文献数量（当前 ${total} 篇）。`
+    }
     return ''
   }
 
@@ -934,7 +947,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
 
           <template v-if="toolId === 'deep-cluster'">
             <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 聚类维度</span><small>选择本次聚类的语义分析视角</small></label><div class="dimension-options"><label :class="{ active: form.clusterDimension === 'technology' }"><input v-model="form.clusterDimension" type="radio" value="technology" /><span><b>技术路线聚类</b><small>重点分析文献采用的方法、模型结构、算法机制、数据处理流程和实验技术，将技术方案相近的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label><label :class="{ active: form.clusterDimension === 'application_scenario' }"><input v-model="form.clusterDimension" type="radio" value="application_scenario" /><span><b>应用场景聚类</b><small>重点分析文献解决的任务、服务对象、行业领域、实际环境和应用目标，将面向相似使用场景的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label></div></div>
-            <div class="settings-card"><div class="settings-title"><b>算法与输出参数</b><span>可选算法、类簇数量与输出格式</span></div><div class="three-column"><div class="field"><label><span class="label-main">聚类算法类型</span></label><select v-model="form.algorithm" class="select"><option>自动选择</option><option>K-Means</option><option>HDBSCAN</option><option>层次聚类</option></select></div><div class="field"><label><span class="label-main">类簇数量</span></label><input v-model="form.clusterCount" class="input" type="number" placeholder="自动确定" /></div><div class="field"><label><span class="label-main">输出格式</span></label><select v-model="form.outputFormat" class="select"><option>JSON</option><option>CSV</option><option>数据库写入结构</option></select></div></div></div>
+            <div class="settings-card"><div class="settings-title"><b>算法与输出参数</b><span>可选算法、类簇数量与输出格式</span></div><div class="three-column"><div class="field"><label><span class="label-main">聚类算法类型</span></label><select v-model="form.algorithm" class="select"><option>自动选择</option><option>K-Means</option><option>HDBSCAN</option><option>层次聚类</option></select></div><div class="field"><label><span class="label-main">类簇数量</span></label><input v-model="form.clusterCount" class="input" type="number" min="1" step="1" placeholder="自动确定" /></div><div class="field"><label><span class="label-main">输出格式</span></label><select v-model="form.outputFormat" class="select"><option>JSON</option><option>CSV</option><option>数据库写入结构</option></select></div></div></div>
             <ModeSwitch v-model="mode" :modes="modes" :tool="tool" kind="深度聚类数据来源" />
           </template>
 
@@ -1143,8 +1156,8 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
               <div class="settings-title"><b>{{ mode === 'existing-result' ? '数据库历史聚类任务' : '指定文献集' }}</b><span>{{ mode === 'collection' ? '从科技文献检索结果集、科技情报平台、科研管理系统或知识库选择' : '从系统数据库读取已完成并持久化保存的聚类结果' }}</span></div>
               <div v-if="mode === 'collection'" class="database-selector-panel">
                 <div class="database-selector-heading"><b><span class="required-mark">*</span> 选择已有文献集</b><span>必填</span></div>
-                <select v-model="selectedCollectionId" class="select"><option v-if="!documentCollectionOptions.length" value="" disabled>暂无文献数据集</option><option v-for="collection in documentCollectionOptions" :key="collection.id" :value="collection.id">{{ collection.name }} · {{ collection.id }}<template v-if="collection.topicSimilarity != null"> · 相似度 {{ collection.topicSimilarity }}</template></option></select>
-                <div v-if="!documentCollectionOptions.length" class="info-banner" style="margin-top:8px"><b>暂无数据</b><span>暂无文献数据集；请先在"聚类标签生成工具"中完成标签生成,生成带标签的文献集后再回来选择</span></div>
+                <select v-model="selectedCollectionId" class="select"><option v-if="!documentCollectionOptions.length" value="" disabled>暂无文献数据集</option><option v-for="collection in documentCollectionOptions" :key="collection.id" :value="collection.id">{{ collection.name }} · {{ collection.documentCount }} 篇<template v-if="collection.topicSimilarity != null"> · 相似度 {{ collection.topicSimilarity }}</template></option></select>
+                <div v-if="!documentCollectionOptions.length" class="info-banner" style="margin-top:8px"><b>暂无数据</b><span>暂无满足数量要求的文献数据集（综述至少需要 3 篇文献，不足 3 篇的文献集已过滤）；请先在"聚类标签生成工具"中完成标签生成或更换包含 3 篇以上文献的文献集</span></div>
                 <div v-if="selectedCollection" class="database-task-summary collection-summary"><span><small>数据来源</small><b>{{ selectedCollection.source }}</b></span><span><small>文献数量</small><b>{{ selectedCollection.documentCount }} 篇</b></span><span><small>时间范围</small><b>{{ selectedCollection.timeRange }}</b></span><span><small>更新时间</small><b>{{ selectedCollection.updatedAt }}</b></span></div>
                 <div class="info-banner">系统根据文献集编号读取每篇文献的文本和对应元数据；用户不需要手工填写数据库编号或文本。</div>
               </div>

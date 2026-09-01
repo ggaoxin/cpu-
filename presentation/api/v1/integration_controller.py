@@ -469,7 +469,9 @@ async def _store_uploaded_resource(
             {
                 "resource_key": field,
                 "name": original_name,
-                "version": f"upload-{digest[:12]}",
+                # 版本号=内容摘要前 12 位（不带 upload- 标记：source_type 字段已表达
+                # 上传来源，前缀会造成资源下拉里出现"名称 · upload-xxxx"冗余标识）
+                "version": digest[:12],
                 "language": None,
                 "status": "current",
                 "source_type": "upload",

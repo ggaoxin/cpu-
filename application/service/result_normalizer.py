@@ -1379,7 +1379,16 @@ def _review(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
     statistics.setdefault("evidence_sentence_count", len(evidence_index))
     documents = _list(payload.get("document_set") or payload.get("documents") or payload.get("texts"))
     document_count = data.get("document_count") or len(documents)
-    return {
+    # 主题以请求 payload 的 topic_or_keywords 为唯一来源（列表按分隔归一），
+    # 绝不沿用 data 中可能残留的历史主题；payload 未提供时才回落引擎输出。
+    requested_topic = payload.get("topic_or_keywords")
+    if isinstance(requested_topic, list):
+        requested_topic = "；".join(str(item).strip() for item in requested_topic if str(item).strip())
+    requested_topic = str(requested_topic or "").strip()
+    topic = requested_topic or data.get("topic")
+    if not str(structured_report.get("title") or "").strip():
+        structured_report["title"] = f"{topic}结构化综述" if topic else ""
+    normalized = {
         **data,
         "input_type": payload.get("input_type"),
         "document_count": document_count,
@@ -1389,8 +1398,10 @@ def _review(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
         "trend_hotspot_distribution": trend_hotspot,
         "trend_analysis": trend_analysis,
         "hotspots": hotspots,
+        # 证据只输出 evidence_index 一份（不再镜像到顶层 evidence，避免报文重复膨胀）
         "evidence_index": evidence_index,
-        "evidence": _list(data.get("evidence")) or evidence_index,
         "statistics": statistics,
-        "topic": data.get("topic") or payload.get("topic_or_keywords"),
+        "topic": topic,
     }
+    normalized.pop("evidence", None)
+    return normalized

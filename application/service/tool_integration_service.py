@@ -304,9 +304,20 @@ class ToolIntegrationService:
             return self._validation_error(contract, request_id, input_type, started, "没有可处理的输入数据")
         minimum = 1 if input_type in {"cluster_task", "upstream_records"} else contract.min_items
         if len(inputs) < minimum:
-            return self._validation_error(contract, request_id, input_type, started, f"至少需要 {minimum} 项输入数据")
+            detail = f"（当前 {len(inputs)} 项）"
+            if input_type == "collection":
+                detail = f"（指定文献集仅包含 {len(inputs)} 篇）"
+            return self._validation_error(
+                contract, request_id, input_type, started, f"至少需要 {minimum} 项输入数据{detail}",
+            )
         if len(inputs) > contract.max_items:
             return self._validation_error(contract, request_id, input_type, started, f"输入数据不能超过 {contract.max_items} 项")
+        # cluster_count 预检：非法值在任务创建前拦截（服务层校验保留为兜底），
+        # 避免"任务已创建、执行后才失败"。
+        if contract.tool_id == "deep-cluster":
+            cluster_count_error = self._cluster_count_error(payload.get("cluster_count"), len(inputs))
+            if cluster_count_error:
+                return self._validation_error(contract, request_id, input_type, started, cluster_count_error)
 
         task_id = _task_id or _id("tsk")
         task = AnalysisTask(
@@ -1381,6 +1392,28 @@ class ToolIntegrationService:
                     return "document_metadata 必须与文献集逐篇对应"
         if payload.get("input_type") == "upstream_records" and not payload.get("upstream_entity_record_id"):
             return "实体关系识别必须选择一条已完成的命名实体识别记录"
+        return None
+
+    @staticmethod
+    def _cluster_count_error(value: Any, item_count: int) -> Optional[str]:
+        """深度聚类 cluster_count 预检：最低 1、最高不超过输入文献数。
+
+        auto 语义（None/""/"auto"/0）与 ``deep_clustering_service._optional_cluster_count``
+        保持一致；非法值返回错误消息，合法返回 None。
+        """
+        if value in (None, "", "auto", 0, "0"):
+            return None
+        try:
+            parsed = float(value)  # noqa: PLW2904 - 先按数值解析再验整数
+        except (TypeError, ValueError):
+            return "cluster_count 必须为整数或 auto。"
+        if not parsed.is_integer():
+            return "cluster_count 必须为整数或 auto。"
+        parsed = int(parsed)
+        if parsed < 1:
+            return "cluster_count 必须大于等于 1。"
+        if item_count > 0 and parsed > item_count:
+            return f"cluster_count 不能超过输入文献数量（当前 {item_count} 篇）。"
         return None
 
     def _text_from_upstream(self, payload: Dict[str, Any]) -> str:

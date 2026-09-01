@@ -317,7 +317,9 @@ def _save_review(session: Any, record_id: str, result: Dict[str, Any], _: str) -
                 (_id("rvs"), record_id, item.get("section_id"), item.get("title"), item.get("content"),
                  _dump(item.get("evidence_ids") or [])),
             )
-    for item in _list(result.get("evidence")):
+    # 证据索引唯一来源是 evidence_index（顶层 evidence 已随报文去重一并移除；
+    # 旧持久化结果回落 evidence 保持兼容）
+    for item in _list(result.get("evidence_index") or result.get("evidence")):
         if isinstance(item, dict):
             session.execute(
                 """INSERT INTO review_evidence_links
