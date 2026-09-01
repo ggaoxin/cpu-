@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { groups as generatedGroups } from './data/prototype.generated.js'
 import { tools } from './data/tool-overrides'
 import type { InputMode, ToolGroup } from './types'
@@ -16,7 +16,16 @@ const groups = (generatedGroups as ToolGroup[]).map((group) => ({
   ...group,
   items: group.items.map(([id, label]) => [id, tools[id]?.title || label] as [string, string])
 }))
-const activeId = ref('zh-abstract-move')
+
+// 每个工具一个独立路由 /tool/<toolId>：页面加载时按 URL 解析当前工具，
+// 直链打开、刷新、浏览器回退/前进都按路由渲染对应工具页。
+const TOOL_ROUTE_RE = /^\/tool\/([a-z0-9-]+)\/?$/
+function toolIdFromLocation(): string {
+  if (typeof window === 'undefined') return ''
+  const match = window.location.pathname.match(TOOL_ROUTE_RE)
+  return match && tools[match[1]] ? match[1] : ''
+}
+const activeId = ref(toolIdFromLocation() || 'zh-abstract-move')
 // 侧栏开关:桌面端=收起/展开左栏;移动端(≤900px)=抽屉滑出/收起
 const sidebarOpen = ref(true)
 if (typeof window !== 'undefined' && window.innerWidth <= 900) sidebarOpen.value = false
@@ -26,13 +35,16 @@ const modalPreview = ref(false)
 const currentResponse = ref<unknown>(null)
 const tool = computed(() => tools[activeId.value])
 
+// 独立页面路由：浏览器标签标题随当前工具页同步（如「深度聚类工具 · 语义计算工具库」）
+document.title = `${tool.value.title} · 语义计算工具库`
+
 function selectTool(id: string) {
-  activeId.value = id
-  // 移动端选择工具后自动收回抽屉侧栏
-  if (window.innerWidth <= 900) sidebarOpen.value = false
-  modalOpen.value = false
-  modalPreview.value = false
-  nextTick(() => content.value?.scrollTo({ top: 0 }))
+  // 「语义计算工具库」子菜单：真实页面跳转到该工具的专属 URL（非局部组件切换）。
+  // 浏览器地址栏更新、产生历史记录（返回键可回退上一页）；新页面加载时由
+  // toolIdFromLocation 恢复 activeId，侧栏高亮/面包屑/标题随之渲染。
+  // 其余「算法中心其他算法库」装饰菜单本无点击逻辑，不受影响。
+  if (!tools[id]) return
+  window.location.assign(`/tool/${id}`)
 }
 function visualize(response: unknown) { currentResponse.value = response; modalPreview.value = false; modalOpen.value = true }
 function previewVisualization(mode: InputMode) {
@@ -48,7 +60,7 @@ function previewVisualization(mode: InputMode) {
     <div v-if="sidebarOpen" class="mobile-sidebar-backdrop" @click="sidebarOpen = false"></div>
     <button v-else class="mobile-nav-fab" type="button" aria-label="打开导航" @click="sidebarOpen = true">☰ 导航</button>
     <div class="app">
-      <ToolSidebar :groups="groups" :active-id="activeId" @select="selectTool" @toggle="sidebarOpen = !sidebarOpen" />
+      <ToolSidebar :groups="groups" :active-id="activeId" @select="selectTool" />
       <main ref="content" class="content-wrap">
         <div class="page-shell">
           <div class="breadcrumb"><span>算法中心</span><span class="slash">/</span><span>语义计算工具库</span><span class="slash">/</span><strong>{{ tool.title }}</strong></div>
@@ -61,7 +73,7 @@ function previewVisualization(mode: InputMode) {
             <DocumentationPanel :key="`${activeId}-docs`" :tool="tool" />
             <OnlineTester :key="`${activeId}-test`" :tool-id="activeId" :tool="tool" @visualize="visualize" @preview="previewVisualization" />
           </section>
-          <div class="footer-note">语义计算工具库原型 V7.74 · 聚类标签与结构化综述概览精简版</div>
+          <div class="footer-note">语义计算工具库</div>
         </div>
       </main>
     </div>
