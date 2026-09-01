@@ -534,6 +534,12 @@ def execute_deep_clustering(
             normalized_papers, gold_path, selected_axis,
             threshold=float(params.get("anchor_similarity_threshold", 0) or 0.45),
         )
+    # 锚定模式可观测标记：semi_supervised_system_prototype=内置原型引导（默认分支）、
+    # semi_supervised_user_prototype=用户上传原型、unsupervised_free=完全无监督。
+    anchor_output["mode"] = str(
+        params.get("anchor_mode")
+        or ("semi_supervised_user_prototype" if gold_path is not None else "unsupervised_free")
+    )
     doc_anchors = anchor_output.get("document_anchors") or {}
 
     documents = [{

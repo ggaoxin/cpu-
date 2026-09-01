@@ -303,16 +303,20 @@ const selectedAnchorGold = ref('')
 async function loadAnchorOptions() {
   const response = await listSemanticResources()
   const items = (response.data || []) as Array<Record<string, unknown>>
-  const toOption = (item: Record<string, unknown>) => ({ id: String(item.id), name: String(item.name), version: String(item.version) })
+  const toOption = (item: Record<string, unknown>) => ({ id: String(item.id), name: String(item.name), version: String(item.version), bundled: String(item.source_type ?? '') === 'bundled' })
   anchorTrainOptions.value = items.filter(item => item.resource_key === 'training_samples').map(toOption)
   anchorGoldOptions.value = items.filter(item => item.resource_key === 'manually_labeled_category_data').map(toOption)
 }
+// 默认选中系统内置预置资源（半监督系统原型引导）：不上传用户自定义文件时
+// 界面默认即走内置分支；用户仍可改选数据库其它资源、上传或「不使用」。
+const preferBuiltin = (list: Array<{ id: string; bundled: boolean }>) =>
+  list.find(item => item.bundled)?.id || list[0]?.id || ''
 watch(() => props.toolId, async toolId => {
   if (toolId !== 'deep-cluster') return
   try {
     await loadAnchorOptions()
-    selectedAnchorTrain.value = anchorTrainOptions.value[0]?.id || ''
-    selectedAnchorGold.value = anchorGoldOptions.value[0]?.id || ''
+    selectedAnchorTrain.value = preferBuiltin(anchorTrainOptions.value)
+    selectedAnchorGold.value = preferBuiltin(anchorGoldOptions.value)
   } catch { /* 资源拉取失败不阻断聚类 */ }
 }, { immediate: true })
 

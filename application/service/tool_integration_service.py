@@ -1151,6 +1151,37 @@ class ToolIntegrationService:
             resource = self.resource_repository.get_semantic_resource(str(descriptor["resource_id"]))
             if resource:
                 resolved_resources[field] = resource
+        # 深度聚类系统内置半监督引导：请求未携带训练样本/人工标注类目字段（未上传
+        # 也未显式选择）时，回退加载内置资源（bundled 1000 篇标注语料），使默认
+        # 分支为系统原型引导的半监督聚类而非纯无监督；界面显式选「不使用」（字段
+        # 存在但 resource_id 为空）保持完全无监督，不受此回退影响。
+        if contract.tool_id == "deep-cluster" and not any(
+            isinstance(payload.get(field), dict)
+            for field in ("training_samples", "manually_labeled_category_data")
+        ):
+            for field in ("training_samples", "manually_labeled_category_data"):
+                builtin = next(
+                    (row for row in self.resource_repository.list_semantic_resources(
+                        settings.DEFAULT_WORKSPACE_ID, resource_key=field, limit=10,
+                    ) if str(row.get("source_type") or "") == "bundled"),
+                    None,
+                )
+                if builtin:
+                    resolved_resources.setdefault(field, builtin)
+        # 锚定模式可观测标记（输出 anchor_assist.mode，供回归核对）：
+        # 用户/内置资源解析到任一即半监督原型引导，全部内置=系统原型，否则无监督。
+        if contract.tool_id == "deep-cluster":
+            anchor_rows = [
+                resolved_resources[field]
+                for field in ("training_samples", "manually_labeled_category_data")
+                if resolved_resources.get(field)
+            ]
+            params["anchor_mode"] = (
+                "unsupervised_free" if not anchor_rows else
+                "semi_supervised_system_prototype"
+                if all(str(row.get("source_type") or "") == "bundled" for row in anchor_rows)
+                else "semi_supervised_user_prototype"
+            )
         if resolved_resources:
             params["resolved_resources"] = resolved_resources
         # zh-keyword 前端发送 domain_terminology_dictionary（Vue 公共字段名），后端
