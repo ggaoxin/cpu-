@@ -463,6 +463,17 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
 // 真实接口接入时直接提交该对象；字段集合由 tooling 中的统一契约锁定。
 const currentRequestPayload = computed(() => requestPayloadFor(props.tool, mode.value, onlineRequestValues.value))
 
+// 深度聚类「类簇数量」越界判定：最低 1、最大类簇数量必须小于输入文献总数
+// （如 4 篇文献最多 3 簇）。非空且越界时给出提示并禁用「在线测试」按钮。
+const clusterCountError = computed(() => {
+  if (props.toolId !== 'deep-cluster' || form.clusterCount === '' || form.clusterCount === null) return ''
+  const count = Number(form.clusterCount)
+  const total = mode.value === 'batch' ? uploadedFiles.length : docs.length
+  if (!Number.isInteger(count) || count < 1) return '类簇数量必须是不小于 1 的整数（留空时自动确定）。'
+  if (total > 1 && count >= total) return `类簇数量必须小于输入文献数量（当前 ${total} 篇，最大 ${total - 1}）。`
+  return ''
+})
+
 function updateSupplementalPayload(payload: Record<string, unknown>) {
   supplementalPayload.value = payload
 }
@@ -784,13 +795,9 @@ function validateRequiredInputs(): string {
       const invalidIndex = uploadedFiles.findIndex(item => !item.documentId.trim() || !item.publicationDate)
       if (invalidIndex >= 0) return `请完整填写文件${invalidIndex + 1}的文献编号和发表时间。`
     }
-    // 类簇数量约束：最低 1、最高不超过输入文献数（留空=自动确定），提交前拦截
-    if (form.clusterCount !== '' && form.clusterCount !== null) {
-      const count = Number(form.clusterCount)
-      const total = mode.value === 'batch' ? uploadedFiles.length : docs.length
-      if (!Number.isInteger(count) || count < 1) return '类簇数量必须是不小于 1 的整数（留空时自动确定）。'
-      if (total && count > total) return `类簇数量不能超过输入文献数量（当前 ${total} 篇）。`
-    }
+    // 类簇数量约束：最低 1、最大必须小于输入文献数（留空=自动确定）。
+    // 越界时同时禁用提交按钮（见 clusterCountError），提交前此处再兜底拦截。
+    if (clusterCountError.value) return clusterCountError.value
     return ''
   }
 
@@ -897,7 +904,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
   <section class="section online-test-section">
     <div class="section-header">
       <div class="test-header-left"><h2 class="section-title">在线测试</h2><span class="pill ready">{{ running ? '执行中' : '就绪' }}</span></div>
-      <button class="primary-btn" type="button" :disabled="running" @click="run">{{ running ? '正在测试…' : '▶ 在线测试' }}</button>
+      <button class="primary-btn" type="button" :disabled="running || !!clusterCountError" :title="clusterCountError || undefined" @click="run">{{ running ? '正在测试…' : '▶ 在线测试' }}</button>
     </div>
     <div class="test-panel">
       <div class="test-card request-card">
@@ -947,7 +954,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
 
           <template v-if="toolId === 'deep-cluster'">
             <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 聚类维度</span><small>选择本次聚类的语义分析视角</small></label><div class="dimension-options"><label :class="{ active: form.clusterDimension === 'technology' }"><input v-model="form.clusterDimension" type="radio" value="technology" /><span><b>技术路线聚类</b><small>重点分析文献采用的方法、模型结构、算法机制、数据处理流程和实验技术，将技术方案相近的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label><label :class="{ active: form.clusterDimension === 'application_scenario' }"><input v-model="form.clusterDimension" type="radio" value="application_scenario" /><span><b>应用场景聚类</b><small>重点分析文献解决的任务、服务对象、行业领域、实际环境和应用目标，将面向相似使用场景的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label></div></div>
-            <div class="settings-card"><div class="settings-title"><b>算法与输出参数</b><span>可选算法、类簇数量与输出格式</span></div><div class="three-column"><div class="field"><label><span class="label-main">聚类算法类型</span></label><select v-model="form.algorithm" class="select"><option>自动选择</option><option>K-Means</option><option>HDBSCAN</option><option>层次聚类</option></select></div><div class="field"><label><span class="label-main">类簇数量</span></label><input v-model="form.clusterCount" class="input" type="number" min="1" step="1" placeholder="自动确定" /></div><div class="field"><label><span class="label-main">输出格式</span></label><select v-model="form.outputFormat" class="select"><option>JSON</option><option>CSV</option><option>数据库写入结构</option></select></div></div></div>
+            <div class="settings-card"><div class="settings-title"><b>算法与输出参数</b><span>可选算法、类簇数量与输出格式</span></div><div class="three-column"><div class="field"><label><span class="label-main">聚类算法类型</span></label><select v-model="form.algorithm" class="select"><option>自动选择</option><option>K-Means</option><option>HDBSCAN</option><option>层次聚类</option></select></div><div class="field"><label><span class="label-main">类簇数量</span></label><input v-model="form.clusterCount" class="input" type="number" min="1" step="1" placeholder="自动确定" /><small v-if="clusterCountError" class="field-error-hint" style="color:#d54949;display:block;margin-top:4px">{{ clusterCountError }}</small></div><div class="field"><label><span class="label-main">输出格式</span></label><select v-model="form.outputFormat" class="select"><option>JSON</option><option>CSV</option><option>数据库写入结构</option></select></div></div></div>
             <ModeSwitch v-model="mode" :modes="modes" :tool="tool" kind="深度聚类数据来源" />
           </template>
 
@@ -1175,7 +1182,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
 
 
           <div v-if="toolId === 'zh-keyword'" class="settings-card generic-settings">
-            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="field"><label><span class="label-main">词典使用方式</span><small>区分数据库资源与用户录入</small></label><select v-model="dictionaryMode" class="select"><option value="system">使用系统预置术语词典（默认）</option><option value="saved">从数据库选择已保存的用户词典</option><option value="custom">新建或上传用户自定义领域词典</option></select></div><div v-if="dictionaryMode === 'system'" class="info-banner dictionary-status">✓ 默认状态：使用系统预置术语词典，不提交用户词典参数。</div><div v-else-if="dictionaryMode === 'saved'" class="database-selector-panel"><div class="database-selector-heading"><b>选择已保存的用户领域词典</b></div><select v-model="selectedDictionaryId" class="select"><option v-for="item in savedDictionaryOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.id }}</option></select><div v-if="selectedDictionary" class="database-record-summary"><span>术语数量：{{ selectedDictionary.termCount }}</span><span>更新时间：{{ selectedDictionary.updatedAt }}</span></div></div><div v-else class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>上传用户词典文件</b><small>{{ customDictionaryFile ? customDictionaryFile.name : '上传后保存到数据库并生成词典编号' }}</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div><div class="field full dictionary-save-row"><button type="button" class="primary-btn" :disabled="savingDict" @click="saveCustomDictionary">{{ savingDict ? '保存中…' : '保存词典到数据库' }}</button></div></div></div>
+            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="field"><label><span class="label-main">词典使用方式</span><small>区分数据库资源与用户录入</small></label><select v-model="dictionaryMode" class="select"><option value="system">使用系统预置术语词典（默认）</option><option value="saved">从数据库选择已保存的用户词典</option><option value="custom">新建或上传用户自定义领域词典</option></select></div><div v-if="dictionaryMode === 'system'" class="info-banner dictionary-status">✓ 默认状态：使用系统预置术语词典，不提交用户词典参数。</div><div v-else-if="dictionaryMode === 'saved'" class="database-selector-panel"><div class="database-selector-heading"><b>选择已保存的用户领域词典</b></div><select v-model="selectedDictionaryId" class="select"><option v-for="item in savedDictionaryOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.termCount }} 词</option></select><div v-if="selectedDictionary" class="database-record-summary"><span>术语数量：{{ selectedDictionary.termCount }}</span><span>更新时间：{{ selectedDictionary.updatedAt }}</span></div></div><div v-else class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>上传用户词典文件</b><small>{{ customDictionaryFile ? customDictionaryFile.name : '上传后保存到数据库并生成词典编号' }}</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div><div class="field full dictionary-save-row"><button type="button" class="primary-btn" :disabled="savingDict" @click="saveCustomDictionary">{{ savingDict ? '保存中…' : '保存词典到数据库' }}</button></div></div></div>
           </div>
 
         </div>

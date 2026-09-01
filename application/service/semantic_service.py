@@ -1076,6 +1076,14 @@ class SemanticApplicationService(ISemanticService):
                 continue
             current = by_term.get(term.casefold())
             if current is None:
+                # 包含匹配：识别关键词包含词典词条（如「急性心肌梗死」⊃「心肌梗死」）
+                # 时标记该关键词命中，而不是把词典词条作为新词重复注入结果列表。
+                current = next(
+                    (item for item in cleaned
+                     if term.casefold() in str(item["keyword"]).casefold()),
+                    None,
+                )
+            if current is None:
                 base_weight = _number_or_default(dictionary_term.get("weight"), 0.5)
                 new_weight = min(1.0, base_weight + boost)
                 current = {"keyword": term, "weight": new_weight, "weight_change": round(new_weight - base_weight, 4)}
@@ -1145,7 +1153,13 @@ class SemanticApplicationService(ISemanticService):
         else:
             cleaned.sort(key=lambda item: _number_or_default(item.get("weight"), 0), reverse=True)
         maximum_keywords = max(1, min(50, int((request.params or {}).get("max_keywords", 8) or 8)))
-        cleaned = cleaned[:maximum_keywords]
+        # 数量上限只约束模型候选：词典命中词是用户显式收录的术语，全部保留
+        # （否则命中数被 max_keywords 截断，词典形同虚设）。
+        _dict_kept = [item for item in cleaned if item.get("custom_dictionary_hit")]
+        if len(_dict_kept) > maximum_keywords:
+            cleaned = _dict_kept
+        else:
+            cleaned = _dict_kept + [item for item in cleaned if not item.get("custom_dictionary_hit")][:maximum_keywords - len(_dict_kept)]
 
         # 英文关键词：批量场景重写 + CLC 映射并发（降时延：N 词串行 rerank→并发 max）
         _en_clc_map = {}

@@ -156,11 +156,11 @@ def _optional_cluster_count(params: dict[str, Any], file_count: int = 0) -> int 
         parsed = int(value)
     except (TypeError, ValueError) as exc:
         raise ValueError("cluster_count 必须为整数或 auto。") from exc
-    # 类簇数量约束：最低 1，最高不超过输入文件数（file_count>0 时校验上限）。
+    # 类簇数量约束：最低 1，最大类簇数量必须小于输入文件数（file_count>1 时校验上限）。
     if parsed < 1:
         raise ValueError("cluster_count 必须大于等于 1。")
-    if file_count > 0 and parsed > file_count:
-        raise ValueError(f"cluster_count 不能超过输入文献数量（当前 {file_count} 篇）。")
+    if file_count > 1 and parsed >= file_count:
+        raise ValueError(f"cluster_count 必须小于输入文献数量（当前 {file_count} 篇，最大 {file_count - 1}）。")
     return parsed
 
 

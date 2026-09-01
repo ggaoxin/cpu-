@@ -1396,7 +1396,7 @@ class ToolIntegrationService:
 
     @staticmethod
     def _cluster_count_error(value: Any, item_count: int) -> Optional[str]:
-        """深度聚类 cluster_count 预检：最低 1、最高不超过输入文献数。
+        """深度聚类 cluster_count 预检：最低 1、最大类簇数量必须小于输入文献数。
 
         auto 语义（None/""/"auto"/0）与 ``deep_clustering_service._optional_cluster_count``
         保持一致；非法值返回错误消息，合法返回 None。
@@ -1412,8 +1412,8 @@ class ToolIntegrationService:
         parsed = int(parsed)
         if parsed < 1:
             return "cluster_count 必须大于等于 1。"
-        if item_count > 0 and parsed > item_count:
-            return f"cluster_count 不能超过输入文献数量（当前 {item_count} 篇）。"
+        if item_count > 1 and parsed >= item_count:
+            return f"cluster_count 必须小于输入文献数量（当前 {item_count} 篇，最大 {item_count - 1}）。"
         return None
 
     def _text_from_upstream(self, payload: Dict[str, Any]) -> str:
