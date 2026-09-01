@@ -924,6 +924,9 @@ const finalOverrides: Record<string, Partial<ToolDefinition>> = {
     features: '专业领域必选、领域匹配校验、一级二级三级分类、分类置信度计算、领域标签生成、批量文本处理、二级类别统计、三级类别统计、单文本与批量文本、单文件与批量文件',
   },
   'rq-detect': {
+    // 标题与侧栏分组名「研究问题识别工具」对齐（单工具分组的 title 应与分组名一致，
+    // 侧栏标签/面包屑/h1 同源于 tool.title，此处改名三处同步生效）
+    title: '研究问题识别工具',
     inputModes: fourModes,
     textEndpoint: '/api/v1/research-question/text',
     batchTextEndpoint: '/api/v1/research-question/texts',

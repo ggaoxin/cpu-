@@ -16,6 +16,9 @@ button:disabled { cursor: not-allowed !important; opacity: .48; transform: none 
 .platform-frame-v640 { width: min(1502px, 100vw) !important; height: 100vh; margin: 0 auto !important; border-radius: 0 !important; }
 .platform-frame-v640 .app { width: 100% !important; min-width: 1180px !important; max-width: none !important; height: 100vh; min-height: 0 !important; grid-template-columns: 236px minmax(0, 1fr) !important; }
 .platform-frame-v640 .sidebar { width: 236px !important; min-width: 236px !important; max-width: 236px !important; height: 100vh !important; min-height: 0 !important; overflow-y: auto; scrollbar-width: none; }
+/* 标题行容器 sidebar-title-row 已移除（其 border-bottom 会在标题下画一条细长分隔线）：
+   标题独立成节点，仅保留文字样式与下方间距。 */
+.platform-frame-v640 .sidebar > .sidebar-title { margin: 0 0 10px !important; padding: 0 !important; border: 0 !important; min-height: 0 !important; }
 .platform-frame-v640 .sidebar::-webkit-scrollbar, .content-wrap::-webkit-scrollbar, .request-card .form-grid::-webkit-scrollbar, .response-result-body::-webkit-scrollbar { width: 0 !important; height: 0 !important; display: none; }
 .content-wrap { width: auto !important; min-width: 0 !important; max-width: none !important; height: 100vh; overflow-y: auto; scrollbar-width: none; padding: 8px 8px 18px 4px !important; }
 .page-shell { min-width: 0; }

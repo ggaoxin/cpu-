@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { ToolGroup } from '../types'
 
 const props = defineProps<{ groups: ToolGroup[]; activeId: string }>()
-const emit = defineEmits<{ select: [id: string]; toggle: [] }>()
+const emit = defineEmits<{ select: [id: string] }>()
 const flyoutGroup = ref<ToolGroup | null>(null)
 const flyoutTop = ref(0)
 
@@ -42,9 +42,9 @@ onBeforeUnmount(() => document.removeEventListener('click', closeOnOutside))
 
 <template>
   <aside class="sidebar">
-    <div class="sidebar-title-row"><div class="sidebar-title">算法列表</div><div class="menu-icon" title="收起导航" role="button" tabindex="0" @click="emit('toggle')" @keydown.enter="emit('toggle')">☰</div></div>
+    <div class="sidebar-title">算法列表</div>
     <div class="menu-section sidebar-decorative-sections">
-      <div class="sidebar-decorative-label">算法中心其他算法库（原型展示）</div>
+      <div class="sidebar-decorative-label">算法中心其他算法库</div>
       <div v-for="name in ['分类分析算法','回归分析算法','聚类分析算法','关联规则算法','时间序列算法','信息推荐算法','文本挖掘算法','统计分析算法','图挖掘算法','科技资源服务算法库','科技决策支持算法库','科技专题服务算法库']" :key="name" class="menu-section">
         <div class="menu-row menu-row-decorative"><span>{{ name }}</span></div>
       </div>
