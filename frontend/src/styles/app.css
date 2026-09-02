@@ -1,16 +1,12 @@
 /* Vue 版本只保留 V7.74 的最终视觉状态；以下规则位于原型样式之后，用于消除历史补丁冲突。 */
 html, body, #app { width: 100%; height: 100%; overflow: hidden; }
 body { padding: 0 !important; background: #101216 !important; }
-/* Keep wheel chaining available across the nested page/form/result/modal areas. */
-.content-wrap,
-.platform-frame-v640 .sidebar,
-.request-card .form-grid,
-.response-result-body,
-.response-result-body .console,
-.visual-modal-body,
-.visualization-modal-body-v645,
-pre {
-  overscroll-behavior-y: auto !important;
+/* Keep wheel chaining available across the nested page/form/result/modal areas.
+   原型 CSS 大量嵌套容器带 overscroll-behavior: contain（部分 !important），
+   会在滚动到边界时卡住滚轮。这里统一放行滚动链，交给浏览器原生处理；
+   #app * 的特异性(1,0,0)高于原型全部类选择器，可压过 contain !important。 */
+#app * {
+  overscroll-behavior: auto !important;
 }
 button:disabled { cursor: not-allowed !important; opacity: .48; transform: none !important; box-shadow: none !important; }
 .platform-frame-v640 { width: min(1502px, 100vw) !important; height: 100vh; margin: 0 auto !important; border-radius: 0 !important; }
