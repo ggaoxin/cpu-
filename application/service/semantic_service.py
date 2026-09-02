@@ -3213,10 +3213,17 @@ class SemanticApplicationService(ISemanticService):
             sentence = str(row.get("citation_sentence") or row.get("sentence") or "").strip()
             if not sentence:
                 continue
-            marker = next((match.group() for pattern in self._CITATION_PATTERNS if (match := pattern.search(sentence))), "")
+            # 句内多引用拆分后同一原句会提交多条记录：优先采用调用方指定的
+            # citation_marker，否则每条都取句中第一个标记（[1][2][3] 全标成 [1]）
+            marker = str(row.get("citation_marker") or "").strip()
+            if not marker:
+                marker = next((match.group() for pattern in self._CITATION_PATTERNS if (match := pattern.search(sentence))), "")
+            # 局部子片段：该条引用在句内对应的语义片段，意图/情感判定优先采用
+            sub_span = str(row.get("citation_sub_span") or row.get("local_sub_span") or row.get("sub_span") or "").strip()
             certain.append({
                 "sentence": sentence,
                 "citation_marker": marker,
+                "sub_span": sub_span,
                 "context_before": str(row.get("previous_context") or row.get("context_before") or ""),
                 "context_after": str(row.get("next_context") or row.get("context_after") or ""),
             })
@@ -3317,20 +3324,30 @@ class SemanticApplicationService(ISemanticService):
         seen = set()
         for item in labeled:
             sent = item.get("sentence", "").strip()
-            if not sent or sent in seen:
+            if not sent:
+                continue
+            # 句内多引用拆分后多条记录共享同一原句：按 原句+引用标记 去重，
+            # 避免同句 [1][2][3] 三条记录被句子级去重吞掉两条
+            marker = str(item.get("citation_marker") or "").strip()
+            dedupe_key = (sent, marker)
+            if dedupe_key in seen:
                 continue
             label = item.get(label_field, "").strip()
             if label not in valid_labels:
                 raise RuntimeError(f"GLM-5.2 返回非法引文标签: {label!r}")
-            seen.add(sent)
-            # 找回上下文
-            ctx = next((c for c in citations if c["sentence"][:50] in sent or sent[:50] in c["sentence"]), {})
+            seen.add(dedupe_key)
+            # 找回上下文：优先按引用标记匹配（同句多条各自对齐），退回句子匹配
+            ctx = next((c for c in citations
+                        if marker and c.get("citation_marker") == marker
+                        and (c["sentence"][:50] in sent or sent[:50] in c["sentence"])), None)
+            if ctx is None:
+                ctx = next((c for c in citations if c["sentence"][:50] in sent or sent[:50] in c["sentence"]), {})
             start = text.find(sent)
-            out.append({
+            row = {
                 "citation_id": f"CIT{len(out) + 1}",
                 "sentence": sent,
-                "citation_marker": ctx.get("citation_marker", item.get("citation_marker", "")),
-                "citation_markers": ctx.get("citation_markers") or ([ctx.get("citation_marker", item.get("citation_marker", ""))] if (ctx.get("citation_marker", item.get("citation_marker", ""))) else []),
+                "citation_marker": marker or ctx.get("citation_marker", ""),
+                "citation_markers": ctx.get("citation_markers") or ([marker] if marker else []),
                 "context_before": ctx.get("context_before", ""),
                 "context_after": ctx.get("context_after", ""),
                 "source_position": {
@@ -3339,7 +3356,12 @@ class SemanticApplicationService(ISemanticService):
                 },
                 label_field: label.removeprefix("用于"),
                 "confidence": min(1.0, float(item.get("confidence", 0.5) or 0.5)),
-            })
+            }
+            # 该条引用对应的局部子片段（句内多引用拆分时存在，供核对与下游定位）
+            sub_span = str(ctx.get("sub_span") or item.get("sub_span") or "").strip()
+            if sub_span:
+                row["sub_span"] = sub_span
+            out.append(row)
 
         result.success = True
         result.data = out
@@ -3569,27 +3591,43 @@ class SemanticApplicationService(ISemanticService):
     def _llm_label_citations(self, citations: list, is_sentiment: bool, rule, request) -> list:
         """批量 LLM 判引用句的情感/意图。全部走 _glm_chat_batch 自动并发，
         无手写 ThreadPoolExecutor：每批一次 chat_json 并发，返回不全则直接逐句并发补全
-        （取代旧的串行重试3次——补全并发更快，且只在 GLM 偶发返回不全时才触发）。"""
+        （取代旧的串行重试3次——补全并发更快，且只在 GLM 偶发返回不全时才触发）。
+
+        句内多引用拆分后同一原句存在多条记录：意图判定文本优先用该条的局部子片段
+        sub_span（无则整句），保证不同文献引用各自判定不混淆；返回条目 = 输入引用句
+        条目 + LLM 标签/置信度（保留 citation_marker/sub_span/上下文，供后置规则
+        引擎与结果组装按条对齐）。"""
         label_field = 'sentiment' if is_sentiment else 'intent'
         sysp = self._system_prompt(rule, request)
         batch_size = 10
         batches = [citations[i:i + batch_size] for i in range(0, len(citations), batch_size)]
         _fallback_label = '中立' if is_sentiment else '用于背景介绍'
 
+        def _judge_text(c):
+            return str(c.get('sub_span') or c.get('sentence') or '')
+
+        def _merge(c, r):
+            r = r if isinstance(r, dict) else {}
+            item = dict(c)
+            item[label_field] = str(r.get(label_field) or '').strip() or _fallback_label
+            conf = r.get('confidence')
+            item['confidence'] = conf if conf is not None else 0.5
+            return item
+
         # 第一步：所有批次第一次 chat_json 并发。
         prompts = ['引用句列表：\n' +
-                   '\n'.join([f'[{i}] ' + c['sentence'][:250] for i, c in enumerate(batch)])
+                   '\n'.join([f'[{i}] ' + _judge_text(c)[:250] for i, c in enumerate(batch)])
                    for batch in batches]
         batch_ds = self._glm_chat_batch(sysp, prompts, temperature=0.0,
                                         timeout=90.0, max_tokens=1500, max_workers=5)
         all_results = []
-        _pending = []  # 未被覆盖的句子，统一并发补全
+        _pending = []  # 未被覆盖的引用句条目，统一并发补全
         for batch, d in zip(batches, batch_ds):
             results = []
             if d is not None:
                 d = d.get('data', d) if isinstance(d, dict) else d
                 results = d if isinstance(d, list) else (d.get('results', []) if isinstance(d, dict) else [])
-            covered = set()
+            covered = {}
             for r in results:
                 if not isinstance(r, dict):
                     continue
@@ -3597,30 +3635,28 @@ class SemanticApplicationService(ISemanticService):
                 for i, c in enumerate(batch):
                     if i in covered:
                         continue
-                    _cs = c['sentence'][:60]
-                    if _rs and (_rs in c['sentence'] or _cs in _rs or _cs in str(r.get('sentence', ''))):
-                        covered.add(i)
-                        all_results.append(r)
+                    _cs = _judge_text(c)[:60]
+                    if _rs and (_rs in _judge_text(c) or _cs in _rs or _cs in str(r.get('sentence', ''))):
+                        covered[i] = r
                         break
             for i, c in enumerate(batch):
-                if i not in covered:
-                    _pending.append(c['sentence'])
+                if i in covered:
+                    all_results.append(_merge(c, covered[i]))
+                else:
+                    _pending.append(c)
 
         # 第二步：所有未覆盖句子逐句并发补全。
         if _pending:
-            _prompts = ['引用句列表：\n[0] ' + s[:250] for s in _pending]
+            _prompts = ['引用句列表：\n[0] ' + _judge_text(c)[:250] for c in _pending]
             _comp_ds = self._glm_chat_batch(sysp, _prompts, temperature=0.0,
                                             timeout=60.0, max_tokens=500, max_workers=3)
-            for s, _d2 in zip(_pending, _comp_ds):
+            for c, _d2 in zip(_pending, _comp_ds):
                 if _d2 is None:
-                    all_results.append({'sentence': s, label_field: _fallback_label, 'confidence': 0.5})
+                    all_results.append(_merge(c, None))
                     continue
                 _d2 = _d2.get('data', _d2) if isinstance(_d2, dict) else _d2
                 _r2 = _d2 if isinstance(_d2, list) else (_d2.get('results', []) if isinstance(_d2, dict) else [])
-                if _r2:
-                    all_results.extend(_r2)
-                else:
-                    all_results.append({'sentence': s, label_field: _fallback_label, 'confidence': 0.5})
+                all_results.append(_merge(c, _r2[0] if _r2 else None))
 
         # 第三步：兜底 normalize（空/非法标签）。GLM 偶发返回空/非法（数量够不触发补全，
         # 直通后置校验会 raise 致整篇失败）。空或非法 → 兜底为 fallback 标签并降置信，

@@ -326,9 +326,79 @@ class V774HttpContractTests(unittest.TestCase):
         })
         self.assertEqual(response.status_code, 200, response.text)
         self.assertEqual(len(algorithm.requests), 2)
-        self.assertEqual(algorithm.requests[0].params["citation_sentence_and_context"], [contexts[0]])
-        self.assertEqual(algorithm.requests[1].params["citation_sentence_and_context"], [contexts[1]])
-        self.assertEqual(algorithm.requests[1].params["citation_metadata"], [metadata[1]])
+        # 逐篇 group 走线程池并发（as_completed 完成顺序无序，结果按 index 分桶），
+        # 捕获顺序不定：按引用句内容对齐各请求后再断言隔离性
+        by_sentence = {
+            request.params["citation_sentence_and_context"][0]["citation_sentence"]: request
+            for request in algorithm.requests
+        }
+        self.assertEqual(by_sentence[contexts[0]["citation_sentence"]].params["citation_sentence_and_context"], [contexts[0]])
+        self.assertEqual(by_sentence[contexts[0]["citation_sentence"]].params["citation_metadata"], [metadata[0]])
+        self.assertEqual(by_sentence[contexts[1]["citation_sentence"]].params["citation_sentence_and_context"], [contexts[1]])
+        self.assertEqual(by_sentence[contexts[1]["citation_sentence"]].params["citation_metadata"], [metadata[1]])
+
+    def test_citation_file_mode_derives_split_contexts_and_friendly_errors(self):
+        """/citation-intent/file 内置 PDF 完整解析链路回归。
+
+        ① 带引用标记文档 → 自动解析拆分 citation_sentence_and_context（句内多
+        编号含区间 [4-6] 逐编号拆分，各带局部子片段）后送识别，不再报
+        「缺少上传字段：citation_sentence_and_context」；
+        ② 无引用标记文档 → 200 业务空跑（不派生结构化字段、无参数错误）；
+        ③ 损坏文件 → 42201 业务提示（含「文件解析失败」文案，不暴露底层报错）。
+        """
+        class CapturingService(FakeSemanticService):
+            def __init__(self):
+                self.requests = []
+
+            def execute(self, code, request):
+                if code == "cr_intent":
+                    self.requests.append(request)
+                return super().execute(code, request)
+
+        algorithm = CapturingService()
+        integration = ToolIntegrationService(algorithm, self.repository, self.resources)
+        self.app.dependency_overrides[get_integration_service] = lambda: integration
+        form = {"preprocessed_training_set": json.dumps(resource("preprocessed_training_set"))}
+
+        # ① 带引用标记：[1] / [2,3] / [4-6] → 拆分为 [1][2][3][4][5][6]
+        document = "已有研究表明传统方法存在局限[1]。张三等人提出了改进方案[2,3]，效果优于基线[4-6]。\n本文继续该方向研究。"
+        response = self.client.post(
+            "/api/v1/citation-intent/file",
+            files={"file": ("论文.txt", document.encode("utf-8"), "text/plain")},
+            data=form,
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["code"], 0, response.text)
+        self.assertEqual(len(algorithm.requests), 1)
+        derived = algorithm.requests[0].params["citation_sentence_and_context"]
+        self.assertEqual([row["citation_marker"] for row in derived], [f"[{n}]" for n in range(1, 7)])
+        self.assertTrue(all(str(row.get("citation_sub_span") or "").strip() for row in derived), derived)
+        marker4 = next(row for row in derived if row["citation_marker"] == "[4]")
+        self.assertIn("效果优于基线", marker4["citation_sub_span"])
+
+        # ② 无引用标记：业务空跑，不派生结构化字段、不报参数错误
+        before = len(algorithm.requests)
+        response = self.client.post(
+            "/api/v1/citation-intent/file",
+            files={"file": ("无引用.txt", "本文研究一种新方法。\n实验表明该方法有效。".encode("utf-8"), "text/plain")},
+            data=form,
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        body = response.json()
+        self.assertEqual(body["code"], 0, body)
+        self.assertEqual(len(algorithm.requests), before + 1)
+        self.assertNotIn("citation_sentence_and_context", algorithm.requests[-1].params)
+
+        # ③ 损坏文件：42201 业务提示（友好文案，非底层报错/参数缺失）
+        response = self.client.post(
+            "/api/v1/citation-intent/file",
+            files={"file": ("损坏.pdf", b"%PDF-1.4 not a real pdf payload", "application/pdf")},
+            data=form,
+        )
+        self.assertEqual(response.status_code, 422, response.text)
+        body = response.json()
+        self.assertEqual(body["code"], 42201, body)
+        self.assertIn("文件解析失败", body["message"])
 
     def test_deep_and_review_file_metadata_and_collection_inputs_reach_algorithms(self):
         class CapturingService(FakeSemanticService):

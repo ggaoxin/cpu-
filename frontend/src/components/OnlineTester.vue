@@ -50,6 +50,8 @@ type CitationBatchItem = {
   citationSentence: string
   previousContext: string
   nextContext: string
+  citationMarker: string      // 本条绑定的文献编号（如 [1]，句内多标记拆分后各卡不同）
+  subSpan: string             // 本条引用对应的局部语义子片段（意图判定用，留空回退整句）
   sourceId?: number | null   // 自动展开来源:由哪张卡片提取生成(手工卡片为 null)
   refsText: string           // 本条引用的参考文献条目原文(粘贴)
   metaList: CitationMetaEntry[]  // 解析出的被引文献元数据(可多条)
@@ -78,13 +80,61 @@ const uploadedFiles = reactive<UploadedFileItem[]>([])
 let batchItemSequence = 0
 const form = reactive({ projectName: '', documentTitle: '', text: '', batchText: '', language: '自动识别', domain: '自动识别', threshold: '0.75', outputFormat: 'JSON', clusterDimension: 'technology', algorithm: '自动选择', clusterCount: '', historyId: '', topic: '' })
 const citationSingle = reactive({ documentText: '' })
-type CitationCard = { id: number; marker: string; sentence: string; previousContext: string; nextContext: string }
+type CitationCard = { id: number; marker: string; sentence: string; subSpan: string; previousContext: string; nextContext: string }
 const citationCards = reactive<CitationCard[]>([])
 let citationCardSeq = 0
 
+// 句内多引用拆分：单条自然句含多个文献编号（[1][2][3] 或复合 [1,2]/[1-3]）时，
+// 每个文献编号生成一条独立引用句记录（同一意图共用子片段的 [4][5][6] 同样拆分）。
+// 每条携带：marker=绑定的文献编号；subSpan=标记所在子句（按，,；;切分）去掉
+// 引用标记后的局部语义片段。原始完整句子不做截断，保留在 sentence 供上下文核对。
+function splitSentenceByMarkers(sentence: string): Array<{ marker: string; subSpan: string }> {
+  const markerRe = /\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/g
+  const matches = Array.from(sentence.matchAll(markerRe))
+  if (!matches.length) return []
+  // 子句分段（记录起止位置）：引用标记归属其起点所在的子句段；
+  // [n,m] 复合标记内的逗号不是子句边界（扫描时跳过方括号内的分隔符）
+  const clauseRanges: Array<[number, number]> = []
+  let clauseStart = 0
+  let inBracket = false
+  for (let i = 0; i < sentence.length; i += 1) {
+    const ch = sentence[i]
+    if (ch === '[') inBracket = true
+    else if (ch === ']') inBracket = false
+    else if (!inBracket && '，,；;'.includes(ch)) {
+      clauseRanges.push([clauseStart, i])
+      clauseStart = i + 1
+    }
+  }
+  clauseRanges.push([clauseStart, sentence.length])
+  // 去全部引用标记+合并空白+去尾部句读标点，得到干净的局部语义片段
+  const stripMarkers = (text: string) => text.replace(markerRe, '').replace(/\s+/g, ' ').trim().replace(/[。．.!！?？；;，,、]+$/, '').trim()
+  const out: Array<{ marker: string; subSpan: string }> = []
+  for (const match of matches) {
+    // 复合标记展开为单编号：[1,2]/[1-3] → [1][2]…；各条复用同一子片段
+    const nums: number[] = []
+    for (const part of match[0].slice(1, -1).split(/[,，]/)) {
+      const range = part.trim().match(/^(\d+)\s*[-–~]\s*(\d+)$/)
+      if (range) {
+        for (let n = Number(range[1]); n <= Number(range[2]); n += 1) nums.push(n)
+      } else if (/^\d+$/.test(part.trim())) {
+        nums.push(Number(part.trim()))
+      }
+    }
+    const markerNums = nums.length ? nums : [Number(match[0].replace(/\D/g, '')) || 0]
+    const markerPos = match.index ?? 0
+    const clause = clauseRanges.find(([start, end]) => markerPos >= start && markerPos < end)
+    const clauseText = clause ? stripMarkers(sentence.slice(clause[0], clause[1])) : ''
+    const subSpan = clauseText || stripMarkers(sentence)
+    for (const num of markerNums) out.push({ marker: `[${num}]`, subSpan })
+  }
+  return out
+}
+
 // 引用句自动解析：文献文本是用户唯一需要输入的内容；系统从文献文本解析出
 // 全部引用句（含引用标记的句子+前句/后句上下文），以卡片列表展示（可编辑/删除）；
-// 被引文献元数据由用户在下方补充。
+// 句内多个文献编号按编号拆分为多张卡片（sentence 保留完整原句，subSpan 为
+// 各自的局部子片段）；被引文献元数据由用户在下方补充。
 let citationAutoTimer: ReturnType<typeof setTimeout> | null = null
 let citationCardsEdited = false   // 用户增删改过卡片后不再自动覆盖
 const citationExtractedCount = ref(0)
@@ -92,17 +142,22 @@ function autoExtractCitation() {
   const text = citationSingle.documentText.trim()
   if (!text) { citationExtractedCount.value = 0; return }
   const sentences = text.split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
-  const markerRe = /\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/
-  const hits = sentences.map((s, i) => ({ s, i })).filter(({ s }) => markerRe.test(s))
-  citationExtractedCount.value = hits.length
-  if (!hits.length) return
-  citationCards.splice(0, citationCards.length, ...hits.map(({ s, i }) => ({
-    id: ++citationCardSeq,
-    marker: (s.match(markerRe) || [''])[0],
-    sentence: s,
-    previousContext: i > 0 ? sentences[i - 1] : '（文档开头，无上文）',
-    nextContext: i + 1 < sentences.length ? sentences[i + 1] : '（文档结尾，无下文）',
-  })))
+  const cards: CitationCard[] = []
+  sentences.forEach((s, i) => {
+    for (const { marker, subSpan } of splitSentenceByMarkers(s)) {
+      cards.push({
+        id: ++citationCardSeq,
+        marker,
+        sentence: s,
+        subSpan,
+        previousContext: i > 0 ? sentences[i - 1] : '（文档开头，无上文）',
+        nextContext: i + 1 < sentences.length ? sentences[i + 1] : '（文档结尾，无下文）',
+      })
+    }
+  })
+  citationExtractedCount.value = cards.length
+  if (!cards.length) return
+  citationCards.splice(0, citationCards.length, ...cards)
 }
 watch(() => citationSingle.documentText, () => {
   if (citationCardsEdited) return
@@ -115,20 +170,25 @@ function forceAutoExtractCitation() {
   citationCardsEdited = false
   autoExtractCitation()
 }
-// 批量文本：从该条的文献文本提取全部引用句——第一条填入本卡，
-// 其余自动展开为同题目/同文献文本的新卡片（sourceId 标记来源，重复提取时先清理旧的）
+// 批量文本：从该条的文献文本提取全部引用句——句内多文献编号同样按编号拆分，
+// 第一条填入本卡，其余自动展开为同题目/同文献文本的新卡片（sourceId 标记来源，
+// 重复提取时先清理旧的）
 function autoExtractBatchCitation(item: CitationBatchItem) {
   const text = (item.documentText || '').trim()
   if (!text) { requestError.value = '请先填写本条的文献文本，再自动提取引用句。'; return }
   const sentences = text.split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
-  const markerRe = /\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/
-  const hits = sentences.map((s, i) => ({ s, i })).filter(({ s }) => markerRe.test(s))
+  const hits: Array<{ s: string, i: number, marker: string, subSpan: string }> = []
+  sentences.forEach((s, i) => {
+    for (const { marker, subSpan } of splitSentenceByMarkers(s)) hits.push({ s, i, marker, subSpan })
+  })
   if (!hits.length) { requestError.value = '本条文献文本中未发现引用标记（如 [1]），请手动填写引用句。'; return }
   requestError.value = ''
-  const fill = (target: CitationBatchItem, hit: { s: string, i: number }) => {
+  const fill = (target: CitationBatchItem, hit: { s: string, i: number, marker: string, subSpan: string }) => {
     target.citationSentence = hit.s
     target.previousContext = hit.i > 0 ? sentences[hit.i - 1] : '（文档开头，无上文）'
     target.nextContext = hit.i + 1 < sentences.length ? sentences[hit.i + 1] : '（文档结尾，无下文）'
+    target.citationMarker = hit.marker
+    target.subSpan = hit.subSpan
   }
   fill(item, hits[0])
   // 清掉本卡之前展开的旧卡片（重复点击幂等），再按剩余引用句展开
@@ -143,6 +203,8 @@ function autoExtractBatchCitation(item: CitationBatchItem) {
       citationSentence: '',
       previousContext: '',
       nextContext: '',
+      citationMarker: '',
+      subSpan: '',
       sourceId: item.id,
       refsText: item.refsText,
       metaList: JSON.parse(JSON.stringify(item.metaList)),
@@ -378,13 +440,16 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
   if (props.toolId.startsWith('citation-')) {
     if (mode.value === 'text') {
       values.scientific_document_full_text = citationSingle.documentText
-      // 提交解析出的全部引用句卡片（每条含上下文）；用户增删改过以卡片为准
+      // 提交解析出的全部引用句卡片（每条含上下文）；用户增删改过以卡片为准。
+      // 句内多引用拆分后同一句多条记录：citation_marker 绑定各自文献编号，
+      // citation_sub_span 为该条对应的局部语义子片段（后端意图判定优先采用）
       if (citationCards.length) {
         values.citation_sentence_and_context = citationCards.map(card => ({
           citation_sentence: card.sentence,
           previous_context: card.previousContext,
           next_context: card.nextContext,
           citation_marker: card.marker || undefined,
+          citation_sub_span: card.subSpan || undefined,
         }))
       }
     } else if (mode.value === 'batch-text') {
@@ -405,9 +470,16 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
         citation_sentence: item.citationSentence,
         previous_context: item.previousContext,
         next_context: item.nextContext,
+        citation_marker: item.citationMarker || undefined,
+        citation_sub_span: item.subSpan || undefined,
       }))
-    } else if (primaryField) {
-      values[primaryField] = mode.value === 'file' ? uploadedFiles[0]?.file || null : uploadedFiles.map(item => item.file)
+    } else if (mode.value === 'file') {
+      // citation-* 的主字段 citation_sentence_and_context 是结构化数据，不能作
+      // 文件上传字段名（后端 /file 按 primary 字段名找不到文件会报「缺少上传
+      // 字段」）；文件统一走通用上传字段，PDF 解析与引用句拆分由后端内置链路完成
+      values.file = uploadedFiles[0]?.file || null
+    } else if (mode.value === 'batch') {
+      values.files = uploadedFiles.map(item => item.file)
     }
     return values
   }
@@ -681,6 +753,8 @@ function addCitationBatchItem() {
     citationSentence: '',
     previousContext: '',
     nextContext: '',
+    citationMarker: '',
+    subSpan: '',
     refsText: '',
     metaList: [],
     refsParsing: false,
@@ -899,6 +973,15 @@ async function run() {
       mode.value,
       currentRequestPayload.value,
     )
+    // 引用工具文件模式：PDF 解析成功但未检测到引用标记时引擎返回空结果，
+    // 给出业务提示（后端不报参数错误），避免用户只看到空列表
+    if (props.toolId.startsWith('citation-') && (mode.value === 'file' || mode.value === 'batch')) {
+      const data = (result.value as Record<string, unknown> | null)?.data as Record<string, unknown> | undefined
+      const rows = (data?.citation_intent_results ?? data?.citation_sentiment_results ?? data?.results) as unknown
+      if (Array.isArray(rows) && !rows.length) {
+        requestError.value = `PDF解析完成，未检测到文中引用标记，无法执行${props.toolId === 'citation-intent' ? '引用意图' : '引用情感'}识别。请确认文献正文含 [n] 形式引用标记后重试。`
+      }
+    }
   } catch (error) {
     const message = error instanceof ApiRequestError
       ? error.message
@@ -1068,8 +1151,9 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
               <div v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="citationSingle.documentText" class="textarea main-textarea" maxlength="8000" placeholder="请输入文献文本"></textarea></div>
               <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句解析</span><button type="button" class="citation-extract-btn" @click="forceAutoExtractCitation"><i>✦</i>从文献文本自动提取</button></label><small v-if="citationExtractedCount" class="range-hint">已从文献文本解析出 {{ citationCards.length }} 条引用句（含上下文），提交时全部识别；卡片可编辑与删除。</small></div>
               <div v-for="(card, index) in citationCards" :key="card.id" class="document-card citation-card">
-                <div class="document-card-head"><b>引用句 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" @click="removeCitationCard(card.id)">删除</button></div>
-                <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span></label><textarea v-model="card.sentence" class="textarea compact" placeholder="包含引文标记的引用句" @input="markCitationCardsEdited"></textarea></div>
+                <div class="document-card-head"><b>引用句 {{ index + 1 }}<span v-if="card.marker" class="citation-marker-bind"> · 文献 {{ card.marker }}</span></b><button class="ghost-btn danger" type="button" @click="removeCitationCard(card.id)">删除</button></div>
+                <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><small>保留完整原句供上下文核对；句内多文献引用已按编号拆分为多张卡片</small></label><textarea v-model="card.sentence" class="textarea compact" placeholder="包含引文标记的引用句" @input="markCitationCardsEdited"></textarea></div>
+                <div class="field"><label><span class="label-main">局部子片段</span><small>该文献编号对应的局部语义片段；意图/情感识别以此为准，留空则用整句判定</small></label><textarea v-model="card.subSpan" class="textarea compact" placeholder="本条引用对应的局部子片段，可编辑" @input="markCitationCardsEdited"></textarea></div>
                 <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="card.previousContext" class="textarea compact citation-context-area" placeholder="引用句前文" @input="markCitationCardsEdited"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="card.nextContext" class="textarea compact citation-context-area" placeholder="引用句后文" @input="markCitationCardsEdited"></textarea></div></div>
               </div>
             </div>
@@ -1078,10 +1162,11 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
             <div class="special-panel batch-text-panel citation-batch-panel">
               <div class="special-panel-head"><div><strong>批量引用数据</strong><span>已添加 {{ citationBatchItems.length }} 条，每条作为一个独立任务</span></div><button class="outline-btn" type="button" @click="addCitationBatchItem">＋ 添加引用数据</button></div>
               <div v-for="(item,index) in citationBatchItems" :key="item.id" class="document-card batch-text-item-card citation-batch-item-card">
-                <div class="document-card-head"><b>引用数据 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" :disabled="citationBatchItems.length <= 1" @click="removeCitationBatchItem(item.id)">删除</button></div>
+                <div class="document-card-head"><b>引用数据 {{ index + 1 }}<span v-if="item.citationMarker" class="citation-marker-bind"> · 文献 {{ item.citationMarker }}</span></b><button class="ghost-btn danger" type="button" :disabled="citationBatchItems.length <= 1" @click="removeCitationBatchItem(item.id)">删除</button></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识本条响应结果及可视化弹窗中的文献</small></label><input v-model="item.title" class="input" maxlength="300" placeholder="请输入本条文献题目" /></div>
                 <div v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="item.documentText" class="textarea compact" maxlength="8000" placeholder="请输入本条引用所属的文献文本"></textarea></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><button v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" type="button" class="citation-extract-btn" @click="autoExtractBatchCitation(item)"><i>✦</i>从文献文本自动提取</button></label><textarea v-model="item.citationSentence" class="textarea compact citation-sentence-area" placeholder="可点击右上按钮从本条文献文本自动提取，也可手动填写"></textarea></div>
+                <div class="field"><label><span class="label-main">局部子片段</span><small>该文献编号对应的局部语义片段；意图/情感识别以此为准，留空则用整句判定</small></label><textarea v-model="item.subSpan" class="textarea compact" placeholder="本条引用对应的局部子片段，可编辑"></textarea></div>
                 <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="item.previousContext" class="textarea compact citation-context-area" placeholder="请输入引用句前文"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="item.nextContext" class="textarea compact citation-context-area" placeholder="请输入引用句后文"></textarea></div></div>
                 <div class="citation-card-metadata">
                   <div class="citation-metadata-section-head"><b><span class="required-mark">*</span> 被引文献元数据</b><span>粘贴本条引用的参考文献条目，支持多条</span></div>

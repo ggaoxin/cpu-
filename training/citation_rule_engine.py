@@ -78,7 +78,9 @@ def verify_and_adjust_citations(
     conflicts = []
 
     for idx, item in enumerate(citations):
-        sent = item.get("sentence", "")
+        # 句内多引用拆分后同一原句多条记录：规则匹配优先看该条的局部子片段，
+        # 保证 [1]/[2]/[3] 各自按对应语义片段命中不同规则（无 sub_span 时回退整句）
+        sent = str(item.get("sub_span") or "") or item.get("sentence", "")
         llm_label = item.get(label_field, "")
         llm_conf = float(item.get("confidence", 0.5) or 0.5)
 

@@ -143,6 +143,18 @@ function requirementExampleValue(name: string, type: string, mode: InputMode, to
 function strictRequirementPayload(tool: ToolDefinition, mode: InputMode) {
   const contract = tool.requirementKey ? requirementContracts[tool.requirementKey] : undefined
   if (!contract) return null
+  // citation-* 文件/批量文件模式：上传原始 PDF，引用句结构化数据由后端解析组装。
+  // 主字段 citation_sentence_and_context 是 object[]，不能承载文件，模板改用通用
+  // 上传字段 file/files（后端 /file 端点按 fallback 字段名接收并内置解析链路）。
+  if (String(tool.documentType || '').startsWith('citation-') && (mode === 'file' || mode === 'batch')) {
+    const structuredFields = new Set(['document_title', 'scientific_document_full_text', 'reference_entries', 'citation_sentence_and_context', 'citation_metadata'])
+    const configOnly = Object.fromEntries(contract.inputs
+      .filter(row => !structuredFields.has(row[0]))
+      .map(row => [row[0], requirementExampleValue(row[0], row[1], mode, tool, false)]))
+    return mode === 'file'
+      ? { ...configOnly, file: '@paper.pdf' }
+      : { ...configOnly, files: ['@paper_01.pdf', '@paper_02.pdf'] }
+  }
   const inputs = contract.inputs.filter(row => row[0] !== 'document_title' || mode === 'text' || mode === 'batch-text')
   return Object.fromEntries(inputs.map((row, index) => [row[0], requirementExampleValue(row[0], row[1], mode, tool, index === 0)]))
 }
@@ -330,6 +342,7 @@ const nestedParameterDescriptions: Record<string, string> = {
   citation_sentence: '引用句文本',
   previous_context: '引用句上文',
   next_context: '引用句下文',
+  citation_sub_span: '句内多引用拆分后该条引用对应的局部子片段',
   raw_reference: '用户粘贴或上传的参考文献原始条目',
   citation_marker: '引文标记',
   publication_year: '被引文献发表年份',
@@ -360,6 +373,7 @@ const nestedParameterTypes: Record<string, string> = {
   citation_sentence: 'string',
   previous_context: 'string',
   next_context: 'string',
+  citation_sub_span: 'string',
   raw_reference: 'string',
   citation_marker: 'string',
   publication_year: 'string',

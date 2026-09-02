@@ -764,6 +764,18 @@ def _file_endpoint(tool_id: str, multiple: bool):
             else:
                 extracted = await extract_uploads(uploads, max_size_mb=upload_limit_mb, light=settings.should_use_light(tool_id))
         except (ValueError, RuntimeError, OSError) as exc:
+            if tool_id.startswith("citation-"):
+                # 引用工具文件解析失败（扫描版/无文本层/损坏文件等）不暴露底层
+                # 报错，返回业务可读提示（在线测试页直接展示 message）
+                return JSONResponse(status_code=422, content={
+                    "code": 42201,
+                    "message": f"文件解析失败，无法执行引用识别：{exc}。请上传含文本层的 PDF/DOCX/TXT 文件（扫描版请先转为文字版）。",
+                    "data": {"task_id": "", "tool_id": tool_id, "status": "failed",
+                             "input_type": str(payload.get("input_type") or "file"), "progress": 0,
+                             "total": 0, "success_count": 0, "failed_count": 0,
+                             "results": [], "summary": {}, "available_exports": ["json", "csv"]},
+                    "meta": {},
+                })
             raise HTTPException(status_code=422, detail=str(exc)) from exc
         finally:
             for upload in uploads:

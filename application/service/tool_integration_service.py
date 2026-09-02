@@ -46,11 +46,63 @@ def _split_sentences_for_citation(text: str) -> list:
     return [p.strip() for p in parts if p and p.strip()]
 
 
+def _marker_nums_of(marker: str) -> list:
+    """单个引用标记文本(如 "[4-6]"/"[1,3]"/"[2]")展开为文献编号列表。
+    区间 [4-6] 展开为 4,5,6（findall 只能取到端点 4/6，会漏区间内编号）。"""
+    nums: list = []
+    for part in re.split(r"[,，]", marker.strip().lstrip("[").rstrip("]")):
+        part = part.strip()
+        if re.fullmatch(r"\d+\s*[-–~]\s*\d+", part):
+            a, b = re.split(r"[-–~]", part)
+            nums.extend(range(int(a), int(b) + 1))
+        elif part.isdigit():
+            nums.append(int(part))
+    return nums
+
+
+def _citation_sub_span(sentence: str, marker_num: int) -> str:
+    """句内多引用拆分的局部子片段：[num] 标记所在子句(按，,；;切分)去掉全部
+    引用标记后的语义片段；所在子句去标记后为空时回退整句去标记。
+    [n,m] 复合标记内的逗号不是子句边界(扫描时跳过方括号内的分隔符)。"""
+    marker_re = re.compile(r"\[\d+(?:\s*[,，\-–~]\s*\d+)*\]")
+    target_pos = -1
+    for m in marker_re.finditer(sentence):
+        if marker_num in _marker_nums_of(m.group()):
+            target_pos = m.start()
+            break
+    if target_pos < 0:
+        return ""
+    start, end = 0, len(sentence)
+    in_bracket = False
+    for i, ch in enumerate(sentence):
+        if ch == "[":
+            in_bracket = True
+        elif ch == "]":
+            in_bracket = False
+        elif ch in "，,；;" and not in_bracket and i < target_pos:
+            start = i + 1
+    in_bracket = False
+    for i in range(target_pos, len(sentence)):
+        ch = sentence[i]
+        if ch == "[":
+            in_bracket = True
+        elif ch == "]":
+            in_bracket = False
+        elif ch in "，,；;" and not in_bracket:
+            end = i
+            break
+    def _clean(fragment: str) -> str:
+        return re.sub(r"\s+", " ", marker_re.sub("", fragment)).strip().rstrip("。．.!！?？；;，,、").strip()
+    return _clean(sentence[start:end]) or _clean(sentence)
+
+
 def _extract_citation_contexts(document_text: str, limit: int = 30) -> list:
     """定位带引用标记([1]/[2,3]/[4-6])的句子,取前句/后句为上下文。
 
-    返回 contexts 条目(含 citation_sentence/previous_context/next_context/
-    citation_marker 与内部 _marker_nums),超出 limit 截断。
+    句内含多个文献编号时按编号拆分为多条:citation_sentence 保留完整原句,
+    citation_marker 绑定单个编号,citation_sub_span 为该编号所在子句的局部
+    语义片段(意图判定优先采用)。返回 contexts 条目(含 previous_context/
+    next_context 与内部 _marker_nums),超出 limit 截断。
     """
     sentences = _split_sentences_for_citation(document_text)
     contexts = []
@@ -60,24 +112,20 @@ def _extract_citation_contexts(document_text: str, limit: int = 30) -> list:
             continue
         nums = []
         for m in markers:
-            for part in re.split(r"[,，]", m):
-                part = part.strip()
-                if re.fullmatch(r"\d+\s*[-–~]\s*\d+", part):
-                    a, b = re.split(r"[-–~]", part)
-                    nums.extend(range(int(a), int(b) + 1))
-                elif part.isdigit():
-                    nums.append(int(part))
+            nums.extend(_marker_nums_of(m))
         if not nums:
             continue
-        contexts.append({
-            "citation_sentence": sent,
-            "previous_context": sentences[i - 1] if i > 0 else "（文档开头，无上文）",
-            "next_context": sentences[i + 1] if i + 1 < len(sentences) else "（文档结尾，无下文）",
-            "citation_marker": f"[{markers[0]}]",
-            "_marker_nums": sorted(set(nums)),
-        })
-        if len(contexts) >= limit:
-            break
+        for num in sorted(set(nums)):
+            contexts.append({
+                "citation_sentence": sent,
+                "previous_context": sentences[i - 1] if i > 0 else "（文档开头，无上文）",
+                "next_context": sentences[i + 1] if i + 1 < len(sentences) else "（文档结尾，无下文）",
+                "citation_marker": f"[{num}]",
+                "citation_sub_span": _citation_sub_span(sent, num),
+                "_marker_nums": [num],
+            })
+            if len(contexts) >= limit:
+                return contexts
     return contexts
 
 
@@ -278,7 +326,9 @@ class ToolIntegrationService:
         contract = get_contract(tool_id)
         payload = self._adapt_vue_payload(contract, dict(payload or {}))
         # 引用工具文本模式自动派生：文献文本+参考文献条目 → 引用句上下文+被引元数据
-        # （用户只需提供两项输入；手动提供 citation_sentence_and_context 时不覆盖）
+        # （用户只需提供两项输入；手动提供 citation_sentence_and_context 时不覆盖）。
+        # 文件/批量文件模式的 PDF 解析与引用句拆分在 _semantic_request 内完成
+        # （路径透传延迟解析后才能拿到全文，详见 citation- 分支）。
         if tool_id.startswith("citation-") and str(payload.get("input_type") or "text") == "text":
             try:
                 self._derive_citation_inputs(payload)
@@ -391,6 +441,22 @@ class ToolIntegrationService:
         else:
             status = TaskStatus.FAILED
         error_summary = next((item.get("error") for item in results if item.get("error")), None)
+        # 引用工具文件模式整批解析失败（损坏/扫描 PDF）：升级为 42201 业务响应，
+        # 在线测试页直接展示 message（业务提示文案由 _semantic_request 注入），
+        # 不以 50001/"failed" 暴露给用户；部分失败维持逐条 failed 明细
+        if (
+            status is TaskStatus.FAILED
+            and tool_id.startswith("citation-")
+            and input_type in {"file", "files"}
+            and error_summary
+            and str(error_summary).startswith("文件解析失败")
+        ):
+            self.repository.update_task_status(
+                task_id, TaskStatus.FAILED, progress=100,
+                success_count=success_count, failed_count=failed_count,
+                error_summary=error_summary,
+            )
+            return self._validation_error(contract, request_id, input_type, started, str(error_summary))
         self.repository.update_task_status(
             task_id, status, progress=100,
             success_count=success_count, failed_count=failed_count,
@@ -1009,18 +1075,28 @@ class ToolIntegrationService:
             _p = Path(_text)
             _content = _p.read_bytes()
             _name = _item.source.get("file_name") or _p.name
-            if settings.should_use_light(contract.tool_id):
-                # PyMuPDF 毫秒级直抽，不耗 GPU，无需页数预算约束
-                source_pdf_path = str(_p) if _name.lower().endswith(".pdf") else None
-                _text = extract_bytes(_content, _name, light=True) or ""
-            else:
-                _pages = _count_pages(_content) if _name.lower().endswith(".pdf") else 1
-                _pool = get_page_budget_pool()
-                _pool.acquire(_pages)
-                try:
-                    _text = extract_bytes(_content, _name, light=False) or ""
-                finally:
-                    _pool.release(_pages)
+            try:
+                if settings.should_use_light(contract.tool_id):
+                    # PyMuPDF 毫秒级直抽，不耗 GPU，无需页数预算约束
+                    source_pdf_path = str(_p) if _name.lower().endswith(".pdf") else None
+                    _text = extract_bytes(_content, _name, light=True) or ""
+                else:
+                    _pages = _count_pages(_content) if _name.lower().endswith(".pdf") else 1
+                    _pool = get_page_budget_pool()
+                    _pool.acquire(_pages)
+                    try:
+                        _text = extract_bytes(_content, _name, light=False) or ""
+                    finally:
+                        _pool.release(_pages)
+            except Exception as exc:
+                if contract.tool_id.startswith("citation-"):
+                    # 引用工具文件解析失败（损坏 PDF/mineru 不可用等）转业务可读提示，
+                    # 由 _execute_group_once 兜底为失败项，全败时 _run_execute 升级为
+                    # 42201 业务响应（不暴露底层报错，不报参数缺失类 422）
+                    raise ValueError(
+                        f"文件解析失败，无法执行引用识别：{exc}。请上传含文本层的 PDF/DOCX/TXT 文件（扫描版请先转为文字版）。"
+                    ) from exc
+                raise
         text = self._backend_text(contract, _text, payload)
         effective_params = dict(params)
         if source_pdf_path:
@@ -1030,6 +1106,20 @@ class ToolIntegrationService:
             metadata = group[0].source.get("citation_metadata")
             if context:
                 effective_params["citation_sentence_and_context"] = [context]
+            elif str(payload.get("input_type") or "") in {"file", "files"} and not effective_params.get("citation_sentence_and_context"):
+                # 文件模式内置 PDF 完整解析链路：上传 PDF（路径透传延迟解析或直传文本）
+                # 已得全文 → 定位引用标记 → 按文献编号拆分引用句（含局部子片段），
+                # 自动填充 citation_sentence_and_context 后再执行识别；未发现引用标记时
+                # 不填充，由引擎走全文抽取兜底（无引用返回空结果而非参数错误）。
+                document_text = str(_text or "").strip()
+                if not document_text:
+                    raise ValueError(
+                        "文件解析失败，无法执行引用识别：未能从上传文件提取文本。"
+                        "请上传含文本层的 PDF/DOCX/TXT 文件（扫描版请先转为文字版）。"
+                    )
+                contexts = _extract_citation_contexts(document_text)
+                if contexts:
+                    effective_params["citation_sentence_and_context"] = contexts
             if metadata:
                 effective_params["citation_metadata"] = [metadata] if isinstance(metadata, dict) else metadata
         return SemanticRequest(text=text, params=effective_params, meta=self._meta(payload))

@@ -146,8 +146,9 @@ output_schema:
       items:
         type: object
         properties:
-          sentence: {type: string, description: "引用句原文"}
-          citation_marker: {type: string, description: "引用标记"}
+          sentence: {type: string, description: "引用句原文（句内多引用拆分后各条保留完整原句）"}
+          citation_marker: {type: string, description: "引用标记（句内多引用拆分后为该条绑定的单个文献编号）"}
+          sub_span: {type: string, description: "句内多引用拆分时该条引用对应的局部子片段（情感判定以此为准；单引用为空）"}
           context_before: {type: string, description: "前一句"}
           context_after: {type: string, description: "后一句"}
           sentiment: {type: string, enum: [支持, 中立, 有局限性]}
