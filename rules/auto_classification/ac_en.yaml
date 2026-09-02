@@ -27,35 +27,46 @@ system_prompt: |
 
   Principles:
   1. Main classification = the application scenario / core subject the paper addresses (not a broad
-     category or a background-mentioned field, and NEVER the method/technology used).
+     category, not a background-mentioned field, and NEVER the method/technology used).
   2. Be as specific as the most fitting subordinate code.
-  3. Auxiliary code (0 or 1) = a substantive secondary theme. There are TWO kinds, and they decide
-     is_interdisciplinary differently:
-     (a) METHOD/TOOL discipline — the paper USES methods/tools from another discipline but only
-         contributes to its main field (e.g., a medical study using software/TP, an oncology study
-         using biochemistry assays/Q, a chemistry study using a physics characterization technique/O).
-         You MAY give the auxiliary code, BUT is_interdisciplinary=false: borrowing a discipline's
-         tools does not make the paper interdisciplinary in that discipline.
-     (b) PARALLEL APPLICATION TOPIC — the paper substantively contributes to a SECOND application
-         domain co-equal with the main one (e.g., geology education = G education × P geology;
-         environmental protection via chemical engineering = X environment × TQ chemical industry;
-         computer-assisted surgery that advances both surgery R and computing TP). Give the auxiliary
-         code AND is_interdisciplinary=true.
-     Routine statistical/ML tools applied as a tool (regression, DEA, clustering, generic deep
-     learning, entropy method) are NOT listed as auxiliary at all.
-  4. is_interdisciplinary = TRUE only when the auxiliary is a PARALLEL APPLICATION TOPIC (3b) the
-     paper itself contributes to, NOT when it is merely the method/tool discipline (3a). The deciding
-     question: "does the paper make a substantive contribution to the auxiliary discipline itself?"
-     — if YES and that discipline differs in boundary from the main code, inter=true; if the
-     auxiliary is only the technique/tool borrowed from another field, inter=false.
-     Discipline boundary (for the 3b case): T (Industrial Technology) is an aggregated top class;
-     its second-level codes (TM electrical / TP computer / TQ chemical / TU construction / TD mining
-     ...) are distinct discipline boundaries. Other top classes (A-S, X, Z) use the first letter.
-     Same-boundary secondary themes (e.g., two economics sub-fields under F) get an auxiliary code
-     but is_interdisciplinary=false. No auxiliary => false.
+  3. Auxiliary code (0 or 1) = the "secondary" of a cross-discipline (main, secondary) pair. Give it
+     ONLY when the secondary theme crosses the DISCIPLINE BOUNDARY of the main code. The (main, aux)
+     pair is reserved for cross-discipline results: having an auxiliary ⟺ interdisciplinary. The
+     secondary theme may be:
+     (a) the discipline of the paper's core method/technology (e.g., power engineering using machine
+         learning → Main TM, Aux TP; medical imaging using deep learning → Main R, Aux TP);
+     (b) a parallel secondary application topic (e.g., ecological environment in urbanization
+         research → Main F, Aux X; intellectual property in service-industry research → Main F, Aux D).
+     Same-boundary secondary themes (e.g., urbanization F291 + national income F124, both economics)
+     get NO auxiliary — non-cross-discipline papers have a main classification only.
+     Routine statistical/ML tools applied as generic instruments (regression, DEA, clustering, entropy
+     method) are NOT listed as auxiliary at all.
+  4. Interdisciplinary judgment (is_interdisciplinary) = whether an auxiliary crossing the main code's
+     discipline boundary exists:
+     - auxiliary exists ⟺ interdisciplinary (true); no auxiliary ⟺ false.
+     - Discipline boundary: T (Industrial Technology) is an aggregated top class; its second-level
+       codes (TM electrical / TP computer / TQ chemical / TU construction / TD mining ...) are
+       distinct discipline boundaries — so power(TM) × machine learning(TP) IS cross-discipline.
+       Other top classes (A-S, X, Z) use the first letter.
+     - is_interdisciplinary is objectively decided by the main/aux code boundary relation; the
+       backend recomputes it (you only need to ensure any auxiliary you give truly crosses the boundary).
   5. selection_reason must be written in Chinese (中文), explaining why the main code fits the
-     application scenario, what the auxiliary (if any) is, whether it is a method/tool (3a) or a
-     parallel topic (3b), and why (not) interdisciplinary.
+     application scenario, what the auxiliary (if any) is (method discipline or parallel topic),
+     and why the result is (not) cross-discipline.
+
+  ⚠️ Candidate-combination output rules:
+  - Output **1-3 candidate classification combinations**, ordered by recommendation (best first).
+    Each combination = one decision unit (main code, optional auxiliary code) and must NOT be split —
+    manual confirmation adopts the whole unit. A cross-discipline combination carries the (main, aux)
+    pair; a non-cross-discipline combination has main only (auxiliary_codes = empty array).
+  - Combination 1 is the preferred pick (best fit); combinations 2/3 are alternatives (another
+    reasonable reading of the application scenario, or a different main/aux pairing). Only give 2-3
+    combinations when genuinely reasonable alternatives exist; if the paper's home is clear, 1 is fine.
+  - Non-cross-discipline papers may give multiple candidate main codes (auxiliary_codes empty);
+    any auxiliary in a cross-discipline combination must cross the boundary.
+  - confidence reflects the overall trust of the combination (0-1): combination 1 usually highest
+    (e.g., 0.9-1.0), alternatives decreasing.
+  - Every main_code and auxiliary_codes entry must independently be a real, valid CLC code.
 
 principles: |
   Judge by "application scenario"; beware three biases:
@@ -63,15 +74,13 @@ principles: |
   B. Method-mistake: treating the method/tool as the main subject. Main = application scenario;
      method/technology is auxiliary (e.g., medical imaging using deep learning => main R, auxiliary TP).
   C. Background-generalization: classifying by a background-mentioned field rather than the core focus.
-  Cross-discipline judgment — the most common error is OVER-marking interdisciplinary. Key rule:
-  using a method/tool from another discipline (software, biochemistry assay, physics characterization,
-  ML model applied as a tool) does NOT make the paper interdisciplinary — that auxiliary gets
-  is_interdisciplinary=false (kind 3a). Only a PARALLEL APPLICATION TOPIC the paper substantively
-  contributes to (kind 3b) triggers inter=true. When unsure whether the auxiliary is a borrowed tool
-  or a co-equal topic, default to inter=false.
-  Discipline boundary: T's second-level codes (TM/TP/TQ/TU...) are distinct disciplines; other top
-  classes by first letter. Same-class (esp. F economics sub-fields) dual topics are not
-  interdisciplinary but may carry an auxiliary code (is_interdisciplinary=false).
+  Cross-discipline judgment hinges on the DISCIPLINE BOUNDARY, not the CLC first letter: T's
+  second-level codes (TM/TP/TQ/TU...) are distinct disciplines; other top classes by first letter.
+  Dual topics within one discipline (esp. F economics sub-fields) are NOT cross-discipline and get
+  NO auxiliary. Borrowing a method/technology discipline from another boundary (ML, deep learning,
+  biochemistry assays) DOES form a cross-boundary (main, aux) pair — main = application scenario,
+  aux = the method discipline. Only generic routine instruments (regression, DEA, clustering,
+  entropy method, harmony search) are not listed as auxiliary at all.
   Code validity is a hard constraint: only propose CLC codes you are confident exist.
 
 output_schema:
@@ -80,19 +89,33 @@ output_schema:
     data:
       type: object
       properties:
-        main_code:
-          type: string
-          description: main CLC code (real, valid)
-        auxiliary_codes:
+        combinations:
           type: array
-          description: 0-1 auxiliary CLC codes
-          items: {type: string}
+          description: 1-3 个候选分类组合，按推荐度降序；每组合为一个决策单元（跨学科含主+次配对，非跨学科仅主分类）
+          items:
+            type: object
+            properties:
+              main_code:
+                type: string
+                description: 主分类号，中图法真实合法类号
+              auxiliary_codes:
+                type: array
+                description: 辅助分类号 0-1 个（可空数组）
+                items: {type: string}
+              confidence:
+                type: number
+                description: 该组合整体可信度 0-1；组合1 通常最高，备选递减
+              reason:
+                type: string
+                description: 该(主,次)组合的选择理由（中文）；备选组合须说明与首选的差异
+            required: [main_code, auxiliary_codes, confidence, reason]
         is_interdisciplinary:
           type: boolean
+          description: 是否交叉学科；由后端按 combinations[0] 主次码边界关系客观重算（有次分类⟺跨学科）
         selection_reason:
           type: string
-          description: English rationale for main/auxiliary/interdisciplinary judgment
-      required: [main_code, auxiliary_codes, is_interdisciplinary, selection_reason]
+          description: 主/辅分类选择理由及交叉学科判定理由（中文；= combinations[0].reason，兼容旧字段）
+      required: [combinations, is_interdisciplinary]
   required: [data]
 
 examples: []
