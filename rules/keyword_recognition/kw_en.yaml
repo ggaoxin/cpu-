@@ -17,6 +17,9 @@ system_prompt: |
   2. Keep technical terms/acronyms intact (e.g., "TOPCon", "CNN", "BRCA2"); expand acronyms only when meaningful.
   3. Pick keywords MOST RELEVANT to the document's core content — not merely frequent words. Drop function-only or
      generic words (study, method, result, analysis, approach, based, paper, etc.) and background/edge terms.
+     Domain/field-level terms (the discipline or application field of the paper, e.g. "deep learning",
+     "fault diagnosis", "bridge engineering") are NOT generic — keep 1-2 of them alongside specific
+     method/model terms; never output only specific method-component keywords (hierarchy quota).
   4. Classify each keyword into exactly one of 5 types and aim for TYPE COVERAGE (avoid clustering in one type):
      - research_object: the core entity/substance/system BEING STUDIED — the actual object of the research,
        a concrete object/material/organism/system name (e.g., "perovskite solar cells", "titanium silicide",

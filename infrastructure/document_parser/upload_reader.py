@@ -101,18 +101,77 @@ def _page_is_dual_column(page) -> bool:
     return total_chars > 0 and right_chars / total_chars > 0.25
 
 
-def _layout_text_from_bytes(content: bytes, max_pages: int | None = None) -> str:
-    """版面感知分栏读取（paper_abstract_extractor）：左栏读完再读右栏，不跨栏错拼。
+import re as _re
+_PUA_CHAR_RE = _re.compile("[\\ue000-\\uf8ff]")
 
+
+def _text_layer_corrupt(text: str) -> bool:
+    """PDF 内嵌文本层损坏检测：Unicode 私有区（造字区 U+E000-F8FF）乱码占比过高。
+
+    部分 CNKI/期刊 PDF 的字体 CMap 映射错乱，文本层抽出的字是错的（如「光伏」→
+    「光我」、「运维」→「道维」），且夹带大量私有区字符。这种文本层不可信，
+    应返回空由调用方回退 mineru OCR（从页面图像重新识别，更准确）。
+    """
+    if not text or len(text) < 200:
+        return False
+    return len(_PUA_CHAR_RE.findall(text)) / len(text) > 0.003
+
+
+def _builtin_column_layout_text(content: bytes, max_pages: int | None = None) -> str:
+    """内置版面感知分栏读取（替代私有包 paper_abstract_extractor 的兜底实现）。
+
+    PyMuPDF 文本块按几何位置重排：块宽 >60% 页宽视为通栏（标题/通栏图注）并入左栏流，
+    其余按块中心 x 归属左/右栏；每页先读左栏（含通栏）再读右栏，按 (y,x) 排序——
+    消除 sort=True 同 y 左右行交错。纯几何重排不做 OCR，毫秒级；无文本层返回空串，
+    由调用方按扫描件回退 mineru。
+    """
+    try:
+        import pymupdf
+    except ImportError:
+        return ""
+    parts: list = []
+    with pymupdf.open(stream=content, filetype="pdf") as doc:
+        for pno, page in enumerate(doc):
+            if max_pages is not None and pno >= max_pages:
+                break
+            pw = page.rect.width
+            mid = pw / 2
+            left_stream: list = []   # (y, x, text)
+            right_stream: list = []
+            for b in page.get_text("blocks"):
+                if len(b) < 5 or b[6] != 0 or not (b[4] or "").strip():
+                    continue
+                x0, y0, x1 = b[0], b[1], b[2]
+                text = b[4].strip()
+                if x1 - x0 > pw * 0.6:          # 通栏块（标题/跨栏图表注）并入左栏流
+                    left_stream.append((y0, x0, text))
+                elif (x0 + x1) / 2 < mid:
+                    left_stream.append((y0, x0, text))
+                else:
+                    right_stream.append((y0, x0, text))
+            for _y, _x, txt in sorted(left_stream) + sorted(right_stream):
+                parts.append(txt)
+    text = "\n".join(parts)
+    # 文本层损坏（CMap 错乱，私有区乱码多）→ 返空回退 mineru OCR
+    if _text_layer_corrupt(text):
+        logger.info("内置分栏读取返空：文本层损坏（私有区乱码占比过高），回退 mineru")
+        return ""
+    return text
+
+
+def _layout_text_from_bytes(content: bytes, max_pages: int | None = None) -> str:
+    """版面感知分栏读取：左栏读完再读右栏，不跨栏错拼。
+
+    优先私有包 paper_abstract_extractor（若安装）；未安装时用内置
+    _builtin_column_layout_text（PyMuPDF 块几何分栏，毫秒级，效果等同常规双栏重排）。
     双栏 PDF 用 sort=True 会把同 y 的左右栏行交错（如左栏竖排标题单字插进右栏正文），
-    破坏 rq-detect 等句式识别。extract_layout_text 收 pdf_path，故写临时文件再调。
-    比 mineru 快 ~100x（0.3-1.3s vs ~99s/篇）。返空串由调用方按扫描件回退 mineru。
+    破坏 rq-detect 等句式识别。比 mineru 快 ~100x（0.3-1.3s vs ~99s/篇）。
+    返空串由调用方按扫描件回退 mineru。
     """
     try:
         from paper_abstract_extractor.layout import extract_layout_text
     except ImportError:
-        logger.warning("paper_abstract_extractor 未装，双栏无法走分栏读取")
-        return ""
+        return _builtin_column_layout_text(content, max_pages=max_pages)
     import os as _os, tempfile as _tf
     fd, path = _tf.mkstemp(suffix=".pdf")
     try:

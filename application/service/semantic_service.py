@@ -932,27 +932,56 @@ class SemanticApplicationService(ISemanticService):
         if not full_text and self._looks_like_full_document(text):
             full_text = text
 
-        # 标题/正文切分：不再假设文献必有摘要段（科技报告等可能无摘要），
-        # 短语挖掘与原词校验面向全文，LLM 上下文截断以控制 token。
+        # 摘要优先（2026-09-02 召回修复）：论文/基金/专利的关键词源自标题+摘要；
+        # 此前全文路径把前 8000 字当"摘要"、挖掘面向全文，全文高频泛化术语（方法名/
+        # 实验对象/章节主题词）挤掉摘要级主题词，实测对作者关键词召回仅 ~0.3。
+        # 现改为：结构化提取摘要段（与摘要语步识别工具同款 DocumentParser 规则），
+        # 有摘要 → 挖掘与 LLM 面向 标题+摘要；无摘要（科技报告等）→ 保持全文路径。
+        from infrastructure.document_parser.document_parser import extract_abstract_text
+        paste_full_text = None  # 无##标题的粘贴全文/light解析走结构化摘要时，字面校验仍面向全文
         if full_text:
             # 剥离论文已列作者关键词段落：默认不把作者关键词喂给 LLM，促其基于内容自主生成
             full_text = self._strip_author_keywords(full_text)
             # 提取论文题目：跳过期刊名/出版信息行（MinerU 常把《xx》网络首发论文标成首个 #）
             title = self._extract_paper_title(full_text)
-            mine_source = full_text          # 短语挖掘面向全文，不截断（科技报告长正文也参与召回）
-            abstract = full_text[:8000]      # LLM 上下文截断（与全文提取口径一致 8000）
+            abstract = extract_abstract_text(full_text, "zh_paper" if not is_en else "en_paper")
+            # 摘要过短视为误命中（正文中孤立的"摘要"字样），回退全文路径
+            if len(abstract.strip()) >= 50:
+                mine_source = ((title or "") + "\n" + abstract).strip()
+            else:
+                mine_source = full_text      # 无摘要段：全文挖掘不截断（科技报告长正文也参与召回）
+                abstract = full_text[:8000]  # LLM 上下文截断（与全文提取口径一致 8000）
         elif is_en:
-            # 纯文本输入：可能是无摘要的科技报告等，整段作挖掘源，并尝试从首部提取标题
-            mine_source = self._strip_author_keywords(text)
-            title = self._extract_paper_title(mine_source) or ""
-            abstract = mine_source[:8000]
+            # 纯文本输入：先试结构化摘要段（粘贴的论文首页/含 Abstract 的报告），
+            # 无摘要才整段作挖掘源（无摘要科技报告），并尝试从首部提取标题
+            _stripped = self._strip_author_keywords(text)
+            title = self._extract_paper_title(_stripped) or ""
+            abstract = extract_abstract_text(_stripped, "en_paper")
+            if len(abstract.strip()) >= 50:
+                mine_source = ((title or "") + "\n" + abstract).strip()
+                paste_full_text = _stripped
+            else:
+                mine_source = _stripped
+                abstract = mine_source[:8000]
         else:
-            title, abstract = self._split_title_abstract(text)
-            abstract = self._strip_author_keywords(abstract)
-            mine_source = (title or "") + (abstract or "")
+            # 中文纯文本：长文本（粘贴全文/双栏 light 解析无 ## 标题）先试结构化摘要段——
+            # 双栏 PDF 走内置分栏读取后没有 markdown 标题，_looks_like_full_document 判不出，
+            # 若不在此探测摘要，双栏论文会退回整段挖掘、丢失摘要优先
+            _stripped = self._strip_author_keywords(text)
+            _abstract = extract_abstract_text(_stripped, "zh_paper")
+            if len(text) >= 2000 and len(_abstract.strip()) >= 50:
+                title = self._extract_paper_title(_stripped) or ""
+                abstract = _abstract
+                mine_source = ((title or "") + "\n" + abstract).strip()
+                paste_full_text = _stripped
+            else:
+                title, abstract = self._split_title_abstract(text)
+                abstract = self._strip_author_keywords(abstract)
+                mine_source = (title or "") + (abstract or "")
         title = (title or "").lstrip('#').strip()
-        # 原词校验/排序定位面向全文（不限定摘要段；关键词可出自全文任意位置）
-        searchable_text = mine_source
+        # 原词校验/排序定位面向全文（不限定摘要段；关键词可出自全文任意位置）——
+        # 摘要优先只收窄"挖掘与 LLM 的信号源"，不收窄字面校验范围
+        searchable_text = full_text or paste_full_text or mine_source
 
         # 1. 确定性候选 + 特征打分
         model = self._load_keyword_model(fp)
@@ -996,10 +1025,13 @@ class SemanticApplicationService(ISemanticService):
 
         # 2. LLM 选/精炼（带 few-shot + 候选）
         system_prompt = self._system_prompt(rule, request)
+        _min_kw = max(1, min(50, int(params.get("min_keywords", 5) or 5)))
+        _max_kw = max(_min_kw, min(50, int((request.params or {}).get("max_keywords", 8) or 8)))
         user_prompt = self._render_keyword_user_prompt(
             title, abstract, top_cands, model.get("few_shot", []), lang=getattr(rule, "lang", ""),
-            preserve_original_form=preserve_original_form)
-        data = self._glm.chat_json(system_prompt, user_prompt, timeout=60.0)
+            preserve_original_form=preserve_original_form, count_min=_min_kw, count_max=_max_kw)
+        # 低温采样：关键词选词要稳定可复现（高温导致同文档跑次间 0.8↔0.2 波动），与 fitness 评分轮一致
+        data = self._glm.chat_json(system_prompt, user_prompt, timeout=60.0, temperature=0.1)
         raw_kw = data.get("data", data) if isinstance(data, dict) else []
         if not isinstance(raw_kw, list):
             raise RuntimeError("GLM-5.2 未返回有效关键词列表")
@@ -1130,6 +1162,23 @@ class SemanticApplicationService(ISemanticService):
                         _kept.append(_fit[1])                                      # 次优贴近最优才留(动态1或2)
                 _kept.extend(_dict_hits)                                           # 词典命中词全保留
             cleaned = _kept
+        # 数量下限补齐（min_keywords 接线）：LLM 输出不足下限时（如只给 4 个），
+        # 从未入选的高分候选按特征分补齐——字面须在原文（不引入幻觉词）、非停用词
+        minimum_keywords = max(1, min(50, int((request.params or {}).get("min_keywords", 5) or 5)))
+        if len(cleaned) < minimum_keywords:
+            _have = {str(c.get("keyword", "")).casefold() for c in cleaned}
+            for _c in cands:
+                if len(cleaned) >= minimum_keywords:
+                    break
+                _ph = str(_c.get("phrase", "")).strip()
+                if not _ph or len(_ph) > 30 or _ph.casefold() in _have:
+                    continue
+                if _ph in stopwords:
+                    continue
+                if self._ws_substr_find(searchable_text.casefold(), _ph.casefold()) < 0:
+                    continue
+                _have.add(_ph.casefold())
+                cleaned.append({"keyword": _ph, "weight": round(float(_c.get("score", 0) or 0), 3)})
         # 最终置信度=内容适配度 fitness；用户词典 boost 经 weight_change 叠加
         #（custom_terms 无 fitness，保留 boost 后的 weight 不变）
         for _item in cleaned:
@@ -1583,7 +1632,8 @@ class SemanticApplicationService(ISemanticService):
         import re as _re
         if not full_text:
             return ""
-        headings = _re.findall(r'^#\s+(.+?)\s*$', full_text, _re.MULTILINE)
+        # 所有层级标题按文档序取（文档题目可能标成 ##，而 # 被表单名/刊头占用）
+        headings = _re.findall(r'^#{1,6}\s+(.+?)\s*$', full_text, _re.MULTILINE)
 
         def _clean(h: str) -> str:
             # 去 markdown 转义星号/下划线与首尾 * 标记
@@ -1600,21 +1650,82 @@ class SemanticApplicationService(ISemanticService):
             r'参考文献|references?|致谢|acknowledg|附录|appendix|目录|contents|'
             r'\d+[、\.．\s]|[一二三四五六七八九十]+[、\.．])', _re.IGNORECASE)
 
-        # 无 # 标题（pdfplumber 纯文本等）：从首部取题目行，跳过期刊页眉/作者/摘要
+        # 无 # 标题（pdfplumber 纯文本等）：从首部取题目行，跳过期刊页眉/作者/摘要。
+        # 优先「摘要标记上方定位」：论文题目几乎总紧邻摘要上方，从摘要行向上回溯
+        # 可跳过期刊中英文名/期号/栏目行（如 信息与电脑 / Information&Computer），
+        # 并把被解析拆成多行的题目拼回一行（肾内科血净护理 / 实习教学中的应用研究）。
         if not headings:
-            for line in (full_text or "").split('\n')[:30]:
-                line = line.strip()
-                if len(line) < 8:
-                    continue
+            lines = [l.strip() for l in (full_text or "").split('\n')[:40]]
+
+            def _title_like(line: str) -> bool:
+                if len(line) < 8 or len(line) > 80:
+                    return False
                 if (journal_pat.search(line)
                         or _re.search(r'\d{4}|[（(]\d+[)）]|@|doi|摘\s*要|关键\s*词|'
-                                      r'文献标志码|中图分类号|通信作者|E-?mail', line, _re.IGNORECASE)
+                                      r'文献标志码|中图分类号|通信作者|E-?mail|Abstract', line, _re.IGNORECASE)
                         or _re.match(r'^\d', line)):
+                    return False
+                # 跳过作者行：多个逗号分隔的人名；  全角空格分隔的作者串也不是题目
+                if line.count('，') >= 2 or line.count(',') >= 2 or ' ' in line or '∗' in line or '*' in line:
+                    return False
+                if _re.search(r'大学|学院|医院|研究所|公司|集团|Hospital|University|Institute', line) and len(line) < 30:
+                    return False
+                return True
+
+            def _author_or_affil(line: str) -> bool:
+                """作者/单位行（题目与摘要之间的障碍行）：回溯时跳过而非中断。"""
+                return bool(line and (
+                    _re.match(r'^\d', line)
+                    or ' ' in line
+                    or '∗' in line
+                    or _re.search(r'大学|学院|医院|研究所|公司|集团|重点实验室|研究中心|'
+                                  r'Hospital|University|Institute|Technology|Laboratory|Research|@|mail', line, _re.IGNORECASE)
+                    or line.count('，') >= 2 or line.count(',') >= 2))
+
+            def _polish(t: str) -> str:
+                # 去「题目：」表单前缀；同行作者以连续 2+ 空格分隔 → 截断保留题目部分
+                t = _re.sub(r'^题目\s*[:：]\s*', '', t.strip())
+                if _re.search(r'[一-鿿]', t):
+                    t = _re.split(r'\s{2,}', t)[0]
+                return t[:120]
+
+            # 1) 摘要标记上方回溯：跳过作者/单位行，取紧邻摘要上方的题目行块
+            abstract_idx = next((i for i, l in enumerate(lines)
+                                 if _re.match(r'^(摘\s*要|Abstract)\s*[:：]?', l, _re.IGNORECASE)), None)
+            if abstract_idx is not None:
+                block = []
+                for j in range(abstract_idx - 1, max(-1, abstract_idx - 8), -1):
+                    if not lines[j]:
+                        continue
+                    if _title_like(lines[j]):
+                        # 拉丁行须像题目（≥4 词或含冒号）：裸人名（Xian Guo，2-3 词）
+                        # 不是题目，直接断开，避免把作者名并进标题块
+                        if not _re.search(r'[一-鿿]', lines[j]) \
+                                and len(lines[j].split()) < 4 and ':' not in lines[j]:
+                            break
+                        block.insert(0, lines[j])
+                        continue
+                    if _author_or_affil(lines[j]):
+                        continue  # 作者/单位行：跳过继续向上找题目
+                    break
+                if block:
+                    merged = "".join(block) if _re.search(r'[一-鿿]', block[0]) else " ".join(block)
+                    return _polish(merged)
+            # 2) 兜底：首个题目行（原逻辑），纯拉丁行（期刊英文名）在有中文行时跳过
+            has_cjk_candidate = any(_title_like(l) and _re.search(r'[一-鿿]', l) for l in lines)
+            for idx, line in enumerate(lines):
+                if not _title_like(line) or _author_or_affil(line):
                     continue
-                # 跳过作者行：多个逗号分隔的人名
-                if line.count('，') >= 2 or line.count(',') >= 2:
-                    continue
-                return line[:120]
+                if has_cjk_candidate and not _re.search(r'[一-鿿]', line):
+                    continue  # 期刊英文名（Information&Computer 等）
+                # 题目被拆行：下一行也题目样且过中文规则 → 中文直接拼接/英文空格拼接
+                nxt = ""
+                if idx + 1 < len(lines) and _title_like(lines[idx + 1]):
+                    nxt_ok = _re.search(r'[一-鿿]', lines[idx + 1]) or not has_cjk_candidate
+                    nxt = lines[idx + 1] if nxt_ok else ""
+                if nxt and _re.search(r'[一-鿿]', line):
+                    return _polish(line + nxt)
+                return _polish(line)
             return ""
 
         candidates = []
@@ -1623,6 +1734,12 @@ class SemanticApplicationService(ISemanticService):
             if not c or len(c) < 4:
                 continue
             if journal_pat.search(c) or section_pat.match(c):
+                continue
+            # mineru 偶把作者/单位行标成标题（英文论文）：∗ 上标、单位词、邮箱 → 跳过
+            if '∗' in c or '*' in c or '@' in c or (
+                    not _re.search(r'[一-鿿]', c)
+                    and _re.search(r'Technology|Laboratory|University|Institute|Hospital', c)
+                    and len(c.split()) >= 4):
                 continue
             candidates.append(c)
         if candidates:
@@ -1648,7 +1765,7 @@ class SemanticApplicationService(ISemanticService):
                 "few_shot": [], "domain_terms": []}
 
     @staticmethod
-    def _render_keyword_user_prompt(title, abstract, candidates, few_shot, lang="", preserve_original_form=True) -> str:
+    def _render_keyword_user_prompt(title, abstract, candidates, few_shot, lang="", preserve_original_form=True, count_min=3, count_max=8) -> str:
         import json as _json
         is_en = lang == "en"
         parts = []
@@ -1665,23 +1782,31 @@ class SemanticApplicationService(ISemanticService):
                         "author-listed keyword list verbatim. "
                         "Pick the keywords MOST RELEVANT to the core content, 0-2 per type, aiming for type "
                         "coverage (avoid clustering in one type; skip a type if no strong candidate). "
+                        f"Extract {count_min}-{count_max} keywords in total. "
                         "Use terms exactly as they appear in the document; do NOT generalize, rephrase, "
                         "or merge scattered wording into a standard term. Prefer concise base terms; "
                         "drop generic words. Also surface key metrics, phenomena, or parameters "
                         "(phenomenon_metric type) that recur in the document—they are often the "
                         "study's defining criteria; do not omit them just because they are not in "
-                        "the title. Return JSON {data:[{keyword,weight,type}]}.")
+                        "the title. MUST also cover application-scenario / research-object domain "
+                        "terms (disease, department, industry, equipment, business scenario — e.g. "
+                        "the scenario words in the title); never let method/model/metric terms "
+                        "crowd them out. Return JSON {data:[{keyword,weight,type}]}.")
             else:
                 note = ("Generate keywords yourself from the document topic; do NOT copy any "
                         "author-listed keyword list verbatim. "
                         "Pick the keywords MOST RELEVANT to the core content, 0-2 per type, aiming for type "
                         "coverage (avoid clustering in one type; skip a type if no strong candidate). "
+                        f"Extract {count_min}-{count_max} keywords in total. "
                         "Prefer phrases appearing in the document; for a recurring concept with scattered wording, "
                         "use the standard term. Prefer concise base terms; drop generic words. "
                         "Also surface key metrics, phenomena, or parameters (phenomenon_metric type) "
                         "that recur in the document—they are often the study's defining criteria; "
                         "do not omit them just because they are not in the title. "
-                        "Return JSON {data:[{keyword,weight,type}]}.")
+                        "MUST also cover application-scenario / research-object domain terms "
+                        "(disease, department, industry, equipment, business scenario — e.g. the "
+                        "scenario words in the title); never let method/model/metric terms crowd "
+                        "them out. Return JSON {data:[{keyword,weight,type}]}.")
             obj = {
                 "title": title,
                 "document": abstract,
@@ -1696,7 +1821,7 @@ class SemanticApplicationService(ISemanticService):
             if preserve_original_form:
                 desc = ("基于文献主题自行提炼关键词，不得直接照搬论文中作者已列的关键词组合，"
                         "应独立判断主题代表性；"
-                        "抽取 3-8 个最反映主题的关键词，按重要性降序给 0-1 weight。"
+                        f"抽取 {count_min}-{count_max} 个最反映主题的关键词，按重要性降序给 0-1 weight。"
                         "必须使用标题/摘要中字面出现的原词，不得概括、改写或合并措辞分散的概念"
                         "（如摘要为'深度神经网络'时不得概括为'深度学习'）。"
                         "偏好简洁基础术语，避免'高比例/大规模/高效'等量化修饰语加在基础词上"
@@ -1705,11 +1830,12 @@ class SemanticApplicationService(ISemanticService):
                         "除研究对象/技术方法外，也留意本文反复出现的核心度量指标、物理现象、"
                         "关键参数（phenomenon_metric 类，如响应谱/频谱/应力/位移/精度等），"
                         "它们常是研究的关键判据，勿因不在标题就遗漏。"
+                        "关键词必须覆盖文中的应用场景/研究对象领域词（疾病、科室、行业、装备、业务场景等，如标题中的场景词），不得全部集中在方法/模型/指标词——标题中的研究对象与场景词通常就是核心关键词。"
                         "为每个关键词标注 type（从下方 keyword_types 中选一类；本文新提出的模型/方法/算法标 proposed_model，区别于通用 technical_method），返回 JSON {data:[{keyword,weight,type}]}。")
             else:
                 desc = ("基于文献主题自行提炼关键词，不得直接照搬论文中作者已列的关键词组合，"
                         "应独立判断主题代表性；"
-                        "抽取 3-8 个最反映主题的关键词，按重要性降序给 0-1 weight。"
+                        f"抽取 {count_min}-{count_max} 个最反映主题的关键词，按重要性降序给 0-1 weight。"
                         "优先使用标题/摘要中出现的原词；对反复出现但措辞分散的核心概念，"
                         "可用规范学术术语概括（如摘要'深度神经网络'可概括为'深度学习'，"
                         "'社会网络方法'可概括为'社会网络分析'），但不得脱离原文主题生造。"
@@ -1719,6 +1845,7 @@ class SemanticApplicationService(ISemanticService):
                         "除研究对象/技术方法外，也留意本文反复出现的核心度量指标、物理现象、"
                         "关键参数（phenomenon_metric 类，如响应谱/频谱/应力/位移/精度等），"
                         "它们常是研究的关键判据，勿因不在标题就遗漏。"
+                        "关键词必须覆盖文中的应用场景/研究对象领域词（疾病、科室、行业、装备、业务场景等，如标题中的场景词），不得全部集中在方法/模型/指标词——标题中的研究对象与场景词通常就是核心关键词。"
                         "为每个关键词标注 type（从下方 keyword_types 中选一类；本文新提出的模型/方法/算法标 proposed_model，区别于通用 technical_method），返回 JSON {data:[{keyword,weight,type}]}。")
             obj = {
                 "title": title, "abstract": abstract,

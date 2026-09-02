@@ -27,6 +27,31 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 
+def extract_abstract_text(text: str, doc_type: str = "zh_paper") -> str:
+    """结构化摘要段提取（模块级，供语步识别/关键词识别等管线复用）。
+
+    中文：[【（]?摘要[】）]?[:：]? 到 关键词/中图分类号/引言 等边界；
+    英文：## Abstract（markdown 标题）、Abstract:、ABSTRACT 到 Keywords/Introduction 边界。
+    提取不到返回空串（调用方据此回退全文路径）。
+    """
+    full = text
+    if doc_type == 'zh_paper':
+        m = re.search(r'[\[【（(]?\s*摘\s*要\s*[\]】）)]?\s*[:：]?\s*(.+?)(?=关键词|中图分类号|文献标识码|文献标志码|文章编号|Abstract|ABSTRACT|引言|0\s*引|^##)',
+                      full, re.DOTALL)
+        if m:
+            return m.group(1).strip()
+    m = re.search(r'##\s*(?:Abstract|ABSTRACT)[^\n]*\n\s*(.+?)(?=\n##\s|\n#\s|$)', full, re.DOTALL)
+    if m:
+        return m.group(1).strip()
+    m = re.search(r'(?:^|\n)Abstract\s*[.。:：]?\s*(.+?)(?=Keywords|Index Terms|Introduction|1\.|^##|$)', full, re.DOTALL)
+    if m:
+        return m.group(1).strip()
+    m = re.search(r'(?:^|\n)ABSTRACT\s*[.。:：]?\s*(.+?)(?=Keywords|Index Terms|1\s+INTRODUCTION|^##|$)', full, re.DOTALL)
+    if m:
+        return m.group(1).strip()
+    return ''
+
+
 class DocumentParser:
     """从 MinerU Markdown 解析结构化文档。"""
 
@@ -470,22 +495,7 @@ class DocumentParser:
         return 2
 
     def _extract_abstract(self, text: str, doc_type: str) -> str:
-        full = text
-        if doc_type == 'zh_paper':
-            m = re.search(r'[\[【（(]?\s*摘\s*要\s*[\]】）)]?\s*[:：]?\s*(.+?)(?=关键词|中图分类号|文献标识码|文献标志码|文章编号|Abstract|ABSTRACT|引言|0\s*引|^##)',
-                          full, re.DOTALL)
-            if m:
-                return m.group(1).strip()
-        m = re.search(r'##\s*(?:Abstract|ABSTRACT)[^\n]*\n\s*(.+?)(?=\n##\s|\n#\s|$)', full, re.DOTALL)
-        if m:
-            return m.group(1).strip()
-        m = re.search(r'(?:^|\n)Abstract\s*[.。:：]?\s*(.+?)(?=Keywords|Index Terms|Introduction|1\.|^##|$)', full, re.DOTALL)
-        if m:
-            return m.group(1).strip()
-        m = re.search(r'(?:^|\n)ABSTRACT\s*[.。:：]?\s*(.+?)(?=Keywords|Index Terms|1\s+INTRODUCTION|^##|$)', full, re.DOTALL)
-        if m:
-            return m.group(1).strip()
-        return ''
+        return extract_abstract_text(text, doc_type)
 
     def _extract_keywords(self, text: str) -> List[str]:
         m = re.search(r'(?:##\s*)?[\[【（(]?\s*(?:关键词|Key\s*words|Keywords|KEYWORDS|Index Terms)\s*[\]】）)]?\s*[:：—\-]?\s*\n?(.+)', text)
