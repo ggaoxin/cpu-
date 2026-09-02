@@ -2,7 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import type { InputMode, ToolDefinition } from '../types'
 import { endpointFor, modesFor, pretty, requestPayloadFor, supportsVisualization } from '../utils/tooling'
-import { ApiRequestError, executeToolRequest, listCompatibleHistory, listDictionaries, listDocumentCollections, listSemanticResources, parseCitationMetadata, saveDictionary } from '../services/api'
+import { ApiRequestError, apiUrl, executeToolRequest, listCompatibleHistory, listDictionaries, listDocumentCollections, listSemanticResources, parseCitationMetadata, saveDictionary } from '../services/api'
 import { requirementInputsFor } from '../data/requirement-contracts'
 import ModeSwitch from './ModeSwitch.vue'
 import RequirementSupplement from './RequirementSupplement.vue'
@@ -271,7 +271,7 @@ async function submitAnchorResource(resourceKey: string) {
     const formData = new FormData()
     formData.append('resource_key', resourceKey)
     formData.append('upload', file)
-    const response = await fetch('/api/v1/semantic-resources/upload', { method: 'POST', body: formData })
+    const response = await fetch(apiUrl('/api/v1/semantic-resources/upload'), { method: 'POST', body: formData })
     const data = await response.json()
     if (data.code === 0) {
       const rid = data.data?.resource_id
@@ -333,7 +333,7 @@ watch(selectedNerRecordId, async recordId => {
   if (!recordId || props.toolId !== 'relation-extract') return
   dependencyPreviewLoading.value = true
   try {
-    const response = await fetch('/api/v1/relation/dependency-preview', {
+    const response = await fetch(apiUrl('/api/v1/relation/dependency-preview'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ upstream_entity_record_id: recordId }),

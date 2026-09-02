@@ -12,11 +12,19 @@ export class ApiRequestError extends Error {
   }
 }
 
-function apiUrl(endpoint: string) {
+// 构建期 base（vite --base=/dma/sem/ 时为 '/dma/sem'，默认为 ''）。
+// 公网网关只转发带该前缀的路径，运行时 fetch 与页面跳转都必须带上。
+const basePath = String(import.meta.env.BASE_URL || '/').replace(/\/+$/, '')
+
+export function apiUrl(endpoint: string) {
   const configured = String(import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
-  if (!configured || configured === '/api') return endpoint
+  if (!configured || configured === '/api') return `${basePath}${endpoint}`
   if (/^https?:\/\//i.test(configured)) return `${configured}${endpoint}`
-  return `${configured}${endpoint}`.replace(/\/+/g, '/')
+  return `${basePath}${configured}${endpoint}`.replace(/\/+/g, '/')
+}
+
+export function appPath(path: string) {
+  return `${basePath}${path}`
 }
 
 function jsonSafeValue(value: unknown): unknown {
