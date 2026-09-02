@@ -154,7 +154,7 @@ for f in sorted(os.listdir(base)):
 
 ## 4. 当前任务：中文科技文献分类（ac_zh）✅ 管线已交付，评测进行中
 - 输入：`{ch_name 标题, ch_abstract 摘要, keywords[] 关键词}`（API 的 `text` 字段传整个 paper 的 JSON）
-- 输出：main_classification + auxiliary_classifications[]（0-1个）+ is_interdisciplinary + selection_reason + rag_top_k_candidates + alignment_check
+- 输出：main_classification + auxiliary_classifications[]（0-1个）+ is_interdisciplinary + selection_reason + candidate_combinations + alignment_check（rag_top_k_candidates 仅内部兜底/折算候选用，2026-09-02 起不再对外输出）
 - 分类号：中图法（CLC），12468条，必须真实存在于知识库（防幻觉），路径从知识库复制
 - 功能点code：`ac_zh`，规则库 `rules/auto_classification/ac_zh.yaml`（新schema：principles + output_schema + engine_type）
 - 数据：`/root/autodl-tmp/datasets/random_50_chinese_papers.json`（50篇）+ 标准结果
@@ -174,7 +174,7 @@ for f in sorted(os.listdir(base)):
 ### 4.4 已实现管线：LLM优先 + 二阶段层级细化 + 后置校验
 ```
 输入(标题+摘要+关键词)
-  → ①检索top-K（仅输出rag_top_k_candidates+兜底，不喂LLM，防锚定）
+  → ①检索top-K（仅内部兜底与候选折算，不喂LLM防锚定；不对外输出原始数组）
   → ②LLM凭CLC知识提议 main/aux/inter/reason（prompt不含候选）
   → ③二阶段层级细化：把初判码的同级+下位子码列给LLM选最贴切具体号
        （层级引导，非语义候选——只在该学科内选子码，不跨学科锚定）

@@ -207,8 +207,10 @@ class FiveToolHttpIntegrationTests(unittest.TestCase):
         keyword_result = self.assert_success(keyword, "keywords")
         hit = next(row for row in keyword_result["keywords"] if row["keyword"] == "知识图谱")
         self.assertTrue(hit["custom_dictionary_hit"])
-        self.assertEqual(keyword_result["dictionary_usage"]["dictionary_id"], dictionary["id"])
-        self.assertEqual(keyword_result["dictionary_usage"]["version_id"], dictionary["version_id"])
+        # 词典溯源（dictionary_usage）弹窗不读、不进公开响应；从落库记录验证使用的是保存词典
+        stored_keyword = self.repository.get_result(keyword.json()["meta"]["record_id"])["result"]
+        self.assertEqual(stored_keyword["dictionary_usage"]["dictionary_id"], dictionary["id"])
+        self.assertEqual(stored_keyword["dictionary_usage"]["version_id"], dictionary["version_id"])
 
         classification = self.client.post("/api/v1/classify/domain/text", json={
             "professional_domain": "materials_science",

@@ -23,6 +23,94 @@ def _confidence(item: Dict[str, Any], default: Optional[float] = None) -> Option
         return default
 
 
+# ---------------------------------------------------------------------------
+# 响应与可视化弹窗严格一致：按工具白名单收敛**公开响应** data 顶层字段。
+# 弹窗渲染器（frontend/src/utils/prototypeVisualizationRenderers.js 与
+# visualizationRenderers.js）只读取下列字段；引擎与归一化产生的其余顶层字段
+# （检索中间产物、旧字段别名、重复统计、内部校验标记）一律不对外输出，
+# 避免"响应里有、弹窗里没有"的不一致。
+# 注意：收敛只发生在 presentation._vue_public_response 出口——归一化结果完整
+# 落库，供投影表/导出/溯源等后端消费方使用；子对象内部字段不收敛（渲染器按需取用）。
+# 新增顶层输出字段时须同步对应渲染器，或明确不进白名单。
+# ---------------------------------------------------------------------------
+_UNIVERSAL_VIZ_KEEP = frozenset({
+    # 前端 recordsOf/结果标识/人工确认流程的通用字段
+    "results", "status", "record_id", "file_name", "input",
+    "document", "document_title", "project_name", "abstract",
+    "manual_confirmation", "confirmation_status",
+})
+
+_VIZ_KEEP_FIELDS: Dict[str, frozenset] = {
+    "fund-move": frozenset({"moves"}),
+    "zh-abstract-move": frozenset({"moves", "sentence_count"}),
+    "en-abstract-move": frozenset({"moves", "sentence_count"}),
+    "zh-classify": frozenset({
+        "classifications", "multilevel_classification_results",
+        "candidate_classifications", "domain_labels", "is_interdisciplinary",
+        "classification_statistics_table",
+    }),
+    "en-classify": frozenset({
+        "classifications", "multilevel_classification_results",
+        "candidate_classifications", "domain_labels", "is_interdisciplinary",
+        "literature_distribution_analysis_report", "cross_language_mapping",
+    }),
+    "domain-classify": frozenset({
+        "classifications", "multilevel_classification_results",
+        "candidate_classifications", "candidates", "domain_labels",
+        "domain_match_result", "selected_domain", "professional_domain",
+        "classification_confidence",
+    }),
+    "zh-keyword": frozenset({"keywords"}),
+    "en-keyword": frozenset({"keywords", "keywords_or_topic_phrases"}),
+    "rq-detect": frozenset({
+        "research_question_sentences", "question_sentences",
+        "research_question_phrases", "question_phrases",
+        "structured_research_questions", "research_questions",
+        "research_question_statistics", "statistics", "input_summary",
+    }),
+    "citation-sentiment": frozenset({"citation_sentiment_results", "citations"}),
+    "citation-intent": frozenset({"citation_intent_results", "citations"}),
+    "definition-detect": frozenset({
+        "definitions", "definition_results",
+        "concept_definition_mappings", "mappings",
+        "summary", "statistical_analysis_report",
+    }),
+    "general-ner": frozenset({"entities", "entity_results", "entity_mappings", "mappings", "summary", "selected_domain"}),
+    "research-ner": frozenset({"entities", "entity_results", "standard_term_mappings", "mappings", "summary", "selected_domain"}),
+    "domain-ner": frozenset({"entities", "entity_results", "ontology_mappings", "mappings", "summary", "selected_domain"}),
+    "relation-extract": frozenset({
+        "relation_triples", "triples", "relations", "relation_results",
+        "dependency_parse", "dependencies", "dependency_analysis", "dependency_paths",
+        "knowledge_network", "network", "summary",
+    }),
+    "deep-cluster": frozenset({
+        "clusters", "semantic_projection", "clustering_quality",
+        "theme_trend_analysis", "training_evaluation", "document_assignments",
+        "input_summary", "cluster_dimension_name",
+    }),
+    "cluster-label": frozenset({
+        "labels", "cluster_labels", "label_generation_process_report",
+        "label_distinctiveness_optimization_result", "cluster_count",
+        "generated_label_count", "statistics", "parameters", "task_id", "meta",
+    }),
+    "structured-review": frozenset({
+        "tree", "review_tree", "cluster_induction_results", "problem_clusters",
+        "trend_hotspot_distribution", "trends", "structured_report", "meta",
+    }),
+}
+
+
+def public_viz_result(tool_id: str, result: Any) -> Any:
+    """公开响应出口用：按弹窗渲染器白名单返回收敛后的结果副本。
+
+    仅对已梳理白名单的可视化工具生效；其余工具与非法输入原样返回。
+    """
+    keep = _UNIVERSAL_VIZ_KEEP | _VIZ_KEEP_FIELDS.get(tool_id, frozenset())
+    if tool_id in _VIZ_KEEP_FIELDS and isinstance(result, dict):
+        return {key: value for key, value in result.items() if key in keep}
+    return result
+
+
 def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
     if tool_id in {"zh-abstract-move", "en-abstract-move", "fund-move"}:
         return _moves(raw, tool_id, payload)
@@ -338,6 +426,27 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
+def _cap_classification_to_three_levels(item: Dict[str, Any]) -> Dict[str, Any]:
+    """分类结果统一截断到前三级（一级 / 二级 / 三级）。
+
+    匹配可深于三级（如 R473 完整链 R>R4>R47>R473）；专业领域分类的输出
+    （level_1/2/3、classification_path、classification_code）只保留前三级，
+    分类号上溯到三级码（R473→R47），保证响应各层级字段与弹窗三级展示一致、
+    不出现"四级链 vs 三级表"或"跳级"矛盾。
+    """
+    pc = _list(item.get("path_codes"))
+    if len(pc) <= 3:
+        return item
+    pn = _list(item.get("path_names"))
+    return {
+        **item,
+        "clc_code": pc[2],
+        "clc_name": pn[2] if len(pn) > 2 else item.get("clc_name"),
+        "path_codes": pc[:3],
+        "path_names": pn[:3],
+    }
+
+
 def _domain_classification(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
     """专业领域分类：按 Vue 契约输出 document/selected_domain/domain_match_result/
     multilevel_classification_results/classification_confidence/domain_labels/
@@ -360,7 +469,7 @@ def _domain_classification(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
     selected_domain = {"code": domain_code, "name": domain_name}
 
     # 3. domain_match_result — 根据分类号是否解析成功判定匹配
-    clc = data.get("clc_classification") or {}
+    clc = _cap_classification_to_three_levels(data.get("clc_classification") or {})
     clc_resolved = bool(clc.get("clc_code"))
     match_status = "matched" if clc_resolved else "mismatched"
     # 用主分类真实置信度（检索佐证度）作领域匹配分，不再写死 0.9；clc 未解析才给低分
@@ -425,6 +534,7 @@ def _domain_classification(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
         })
         _seen_codes.add(main_code)
     for i, cand in enumerate(cands_raw):
+        cand = _cap_classification_to_three_levels(cand)
         code = cand.get("clc_code")
         if not code or code in _seen_codes:
             continue
@@ -1254,6 +1364,10 @@ def _clusters(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
         "dimension": dimension,
         "quality_metrics": data.get("quality_metrics"),
         "correction_status": data.get("correction_status", "unreviewed"),
+        # 锚点体系诊断块（库规模/门槛/两级资源裁决）落库留档供验收与审计；
+        # 弹窗不读 → 公开响应仍被 public_viz_result 白名单剔除（严格一致原则）
+        "anchor_assist": data.get("anchor_assist"),
+        "algorithm_metadata": data.get("algorithm_metadata"),
     }
 
 

@@ -17,6 +17,7 @@ from starlette.datastructures import UploadFile as StarletteUploadFile
 
 from application.service.tool_integration_service import ToolIntegrationService
 from application.service.deep_cluster_evaluation_service import DeepClusterEvaluationService
+from application.service.result_normalizer import public_viz_result
 from application.service.export_service import export_service
 from application.service.resource_service import resource_service
 from application.service.result_governance_service import result_governance_service
@@ -631,7 +632,8 @@ def _vue_public_response(tool_id: str, internal: Dict[str, Any], input_type: str
                 "status": record.get("status"),
                 "code": 0 if record.get("status") == "succeeded" else 50001,
                 "record_id": record.get("record_id"),
-                "result": record.get("result") or {},
+                # 公开响应按弹窗渲染器白名单收敛；落库结果保持完整
+                "result": public_viz_result(tool_id, record.get("result") or {}),
                 **({"error": record.get("error")} if record.get("error") else {}),
             })
         return {
@@ -659,6 +661,9 @@ def _vue_public_response(tool_id: str, internal: Dict[str, Any], input_type: str
     # A missing field is a contract defect, not an invitation to inject demo data.
     for field in contract.result_fields:
         result.setdefault(field, [] if field.endswith("s") and field not in {"statistics"} else None)
+    # 公开响应按弹窗渲染器白名单收敛（在契约补全之后执行）：弹窗不读的中间/别名字段
+    # 不对外输出，保证响应 JSON 与可视化弹窗严格一致；落库结果保持完整供后端消费。
+    result = public_viz_result(tool_id, result)
     return {"code": 0, "message": "success", "data": result, "meta": meta}
 
 
@@ -1129,14 +1134,10 @@ def compatible_history(
                     "document_title": (result.get("document") or {}).get("title"),
                 })
             elif upstream_type == "cluster":
-                phrase_sets = []
-                for cluster in result.get("clusters") or []:
-                    if not isinstance(cluster, dict):
-                        continue
-                    phrase_sets.append({
-                        "cluster_id": cluster.get("cluster_id"),
-                        "phrases": [t for t in (_clean_cluster_term(v) for v in (cluster.get("representative_terms") or cluster.get("keywords") or [])) if t],
-                    })
+                # 与标签生成实际输入同源：候选类目分布（锚定+双候选票数）构建短语集，
+                # 未锚定簇由方法内部回退代表短语——前端预览即标签生成真正吃到的内容
+                from application.service.tool_integration_service import ToolIntegrationService as _TIS
+                phrase_sets = _TIS._cluster_phrase_sets(result)
                 _dim = str(result.get("cluster_dimension") or result.get("dimension") or "")
                 _dim_label = "技术路线聚类" if _dim.startswith("tech") else ("应用场景聚类" if _dim.startswith("app") else "深度聚类")
                 _doc_count = (result.get("input_summary") or {}).get("document_count") or len(phrase_sets)
