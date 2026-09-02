@@ -1,5 +1,10 @@
 node_modules
 dist
+dist-root
+e2e-test.mjs
+e2e-prefix-test.mjs
+e2e-public-check.mjs
+e2e-public-nav.mjs
 .git
 .cache_package_stage
 .cache_package_stage_2

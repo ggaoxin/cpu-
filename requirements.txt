@@ -9,3 +9,4 @@ tqdm>=4.66
 python-multipart>=0.0.9
 PyMySQL>=1.1
 pypdf>=4.2
+pdfplumber>=0.11

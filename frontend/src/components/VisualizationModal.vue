@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { ToolDefinition } from '../types'
+import { apiUrl } from '../services/api'
 // Renderer markup and class names are copied from the V7.74 prototype result panels.
 // @ts-expect-error The renderer intentionally remains plain JavaScript so its prototype templates stay verbatim.
 import { renderPrototypeVisualization, visualizationTitle } from '../utils/prototypeVisualizationRenderers.js'
@@ -246,7 +247,7 @@ function handleVisualizationClick(event: MouseEvent) {
     }
     confirmButton.textContent = '提交中…'
     confirmButton.setAttribute('disabled', 'disabled')
-    fetch(`/api/v1/classification-results/${encodeURIComponent(recordId)}/confirm`, {
+    fetch(apiUrl(`/api/v1/classification-results/${encodeURIComponent(recordId)}/confirm`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ candidate_id: candidateId, primary_code: primaryCode, secondary_codes: secondaryCodes }),
