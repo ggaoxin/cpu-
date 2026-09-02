@@ -35,12 +35,13 @@
 
 ## 二、资源下载（克隆后必读）
 
-本仓库 **不含** 两类大资源，克隆后按下表获取：
+本仓库 **不含** 以下大资源，克隆后按下表获取：
 
 | 资源 | 大小 | 获取方式 | 放置位置 |
 |---|---|---|---|
 | bge 模型权重（3 套） | ~5.7G | `python -m scripts.setup_models`（ModelScope 自动下载）；或从 [HuggingFace](https://huggingface.co/BAAI) 手动下载 `BAAI/bge-small-zh-v1.5`、`BAAI/bge-large-zh-v1.5`、`BAAI/bge-m3` | `models/<对应目录名>/` |
 | CLC 向量索引库 | ~585M | 本仓库 [Release 附件](https://github.com/ggaoxin/cpu-/releases) `clc-vectors.tar.gz` | 解压：`tar xzf clc-vectors.tar.gz -C rag_store/clc_rag/` |
+| 深度聚类锚点体系数据 | ~894M | [Release 附件](https://github.com/ggaoxin/cpu-/releases/download/deep-cluster-anchor-v1/deep-cluster-anchor-assets.tar.gz) `deep-cluster-anchor-assets.tar.gz` | 解压到项目根目录：`tar xzf deep-cluster-anchor-assets.tar.gz`，**然后必须执行** `python3 tools/migrate_prewarm_cache.py .` 重算缓存文件名（按本机路径哈希），否则首次深度聚类会触发数小时 CPU 重编码 |
 | MinerU pipeline 模型 | ~4.6G | 首次调用时自动下载（可选，仅扫描件 PDF 需要） | `~/.cache/modelscope/` |
 
 > CLC 向量索引库（中图分类法外部知识库）编码了 40912 条 CLC 类目的 bge-large/bge-m3
