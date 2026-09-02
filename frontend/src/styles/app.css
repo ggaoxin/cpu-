@@ -1159,8 +1159,14 @@ body.v699-relation-active .relation-tab-btn { width: 25%; min-width: 0; flex: 1 
 .menu-row-decorative .chev { display: none !important; }
 .sidebar-decorative-label { padding: 14px 16px 6px; color: #93a2b8; font-size: 10.5px; letter-spacing: .04em; border-top: 1px solid #eef2f7; }
 .sidebar-decorative-sections { margin-top: 6px; }
-/* 侧栏滚动条可见(细条):原本全隐藏导致真实工具在折叠区下方时用户不知道能滚 */
-.platform-frame-v640 .sidebar { scrollbar-width: thin; }
-.platform-frame-v640 .sidebar::-webkit-scrollbar { width: 4px !important; display: block !important; }
-.platform-frame-v640 .sidebar::-webkit-scrollbar-thumb { background: rgba(120,135,160,.35); border-radius: 2px; }
-.platform-frame-v640 .sidebar::-webkit-scrollbar-track { background: transparent; }
+/* 侧栏滚动条对鼠标设备保持隐藏:可见的原生滑块可被鼠标左键按住拖拽,测试反馈不需要该交互,
+   隐藏后仅保留滚轮/触摸滚动,overflow-y:auto 不变。
+   桌面隐藏由基础规则完成(scrollbar-width:none + ::-webkit-scrollbar width:0);
+   原型 CSS 在 ≤1100px 媒体查询里还有更高特异性 !important 的 5px 侧栏滚动条规则
+   (body.figma-ui-v717 .sidebar::-webkit-scrollbar),这里用更高特异性压掉;
+   仅作用 hover/pointer 精确设备(鼠标),触屏(hover:none)的可见滚动条不受影响。 */
+@media (hover: hover) and (pointer: fine) {
+  body.figma-ui-v717 .platform-frame-v640 .sidebar::-webkit-scrollbar {
+    width: 0 !important; height: 0 !important; display: none !important;
+  }
+}
