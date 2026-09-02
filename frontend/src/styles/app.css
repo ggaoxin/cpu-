@@ -29,7 +29,6 @@ button:disabled { cursor: not-allowed !important; opacity: .48; transform: none 
 .hero .tag-box b { flex: 0 0 auto; }
 .hero .tag-box span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .call-sample-header-v773 { justify-content: flex-start !important; flex-wrap: nowrap !important; }
-.call-sample-header-v773 > .outline-btn { margin-left: auto; }
 #callTypeSwitchV770 { display: inline-grid; grid-template-columns: repeat(2,minmax(92px,1fr)); gap: 4px; padding: 4px; margin-left: 12px; background: #f1f4f8; border: 1px solid #e3e8ef; border-radius: 9px; }
 .call-type-btn-v770 { min-height: 34px; padding: 0 14px; color: #687487; background: transparent; border: 0; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600; }
 .call-type-btn-v770.active { color: var(--primary); background: #fff; box-shadow: 0 2px 8px rgba(37,51,77,.08), inset 0 0 0 1px #dbe5fb; }
@@ -43,12 +42,6 @@ button:disabled { cursor: not-allowed !important; opacity: .48; transform: none 
 .hover-copy-box:hover > .hover-copy-btn, .hover-copy-btn:focus { opacity: 1; visibility: visible; transform: none; }
 /* 说明文字换行时保持短语整体不断开(如"已选择 N 个文件") */
 .nowrap-chunk { white-space: nowrap !important; }
-/* 调用示例:窄屏标题栏放不下「复制代码」按钮(会被压成竖排文字) → 收进代码块右上角,与响应示例同款 */
-.call-copy-btn { display: none; }
-@media (max-width: 900px) {
-  .call-sample-header-v773 > .call-copy-header-btn { display: none !important; }
-  .call-copy-btn { display: inline-flex !important; opacity: 1 !important; visibility: visible !important; transform: none !important; }
-}
 .toast.show { display: block; opacity: 1; transform: translate(-50%,0); }
 .test-card-header { display: flex; min-height: 38px; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .test-card-title { flex: 0 0 auto; white-space: nowrap; }

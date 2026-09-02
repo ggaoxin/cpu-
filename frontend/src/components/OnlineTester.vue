@@ -992,7 +992,18 @@ async function run() {
   }
 }
 function clearResult() { result.value = null; requestError.value = '' }
-async function copyResult() { if (result.value) await navigator.clipboard.writeText(pretty(result.value)) }
+// 结果框复制反馈：与调用示例/响应示例代码块一致的按钮本地状态切换
+const resultCopied = ref(false)
+let resultCopyTimer: ReturnType<typeof setTimeout> | undefined
+async function copyResult() {
+  if (!result.value) return
+  try {
+    await navigator.clipboard.writeText(pretty(result.value))
+    resultCopied.value = true
+    clearTimeout(resultCopyTimer)
+    resultCopyTimer = setTimeout(() => { resultCopied.value = false }, 1200)
+  } catch { resultCopied.value = false }
+}
 function downloadResult() { if (!result.value) return; const blob = new Blob([pretty(result.value)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${props.toolId}_result.json`; a.click(); URL.revokeObjectURL(url) }
 </script>
 
@@ -1289,7 +1300,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
       <div class="test-card response-card">
         <div v-if="languageMismatch" class="info-banner warning" style="margin:0 0 10px"><b>语言不匹配提示</b><span>{{ languageMismatch }}</span></div>
         <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="downloadResult">⇩ 下载结果</button><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)">▦ 查看可视化结果</button><button id="clearBtn" class="ghost-btn" @click="clearResult">⌫ 清除结果</button></div></div>
-        <div class="response-result-body hover-copy-box"><pre v-if="hasResult" class="console">{{ pretty(result) }}</pre><div v-else-if="requestError" class="console placeholder request-error">{{ requestError }}</div><div v-else class="console placeholder">等待后端返回真实测试结果…</div><button id="copyResultBtnV732" class="hover-copy-btn result-copy" :disabled="!hasResult" @click="copyResult">⧉ 复制</button></div>
+        <div class="response-result-body hover-copy-box"><pre v-if="hasResult" class="console">{{ pretty(result) }}</pre><div v-else-if="requestError" class="console placeholder request-error">{{ requestError }}</div><div v-else class="console placeholder">等待后端返回真实测试结果…</div><button id="copyResultBtnV732" class="hover-copy-btn result-copy" :disabled="!hasResult" @click="copyResult">{{ resultCopied ? '✔' : '⧉ 复制' }}</button></div>
       </div>
     </div>
     <RequirementSupplement v-if="toolId === 'deep-cluster'" :tool-id="toolId" :mode="mode" />
