@@ -78,7 +78,7 @@ const batchTexts = reactive<BatchTextItem[]>([])
 const citationBatchItems = reactive<CitationBatchItem[]>([])
 const uploadedFiles = reactive<UploadedFileItem[]>([])
 let batchItemSequence = 0
-const form = reactive({ projectName: '', documentTitle: '', text: '', batchText: '', language: '自动识别', domain: '自动识别', threshold: '0.75', outputFormat: 'JSON', clusterDimension: 'technology', algorithm: '自动选择', clusterCount: '', historyId: '', topic: '' })
+const form = reactive({ projectName: '', documentTitle: '', text: '', batchText: '', language: '自动识别', domain: '自动识别', threshold: '0.75', outputFormat: 'JSON', clusterDimension: 'technology', algorithm: 'auto', clusterCount: '', historyId: '', topic: '' })
 const citationSingle = reactive({ documentText: '' })
 type CitationCard = { id: number; marker: string; sentence: string; subSpan: string; previousContext: string; nextContext: string }
 const citationCards = reactive<CitationCard[]>([])
@@ -859,7 +859,7 @@ function validateRequiredInputs(): string {
 
   if (props.toolId === 'cluster-label') {
     if (!selectedClusterTaskId.value || !selectedClusterTask.value) return '请选择一项已完成的深度聚类任务。'
-    if (!selectedClusterTask.value.phraseSets?.length) return '所选深度聚类任务没有可用的类簇短语集合。'
+    if (!selectedClusterTask.value.phraseSets?.length) return '所选深度聚类任务没有可用的候选类目集合。'
     return ''
   }
 
@@ -1061,7 +1061,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
 
           <template v-if="toolId === 'deep-cluster'">
             <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 聚类维度</span><small>选择本次聚类的语义分析视角</small></label><div class="dimension-options"><label :class="{ active: form.clusterDimension === 'technology' }"><input v-model="form.clusterDimension" type="radio" value="technology" /><span><b>技术路线聚类</b><small>重点分析文献采用的方法、模型结构、算法机制、数据处理流程和实验技术，将技术方案相近的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label><label :class="{ active: form.clusterDimension === 'application_scenario' }"><input v-model="form.clusterDimension" type="radio" value="application_scenario" /><span><b>应用场景聚类</b><small>重点分析文献解决的任务、服务对象、行业领域、实际环境和应用目标，将面向相似使用场景的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label></div></div>
-            <div class="settings-card"><div class="settings-title"><b>算法与输出参数</b><span>可选算法、类簇数量与输出格式</span></div><div class="three-column"><div class="field"><label><span class="label-main">聚类算法类型</span></label><select v-model="form.algorithm" class="select"><option>自动选择</option><option>K-Means</option><option>HDBSCAN</option><option>层次聚类</option></select></div><div class="field"><label><span class="label-main">类簇数量</span></label><input v-model="form.clusterCount" class="input" type="number" min="1" step="1" placeholder="自动确定" /><small v-if="clusterCountError" class="field-error-hint" style="color:#d54949;display:block;margin-top:4px">{{ clusterCountError }}</small></div><div class="field"><label><span class="label-main">输出格式</span></label><select v-model="form.outputFormat" class="select"><option>JSON</option><option>CSV</option><option>数据库写入结构</option></select></div></div></div>
+            <div class="settings-card"><div class="settings-title"><b>算法与输出参数</b><span>可选算法、类簇数量与输出格式</span></div><div class="three-column"><div class="field"><label><span class="label-main">聚类算法类型</span></label><select v-model="form.algorithm" class="select"><option value="auto">自动选择</option><option value="kmeans">K-Means</option><option value="hierarchical">层次聚类</option><option value="hdbscan">HDBSCAN</option></select></div><div class="field"><label><span class="label-main">类簇数量</span></label><input v-model="form.clusterCount" class="input" type="number" min="1" step="1" placeholder="自动确定" /><small v-if="clusterCountError" class="field-error-hint" style="color:#d54949;display:block;margin-top:4px">{{ clusterCountError }}</small></div><div class="field"><label><span class="label-main">输出格式</span></label><select v-model="form.outputFormat" class="select"><option>JSON</option><option>CSV</option><option>数据库写入结构</option></select></div></div></div>
             <ModeSwitch v-model="mode" :modes="modes" :tool="tool" kind="深度聚类数据来源" />
           </template>
 

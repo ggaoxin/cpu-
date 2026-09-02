@@ -27,6 +27,16 @@ logger = logging.getLogger(__name__)
 ALLOWED_ALGORITHMS = {
     "auto", "kmeans", "spectral", "agglomerative", "hierarchical", "hdbscan",
 }
+# 契约字段 clustering_algorithm_type 的取值归一：前端下拉 historically 发中文
+# 标签（"自动选择"/"层次聚类"），此处统一映射为引擎标识，字段名也一并兼容。
+_ALGORITHM_ALIASES = {
+    "auto": "auto", "自动选择": "auto", "自动": "auto", "": "auto",
+    "kmeans": "kmeans", "k-means": "kmeans", "k-means++": "kmeans",
+    "spectral": "spectral", "谱聚类": "spectral",
+    "agglomerative": "agglomerative", "凝聚聚类": "agglomerative",
+    "hierarchical": "hierarchical", "层次聚类": "hierarchical",
+    "hdbscan": "hdbscan",
+}
 
 _PUBLICATION_DATE = re.compile(
     r"(?:发表时间|发布日期|出版日期|publication\s+date|published|publication)"
@@ -148,19 +158,16 @@ def _optional_float(params: dict[str, Any], name: str) -> float | None:
     return parsed
 
 
-def _optional_cluster_count(params: dict[str, Any], file_count: int = 0) -> int | None:
+def _optional_cluster_count(params: dict[str, Any]) -> int | None:
     value = params.get("cluster_count")
     if value in (None, "", "auto", 0, "0"):
         return None
     try:
         parsed = int(value)
     except (TypeError, ValueError) as exc:
-        raise ValueError("cluster_count 必须为整数或 auto。") from exc
-    # 类簇数量约束：最低 1，最大类簇数量必须小于输入文件数（file_count>1 时校验上限）。
-    if parsed < 1:
-        raise ValueError("cluster_count 必须大于等于 1。")
-    if file_count > 1 and parsed >= file_count:
-        raise ValueError(f"cluster_count 必须小于输入文献数量（当前 {file_count} 篇，最大 {file_count - 1}）。")
+        raise ValueError("cluster_count 必须为大于等于2的整数或 auto。") from exc
+    if parsed < 2:
+        raise ValueError("cluster_count 必须大于等于2。")
     return parsed
 
 
@@ -169,12 +176,15 @@ def _label_cluster_via_glm(
     cluster: dict[str, Any],
     doc_axis_info: list[dict[str, Any]],
     papers: list[dict[str, Any]],
+    axis: str = "application",
 ) -> str | None:
-    """用 GLM 为一个应用场景簇生成简短中文场景标签，失败返回 None。
+    """用 GLM 为一个类簇生成简短中文标签（锚定不达门槛时的兜底），失败返回 None。
 
     喂给 GLM 的是该簇 representative_terms + 各成员 key_evidence + 代表性标题，
     让模型有完整证据上下文，而非仅靠 sparse 高频 token（避免 "training / our"
-    类八股词被当场景标签）。原 sparse topic_name 由调用方保留溯源。
+    类八股词被当标签）。原 sparse topic_name 由调用方保留溯源。
+    axis=application 生成场景标签（研究对象/应用领域）；technical 生成技术路线
+    标签（方法/算法/技术本质）。
     """
     if glm_client is None or not settings.llm_configured:
         return None
@@ -207,14 +217,24 @@ def _label_cluster_via_glm(
         "document_titles": titles,
         "key_evidence": evidence_snippets,
     }
-    system = (
-        "你是科技文献场景标签生成专家。下面给出深度聚类在应用场景轴上聚出的一个文献簇。"
-        "请基于该簇的代表短语、文献标题与关键证据句段，生成一个简短、专业、自然的中文场景标签"
-        "（4到12个汉字），概括该簇文献共同的研究对象、应用领域或应用场景。"
-        "标签须体现该簇的场景共性，不得罗列具体方法名或单篇文献专名，"
-        "不得使用论文八股词（如 training/our/which/these/study/approach/research）。"
-        "只返回JSON：{\"scene_label\":\"场景标签\"}。"
-    )
+    if axis == "technical":
+        system = (
+            "你是科技文献技术路线标签生成专家。下面给出深度聚类在技术路线轴上聚出的一个文献簇。"
+            "请基于该簇的代表短语、文献标题与关键证据句段，生成一个简短、专业、自然的中文技术路线标签"
+            "（4到12个汉字），概括该簇文献共同的方法、算法或技术本质（如：深度学习图像识别、"
+            "运筹优化调度、有限元仿真）。不得罗列应用领域、研究对象或单篇文献专名，"
+            "不得使用论文八股词（如 training/our/which/these/study/approach/research）。"
+            "只返回JSON：{\"cluster_label\":\"技术路线标签\"}。"
+        )
+    else:
+        system = (
+            "你是科技文献场景标签生成专家。下面给出深度聚类在应用场景轴上聚出的一个文献簇。"
+            "请基于该簇的代表短语、文献标题与关键证据句段，生成一个简短、专业、自然的中文场景标签"
+            "（4到12个汉字），概括该簇文献共同的研究对象、应用领域或应用场景。"
+            "标签须体现该簇的场景共性，不得罗列具体方法名或单篇文献专名，"
+            "不得使用论文八股词（如 training/our/which/these/study/approach/research）。"
+            "只返回JSON：{\"cluster_label\":\"场景标签\"}。"
+        )
     try:
         raw = glm_client.chat_json(
             system,
@@ -224,11 +244,12 @@ def _label_cluster_via_glm(
             max_tokens=200,
         )
     except Exception as exc:  # noqa: BLE001 - 失败回退原 sparse topic_name，不阻断聚类
-        logger.warning("GLM 场景标签生成失败 cluster=%s：%s", cluster_id, exc)
+        logger.warning("GLM 簇标签生成失败 cluster=%s：%s", cluster_id, exc)
         return None
     data = raw.get("data", raw) if isinstance(raw, dict) else {}
     label = str(
-        data.get("scene_label") or data.get("label") or data.get("topic_name") or ""
+        data.get("cluster_label") or data.get("scene_label")
+        or data.get("label") or data.get("topic_name") or ""
     ).strip()
     label = label.strip("\"'“”‘’。.：:：、 \t")
     if not label or len(label) > 30 or label == cluster.get("topic_name"):
@@ -236,25 +257,33 @@ def _label_cluster_via_glm(
     return label
 
 
-def _regenerate_application_scene_labels(
-    application: dict[str, Any],
+def _regenerate_axis_cluster_labels(
+    axis_payload: dict[str, Any],
     papers: list[dict[str, Any]],
     glm_client: Any,
+    axis: str = "application",
 ) -> dict[str, Any]:
-    """用 GLM 重写 application 轴各簇 topic_name 为中文场景标签。
+    """用 GLM 重写所选轴各簇 topic_name 为中文簇标签（锚定不达门槛的兜底）。
 
     仅替换 cluster.topic_name 与 doc_axis_info[index].topic_name 的展示值；
     不改 representative_terms、不改聚类归属。原 sparse topic_name 保留进
-    cluster["sparse_topic_name"] 供溯源。technical 轴不动（技术标签不进综述）。
+    cluster["sparse_topic_name"] 供溯源。已锚定(anchor_status=anchored)的簇
+    保留人工标注类目名，不被生成标签覆盖。
     """
-    clusters = application.get("clusters") or []
-    doc_axis_info = application.get("doc_axis_info") or []
+    clusters = axis_payload.get("clusters") or []
+    doc_axis_info = axis_payload.get("doc_axis_info") or []
     succeeded = 0
     failed = 0
+    skipped_anchored = 0
     for cluster in clusters:
         if str(cluster.get("cluster_id") or "") == "OUTLIER":
             continue
-        new_label = _label_cluster_via_glm(glm_client, cluster, doc_axis_info, papers)
+        if str(cluster.get("anchor_status") or "") == "anchored":
+            # 人工标注类目已锚定本簇主题（高置信、可溯源），GLM 场景标签不再覆盖。
+            # 场景标签只用于改写算法拼出的宽泛 sparse 名，不该盖过人工标注答案。
+            skipped_anchored += 1
+            continue
+        new_label = _label_cluster_via_glm(glm_client, cluster, doc_axis_info, papers, axis)
         if not new_label:
             failed += 1
             continue
@@ -267,6 +296,7 @@ def _regenerate_application_scene_labels(
     return {
         "scene_label_generated": succeeded,
         "scene_label_failed": failed,
+        "scene_label_skipped_anchored": skipped_anchored,
         "scene_label_used_glm": succeeded > 0,
         "scene_label_glm_configured": bool(settings.llm_configured),
     }
@@ -341,12 +371,130 @@ def _calibrate_k_via_glm(
         and selection_score >= _K_MIN_ALGO_SCORE
     )
     final_k_raw = k_algo if trust_algo else k_llm
-    # 类簇数量约束 [1, n-1]：max(1,...) 防御 n-1 在极端情况下为 0/负，
-    # 确保 k_selection.final_k 对外字段永不为 0/负数。
-    result["final_k"] = max(1, min(final_k_raw, n - 1))  # GLM 判 k=n 时 clamp 到算法上限
+    result["final_k"] = min(final_k_raw, n - 1)  # GLM 判 k=n 时 clamp 到算法上限
     if result["final_k"] != k_algo:
         result["calibrated"] = True
     return result
+
+
+def _repartition_anchor_aligned(
+    axis_payload: dict[str, Any],
+    papers: list[dict[str, Any]],
+    doc_anchors: dict[str, Any],
+) -> dict[str, Any]:
+    """锚点对齐重划分：锚定成功的文献按人工标注类目直接成簇。
+
+    与自由聚类的本质区别：划分本身受用户上传的标注数据引导——同一个人工
+    类目的文献必然同簇（类簇偏向人工标注类目标签）；未通过锚定门槛的文献
+    保留自由聚类归属（不足最小簇尺寸的并入 OUTLIER 待人工复核）。
+    doc_axis_info 同步改写，保证 documents/document_assignments/趋势分析一致。
+    """
+    from sklearn.metrics import adjusted_rand_score
+
+    doc_axis_info = axis_payload.get("doc_axis_info") or [dict() for _ in papers]
+    free_clusters = axis_payload.get("clusters") or []
+    free_label_of: dict[int, str] = {}
+    for cluster in free_clusters:
+        for index in cluster.get("doc_indices") or []:
+            if isinstance(index, int) and 0 <= index < len(papers):
+                free_label_of[index] = str(cluster.get("cluster_id") or "OUTLIER")
+
+    groups: dict[str, list[int]] = {}
+    free_remainder: list[int] = []
+    for index, paper in enumerate(papers):
+        match = doc_anchors.get(str(paper["document_id"]))
+        if match and match.get("anchored_topic_id"):
+            groups.setdefault(str(match["anchored_topic_id"]), []).append(index)
+        else:
+            free_remainder.append(index)
+
+    remainder_groups: dict[str, list[int]] = {}
+    for index in free_remainder:
+        remainder_groups.setdefault(free_label_of.get(index, "OUTLIER"), []).append(index)
+
+    new_clusters: list[dict[str, Any]] = []
+    counter = 0
+    for topic_id, indices in sorted(groups.items(), key=lambda kv: -len(kv[1])):
+        counter += 1
+        cluster_id = f"C{counter:02d}"
+        sample = doc_anchors.get(str(papers[indices[0]]["document_id"])) or {}
+        topic_name = sample.get("anchored_topic_name") or topic_id
+        keyword_counts: dict[str, int] = {}
+        for index in indices:
+            for term in (papers[index].get("keywords") or []):
+                term = str(term).strip()
+                if term:
+                    keyword_counts[term] = keyword_counts.get(term, 0) + 1
+        new_clusters.append({
+            "cluster_id": cluster_id,
+            "topic_name": topic_name,
+            "anchored_topic_id": topic_id,
+            "anchor_status": "anchored",
+            "partition": "anchor_aligned",
+            "size": len(indices),
+            "doc_indices": indices,
+            "representative_terms": [
+                term for term, _ in sorted(keyword_counts.items(), key=lambda kv: -kv[1])[:6]
+            ],
+            "anchor_confidence": sample.get("anchor_confidence"),
+        })
+        for index in indices:
+            if index < len(doc_axis_info):
+                doc_axis_info[index]["topic_id"] = cluster_id
+                doc_axis_info[index]["topic_name"] = topic_name
+                doc_axis_info[index]["anchor_aligned"] = True
+
+    outlier_indices: list[int] = []
+    for free_id, indices in sorted(remainder_groups.items(), key=lambda kv: -len(kv[1])):
+        if free_id == "OUTLIER" or len(indices) < 2:
+            outlier_indices.extend(indices)
+            continue
+        counter += 1
+        cluster_id = f"C{counter:02d}"
+        original = next(
+            (c for c in free_clusters if str(c.get("cluster_id")) == free_id), {})
+        new_clusters.append({
+            "cluster_id": cluster_id,
+            "topic_name": original.get("topic_name") or free_id,
+            "partition": "free",
+            "size": len(indices),
+            "doc_indices": indices,
+            "representative_terms": original.get("representative_terms") or [],
+        })
+        for index in indices:
+            if index < len(doc_axis_info):
+                doc_axis_info[index]["topic_id"] = cluster_id
+                doc_axis_info[index]["topic_name"] = original.get("topic_name") or free_id
+    if outlier_indices:
+        new_clusters.append({
+            "cluster_id": "OUTLIER", "topic_name": "待人工复核", "partition": "free",
+            "size": len(outlier_indices), "doc_indices": sorted(outlier_indices),
+            "representative_terms": [],
+        })
+        for index in outlier_indices:
+            if index < len(doc_axis_info):
+                doc_axis_info[index]["topic_id"] = "OUTLIER"
+                doc_axis_info[index]["topic_name"] = "待人工复核"
+
+    axis_payload["clusters"] = new_clusters
+    axis_payload["doc_axis_info"] = doc_axis_info
+
+    new_label_of = {
+        index: str(cluster.get("cluster_id"))
+        for cluster in new_clusters
+        for index in (cluster.get("doc_indices") or [])
+    }
+    free_labels = [free_label_of.get(i, "OUTLIER") for i in range(len(papers))]
+    new_labels = [new_label_of.get(i, "OUTLIER") for i in range(len(papers))]
+    agreement = adjusted_rand_score(free_labels, new_labels) if len(papers) > 1 else None
+    return {
+        "mode": "anchor_aligned",
+        "anchored_cluster_count": len(groups),
+        "free_cluster_count": sum(1 for fid in remainder_groups if fid != "OUTLIER" and len(remainder_groups[fid]) >= 2),
+        "outlier_count": len(outlier_indices),
+        "coverage": round((len(papers) - len(free_remainder)) / len(papers), 4) if papers else 0.0,
+        "agreement_ari": round(float(agreement), 4) if agreement is not None else None,
+    }
 
 
 def execute_deep_clustering(
@@ -368,14 +516,16 @@ def execute_deep_clustering(
     selected_axis = "application" if dimension in {"application", "application_scenario"} else "technical"
 
     requested_algorithm = str(
-        params.get("cluster_method") or params.get("algorithm") or "auto"
-    ).strip().lower()
-    algorithm = "auto" if requested_algorithm in {"", "semantic"} else requested_algorithm
+        params.get("clustering_algorithm_type")
+        or params.get("cluster_method") or params.get("algorithm") or "auto"
+    ).strip()
+    algorithm = _ALGORITHM_ALIASES.get(requested_algorithm.lower(), requested_algorithm.lower())
     if algorithm not in ALLOWED_ALGORITHMS:
         raise ValueError(
-            "algorithm 必须为 auto、kmeans、spectral、agglomerative、hierarchical 或 hdbscan。"
+            "clustering_algorithm_type 必须为 auto(自动选择)、kmeans、spectral(谱聚类)、"
+            "agglomerative(凝聚聚类)、hierarchical(层次聚类) 或 hdbscan。"
         )
-    cluster_count = _optional_cluster_count(params, len(papers))
+    cluster_count = _optional_cluster_count(params)
     if algorithm == "hdbscan" and cluster_count is not None:
         raise ValueError("HDBSCAN 自动确定类簇数量，不能同时设置 cluster_count。")
     try:
@@ -389,6 +539,9 @@ def execute_deep_clustering(
     similarity_metric = str(params.get("similarity_metric") or "cosine").lower()
     if similarity_metric != "cosine":
         raise ValueError("当前 BGE-M3 深度聚类仅支持 cosine 相似度。")
+    partition_strategy = str(params.get("partition_strategy") or "free").strip().lower()
+    if partition_strategy not in {"free", "anchor_aligned"}:
+        raise ValueError("partition_strategy 必须为 free 或 anchor_aligned。")
 
     from infrastructure.clustering.evidence_rule_engine import load_rule_fusion_config
 
@@ -520,27 +673,60 @@ def execute_deep_clustering(
     technical = clustered["technical"]
     application = clustered["application"]
 
-    # ---- 锚点辅助（可选）：训练样本/人工标注类目资源存在时，把小样本聚类
-    # 的主题锚定到人工标注类目标签（语义近邻匹配），避免自由聚类主题过于宽泛。
+    # ---- 锚点辅助：用户上传的训练样本/人工标注类目资源为主力（上传即主导，
+    # 类簇向用户标注体系对齐）；内置槽位为辅——用户库不达门槛的文献由内置补位；
+    # 用户未上传时仅用内置。use_builtin_anchor=false 可完全关闭内置。
     anchor_output: dict[str, Any] = {"enabled": False}
-    gold_path = None
     try:
-        from infrastructure.clustering.anchor_labeling import resolve_gold_path, anchor_assist, aggregate_cluster_anchor
-        gold_path = resolve_gold_path(params.get("resolved_resources"))
-    except ImportError:
-        gold_path = None
-    if gold_path is not None:
-        anchor_output = anchor_assist(
-            normalized_papers, gold_path, selected_axis,
-            threshold=float(params.get("anchor_similarity_threshold", 0) or 0.45),
+        from infrastructure.clustering.anchor_labeling import (
+            resolve_anchor_libraries, anchor_assist, aggregate_cluster_anchor,
         )
-    # 锚定模式可观测标记：semi_supervised_system_prototype=内置原型引导（默认分支）、
-    # semi_supervised_user_prototype=用户上传原型、unsupervised_free=完全无监督。
-    anchor_output["mode"] = str(
-        params.get("anchor_mode")
-        or ("semi_supervised_user_prototype" if gold_path is not None else "unsupervised_free")
-    )
+        use_builtin = str(
+            params.get("use_builtin_anchor", "true")
+        ).strip().lower() not in {"0", "false", "no", "off"}
+        libraries = resolve_anchor_libraries(
+            params.get("resolved_resources"), use_builtin=use_builtin)
+        if libraries["builtin"] is not None or libraries["user"] is not None:
+            anchor_output = anchor_assist(
+                normalized_papers, selected_axis,
+                builtin_path=libraries["builtin"],
+                user_path=libraries["user"],
+                threshold=float(params.get("anchor_similarity_threshold", 0) or 0.45),
+                min_combined=(
+                    float(params["anchor_min_combined"])
+                    if params.get("anchor_min_combined") not in (None, "") else None
+                ),
+                use_arbiter=str(
+                    params.get("anchor_arbiter", "on")
+                ).strip().lower() not in {"0", "false", "no", "off"},
+                quality_margin=(
+                    float(params["anchor_quality_margin"])
+                    if params.get("anchor_quality_margin") not in (None, "") else None
+                ),
+            )
+    except ImportError:
+        logger.warning("锚点模块不可用，深度聚类按自由聚类执行", exc_info=True)
     doc_anchors = anchor_output.get("document_anchors") or {}
+
+    # ---- 锚点对齐重划分（可选）：partition_strategy=anchor_aligned 时，用户上传的
+    # 训练样本/人工标注类目不仅给类簇命名，还直接引导划分——锚定成功的文献按
+    # 人工类目成簇（类簇偏向人工标注类目标签），未锚定文献保留自由聚类归属。
+    # 划分决策来自用户标注库的语义近邻投票，与 LLM 无关。
+    partition_stats: dict[str, Any] = {"mode": "free"}
+    if partition_strategy == "anchor_aligned":
+        if doc_anchors:
+            target_payload = technical if selected_axis == "technical" else application
+            if target_payload:
+                partition_stats = _repartition_anchor_aligned(
+                    target_payload, normalized_papers, doc_anchors)
+            else:
+                partition_stats = {"mode": "free", "requested": "anchor_aligned",
+                                   "note": "所选轴无聚类结果，回落自由聚类划分。"}
+        else:
+            partition_stats = {
+                "mode": "free", "requested": "anchor_aligned",
+                "note": "锚点未启用（未选择资源）或锚点库为空，回落自由聚类划分。",
+            }
 
     documents = [{
         "document_id": paper["document_id"],
@@ -565,6 +751,13 @@ def execute_deep_clustering(
         "anchored_topic_id": (doc_anchors.get(str(item["document_id"])) or {}).get("anchored_topic_id"),
         "anchored_topic_name": (doc_anchors.get(str(item["document_id"])) or {}).get("anchored_topic_name"),
         "anchor_confidence": (doc_anchors.get(str(item["document_id"])) or {}).get("anchor_confidence"),
+        # 相似度与最近邻 gold 证据随行输出：锚定结论可人工核查（对得上是哪几篇标注文献）
+        "anchor_similarity": (doc_anchors.get(str(item["document_id"])) or {}).get("anchor_similarity"),
+        "nearest_gold_documents": (doc_anchors.get(str(item["document_id"])) or {}).get("nearest_gold_documents"),
+        "anchor_source": (doc_anchors.get(str(item["document_id"])) or {}).get("anchor_source"),
+        # 低置信双候选：胶着判断（判别头 top-2 概率差<0.10）并列给出两个类目
+        "anchor_confidence_level": (doc_anchors.get(str(item["document_id"])) or {}).get("anchor_confidence_level"),
+        "candidate_topics": (doc_anchors.get(str(item["document_id"])) or {}).get("candidate_topics"),
     } for item in documents]
 
     # 簇级锚定：锚定主题替换宽泛的自由聚类主题（原主题保留在 original_topic_name）
@@ -580,6 +773,26 @@ def execute_deep_clustering(
                     for i in (cluster.get("doc_indices") or [])
                     if isinstance(i, int) and 0 <= i < len(normalized_papers)
                 ]
+                # 簇内成员类目分布（主锚定 1 票 + 胶着双候选第二类目 1 票）：
+                # 弹窗与聚类标签生成的共同参照——纯簇单一类目，混簇两个类目并列
+                from collections import Counter
+                distribution: Counter = Counter()
+                for member_id in member_ids:
+                    match = doc_anchors.get(str(member_id))
+                    if not match:
+                        continue
+                    primary = str(match.get("anchored_topic_name") or "").strip()
+                    if primary:
+                        distribution[primary] += 1
+                    for candidate in match.get("candidate_topics") or []:
+                        name = str((candidate or {}).get("topic_name") or "").strip()
+                        if name and name != primary:
+                            distribution[name] += 1
+                if distribution:
+                    cluster["category_distribution"] = [
+                        {"name": name, "count": count}
+                        for name, count in distribution.most_common()
+                    ]
                 cluster_anchor = aggregate_cluster_anchor(doc_anchors, member_ids)
                 if not cluster_anchor:
                     continue
@@ -605,6 +818,9 @@ def execute_deep_clustering(
     quality.update({
         "encoding_model": "bge-m3",
         "selected_axis": selected_axis,
+        "partition_strategy": partition_stats.get("mode", "free"),
+        "anchor_partition_coverage": partition_stats.get("coverage"),
+        "anchor_partition_agreement_ari": partition_stats.get("agreement_ari"),
         "anchor_assisted": bool(anchor_output.get("enabled")),
         "anchor_matched_document_count": anchor_output.get("matched_document_count", 0),
         "representation": clustered["representation"].get("representation"),
@@ -622,13 +838,15 @@ def execute_deep_clustering(
     else:
         axis_engine = "local_core3_bge_m3_application_test_fallback"
 
-    # 改动1: application 轴跑完后用 GLM 给每个场景簇生成中文场景标签，
-    # 替换纯 sparse 高频 token 拼出的 topic_name（如 "training / our"）。
+    # 改动1: 所选轴跑完后，锚定不达门槛的簇由 GLM 生成中文簇标签兜底
+    # （技术轴=技术路线标签，应用轴=场景标签），替换纯 sparse 高频 token 拼出的
+    # topic_name（如 "training / our"）。已锚定的簇保留人工标注类目名；
     # 失败/未配置 GLM 时回退原 sparse 值，不阻断聚类。
     scene_labeling: dict[str, Any] = {}
-    if selected_axis == "application" and application:
-        scene_labeling = _regenerate_application_scene_labels(
-            application, normalized_papers, glm_client
+    selected_payload = application if selected_axis == "application" else technical
+    if selected_payload:
+        scene_labeling = _regenerate_axis_cluster_labels(
+            selected_payload, normalized_papers, glm_client, selected_axis
         )
 
     # 改动2: 当前轴(selected)跑完后，按每个簇沉淀 1 个文献集，使结构化综述的
@@ -741,6 +959,7 @@ def execute_deep_clustering(
             "requested_algorithm": requested_algorithm or "auto",
             "effective_algorithm": quality.get("algorithm_used"),
             "selected_axis": selected_axis,
+            "partition_strategy": partition_stats.get("mode", "free"),
             "axis_engine": axis_engine,
             "representation": clustered["representation"].get("representation"),
             "cluster_count_mode": "fixed" if cluster_count is not None else "adaptive",

@@ -40,3 +40,8 @@ models/
 # CLC 向量索引（~585M）：GitHub Release 附件 clc-vectors.tar.gz，解压到 rag_store/clc_rag/
 rag_store/clc_rag/
 output/
+# 深度聚类锚点体系大数据（gold 131M / 锚点向量缓存 932M / 判别头）：
+# 不进 git，来源=deep_cluster_migration_v1.tar.gz（同 models/、rag_store/clc_rag/ 的 Release 附件模式）
+rules/deep_clustering/gold/
+rag_store/deep_clustering_anchor/
+*.bak_*

@@ -1666,24 +1666,61 @@ class ToolIntegrationService:
 
     @staticmethod
     def _cluster_phrase_sets(result: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Recover the exact label-generator input from a persisted cluster result."""
+        """Recover the label-generator input from a persisted cluster result.
+
+        优先用簇内成员的【人工类目候选分布】作为标签生成输入：主锚定类目计 1 票、
+        胶着双候选的第二类目计 1 票，类目名按票数重复进入短语列表——高频类目自然
+        成为标签证据，混簇的两个类目共同出现供 GLM 融合命名（如 心血管+脑神经 →
+        心脑血管临床诊疗）。锚定信息缺失时回退原代表短语。
+        """
+        from collections import Counter
+
+        assignments: Dict[str, Dict[str, Any]] = {}
+        for item in result.get("document_assignments") or []:
+            if isinstance(item, dict) and item.get("document_id"):
+                assignments[str(item["document_id"])] = item
+
         phrase_sets: List[Dict[str, Any]] = []
         for index, cluster in enumerate(result.get("clusters") or []):
             if not isinstance(cluster, dict):
                 continue
-            phrases = (
-                cluster.get("representative_terms") or cluster.get("keywords")
-                or cluster.get("top_terms") or cluster.get("phrases") or []
-            )
-            phrases = [t for t in (_clean_cluster_term(value) for value in phrases) if t]
+            distribution: Counter = Counter()
+            for member in cluster.get("members") or []:
+                if not isinstance(member, dict):
+                    continue
+                assignment = assignments.get(str(member.get("document_id")))
+                if not assignment:
+                    continue
+                primary = str(assignment.get("anchored_topic_name") or "").strip()
+                if primary:
+                    distribution[primary] += 1
+                for candidate in assignment.get("candidate_topics") or []:
+                    name = str((candidate or {}).get("topic_name") or "").strip()
+                    if name and name != primary:
+                        distribution[name] += 1
+            phrases = [
+                name for name, count in distribution.most_common() for _ in range(int(count))
+            ] if distribution else []
+            if not phrases:
+                phrases = [
+                    t for t in (_clean_cluster_term(value) for value in (
+                        cluster.get("representative_terms") or cluster.get("keywords")
+                        or cluster.get("top_terms") or cluster.get("phrases") or []))
+                    if t
+                ]
             if not phrases:
                 continue
-            phrase_sets.append({
+            entry = {
                 "cluster_id": str(cluster.get("cluster_id") or cluster.get("topic_id") or f"C{index + 1}"),
                 "phrases": phrases,
-            })
+            }
+            if distribution:
+                entry["category_distribution"] = [
+                    {"name": name, "count": count} for name, count in distribution.most_common()
+                ]
+                entry["input_source"] = "anchor_category_distribution"
+            phrase_sets.append(entry)
         return phrase_sets
-
     def _collection_documents(self, collection_id: str) -> List[Dict[str, Any]]:
         if not collection_id:
             return []
