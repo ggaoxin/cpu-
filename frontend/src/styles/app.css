@@ -1157,8 +1157,7 @@ body.v699-relation-active .relation-tab-btn { width: 25%; min-width: 0; flex: 1 
    (测试反馈:Safari 上点了 12 个装饰菜单没反应,误以为功能点打不开) */
 .menu-row-decorative { color: #a6b1c2 !important; cursor: default; }
 .menu-row-decorative .chev { display: none !important; }
-.sidebar-decorative-label { padding: 14px 16px 6px; color: #93a2b8; font-size: 10.5px; letter-spacing: .04em; border-top: 1px solid #eef2f7; }
-.sidebar-decorative-sections { margin-top: 6px; }
+.sidebar-decorative-sections { margin-top: 6px; padding-top: 10px; border-top: 1px solid #eef2f7; }
 /* 侧栏滚动条对鼠标设备保持隐藏:可见的原生滑块可被鼠标左键按住拖拽,测试反馈不需要该交互,
    隐藏后仅保留滚轮/触摸滚动,overflow-y:auto 不变。
    桌面隐藏由基础规则完成(scrollbar-width:none + ::-webkit-scrollbar width:0);
