@@ -239,6 +239,10 @@ export function payloadFor(tool: ToolDefinition, mode: InputMode): Record<string
       clustering_algorithm_type: base.clustering_algorithm_type || base.algorithm || 'auto',
       cluster_count: base.cluster_count ?? null,
       output_format: base.output_format || 'JSON',
+      // 锚点资源可选字段必须在模板中声明：requestPayloadFor 按模板白名单过滤，
+      // 漏声明会导致 OnlineTester 设置的资源选择被静默丢弃（用户类目不生效的根因）
+      training_samples: base.training_samples ?? { source: 'database', resource_id: null },
+      manually_labeled_category_data: base.manually_labeled_category_data ?? { source: 'database', resource_id: null },
     }
     const rawDocuments = (base.scientific_document_texts || base.documents || []) as Array<Record<string, unknown>>
     const documents = rawDocuments.map((item, index) => ({
@@ -260,6 +264,9 @@ export function payloadFor(tool: ToolDefinition, mode: InputMode): Record<string
       clustering_algorithm_type: base.clustering_algorithm_type || base.algorithm || 'auto',
       cluster_count: base.cluster_count ?? null,
       output_format: base.output_format || 'JSON',
+      // 同上：锚点资源可选字段必须进入模板白名单，否则被 requestPayloadFor 过滤
+      training_samples: base.training_samples ?? { source: 'database', resource_id: null },
+      manually_labeled_category_data: base.manually_labeled_category_data ?? { source: 'database', resource_id: null },
     }
   }
   if (tool.documentType === 'fund') {
