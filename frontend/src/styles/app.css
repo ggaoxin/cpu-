@@ -1184,3 +1184,5 @@ aside.sidebar { display: none !important; }
 body.figma-ui-v717 .platform-frame-v640 .app { grid-template-columns: minmax(0, 1fr) !important; }
 body.figma-ui-v717 .platform-frame-v640 .content-wrap { padding-left: 8px !important; }
 .mobile-nav-fab { display: none !important; }
+/* 深度聚类锚点资源上传格式提示（训练样本/人工标注类目标签，仅上传模式显示） */
+.anchor-format-hint { margin: 6px 0 0; color: #8a94a6; font-size: 11px; line-height: 1.6; }
