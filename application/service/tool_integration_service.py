@@ -1243,7 +1243,14 @@ class ToolIntegrationService:
         使"编号→类目"式标注文件无需自带全文即可生效；嫁接后仍无任何可用文本
         （≥30字）则按零有效条目报错。注：归一化缓存按资源路径共享，同一资源
         配不同文献集重复调用时以最后一次嫁接为准（上传资源通常配套固定文献集）。
+        编号匹配用规范化键（去连字符/空格等排版差异、忽略大小写）：表单常填
+        "DOC001"，标注文件常写 "DOC-001"/"DOC‑001"(U+2011)，逐字符相等会误判无法关联。
         """
+        import re as _re
+
+        def _join_key(value: str) -> str:
+            return _re.sub(r"[^0-9a-z一-鿿]+", "", str(value or "").lower())
+
         from infrastructure.resources.normalize import (
             ResourceParseError, normalized_rows_for, register_normalized,
         )
@@ -1257,7 +1264,7 @@ class ToolIntegrationService:
         rows = normalized_rows_for(path)
         if not rows:
             return
-        # 请求文献 → {document_id: (title, abstract)}（文本数组与元数据按下标对齐）
+        # 请求文献 → {规范化编号: (title, abstract)}（文本数组与元数据按下标对齐）
         texts = payload.get("scientific_document_texts")
         if not isinstance(texts, list):
             return
@@ -1272,8 +1279,9 @@ class ToolIntegrationService:
             else:
                 title = str(met.get("title") or "").strip()
                 body = str(item or "").strip()
-            if doc_id and (title or body):
-                doc_map[doc_id] = (title, body)
+            key = _join_key(doc_id)
+            if key and (title or body):
+                doc_map[key] = (title, body)
 
         def _text_len(row: Dict[str, Any]) -> bool:
             joined = "\n".join(str(row.get(k) or "") for k in ("title", "abstract", "text", "content"))
@@ -1286,8 +1294,9 @@ class ToolIntegrationService:
             if _text_len(row):
                 continue
             doc_id = str(row.get("document_id") or "").strip()
-            if doc_id and doc_id in doc_map:
-                title, body = doc_map[doc_id]
+            key = _join_key(doc_id)
+            if key and key in doc_map:
+                title, body = doc_map[key]
                 if title:
                     row.setdefault("title", title)
                 if body:
@@ -1298,8 +1307,9 @@ class ToolIntegrationService:
         if not any(_text_len(row) for row in rows):
             raise ResourceParseError(
                 f"文件解析完成，但标注条目既缺少文献文本，也无法与本次请求文献按 "
-                f"document_id 关联（{field}）。请在标注文件中提供 title/abstract，"
-                f"或确保标注条目的 document_id 与请求文献编号一致。"
+                f"document_id 关联（{field}，已忽略连字符/大小写等排版差异后匹配）。"
+                f"请在标注文件中提供 title/abstract，或确保标注条目的 document_id "
+                f"与请求文献编号一致（如 DOC001 与 DOC-001 可互相匹配，DOC001 与 DOC005 不匹配）。"
             )
 
     def _parameters(self, contract: ToolContract, payload: Dict[str, Any]) -> Dict[str, Any]:
