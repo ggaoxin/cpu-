@@ -5990,7 +5990,7 @@ export const tools = {
       "research-ner": {
         group: "命名实体识别工具", title: "中英文通用科研实体识别",
         description: "识别科研方法、数据资料、仪器设备、理论原理和研究问题等通用科研实体。",
-        features: "科研要素识别、BIO 序列标注、跨领域适配、标准词表映射",
+        features: "科研要素识别、BIO 序列标注、跨领域适配、映射标准词表",
         scenarios: "科研知识抽取、文献要素标引、科技知识图谱构建",
         endpoint: "/api/v1/ner/research",
         params: [["text","string",true,"论文摘要或技术报告文本"],["language","string",false,"zh/en/auto"],["entity_types","array",false,"科研实体类别"],["return_context","boolean",false,"是否返回上下文"]],

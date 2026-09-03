@@ -602,7 +602,7 @@ function renderNer(response, variant) {
   const summaryClass = general ? 'ner-summary-grid' : research ? 'research-ner-summary-grid' : 'domain-research-summary-grid'
   const tabClass = general ? 'ner' : research ? 'research-ner' : 'domain-research'
   const entityTitle = general ? '实体识别结果' : research ? '科研实体识别结果' : '专业实体识别结果'
-  const mappingTitle = general ? '实体规范化与别名映射' : research ? '标准词表映射' : '专业本体映射'
+  const mappingTitle = general ? '实体规范化与别名映射' : research ? '映射标准词表' : '专业本体映射'
   const idValue = (item, index) => valueOf(item, general ? ['entity_id', 'id'] : research ? ['research_entity_id', 'entity_id', 'id'] : ['entity_id', 'id'], `E${(index ?? 0) + 1}`)
   const textValue = item => valueOf(item, ['entity_text', 'text', 'entity', 'name'])
   const mappedValue = item => general ? valueOf(item, ['normalized_name', 'canonical_name']) : research ? valueOf(item.standard_names, ['zh', 'en'], item.standard_term_id || '未映射') : valueOf(item, ['standard_kb_id', 'kb_id'], '未映射')
