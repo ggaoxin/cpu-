@@ -105,18 +105,27 @@ class SemanticApplicationService(ISemanticService):
         """
         if not excerpt:
             return None
-        try:
-            entries = json.loads(excerpt)
-        except (json.JSONDecodeError, ValueError):
-            return None
-        # 包装对象解包：{label_version, document_labels:[...]} → 取条目列表，
-        # 否则 dict 直接 return None，用户分类体系完全注入不进 prompt。
-        if isinstance(entries, dict):
-            entries = next(
-                (entries[k] for k in ("document_labels", "labels", "entries", "items", "data", "records")
-                 if isinstance(entries.get(k), list)),
-                None,
-            )
+        # 优先取公共归一化行（与 _parameters 预检同一份结构，保证 prompt 注入
+        # 与检索作用域看到一致的用户体系）；未注册时维持原 tolerant 解析。
+        from config.settings import settings as _cfg
+        from infrastructure.resources.normalize import normalized_rows_for, resource_path
+        _np = resource_path(str(resource.get("storage_uri") or ""), _cfg.PROJECT_ROOT)
+        _norm = normalized_rows_for(_np) if _np is not None else None
+        if _norm is not None:
+            entries = _norm
+        else:
+            try:
+                entries = json.loads(excerpt)
+            except (json.JSONDecodeError, ValueError):
+                return None
+            # 包装对象解包：{label_version, document_labels:[...]} → 取条目列表，
+            # 否则 dict 直接 return None，用户分类体系完全注入不进 prompt。
+            if isinstance(entries, dict):
+                entries = next(
+                    (entries[k] for k in ("document_labels", "labels", "entries", "items", "data", "records")
+                     if isinstance(entries.get(k), list)),
+                    None,
+                )
         if not isinstance(entries, list) or not entries:
             return None
         from infrastructure.rag.clc_meta_builder import detect_taxonomy_kind
@@ -494,17 +503,30 @@ class SemanticApplicationService(ISemanticService):
         if not path.is_file() or path.suffix.lower() not in {".json", ".jsonl"}:
             logger.warning("CLC 用户作用域检索器未生效：资源文件不存在或非 json/jsonl(%s)，回退内置库", path)
             return None
-        try:
-            text = path.read_text(encoding="utf-8-sig", errors="replace").strip()
-            entries = [json.loads(line) for line in text.splitlines() if line.strip()] \
-                if path.suffix.lower() == ".jsonl" else json.loads(text)
-        except (OSError, json.JSONDecodeError, ValueError) as exc:
-            logger.warning("CLC 用户作用域检索器未生效：资源文件读取/解析失败(%s)，回退内置库", exc)
-            return None
+        # 优先取公共归一化结果（_parameters 已对用户 JSON 资源预检+注册）；
+        # 未注册（如 .jsonl 等范围外格式）维持原有解析路径。
+        from infrastructure.resources.normalize import normalized_rows_for, ResourceParseError
+        _normalized = normalized_rows_for(path)
+        if _normalized is not None:
+            entries = _normalized
+        else:
+            try:
+                text = path.read_text(encoding="utf-8-sig", errors="replace").strip()
+                entries = [json.loads(line) for line in text.splitlines() if line.strip()] \
+                    if path.suffix.lower() == ".jsonl" else json.loads(text)
+            except (OSError, json.JSONDecodeError, ValueError) as exc:
+                logger.warning("CLC 用户作用域检索器未生效：资源文件读取/解析失败(%s)，回退内置库", exc)
+                return None
         from infrastructure.rag.clc_user_scope import UserCLCScopeRetriever
         try:
             retriever = UserCLCScopeRetriever(entries)
         except ValueError as exc:
+            if _normalized is not None:
+                # 用户指定的 JSON 资源已通过公共归一化预检，此处不可静默回退内置
+                raise ResourceParseError(
+                    "中图分类资源条目不可用作检索作用域："
+                    f"{exc}。请检查每条是否含分类号（clc_code 或别名）。"
+                ) from exc
             logger.warning("用户 CLC 资源条目不可用作作用域(%s)，回退内置库。请检查条目是否含 clc_code/clc_name（或别名 code/name）字段", exc)
             return None
         logger.info("CLC 用户作用域检索器生效:%d 个用户条目", len(retriever._order))
@@ -1230,9 +1252,12 @@ class SemanticApplicationService(ISemanticService):
             _mp = _st.PROJECT_ROOT / _uri.removeprefix("project://") if _uri.startswith("project://") else _Path(_uri)
             if _mp.is_file():
                 try:
-                    _mdata = json.loads(_mp.read_text(encoding="utf-8-sig", errors="replace"))
-                    _raw_rows = (_mdata.get("entries") or _mdata.get("mappings") or []) \
-                        if isinstance(_mdata, dict) else (_mdata if isinstance(_mdata, list) else [])
+                    from infrastructure.resources.normalize import normalized_rows_for as _norm_rows
+                    _raw_rows = _norm_rows(_mp)
+                    if _raw_rows is None:
+                        _mdata = json.loads(_mp.read_text(encoding="utf-8-sig", errors="replace"))
+                        _raw_rows = (_mdata.get("entries") or _mdata.get("mappings") or []) \
+                            if isinstance(_mdata, dict) else (_mdata if isinstance(_mdata, list) else [])
                     _rows = [e for e in _raw_rows
                              if isinstance(e, dict) and e.get("term") and e.get("clc_code")]
                     for _e in _rows:

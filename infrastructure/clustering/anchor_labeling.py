@@ -195,7 +195,12 @@ class GoldAnchorIndex:
         with GoldAnchorIndex._lock:
             if self._loaded:
                 return bool(self._labels)
-            rows = json.loads(self._gold_path.read_text(encoding="utf-8"))
+            # 用户上传资源优先取公共归一化结果（解包/别名已处理，如 category→
+            # technical_cluster_id）；内置库与未预检路径维持原样解析。
+            from infrastructure.resources.normalize import normalized_rows_for
+            _normalized = normalized_rows_for(self._gold_path)
+            rows = _normalized if _normalized is not None else json.loads(
+                self._gold_path.read_text(encoding="utf-8"))
             label_field = _gold_label_field(self._axis)
             texts, labels, doc_ids = [], [], []
             # 用户自建类目体系支持：gold 行自带类目中文名（如 technical_cluster_name）

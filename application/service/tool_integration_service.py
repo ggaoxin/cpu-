@@ -1219,6 +1219,89 @@ class ToolIntegrationService:
             }, ensure_ascii=False)
         return str(content).strip()
 
+    def _inspect_user_resource_file(self, field: str, resource: Dict[str, Any]) -> None:
+        """用户指定资源统一预检（公共归一化层，全部工具共用）。
+
+        - 内置(bundled)资源跳过（量大且为已知标准结构，也避免重复读 11.7 万行 gold）；
+        - 仅处理 .json 文件：CSV/JSONL/TXT 不在归一化改造范围；
+        - JSON 损坏 / 归一化后有效条目为 0 → ResourceParseError(ValueError)，
+          由 execute 的既有 ValueError 出口返回 42201 业务信封（前端直接展示）；
+        - 成功则按路径注册归一化行，业务消费端经 normalized_rows_for 取同一份结构。
+        """
+        if str(resource.get("source_type") or "") == "bundled":
+            return
+        from infrastructure.resources.normalize import inspect_user_resource, resource_path
+        path = resource_path(str(resource.get("storage_uri") or ""), settings.PROJECT_ROOT)
+        if path is None or path.suffix.lower() != ".json":
+            return
+        inspect_user_resource(path, field=field)
+
+    def _graft_anchor_texts(self, field: str, resource: Dict[str, Any], payload: Dict[str, Any]) -> None:
+        """纯标签映射（如 gold_label.json：仅 document_id+category）文本补全。
+
+        按 document_id 把本次请求的输入文献（题名/摘要）嫁接到缺文本的锚点行上，
+        使"编号→类目"式标注文件无需自带全文即可生效；嫁接后仍无任何可用文本
+        （≥30字）则按零有效条目报错。注：归一化缓存按资源路径共享，同一资源
+        配不同文献集重复调用时以最后一次嫁接为准（上传资源通常配套固定文献集）。
+        """
+        from infrastructure.resources.normalize import (
+            ResourceParseError, normalized_rows_for, register_normalized,
+        )
+        path_uri = str(resource.get("storage_uri") or "")
+        if not path_uri:
+            return
+        from infrastructure.resources.normalize import resource_path
+        path = resource_path(path_uri, settings.PROJECT_ROOT)
+        if path is None:
+            return
+        rows = normalized_rows_for(path)
+        if not rows:
+            return
+        # 请求文献 → {document_id: (title, abstract)}（文本数组与元数据按下标对齐）
+        texts = payload.get("scientific_document_texts")
+        if not isinstance(texts, list):
+            return
+        mets = payload.get("document_metadata") if isinstance(payload.get("document_metadata"), list) else []
+        doc_map: Dict[str, tuple] = {}
+        for index, item in enumerate(texts):
+            met = mets[index] if index < len(mets) and isinstance(mets[index], dict) else {}
+            doc_id = str(met.get("document_id") or "").strip()
+            if isinstance(item, dict):
+                title = str(item.get("title") or item.get("ch_name") or "").strip()
+                body = str(item.get("abstract") or item.get("text") or "").strip()
+            else:
+                title = str(met.get("title") or "").strip()
+                body = str(item or "").strip()
+            if doc_id and (title or body):
+                doc_map[doc_id] = (title, body)
+
+        def _text_len(row: Dict[str, Any]) -> bool:
+            joined = "\n".join(str(row.get(k) or "") for k in ("title", "abstract", "text", "content"))
+            return len(joined.strip()) >= 30
+
+        if not any(not _text_len(row) for row in rows):
+            return  # 全部行已有文本，无需嫁接
+        grafted = 0
+        for row in rows:
+            if _text_len(row):
+                continue
+            doc_id = str(row.get("document_id") or "").strip()
+            if doc_id and doc_id in doc_map:
+                title, body = doc_map[doc_id]
+                if title:
+                    row.setdefault("title", title)
+                if body:
+                    row.setdefault("abstract", body)
+                grafted += 1
+        if grafted or any(_text_len(row) for row in rows):
+            register_normalized(path, rows)
+        if not any(_text_len(row) for row in rows):
+            raise ResourceParseError(
+                f"文件解析完成，但标注条目既缺少文献文本，也无法与本次请求文献按 "
+                f"document_id 关联（{field}）。请在标注文件中提供 title/abstract，"
+                f"或确保标注条目的 document_id 与请求文献编号一致。"
+            )
+
     def _parameters(self, contract: ToolContract, payload: Dict[str, Any]) -> Dict[str, Any]:
         excluded = {
             "input_type", "text", "texts", "title", "abstract", "keywords", "documents", "file", "files",
@@ -1240,6 +1323,14 @@ class ToolIntegrationService:
                 continue
             resource = self.resource_repository.get_semantic_resource(str(descriptor["resource_id"]))
             if resource:
+                # 用户指定资源统一预检：JSON 解码 + 结构归一化 + 零有效条目兜底。
+                # 失败抛 ResourceParseError(ValueError) → execute 统一 42201 业务信封，
+                # 杜绝"上传成功但解析 0 条、静默回退内置"（内置 bundled 资源跳过）。
+                self._inspect_user_resource_file(field, resource)
+                if contract.tool_id == "deep-cluster" and field in (
+                    "training_samples", "manually_labeled_category_data"
+                ):
+                    self._graft_anchor_texts(field, resource, payload)
                 resolved_resources[field] = resource
         # 深度聚类系统内置半监督引导：请求未携带训练样本/人工标注类目字段（未上传
         # 也未显式选择）时，回退加载内置资源（bundled 1000 篇标注语料），使默认

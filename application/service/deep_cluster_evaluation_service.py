@@ -29,6 +29,12 @@ def _rows(value: Any) -> list[dict[str, Any]]:
 def _load_json(path: Path) -> list[dict[str, Any]]:
     if not path.is_file():
         raise ValueError(f"评测资源文件不存在：{path}")
+    # 用户 JSON 资源优先取公共归一化结果（别名 category→technical_cluster_id 等
+    # 已处理）；jsonl/未预检路径维持原解析。
+    from infrastructure.resources.normalize import normalized_rows_for
+    _normalized = normalized_rows_for(path)
+    if _normalized is not None:
+        return _normalized
     if path.suffix.lower() in {".jsonl", ".ndjson"}:
         return [json.loads(line) for line in path.read_text(encoding="utf-8-sig").splitlines() if line.strip()]
     return _rows(json.loads(path.read_text(encoding="utf-8-sig")))

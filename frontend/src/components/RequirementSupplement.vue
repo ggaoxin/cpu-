@@ -451,8 +451,8 @@ watchEffect(() => emit('update:payload', requestPayload.value))
           </select>
           <div v-else class="resource-upload-wrap">
             <label class="resource-upload-zone">
-              <input :ref="el => setResourceFileInput(field.key, el)" type="file" :accept="field.accept || '.json,.jsonl,.csv,.xlsx,.txt'" @change="handleResourceUpload($event, field.key)" />
-              <span>⇧</span><b>{{ uploadedResources[field.key]?.name || `点击上传${field.label}` }}</b><small>支持 JSON、JSONL、CSV、XLSX、TXT</small>
+              <input :ref="el => setResourceFileInput(field.key, el)" type="file" :accept="field.accept || '.json'" @change="handleResourceUpload($event, field.key)" />
+              <span>⇧</span><b>{{ uploadedResources[field.key]?.name || `点击上传${field.label}` }}</b><small>仅支持 JSON 文件；后端自动兼容常见非标准包装与字段别名，转换失败直接报错，不会静默回退内置逻辑</small>
             </label>
             <button v-if="uploadedResources[field.key]" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearUploadedResource(field.key)">✕ 取消</button>
           </div>
