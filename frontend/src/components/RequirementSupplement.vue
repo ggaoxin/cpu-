@@ -243,19 +243,19 @@ const resourceSaveError = ref('')
 const resourceSaveNotice = ref('')
 // 各资源字段上传 JSON 的必含字段清单（与后端 normalize.py 行有效性规则对应）
 const resourceFieldHints: Record<string, string> = {
-  clc_labeled_data: 'clc_code（分类号）、clc_name（类目名）',
-  classification_standard_mapping_table: 'term、clc_code',
-  domain_terminology_library: 'term',
-  manually_labeled_training_data: 'text（或 title/abstract）及标注字段',
-  manually_labeled_data: 'text（或 title/abstract）及标注字段',
-  domain_labeled_training_data: 'text（或 title/abstract）及标注字段',
-  general_domain_annotated_corpus: 'text（或 title/abstract）及标注字段',
-  multi_domain_scientific_corpus: 'text（或 title/abstract）及标注字段',
-  training_samples: 'document_id、category（或 title/abstract）',
-  manually_labeled_category_data: 'document_id、category（或 title/abstract）',
-  domain_classification_rules: 'clc_code、clc_name',
-  preprocessed_training_set: '规则配置（含 system_prompt 或规则条目）',
-  ontology_classification_system: 'canonical、type、variants',
+  clc_labeled_data: '中图分类号、类目名称',
+  classification_standard_mapping_table: '英文术语、中图分类号',
+  domain_terminology_library: '术语词条',
+  manually_labeled_training_data: '文献正文（或题名、摘要）及标注内容',
+  manually_labeled_data: '文献正文（或题名、摘要）及标注内容',
+  domain_labeled_training_data: '文献正文（或题名、摘要）及标注内容',
+  general_domain_annotated_corpus: '文献正文（或题名、摘要）及标注内容',
+  multi_domain_scientific_corpus: '文献正文（或题名、摘要）及标注内容',
+  training_samples: '文献编号、所属类目（可另附题名、摘要）',
+  manually_labeled_category_data: '文献编号、所属类目（可另附题名、摘要）',
+  domain_classification_rules: '中图分类号、类目名称',
+  preprocessed_training_set: '识别规则配置',
+  ontology_classification_system: '实体标准名、实体类型、同义词列表',
 }
 function fieldHint(key: string): string {
   const list = resourceFieldHints[key]
@@ -490,7 +490,9 @@ watchEffect(() => emit('update:payload', requestPayload.value))
             <button v-if="uploadedResources[field.key]" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearUploadedResource(field.key)">✕ 取消</button>
           </div>
         </div>
-        <div v-if="sourceModes[field.key] === 'upload'" class="requirement-resource-summary"><span>入库方式</span><em>上传成功后生成资源编号并保存为可复用数据库资源</em><button type="button" class="primary-btn" :disabled="savingResourceKey === field.key || !uploadedResources[field.key]" @click="saveResourceToDatabase(field.key)">{{ savingResourceKey === field.key ? '保存中…' : '保存到数据库' }}</button><p v-if="resourceSaveError" class="anchor-format-hint" style="color:#c0392b">{{ resourceSaveError }}</p><p v-if="resourceSaveNotice" class="anchor-format-hint">{{ resourceSaveNotice }}</p></div>
+        <div v-if="sourceModes[field.key] === 'upload'" class="requirement-resource-summary"><span>入库方式</span><em>上传成功后生成资源编号并保存为可复用数据库资源</em><button type="button" class="primary-btn" :disabled="savingResourceKey === field.key || !uploadedResources[field.key]" @click="saveResourceToDatabase(field.key)">{{ savingResourceKey === field.key ? '保存中…' : '保存到数据库' }}</button></div>
+        <p v-if="sourceModes[field.key] === 'upload' && resourceSaveError" class="anchor-format-hint" style="color:#c0392b">{{ resourceSaveError }}</p>
+        <p v-if="sourceModes[field.key] === 'upload' && resourceSaveNotice" class="anchor-format-hint">{{ resourceSaveNotice }}</p>
       </article>
     </div>
   </div>

@@ -56,8 +56,8 @@ def unwrap_rows(raw: Any) -> Optional[List[Any]]:
             value = raw.get(key)
             if isinstance(value, list) and value:
                 return value
-        for value in raw.values():  # 未知名称的业务数组也接受
-            if isinstance(value, list) and value and all(isinstance(i, dict) for i in value):
+        for value in raw.values():  # 未知名称的业务数组也接受（dict 行或字符串词条，如 {"术语表":["晶格缺陷"]}）
+            if isinstance(value, list) and value and all(isinstance(i, (dict, str)) for i in value):
                 return value
         # 没有数组：若对象本身像单行数据（有可映射字段），按单行处理
         if _first_present(raw, ("title", "abstract", "text", "content", "term", "clc_code",
@@ -86,18 +86,20 @@ def _normalize_anchor_rows(rows: List[Any]) -> List[Dict[str, Any]]:
     application_cluster_id 与 cluster_name（双轴共用同一用户类目体系）。
     """
     text_keys = ("abstract", "ch_abstract", "en_abstract", "text", "content",
-                 "semantic_text", "full_text", "body")
+                 "semantic_text", "full_text", "body", "摘要", "正文", "简介")
     out: List[Dict[str, Any]] = []
     for row in rows:
         if not isinstance(row, dict):
             continue
         label = _first_present(row, (
             "technical_cluster_id", "application_cluster_id", "category", "category_id",
-            "label", "class", "cluster", "cluster_name", "topic", "类目", "分类",
+            "label", "class", "cluster", "cluster_name", "topic",
+            "类目", "分类", "所属类目", "类别",
         ))
-        title = _first_present(row, ("ch_name", "en_name", "title", "name", "document_title"))
+        title = _first_present(row, ("ch_name", "en_name", "title", "name",
+                                     "document_title", "题名", "标题", "文献题目"))
         body = _first_present(row, text_keys)
-        doc_id = _first_present(row, ("document_id", "doc_id", "id"))
+        doc_id = _first_present(row, ("document_id", "doc_id", "id", "文献编号", "编号"))
         if not label:
             continue
         text = "\n".join(p for p in (title or "", body or "") if p)
@@ -167,7 +169,8 @@ def _normalize_term_rows(rows: List[Any]) -> List[Dict[str, Any]]:
             continue
         if not isinstance(row, dict):
             continue
-        term = _first_present(row, ("term", "keyword", "word", "name", "术语", "词", "词条"))
+        term = _first_present(row, ("term", "keyword", "word", "name",
+                                    "术语", "词", "词条", "术语词条"))
         if not term:
             continue
         new = dict(row)
@@ -183,7 +186,8 @@ def _normalize_generic_rows(rows: List[Any]) -> List[Dict[str, Any]]:
         if not isinstance(row, dict):
             continue
         if _first_present(row, ("title", "abstract", "text", "content", "sentence",
-                                "document_id", "name", "entities", "label", "category")):
+                                "document_id", "name", "entities", "label", "category",
+                                "题名", "标题", "摘要", "正文", "文献编号")):
             out.append(row)
     return out
 
