@@ -1169,3 +1169,18 @@ body.v699-relation-active .relation-tab-btn { width: 25%; min-width: 0; flex: 1 
     width: 0 !important; height: 0 !important; display: none !important;
   }
 }
+
+/* ================================================================
+   侧边栏 CSS 隐藏方案（2026-09-03）：只隐藏显示，不删 DOM、不删组件代码。
+   要恢复侧边栏：注释掉本节 4 条规则即可。
+   - aside.sidebar 直接 display:none（节点保留在 DOM 中，组件逻辑/生命周期不动）
+   - grid 容器实际是 .platform-frame-v640 .app（不是外层 frame 本身），
+     故单列规则挂在 .app 上；body 前缀提升特异性，压过上方 236px 双列 !important
+     与原型侧栏列定义（sidebar-open/collapsed 两态均覆盖）
+   - content-wrap 左内边距对称回 8px（原 4px 为贴侧栏的不对称值）
+   - mobile-nav-fab(☰导航) 一并隐藏：侧栏不可见时它只能弹出空白抽屉+遮罩
+   ================================================================ */
+aside.sidebar { display: none !important; }
+body.figma-ui-v717 .platform-frame-v640 .app { grid-template-columns: minmax(0, 1fr) !important; }
+body.figma-ui-v717 .platform-frame-v640 .content-wrap { padding-left: 8px !important; }
+.mobile-nav-fab { display: none !important; }
