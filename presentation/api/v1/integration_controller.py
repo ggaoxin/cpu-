@@ -453,15 +453,77 @@ async def _store_uploaded_resource(
         meta = {"content_type": upload.content_type, "size_bytes": len(content)}
         record_count = None
         verdict = None
+        # ---- 入库前统一结构校验/归一化（公共层，全部工具共用）----
+        # 行型资源：确定性归一化 0 条 → LLM 一次性整理（写 _normalized.json 替换
+        # storage_uri，原件留档 original_storage_uri）→ 仍失败 422，不入库；
+        # 配置型资源：仅 JSON 解码校验。非 .json 后缀直接 422（accept 只过滤选择器）。
+        from infrastructure.resources.normalize import (
+            CONFIG_FIELD_LABELS, ROW_FIELD_CONFIG, ResourceParseError,
+            inspect_user_resource, register_normalized,
+        )
+        entries: Any = None
+        if field in ROW_FIELD_CONFIG:
+            if stored_path.suffix.lower() != ".json":
+                raise HTTPException(
+                    status_code=422,
+                    detail="仅支持标准 JSON 文件（CSV、JSONL、TXT 暂不支持）。",
+                )
+            try:
+                entries = inspect_user_resource(stored_path, field=field)
+            except ResourceParseError as exc:
+                parse_error = str(exc)
+                if settings.RESOURCE_LLM_NORMALIZE_ENABLED and isinstance(descriptor.get("text_content"), str):
+                    from infrastructure.resources.glm_salvage import maybe_llm_normalize
+                    salvaged, note = maybe_llm_normalize(
+                        descriptor["text_content"], field=field,
+                        max_bytes=settings.RESOURCE_LLM_NORMALIZE_MAX_BYTES,
+                        max_rows=settings.RESOURCE_LLM_NORMALIZE_MAX_ROWS,
+                    )
+                    if salvaged is not None:
+                        conv_path = directory / f"{digest[:16]}_{Path(safe_name).stem}_normalized.json"
+                        conv_path.write_text(
+                            json.dumps(salvaged, ensure_ascii=False, indent=2), encoding="utf-8",
+                        )
+                        descriptor["storage_uri"] = conv_path.as_posix()
+                        descriptor["normalized_by"] = "glm"
+                        descriptor["normalized_rows"] = len(salvaged)
+                        register_normalized(conv_path, salvaged)
+                        meta["normalized_by"] = "glm"
+                        meta["original_storage_uri"] = stored_path.as_posix()
+                        entries = salvaged
+                        parse_error = ""
+                    elif note in {"oversize", "overrows"}:
+                        parse_error = (
+                            f"{exc}（文件超出大模型自动整理上限"
+                            f"（{settings.RESOURCE_LLM_NORMALIZE_MAX_ROWS} 行 / "
+                            f"{settings.RESOURCE_LLM_NORMALIZE_MAX_BYTES // 1024}KB），"
+                            f"请按标准格式整理后重新上传）"
+                        )
+                    else:
+                        parse_error = f"{exc}（已尝试大模型自动整理，未能生成有效结构）"
+                if parse_error:
+                    raise HTTPException(status_code=422, detail=parse_error)
+        elif field in CONFIG_FIELD_LABELS and stored_path.suffix.lower() == ".json":
+            try:
+                json.loads(descriptor.get("text_content") or "")
+            except Exception as exc:  # noqa: BLE001
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"资源文件 JSON 解析失败（{field}）：{exc}。请上传标准 JSON 文件。",
+                ) from exc
+        if entries is None:
+            try:
+                entries = json.loads(content.decode("utf-8-sig"))
+            except Exception:  # noqa: BLE001
+                entries = None
         # CLC 资源：算 verdict 写 metadata.clc_verdict + record_count（供 _resource_context 分治）
         try:
-            entries = json.loads(content.decode("utf-8-sig"))
             if isinstance(entries, list):
                 from infrastructure.rag.clc_user_index_service import compute_clc_verdict
                 verdict = compute_clc_verdict(entries, len(content))
                 meta["clc_verdict"] = verdict
-                record_count = verdict["record_count"]
-            elif field in {"training_samples", "manually_labeled_category_data"}:
+                record_count = verdict["record_count"] if verdict else len(entries)
+            elif isinstance(entries, dict) and field in {"training_samples", "manually_labeled_category_data"}:
                 record_count = len(entries)
         except Exception:  # noqa: BLE001
             pass
@@ -476,7 +538,8 @@ async def _store_uploaded_resource(
                 "language": None,
                 "status": "current",
                 "source_type": "upload",
-                "storage_uri": stored_path.as_posix(),
+                # LLM 整理成功时 descriptor["storage_uri"] 已指向 *_normalized.json
+                "storage_uri": descriptor["storage_uri"],
                 "content_hash": digest,
                 "metadata": meta,
                 "record_count": record_count,
@@ -1266,11 +1329,17 @@ async def upload_semantic_resource(
         raise HTTPException(status_code=422, detail="该资源字段不支持独立保存到数据库")
     return {
         "code": 0,
-        "message": "资源已上传并保存到数据库",
+        "message": (
+            f"资源已上传并保存到数据库（结构非标准，已自动整理为标准格式 {descriptor.get('normalized_rows')} 条）"
+            if descriptor.get("normalized_by") == "glm"
+            else "资源已上传并保存到数据库"
+        ),
         "data": {
             "resource_id": resource_id,
             "file_name": descriptor.get("file_name"),
             "content_hash": descriptor.get("content_hash"),
+            "normalized_by": descriptor.get("normalized_by"),
+            "normalized_rows": descriptor.get("normalized_rows"),
         },
     }
 

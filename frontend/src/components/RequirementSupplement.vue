@@ -240,9 +240,36 @@ function handleCitationMetadataFile(event: Event, target: 'batch' | 'fallback') 
 
 const savingResourceKey = ref<string | null>(null)
 const resourceSaveError = ref('')
+const resourceSaveNotice = ref('')
+// 各资源字段上传 JSON 的必含字段清单（与后端 normalize.py 行有效性规则对应）
+const resourceFieldHints: Record<string, string> = {
+  clc_labeled_data: 'clc_code（分类号）、clc_name（类目名）',
+  classification_standard_mapping_table: 'term、clc_code',
+  domain_terminology_library: 'term',
+  manually_labeled_training_data: 'text（或 title/abstract）及标注字段',
+  manually_labeled_data: 'text（或 title/abstract）及标注字段',
+  domain_labeled_training_data: 'text（或 title/abstract）及标注字段',
+  general_domain_annotated_corpus: 'text（或 title/abstract）及标注字段',
+  multi_domain_scientific_corpus: 'text（或 title/abstract）及标注字段',
+  training_samples: 'document_id、category（或 title/abstract）',
+  manually_labeled_category_data: 'document_id、category（或 title/abstract）',
+}
+function fieldHint(key: string): string {
+  const list = resourceFieldHints[key]
+  return list ? `仅支持 JSON 文件；需包含字段：${list}` : '仅支持 JSON 文件'
+}
 
 function handleResourceUpload(event: Event, key: string) {
-  uploadedResources[key] = (event.target as HTMLInputElement).files?.[0] || null
+  const file = (event.target as HTMLInputElement).files?.[0] || null
+  // 仅放行 .json：accept 只过滤系统选择器，用户切"所有文件"仍可选 txt/csv
+  if (file && !file.name.toLowerCase().endsWith('.json')) {
+    uploadedResources[key] = null
+    if (resourceFileInputs[key]) resourceFileInputs[key]!.value = ''
+    resourceSaveError.value = '仅支持标准 JSON 文件（CSV、JSONL、TXT 暂不支持）'
+    return
+  }
+  uploadedResources[key] = file
+  resourceSaveError.value = ''
 }
 
 // 每字段记录文件 input 引用,取消时同步清空原生 value(否则重选同一文件不触发 change)
@@ -264,6 +291,9 @@ async function saveResourceToDatabase(key: string) {
     const res = await uploadSemanticResource(file, key)
     const rid = res?.data?.resource_id
     if (!rid) throw new Error('资源未登记入库')
+    resourceSaveNotice.value = res?.data?.normalized_by === 'glm'
+      ? (res.message || '结构非标准，已自动整理为标准格式')
+      : ''
     await loadRuntimeResources()
     selectedResources[key] = rid
     sourceModes[key] = 'database'
@@ -452,12 +482,12 @@ watchEffect(() => emit('update:payload', requestPayload.value))
           <div v-else class="resource-upload-wrap">
             <label class="resource-upload-zone">
               <input :ref="el => setResourceFileInput(field.key, el)" type="file" :accept="field.accept || '.json'" @change="handleResourceUpload($event, field.key)" />
-              <span>⇧</span><b>{{ uploadedResources[field.key]?.name || `点击上传${field.label}` }}</b><small>仅支持 JSON 文件；后端自动兼容常见非标准包装与字段别名，转换失败直接报错，不会静默回退内置逻辑</small>
+              <span>⇧</span><b>{{ uploadedResources[field.key]?.name || `点击上传${field.label}` }}</b><small>{{ fieldHint(field.key) }}</small>
             </label>
             <button v-if="uploadedResources[field.key]" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearUploadedResource(field.key)">✕ 取消</button>
           </div>
         </div>
-        <div v-if="sourceModes[field.key] === 'upload'" class="requirement-resource-summary"><span>入库方式</span><em>上传成功后生成资源编号并保存为可复用数据库资源</em><button type="button" class="primary-btn" :disabled="savingResourceKey === field.key || !uploadedResources[field.key]" @click="saveResourceToDatabase(field.key)">{{ savingResourceKey === field.key ? '保存中…' : '保存到数据库' }}</button><div v-if="resourceSaveError" class="info-banner error" style="margin-top:8px">{{ resourceSaveError }}</div></div>
+        <div v-if="sourceModes[field.key] === 'upload'" class="requirement-resource-summary"><span>入库方式</span><em>上传成功后生成资源编号并保存为可复用数据库资源</em><button type="button" class="primary-btn" :disabled="savingResourceKey === field.key || !uploadedResources[field.key]" @click="saveResourceToDatabase(field.key)">{{ savingResourceKey === field.key ? '保存中…' : '保存到数据库' }}</button><div v-if="resourceSaveError" class="info-banner error" style="margin-top:8px">{{ resourceSaveError }}</div><div v-if="resourceSaveNotice" class="info-banner" style="margin-top:8px">{{ resourceSaveNotice }}</div></div>
       </article>
     </div>
   </div>

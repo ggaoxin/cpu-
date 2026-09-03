@@ -179,7 +179,7 @@ class V774HttpContractTests(unittest.TestCase):
         self.assertEqual(direct_request.params["cluster_phrase_sets"], phrase_sets)
 
         documents = [{"document_id": f"D{i}", "text": f"第{i}篇语义计算文本"} for i in range(1, 5)]
-        metadata = [{"document_id": f"D{i}", "publication_date": f"202{i}-01-01"} for i in range(1, 5)]
+        metadata = [{"document_id": f"D{i}", "title": f"文献{i}", "publication_date": f"202{i}-01-01"} for i in range(1, 5)]
         deep = self.client.post("/api/v1/cluster/deep/texts", json={
             "scientific_document_texts": documents, "document_metadata": metadata,
             "cluster_dimension": "technology", "clustering_algorithm_type": "auto",

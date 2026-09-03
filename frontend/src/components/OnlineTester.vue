@@ -255,6 +255,15 @@ let anchorFileInput: HTMLInputElement | null = null
 function handleAnchorFileChange(resourceKey: string, event: Event) {
   anchorFileInput = event.target as HTMLInputElement
   const file = (event.target as HTMLInputElement).files?.[0] || null
+  // 仅放行 .json：accept 只过滤系统选择器，切"所有文件"仍可选 txt/csv
+  if (file && !file.name.toLowerCase().endsWith('.json')) {
+    if (resourceKey === 'training_samples') anchorTrainFile.value = null
+    else anchorGoldFile.value = null
+    if (anchorFileInput) anchorFileInput.value = ''
+    setAnchorNotice(resourceKey, '仅支持标准 JSON 文件（CSV、JSONL、TXT 暂不支持）')
+    return
+  }
+  setAnchorNotice(resourceKey, '')
   if (resourceKey === 'training_samples') anchorTrainFile.value = file
   else anchorGoldFile.value = file
 }
@@ -262,6 +271,13 @@ function clearAnchorFile(resourceKey: string) {
   if (resourceKey === 'training_samples') anchorTrainFile.value = null
   else anchorGoldFile.value = null
   if (anchorFileInput) anchorFileInput.value = ''
+}
+// 上传文件类型提示（含拦截反馈与大模型整理成功通知），两个锚点资源各自独立
+const anchorTrainNotice = ref('')
+const anchorGoldNotice = ref('')
+function setAnchorNotice(resourceKey: string, message: string) {
+  if (resourceKey === 'training_samples') anchorTrainNotice.value = message
+  else anchorGoldNotice.value = message
 }
 async function submitAnchorResource(resourceKey: string) {
   const file = resourceKey === 'training_samples' ? anchorTrainFile.value : anchorGoldFile.value
@@ -275,6 +291,9 @@ async function submitAnchorResource(resourceKey: string) {
     const data = await response.json()
     if (data.code === 0) {
       const rid = data.data?.resource_id
+      setAnchorNotice(resourceKey, data.data?.normalized_by === 'glm'
+        ? (data.message || '结构非标准，已自动整理为标准格式')
+        : '')
       await loadAnchorOptions()
       if (resourceKey === 'training_samples') {
         selectedAnchorTrain.value = rid
@@ -1126,14 +1145,14 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                   <div class="requirement-resource-controls">
                     <select v-model="anchorTrainSource" class="select resource-source-select"><option value="database">从数据库选择当前资源</option><option value="upload">用户上传资源</option></select>
                     <select v-if="anchorTrainSource === 'database'" v-model="selectedAnchorTrain" class="select"><option value="">不使用</option><option v-for="item in anchorTrainOptions" :key="item.id" :value="item.id">{{ item.name }}</option></select>
-                    <div v-else class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorFileChange('training_samples', $event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传训练样本' }}</b><small>仅标准 JSON 数组生效</small></label><div class="anchor-upload-actions"><button type="button" class="primary-btn" :disabled="anchorUploadingKey === 'training_samples' || !anchorTrainFile" @click="submitAnchorResource('training_samples')">{{ anchorUploadingKey === 'training_samples' ? '提交中…' : '提交' }}</button><button v-if="anchorTrainFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearAnchorFile('training_samples')">✕ 取消</button></div></div><p class="anchor-format-hint">仅支持 JSON 文件</p>
+                    <div v-else class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorFileChange('training_samples', $event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传训练样本' }}</b><small>仅标准 JSON 数组生效</small></label><div class="anchor-upload-actions"><button type="button" class="primary-btn" :disabled="anchorUploadingKey === 'training_samples' || !anchorTrainFile" @click="submitAnchorResource('training_samples')">{{ anchorUploadingKey === 'training_samples' ? '提交中…' : '提交' }}</button><button v-if="anchorTrainFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearAnchorFile('training_samples')">✕ 取消</button></div></div><p class="anchor-format-hint">仅支持 JSON 文件；需包含字段：document_id、category（或 title/abstract）</p><p v-if="anchorTrainNotice" class="anchor-format-hint" style="color:#c0392b">{{ anchorTrainNotice }}</p>
                   </div>
                 </div>
                 <div class="field"><label><span class="label-main">人工标注类目标签数据</span><small>可选</small></label>
                   <div class="requirement-resource-controls">
                     <select v-model="anchorGoldSource" class="select resource-source-select"><option value="database">从数据库选择当前资源</option><option value="upload">用户上传资源</option></select>
                     <select v-if="anchorGoldSource === 'database'" v-model="selectedAnchorGold" class="select"><option value="">不使用</option><option v-for="item in anchorGoldOptions" :key="item.id" :value="item.id">{{ item.name }}</option></select>
-                    <div v-else class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorFileChange('manually_labeled_category_data', $event)" /><span>⇧</span><b>{{ anchorGoldFile?.name || '点击上传人工标注类目标签数据' }}</b><small>仅标准 JSON 数组生效</small></label><div class="anchor-upload-actions"><button type="button" class="primary-btn" :disabled="anchorUploadingKey === 'manually_labeled_category_data' || !anchorGoldFile" @click="submitAnchorResource('manually_labeled_category_data')">{{ anchorUploadingKey === 'manually_labeled_category_data' ? '提交中…' : '提交' }}</button><button v-if="anchorGoldFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearAnchorFile('manually_labeled_category_data')">✕ 取消</button></div></div><p class="anchor-format-hint">仅支持 JSON 文件</p>
+                    <div v-else class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorFileChange('manually_labeled_category_data', $event)" /><span>⇧</span><b>{{ anchorGoldFile?.name || '点击上传人工标注类目标签数据' }}</b><small>仅标准 JSON 数组生效</small></label><div class="anchor-upload-actions"><button type="button" class="primary-btn" :disabled="anchorUploadingKey === 'manually_labeled_category_data' || !anchorGoldFile" @click="submitAnchorResource('manually_labeled_category_data')">{{ anchorUploadingKey === 'manually_labeled_category_data' ? '提交中…' : '提交' }}</button><button v-if="anchorGoldFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearAnchorFile('manually_labeled_category_data')">✕ 取消</button></div></div><p class="anchor-format-hint">仅支持 JSON 文件；需包含字段：document_id、category（或 title/abstract）</p><p v-if="anchorGoldNotice" class="anchor-format-hint" style="color:#c0392b">{{ anchorGoldNotice }}</p>
                   </div>
                 </div>
               </div>
@@ -1264,14 +1283,14 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                   <div class="requirement-resource-controls">
                     <select v-model="anchorTrainSource" class="select resource-source-select"><option value="database">从数据库选择当前资源</option><option value="upload">用户上传资源</option></select>
                     <select v-if="anchorTrainSource === 'database'" v-model="selectedAnchorTrain" class="select"><option value="">不使用</option><option v-for="item in anchorTrainOptions" :key="item.id" :value="item.id">{{ item.name }}</option></select>
-                    <div v-else class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorFileChange('training_samples', $event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传训练样本' }}</b><small>仅标准 JSON 数组生效</small></label><div class="anchor-upload-actions"><button type="button" class="primary-btn" :disabled="anchorUploadingKey === 'training_samples' || !anchorTrainFile" @click="submitAnchorResource('training_samples')">{{ anchorUploadingKey === 'training_samples' ? '提交中…' : '提交' }}</button><button v-if="anchorTrainFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearAnchorFile('training_samples')">✕ 取消</button></div></div><p class="anchor-format-hint">仅支持 JSON 文件</p>
+                    <div v-else class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorFileChange('training_samples', $event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传训练样本' }}</b><small>仅标准 JSON 数组生效</small></label><div class="anchor-upload-actions"><button type="button" class="primary-btn" :disabled="anchorUploadingKey === 'training_samples' || !anchorTrainFile" @click="submitAnchorResource('training_samples')">{{ anchorUploadingKey === 'training_samples' ? '提交中…' : '提交' }}</button><button v-if="anchorTrainFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearAnchorFile('training_samples')">✕ 取消</button></div></div><p class="anchor-format-hint">仅支持 JSON 文件；需包含字段：document_id、category（或 title/abstract）</p><p v-if="anchorTrainNotice" class="anchor-format-hint" style="color:#c0392b">{{ anchorTrainNotice }}</p>
                   </div>
                 </div>
                 <div class="field"><label><span class="label-main">人工标注类目标签数据</span><small>可选</small></label>
                   <div class="requirement-resource-controls">
                     <select v-model="anchorGoldSource" class="select resource-source-select"><option value="database">从数据库选择当前资源</option><option value="upload">用户上传资源</option></select>
                     <select v-if="anchorGoldSource === 'database'" v-model="selectedAnchorGold" class="select"><option value="">不使用</option><option v-for="item in anchorGoldOptions" :key="item.id" :value="item.id">{{ item.name }}</option></select>
-                    <div v-else class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorFileChange('manually_labeled_category_data', $event)" /><span>⇧</span><b>{{ anchorGoldFile?.name || '点击上传人工标注类目标签数据' }}</b><small>仅标准 JSON 数组生效</small></label><div class="anchor-upload-actions"><button type="button" class="primary-btn" :disabled="anchorUploadingKey === 'manually_labeled_category_data' || !anchorGoldFile" @click="submitAnchorResource('manually_labeled_category_data')">{{ anchorUploadingKey === 'manually_labeled_category_data' ? '提交中…' : '提交' }}</button><button v-if="anchorGoldFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearAnchorFile('manually_labeled_category_data')">✕ 取消</button></div></div><p class="anchor-format-hint">仅支持 JSON 文件</p>
+                    <div v-else class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorFileChange('manually_labeled_category_data', $event)" /><span>⇧</span><b>{{ anchorGoldFile?.name || '点击上传人工标注类目标签数据' }}</b><small>仅标准 JSON 数组生效</small></label><div class="anchor-upload-actions"><button type="button" class="primary-btn" :disabled="anchorUploadingKey === 'manually_labeled_category_data' || !anchorGoldFile" @click="submitAnchorResource('manually_labeled_category_data')">{{ anchorUploadingKey === 'manually_labeled_category_data' ? '提交中…' : '提交' }}</button><button v-if="anchorGoldFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearAnchorFile('manually_labeled_category_data')">✕ 取消</button></div></div><p class="anchor-format-hint">仅支持 JSON 文件；需包含字段：document_id、category（或 title/abstract）</p><p v-if="anchorGoldNotice" class="anchor-format-hint" style="color:#c0392b">{{ anchorGoldNotice }}</p>
                   </div>
                 </div>
               </div>

@@ -36,6 +36,10 @@ class Settings:
     GLM_TEMPERATURE: float = float(os.getenv("GLM_TEMPERATURE", "0.1"))
     GLM_CONNECT_TIMEOUT_SECONDS: float = max(1.0, float(os.getenv("GLM_CONNECT_TIMEOUT_SECONDS", "8")))
     GLM_REQUIRED_AT_STARTUP: bool = os.getenv("GLM_REQUIRED_AT_STARTUP", "false").lower() == "true"
+    # 用户上传资源 LLM 结构整理（上传时一次性转换；确定性归一化 0 条时触发）
+    RESOURCE_LLM_NORMALIZE_ENABLED: bool = os.getenv("RESOURCE_LLM_NORMALIZE_ENABLED", "true").lower() == "true"
+    RESOURCE_LLM_NORMALIZE_MAX_BYTES: int = int(os.getenv("RESOURCE_LLM_NORMALIZE_MAX_BYTES", str(512 * 1024)))
+    RESOURCE_LLM_NORMALIZE_MAX_ROWS: int = int(os.getenv("RESOURCE_LLM_NORMALIZE_MAX_ROWS", "2000"))
 
     # ---- 应用 ----
     APP_NAME: str = "语义计算工具库"
