@@ -1103,7 +1103,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                 <div class="two-column deep-cluster-metadata-grid">
                   <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="doc.id" class="input" placeholder="例如：DOC001" /></div>
                   <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 发表时间</span></label><input v-model="doc.publication_date" class="input" type="date" :max="todayDateStr" /></div>
-                  <div class="field"><label><span class="label-main">题名</span><small>可选</small></label><input v-model="doc.title" class="input" placeholder="请输入题名" /></div>
+                  <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span><small>可选</small></label><input v-model="doc.title" class="input" placeholder="请输入题名" /></div>
                   <div class="field"><label><span class="label-main">作者</span><small>可选</small></label><input v-model="doc.authors" class="input" placeholder="多人使用逗号分隔" /></div>
                   <div class="field"><label><span class="label-main">文献来源</span><small>可选</small></label><input v-model="doc.source" class="input" placeholder="期刊、会议、报告或其他来源" /></div>
                   <div class="field"><label><span class="label-main">关键词</span><small>可选</small></label><input v-model="doc.keywords" class="input" placeholder="多个关键词使用逗号分隔" /></div>
@@ -1143,7 +1143,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                 <div class="settings-title review-metadata-title"><b>文献元数据</b><span>支撑团队分析、趋势计算与溯源</span></div>
                 <div class="two-column review-document-meta-grid-v637">
                   <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="doc.id" class="input" placeholder="例如：DOC001" /></div>
-                  <div class="field"><label><span class="label-main">题名</span><small>可选</small></label><input v-model="doc.title" class="input" placeholder="可填写科技文献题名" /></div>
+                  <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span><small>可选</small></label><input v-model="doc.title" class="input" placeholder="可填写科技文献题名" /></div>
                   <div class="field"><label><span class="label-main">作者</span></label><input v-model="doc.authors" class="input" placeholder="多人使用逗号分隔" /></div>
                   <div class="field"><label><span class="label-main">研究团队或机构</span></label><input v-model="doc.institutions" class="input" placeholder="请输入研究团队或机构" /></div>
                   <div class="field"><label><span class="label-main">发表时间</span></label><input v-model="doc.publication_date" class="input" type="date" :max="todayDateStr" /></div>
@@ -1194,7 +1194,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                     <div class="citation-metadata-form-grid">
                       <div class="field"><label><span class="label-main">发表年份</span></label><input v-model="entry.year" class="input" placeholder="例如：2024" /></div>
                       <div class="field"><label><span class="label-main">作者</span></label><input v-model="entry.authorsText" class="input" placeholder="多个作者用分号分隔" /></div>
-                      <div class="field"><label><span class="label-main">文献题名</span></label><input v-model="entry.title" class="input" placeholder="请输入被引文献题名" /></div>
+                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献题名</span></label><input v-model="entry.title" class="input" placeholder="请输入被引文献题名" /></div>
                       <div class="field"><label><span class="label-main">期刊或会议</span></label><input v-model="entry.venue" class="input" placeholder="请输入期刊或会议名称" /></div>
                       <div class="field"><label><span class="label-main">DOI</span><small>选填</small></label><input v-model="entry.doi" class="input" placeholder="例如：10.xxxx/xxxxx" /></div>
                     </div>
@@ -1238,7 +1238,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                     <div class="two-column deep-cluster-metadata-grid">
                       <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="item.documentId" class="input" placeholder="例如：DOC001" /></div>
                       <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 发表时间</span></label><input v-model="item.publicationDate" class="input" type="date" :max="todayDateStr" /></div>
-                      <div class="field"><label><span class="label-main">题名</span><small>可选</small></label><input v-model="item.title" class="input" placeholder="请输入题名" /></div>
+                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span><small>可选</small></label><input v-model="item.title" class="input" placeholder="请输入题名" /></div>
                       <div class="field"><label><span class="label-main">作者</span><small>可选</small></label><input v-model="item.authors" class="input" placeholder="多人使用逗号分隔" /></div>
                       <div class="field"><label><span class="label-main">文献来源</span><small>可选</small></label><input v-model="item.source" class="input" placeholder="期刊、会议、报告或其他来源" /></div>
                       <div class="field"><label><span class="label-main">关键词</span><small>可选</small></label><input v-model="item.keywords" class="input" placeholder="多个关键词使用逗号分隔" /></div>
