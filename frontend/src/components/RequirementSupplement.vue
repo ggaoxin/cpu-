@@ -253,6 +253,9 @@ const resourceFieldHints: Record<string, string> = {
   multi_domain_scientific_corpus: 'text（或 title/abstract）及标注字段',
   training_samples: 'document_id、category（或 title/abstract）',
   manually_labeled_category_data: 'document_id、category（或 title/abstract）',
+  domain_classification_rules: 'clc_code、clc_name',
+  preprocessed_training_set: '规则配置（含 system_prompt 或规则条目）',
+  ontology_classification_system: 'canonical、type、variants',
 }
 function fieldHint(key: string): string {
   const list = resourceFieldHints[key]
@@ -487,7 +490,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
             <button v-if="uploadedResources[field.key]" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearUploadedResource(field.key)">✕ 取消</button>
           </div>
         </div>
-        <div v-if="sourceModes[field.key] === 'upload'" class="requirement-resource-summary"><span>入库方式</span><em>上传成功后生成资源编号并保存为可复用数据库资源</em><button type="button" class="primary-btn" :disabled="savingResourceKey === field.key || !uploadedResources[field.key]" @click="saveResourceToDatabase(field.key)">{{ savingResourceKey === field.key ? '保存中…' : '保存到数据库' }}</button><div v-if="resourceSaveError" class="info-banner error" style="margin-top:8px">{{ resourceSaveError }}</div><div v-if="resourceSaveNotice" class="info-banner" style="margin-top:8px">{{ resourceSaveNotice }}</div></div>
+        <div v-if="sourceModes[field.key] === 'upload'" class="requirement-resource-summary"><span>入库方式</span><em>上传成功后生成资源编号并保存为可复用数据库资源</em><button type="button" class="primary-btn" :disabled="savingResourceKey === field.key || !uploadedResources[field.key]" @click="saveResourceToDatabase(field.key)">{{ savingResourceKey === field.key ? '保存中…' : '保存到数据库' }}</button><p v-if="resourceSaveError" class="anchor-format-hint" style="color:#c0392b">{{ resourceSaveError }}</p><p v-if="resourceSaveNotice" class="anchor-format-hint">{{ resourceSaveNotice }}</p></div>
       </article>
     </div>
   </div>
