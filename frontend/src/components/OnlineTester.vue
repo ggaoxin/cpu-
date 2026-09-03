@@ -867,11 +867,12 @@ function validateRequiredInputs(): string {
     if (!form.clusterDimension) return '请选择聚类维度。'
     if (mode.value === 'batch-text') {
       if (docs.length < 4) return '深度聚类至少需要4篇科技文献文本。'
-      const invalidIndex = docs.findIndex(item => !item.id.trim() || !item.publication_date || !item.text.trim())
+      const invalidIndex = docs.findIndex(item => !item.id.trim() || !item.title.trim() || !item.publication_date || !item.text.trim())
       if (invalidIndex >= 0) {
         const doc = docs[invalidIndex]
         const missing = [
           ...(!doc.id.trim() ? ['文献编号'] : []),
+          ...(!doc.title.trim() ? ['题名'] : []),
           ...(!doc.publication_date ? ['发表时间'] : []),
           ...(!doc.text.trim() ? ['文本'] : []),
         ]
@@ -879,8 +880,8 @@ function validateRequiredInputs(): string {
       }
     } else {
       if (uploadedFiles.length < 4) return '深度聚类至少需要上传4个文献文件。'
-      const invalidIndex = uploadedFiles.findIndex(item => !item.documentId.trim() || !item.publicationDate)
-      if (invalidIndex >= 0) return `请完整填写文件${invalidIndex + 1}的文献编号和发表时间。`
+      const invalidIndex = uploadedFiles.findIndex(item => !item.documentId.trim() || !item.title.trim() || !item.publicationDate)
+      if (invalidIndex >= 0) return `请完整填写文件${invalidIndex + 1}的文献编号、题名和发表时间。`
     }
     // 类簇数量约束：最低 1、最大必须小于输入文献数（留空=自动确定）。
     // 越界时同时禁用提交按钮（见 clusterCountError），提交前此处再兜底拦截。
@@ -893,8 +894,17 @@ function validateRequiredInputs(): string {
     if (mode.value === 'collection') return selectedCollectionId.value ? '' : '请选择指定文献集。'
     if (mode.value === 'batch-text') {
       if (docs.length < 3) return '结构化自动综述至少需要3篇文献文本。'
-      const invalidIndex = docs.findIndex(item => !item.id.trim() || !item.text.trim())
-      return invalidIndex >= 0 ? `请完整填写文献${invalidIndex + 1}的文献编号和文本。` : ''
+      const invalidIndex = docs.findIndex(item => !item.id.trim() || !item.title.trim() || !item.text.trim())
+      if (invalidIndex >= 0) {
+        const doc = docs[invalidIndex]
+        const missing = [
+          ...(!doc.id.trim() ? ['文献编号'] : []),
+          ...(!doc.title.trim() ? ['题名'] : []),
+          ...(!doc.text.trim() ? ['文本'] : []),
+        ]
+        return `文献${invalidIndex + 1}还缺少：${missing.join('、')}，请补全后再测试。`
+      }
+      return ''
     }
     return uploadedFiles.length >= 3 ? '' : '结构化自动综述至少需要上传3个文献文件。'
   }
@@ -1103,7 +1113,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                 <div class="two-column deep-cluster-metadata-grid">
                   <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="doc.id" class="input" placeholder="例如：DOC001" /></div>
                   <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 发表时间</span></label><input v-model="doc.publication_date" class="input" type="date" :max="todayDateStr" /></div>
-                  <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span><small>可选</small></label><input v-model="doc.title" class="input" placeholder="请输入题名" /></div>
+                  <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="doc.title" class="input" placeholder="请输入题名" /></div>
                   <div class="field"><label><span class="label-main">作者</span><small>可选</small></label><input v-model="doc.authors" class="input" placeholder="多人使用逗号分隔" /></div>
                   <div class="field"><label><span class="label-main">文献来源</span><small>可选</small></label><input v-model="doc.source" class="input" placeholder="期刊、会议、报告或其他来源" /></div>
                   <div class="field"><label><span class="label-main">关键词</span><small>可选</small></label><input v-model="doc.keywords" class="input" placeholder="多个关键词使用逗号分隔" /></div>
@@ -1143,7 +1153,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                 <div class="settings-title review-metadata-title"><b>文献元数据</b><span>支撑团队分析、趋势计算与溯源</span></div>
                 <div class="two-column review-document-meta-grid-v637">
                   <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="doc.id" class="input" placeholder="例如：DOC001" /></div>
-                  <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span><small>可选</small></label><input v-model="doc.title" class="input" placeholder="可填写科技文献题名" /></div>
+                  <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="doc.title" class="input" placeholder="可填写科技文献题名" /></div>
                   <div class="field"><label><span class="label-main">作者</span></label><input v-model="doc.authors" class="input" placeholder="多人使用逗号分隔" /></div>
                   <div class="field"><label><span class="label-main">研究团队或机构</span></label><input v-model="doc.institutions" class="input" placeholder="请输入研究团队或机构" /></div>
                   <div class="field"><label><span class="label-main">发表时间</span></label><input v-model="doc.publication_date" class="input" type="date" :max="todayDateStr" /></div>
@@ -1238,7 +1248,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                     <div class="two-column deep-cluster-metadata-grid">
                       <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="item.documentId" class="input" placeholder="例如：DOC001" /></div>
                       <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 发表时间</span></label><input v-model="item.publicationDate" class="input" type="date" :max="todayDateStr" /></div>
-                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span><small>可选</small></label><input v-model="item.title" class="input" placeholder="请输入题名" /></div>
+                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="item.title" class="input" placeholder="请输入题名" /></div>
                       <div class="field"><label><span class="label-main">作者</span><small>可选</small></label><input v-model="item.authors" class="input" placeholder="多人使用逗号分隔" /></div>
                       <div class="field"><label><span class="label-main">文献来源</span><small>可选</small></label><input v-model="item.source" class="input" placeholder="期刊、会议、报告或其他来源" /></div>
                       <div class="field"><label><span class="label-main">关键词</span><small>可选</small></label><input v-model="item.keywords" class="input" placeholder="多个关键词使用逗号分隔" /></div>

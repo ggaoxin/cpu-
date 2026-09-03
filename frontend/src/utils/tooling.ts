@@ -435,6 +435,7 @@ function nestedParameterRows(
     let childStatus = status
     if (['resource_id', 'file', 'dictionary_name', 'weight_boost', 'terms', 'raw_reference', 'project_name', 'document_title'].includes(key)) childStatus = 'conditional'
     if (['doi', 'title', 'authors', 'institutions', 'venue', 'work_name', 'publication_year', 'keywords'].includes(key)) childStatus = 'optional'
+    if (key === 'title' && ['deep-cluster', 'structured-review'].includes(toolId)) childStatus = 'required' // 题名在这两个工具为必填
     if (key === 'source' && path.includes('document_metadata')) childStatus = 'optional'
     if (key === 'publication_date') childStatus = toolId === 'deep-cluster' ? 'required' : 'optional'
     if (key === 'id') childStatus = ['deep-cluster', 'structured-review'].includes(toolId) ? 'required' : 'optional'

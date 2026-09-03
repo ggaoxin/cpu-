@@ -1600,8 +1600,8 @@ class ToolIntegrationService:
                     return "document_metadata 必须与科技文献文本逐篇对应"
                 for index, item in enumerate(metadata):
                     # 文献编号认 id 别名（前端历史版本/第三方调用可能发 id）
-                    if not isinstance(item, dict) or not str(item.get("document_id") or item.get("id") or "").strip() or not str(item.get("publication_date") or "").strip():
-                        return f"第 {index + 1} 篇文献的文献编号和发表时间为必填项"
+                    if not isinstance(item, dict) or not str(item.get("document_id") or item.get("id") or "").strip() or not str(item.get("title") or "").strip() or not str(item.get("publication_date") or "").strip():
+                        return f"第 {index + 1} 篇文献的文献编号、题名和发表时间为必填项"
                     if str(item.get("publication_date") or "").strip() > _today_str():
                         return f"第 {index + 1} 篇文献的发表时间不能晚于今天"
         if contract.tool_id == "structured-review":
@@ -1612,6 +1612,9 @@ class ToolIntegrationService:
                 metadata = payload.get("document_metadata")
                 if not isinstance(metadata, list) or len(metadata) != len(documents):
                     return "document_metadata 必须与文献集逐篇对应"
+                for index, item in enumerate(metadata):
+                    if not isinstance(item, dict) or not str(item.get("title") or "").strip():
+                        return f"第 {index + 1} 篇文献的题名为必填项"
         if payload.get("input_type") == "upstream_records" and not payload.get("upstream_entity_record_id"):
             return "实体关系识别必须选择一条已完成的命名实体识别记录"
         return None

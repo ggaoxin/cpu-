@@ -289,7 +289,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
       ['document_metadata', 'object[]', 'conditional', '文献元数据(文献编号+发表时间),用于趋势分析与文献集沉淀。批量文本模式必填;批量文件模式由文件解析自动补充'],
       ['document_metadata[].document_id', 'string', 'conditional', '文献编号(批量文本模式必填),如 "DOC001"'],
       ['document_metadata[].publication_date', 'string', 'conditional', '发表时间(批量文本模式必填),格式 "YYYY-MM-DD"'],
-      ['document_metadata[].title', 'string', 'optional', '文献题目'],
+      ['document_metadata[].title', 'string', 'required', '文献题目'],
       ['clustering_algorithm_type', 'string', 'optional', '聚类算法类型。枚举:"auto"(默认)、"kmeans"、"spectral"、"agglomerative"、"hierarchical"、"hdbscan"'],
       ['cluster_count', 'integer', 'optional', '类簇数量(>=2)。不指定时算法自动选 k;hdbscan 不允许指定'],
       ['output_format', 'string', 'optional', '输出格式(默认 JSON)'],
@@ -325,6 +325,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
       ['document_set.collection_id', 'string', 'conditional', '指定文献集模式时的集合编号(col_ 前缀)'],
       ['document_metadata', 'object[]', 'conditional', '文献元数据。批量文本模式需逐篇提供;文件/文献集模式自动解析'],
       ['document_metadata[].document_id', 'string', 'conditional', '文献编号(批量文本模式必填)'],
+      ['document_metadata[].title', 'string', 'conditional', '文献题目(批量文本模式必填)'],
       ['document_metadata[].publication_date', 'string', 'optional', '发表时间(YYYY-MM-DD)。用于趋势热点分析;缺失时从文献全文自动抽取'],
     ],
     outputs: [
