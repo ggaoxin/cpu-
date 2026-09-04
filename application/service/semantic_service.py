@@ -82,6 +82,17 @@ class SemanticApplicationService(ISemanticService):
                     excerpt = path.read_text(encoding="utf-8-sig", errors="replace")
                 except OSError:
                     excerpt = ""
+                # JSON 资源优先注入公共归一化行（规则/LLM 容错层产出的标准字段结构，
+                # 与预检/引擎消费同一口径）——中文 key 原文不再直接进提示词
+                if path.suffix.lower() == ".json":
+                    try:
+                        from infrastructure.resources.normalize import normalized_rows_for as _nrf
+                        import json as _jsonc
+                        _rows = _nrf(path)
+                        if _rows:
+                            excerpt = _jsonc.dumps(_rows, ensure_ascii=False)
+                    except Exception:  # noqa: BLE001 - 归一化行不可用时回退原文
+                        pass
             # CLC 资源：按 verdict 渲染 few-shot/范围块（非 CLC 走原 raw 截断）
             clc_block = SemanticApplicationService._render_clc_block(field, resource, excerpt, remaining)
             if clc_block is not None:
@@ -1007,6 +1018,28 @@ class SemanticApplicationService(ISemanticService):
 
         # 1. 确定性候选 + 特征打分
         model = self._load_keyword_model(fp)
+        # 用户上传的领域术语库（en-keyword 的 domain_terminology_library 资源）合并进
+        # 归一索引：资源文件每次请求现读，届时上传/替换即直接生效（无需重启或改模型文件）。
+        # 条目格式 [{canonical: 标准术语, variants: [变体/缩写/同义词]}]，按 canonical 去重。
+        if is_en:
+            _lib_res = ((request.params or {}).get("resolved_resources") or {}).get("domain_terminology_library")
+            _lib_uri = str((_lib_res or {}).get("storage_uri") or "")
+            if _lib_uri:
+                from pathlib import Path as _P
+                _lib_path = _P(_lib_uri.removeprefix("project://")) if _lib_uri.startswith("project://") else _P(_lib_uri)
+                if _lib_path.is_file():
+                    try:
+                        import json as _json2
+                        _lib = _json2.loads(_lib_path.read_text(encoding="utf-8"))
+                        _extra = [e for e in (_lib if isinstance(_lib, list) else [])
+                                  if isinstance(e, dict) and e.get("canonical") and e.get("variants")]
+                        if _extra:
+                            _seen = {str(c.get("canonical")) for c in model.get("domain_terms") or []}
+                            model["domain_terms"] = list(model.get("domain_terms") or []) + [
+                                e for e in _extra if str(e["canonical"]) not in _seen]
+
+                    except Exception:  # noqa: BLE001 - 术语库损坏不影响主流程
+                        logger.warning("领域术语库资源解析失败：%s", _lib_path.name, exc_info=True)
         # zh 也面向全文挖掘（与 en 一致）：仅看前 8000 字会埋掉低频但全文高频的核心术语
         # （如 ch4 反应谱全文 23 次、前 8000 仅 2-4 次）。挖掘器内置垃圾过滤+子串去膨胀。
         cands = mine_candidates(mine_source) if is_en else mine_candidates(title, mine_source)
@@ -1044,6 +1077,20 @@ class SemanticApplicationService(ISemanticService):
                 if value["term"].casefold() in searchable_text.casefold()
             ]
             top_cands = list(dict.fromkeys(matching_dictionary_terms + top_cands))[:40]
+
+        # 领域术语库增强(en-keyword)：库内术语/变体字面出现在原文的，注入候选池头部——
+        # 缩写/短变体常被短语挖掘漏掉，进候选后 LLM 即可按主题相关性选出；选出的变体
+        # 再由归一索引映射回标准术语(normalized_term)。用户上传/替换术语库即时生效。
+        if is_en and model.get("domain_terms"):
+            _lib_hits = []
+            for _c in model["domain_terms"]:
+                for _f in [str(_c.get("canonical") or "")] + [str(v) for v in _c.get("variants") or []]:
+                    _f = _f.strip()
+                    if _f and self._ws_substr_find(searchable_text.casefold(), _f.casefold()) >= 0:
+                        _lib_hits.append(_f)
+                        break  # 每簇注入一个命中形式（canonical 优先，否则首个命中的变体）
+            if _lib_hits:
+                top_cands = list(dict.fromkeys(_lib_hits + top_cands))[:40]
 
         # 2. LLM 选/精炼（带 few-shot + 候选）
         system_prompt = self._system_prompt(rule, request)
@@ -1361,6 +1408,14 @@ class SemanticApplicationService(ISemanticService):
                 "version_id": custom_dictionary.get("version_id"),
                 "version": custom_dictionary.get("version"),
                 "name": custom_dictionary.get("name"),
+                # 审计留痕：实际装载的术语列表（文件解析/手填/已存词典三种来源）
+                # 与来源标记（parsed_file=上传文件规则解析或 LLM 兜底抽取）
+                "dictionary_name": custom_dictionary.get("dictionary_name"),
+                "terms": [t.get("term") if isinstance(t, dict) else t for t in custom_terms][:50],
+                "term_source": "parsed_file" if (
+                    custom_dictionary.get("text_content") or custom_dictionary.get("storage_uri")
+                ) else (
+                    "saved_dictionary" if custom_dictionary.get("id") else "user_input"),
                 "matched_term_count": len(matched_terms),
             } if custom_terms else None,
             "statistics": {
@@ -1375,7 +1430,7 @@ class SemanticApplicationService(ISemanticService):
         result.raw = json.dumps(
             {"keywords": keyword_rows, "dictionary_usage": result.data.get("dictionary_usage"), "n_candidates": len(cands),
              "n_dropped": len(dropped), "feature_weights": model.get("feature_weights")},
-            ensure_ascii=False)
+            ensure_ascii=False, default=str)
         return result
 
     @staticmethod
@@ -2882,9 +2937,15 @@ class SemanticApplicationService(ISemanticService):
         # 普通科技摘要/论文不满足,五类语步全部为空,不进 LLM 强行解读。
         _fund_kw = ("立项依据", "申请书", "申报书", "任务书", "结题", "验收", "考核指标",
                     "技术路线", "预期成果", "申请经费", "资助经费", "可行性分析", "依托单位",
-                    "项目摘要", "研究基础", "年度研究计划")
+                    "项目摘要", "研究基础", "年度研究计划",
+                    # 五类语步词也作结构信号：短文本测试/在线试用常直接写含这些词的
+                    # 简短申报式段落，此前长文+多词门槛会把它们全部拒掉（全空输出）
+                    "建设目标", "研究内容", "研究目标", "应用价值", "实施方案")
         _kw_hits = sum(1 for _k in _fund_kw if _k in full_text)
-        _is_fund_text = (len(full_text) >= 1500 and _kw_hits >= 2) or _kw_hits >= 4
+        # 短文本(≥80字)有 3 个结构词即认定基金类（覆盖在线测试/短申报书摘要场景）；
+        # 长文本维持原门槛
+        _is_fund_text = (len(full_text) >= 1500 and _kw_hits >= 2) or _kw_hits >= 4 \
+                        or (len(full_text) >= 80 and _kw_hits >= 3)
         if not _is_fund_text:
             _empty_moves = [{"move_type": _mt, "content": "", "sources": [], "source_sections": [],
                              "n_fragments": 0, "confidence": None} for _mt in move_types]
@@ -4231,6 +4292,103 @@ class SemanticApplicationService(ISemanticService):
         finally:
             _pool.release(_pages)
 
+    # ---- 科研实体识别：用户上传资源（领域示例语料 / 标准词表）加载与归一 ---- #
+    @staticmethod
+    def _read_uploaded_resource_json(descriptor) -> list:
+        """读用户上传资源并取【归一化行】（与全站资源消费同一口径）。
+
+        优先走 infrastructure.resources.normalize 的注册表（规则层/LLM 容错层
+        归一化的标准结构——磁盘原文件可能是中文 key 或 LLM 重构前形态）；
+        注册表未命中再回退直接解析磁盘文件。失败返回 []（不影响主流程）。
+        """
+        try:
+            uri = str((descriptor or {}).get("storage_uri") or "")
+            if not uri:
+                return []
+            from config.settings import settings as _settings
+            from infrastructure.resources.normalize import (
+                normalized_rows_for, resource_path,
+            )
+            path = resource_path(uri, _settings.PROJECT_ROOT)
+            if path is not None:
+                rows = normalized_rows_for(path)
+                if rows:
+                    return rows
+                import json as _json3
+                if path.suffix.lower() == ".json" and path.is_file():
+                    data = _json3.loads(path.read_text(encoding="utf-8"))
+                    return data if isinstance(data, list) else []
+            return []
+        except Exception:  # noqa: BLE001
+            logger.warning("科研实体识别资源文件解析失败", exc_info=True)
+            return []
+
+    def _load_ner_fewshot(self, descriptor) -> str:
+        """领域示例语料 → few-shot 文本。条目 {"text": 示例, "entities": [{"text","type"}]}。"""
+        rows = [r for r in self._read_uploaded_resource_json(descriptor) if isinstance(r, dict)]
+        lines = []
+        for row in rows[:3]:
+            text = str(row.get("text") or "").strip()
+            ents = [e for e in (row.get("entities") or []) if isinstance(e, dict)
+                    and e.get("text") and e.get("type")]
+            if not text or not ents:
+                continue
+            lines.append("示例文本：%s\n识别结果：%s" % (
+                text[:200], "；".join("%s(%s)" % (e["text"], e["type"]) for e in ents[:8])))
+        return "\n\n".join(lines)
+
+    def _load_ner_standard_index(self, descriptor) -> dict:
+        """标准词表 → {变体casefold: {zh,en,type}}。兼容扁平列表与 doc_id 包壳两种形态。"""
+        raw = self._read_uploaded_resource_json(descriptor)
+        clusters = []
+        for row in raw:
+            if not isinstance(row, dict):
+                continue
+            # doc_id 包壳形态：{"doc_id":.., "entities":[簇...]} → 下钻一层
+            if "entities" in row and "canonical" not in row:
+                clusters.extend(e for e in (row.get("entities") or []) if isinstance(e, dict))
+            else:
+                clusters.append(row)
+        index = {}
+        for c in clusters:
+            # 兼容两种形态：用户原始格式 canonical/type 与基础设施归一化格式 text/label
+            canon = str(c.get("canonical") or c.get("text") or "").strip()
+            if not canon:
+                continue
+            info = {"zh": canon, "en": str(c.get("canonical_en") or c.get("en") or "").strip(),
+                    "type": str(c.get("type") or c.get("label") or "").strip()}
+            for v in [canon] + [str(x) for x in (c.get("variants") or [])]:
+                v = v.strip()
+                if v:
+                    index.setdefault(v.casefold(), info)
+        return index
+
+    @staticmethod
+    def _apply_ner_standard_mapping(entities: list, index: dict) -> None:
+        """确定性查表归一：实体文本(精确/包含)命中词表变体 → 回填 standard_names 等字段。"""
+        for e in entities:
+            if not isinstance(e, dict):
+                continue
+            txt = str(e.get("text") or "").strip()
+            cf = txt.casefold()
+            hit = index.get(cf)
+            if hit is None:  # 精确未命中 → 包含式：变体完整出现在实体文本中（或反之）
+                for variant, info in index.items():
+                    if (variant and (variant in cf or cf in variant)
+                            and min(len(variant), len(cf)) >= 2):
+                        hit = info
+                        break
+            if hit:
+                e["standard_names"] = {"zh": hit["zh"], "en": hit["en"] or "—"}
+                e["mapping_status"] = "已映射"
+                e["mapping_confidence"] = 1.0
+                e["mapping_source"] = "用户标准词表"
+            else:
+                e["standard_names"] = None
+                e["mapping_status"] = "未映射"
+                e["mapping_confidence"] = 0.0
+                e["mapping_source"] = "用户标准词表"
+
     def _execute_ner(self, code: str, request: SemanticRequest, fp, rule) -> SemanticResult:
         """命名实体/关系识别：全文直送 LLM（支持文件路径，超长截断）。
 
@@ -4259,6 +4417,14 @@ class SemanticApplicationService(ISemanticService):
         eff_text = text[:NER_TEXT_LIMIT] if truncated else text
 
         system_prompt = self._system_prompt(rule, request)
+        # 用户上传资源接线（2026-09-05 分层设计）：
+        # ① multi_domain_scientific_corpus=领域示例语料 → few-shot 注入 prompt（识别增强，类型体系不变）
+        # ② manually_labeled_data=标准词表 → 变体→标准词归一索引（识别后映射，见下方 _apply_standard_mapping）
+        _res = (request.params or {}).get("resolved_resources") or {}
+        _fewshot = self._load_ner_fewshot(_res.get("multi_domain_scientific_corpus"))
+        _std_index = self._load_ner_standard_index(_res.get("manually_labeled_data"))
+        if _fewshot:
+            system_prompt += "\n\n【领域示例（用户上传语料，few-shot 校准实体边界与类型风格）】\n" + _fewshot
         user_payload = {"text": eff_text, "meta": request.meta}
         user_prompt = self._render_user_prompt(user_payload, request.params)
         data = self._glm.chat_json(system_prompt, user_prompt, timeout=120.0, max_tokens=2500)
@@ -4371,7 +4537,12 @@ class SemanticApplicationService(ISemanticService):
         # result_normalizer._entities 的 **item 透传至 *_mappings，供前端主表
         # "映射标准词"/"知识库ID"列与映射标签页展示。domain 额外标
         # standard_kb_id='内置知识库'（前端主表知识库ID列显示内置知识库+已映射）。
-        if code in ('ner_research', 'ner_domain') and isinstance(out, list) and out:
+        # 用户标准词表优先（2026-09-05）：确定性查表归一可核查，查不到诚实标未映射；
+        # 仅未上传词表时才走下方 LLM 生成标准词的兜底路径
+        if code == 'ner_research' and _std_index and isinstance(out, list):
+            self._apply_ner_standard_mapping(out, _std_index)
+        if code in ('ner_research', 'ner_domain') and isinstance(out, list) and out \
+                and not (code == 'ner_research' and _std_index):
             _ents = [e for e in out if isinstance(e, dict)]
             if _ents:
                 if code == 'ner_domain':

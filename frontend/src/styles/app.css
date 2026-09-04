@@ -342,6 +342,16 @@ body.v690-general-ner-active .ner-results-table td,
 .resource-upload-zone b { color: #40516c; font-size: 11.5px; }
 .resource-upload-zone small { color: #91a0b7; font-size: 10px; }
 .requirement-resource-summary { display: flex; min-width: 0; grid-column: 1/-1; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding-top: 9px; border-top: 1px solid #edf1f6; font-size: 10.5px; }
+
+/* 资源上传操作行：紧凑「保存到数据库」+「清空内容」同行（替代大按钮+取消键+描述文案） */
+.requirement-resource-actions { display: flex; width: 100%; align-items: center; gap: 8px; }
+.requirement-resource-actions > button { flex: 1 1 0; } /* 保存/清空各占一半 */
+.compact-save-btn { padding: 5px 14px; font-size: 11.5px; color: #fff; background: #315efb; border: 1px solid #315efb; border-radius: 7px; cursor: pointer; white-space: nowrap; }
+.compact-save-btn:hover:not(:disabled) { background: #244ee0; }
+.compact-save-btn:disabled { opacity: .45; cursor: not-allowed; }
+.compact-clear-btn { padding: 5px 12px; font-size: 11.5px; color: #53657c; background: #f4f7fb; border: 1px solid #d7dfea; border-radius: 7px; cursor: pointer; white-space: nowrap; }
+.compact-clear-btn:hover:not(:disabled) { background: #eaeff6; color: #c0392b; border-color: #e3c9c9; }
+.compact-clear-btn:disabled { opacity: .45; cursor: not-allowed; }
 /* 上传错误/整理提示必须跨全宽：article 是双列 grid(标题列+描述列)，未声明
    grid-column 的块会被自动放置进窄轨道，与第2列描述文字层叠重叠 */
 /* 提示段落必须是 article(grid容器)直接子节点(已确认)；除跨全宽外还必须
@@ -1197,3 +1207,4 @@ body.figma-ui-v717 .platform-frame-v640 .content-wrap { padding-left: 8px !impor
 .mobile-nav-fab { display: none !important; }
 /* 深度聚类锚点资源上传格式提示（训练样本/人工标注类目标签，仅上传模式显示） */
 .anchor-format-hint { margin: 6px 0 0; color: #8a94a6; font-size: 11px; line-height: 1.6; }
+.one-shot-upload-hint { min-width: 0; flex: 1; color: #98a4b5; font-size: 10.5px; font-style: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }

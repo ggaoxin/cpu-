@@ -14,6 +14,10 @@ from threading import Event
 from typing import Any, Dict, List, Optional, Tuple
 
 from application.dto.common_dto import SemanticRequest
+import logging
+
+logger = logging.getLogger(__name__)
+
 from application.service.result_normalizer import normalize_result, _clean_cluster_term
 from application.service.semantic_service import SemanticApplicationService
 from config.settings import settings
@@ -299,6 +303,50 @@ class ToolIntegrationService:
             )
         finally:
             self._cleanup_temp_files(file_inputs)
+            # 一次性上传语义（2026-09-04 用户定调）：用户上传的资源随本次测试结束即删
+            # （数据库行 + 磁盘文件），不保存复用；内置 bundled 资源不受影响
+            try:
+                self._cleanup_request_resources(payload)
+            except Exception:  # noqa: BLE001 - 清理失败不影响结果返回
+                logger.warning("一次性上传资源清理失败", exc_info=True)
+
+    def _cleanup_request_resources(self, payload: Optional[Dict[str, Any]]) -> None:
+        """删除本次请求引用的全部用户上传型资源（行 + 文件）。
+
+        递归收集 payload 里的 resource_id（含 {source:'upload'} 描述符与
+        {source:'database', resource_id} 两种形态），逐个查库：source_type='upload'
+        才删（内置 bundled 永不删）。同步 execute 与异步 submit（经执行器最终也走
+        execute）都在 finally 触发，保证测试结束即清理。
+        """
+        from pathlib import Path as _P
+        ids: set = set()
+
+        def _walk(value: Any) -> None:
+            if isinstance(value, dict):
+                rid = value.get("resource_id")
+                if isinstance(rid, str) and rid.startswith("res_"):
+                    ids.add(rid)
+                for v in value.values():
+                    _walk(v)
+            elif isinstance(value, (list, tuple)):
+                for v in value:
+                    _walk(v)
+
+        _walk(payload or {})
+        for rid in sorted(ids):
+            row = self.resource_repository.get_semantic_resource(rid)
+            if not row or row.get("source_type") != "upload":
+                continue
+            uri = str(row.get("storage_uri") or "")
+            if uri:
+                path = _P(uri.removeprefix("project://")) if uri.startswith("project://") else _P(uri)
+                try:
+                    if "semantic_resources" in path.parts and path.is_file():
+                        path.unlink()
+                except OSError:
+                    logger.warning("一次性资源文件删除失败: %s", path, exc_info=True)
+            self.resource_repository.delete_semantic_resource(rid)
+            logger.info("一次性上传资源已清理: %s (%s)", rid, row.get("name"))
 
     @staticmethod
     def _cleanup_temp_files(file_inputs: Optional[List[Dict[str, str]]]) -> None:
@@ -929,6 +977,13 @@ class ToolIntegrationService:
             if dictionary.get("resource_id"):
                 adapted.setdefault("dictionary_id", dictionary["resource_id"])
             if dictionary.get("terms") or dictionary.get("file"):
+                # 词典文件接线（2026-09-05）：手填术语为空时解析上传文件
+                # （规则 4 格式 + LLM 兜底），文件不再静默无效
+                if not dictionary.get("terms") and (
+                        dictionary.get("text_content") or dictionary.get("storage_uri")):
+                    parsed = self._dictionary_terms_from_upload(dictionary)
+                    if parsed:
+                        dictionary = {**dictionary, "terms": parsed}
                 adapted.setdefault("custom_dictionary", dictionary)
         return adapted
 
@@ -1050,10 +1105,14 @@ class ToolIntegrationService:
                 texts = [self._backend_text(contract, item.text, payload) for item in group]
             effective_params = dict(params)
             if contract.tool_id == "cluster-label":
-                phrase_sets = payload.get("cluster_phrase_sets")
-                if not phrase_sets and payload.get("cluster_task_id"):
+                # 有 cluster_task_id 时始终从上游任务重建完整 phrase_sets
+                # （含 linked_document_ids/evidence_titles/evidence_terms_context），
+                # 前端简化版 cluster_phrase_sets 只作无任务ID时的直传兜底
+                if payload.get("cluster_task_id"):
                     upstream = self._result_from_task(str(payload["cluster_task_id"]))
                     phrase_sets = self._cluster_phrase_sets(upstream)
+                else:
+                    phrase_sets = payload.get("cluster_phrase_sets")
                 if phrase_sets:
                     # The production label generator consumes phrase sets from
                     # params; request.texts exists only for the shared task and
@@ -1230,11 +1289,50 @@ class ToolIntegrationService:
         """
         if str(resource.get("source_type") or "") == "bundled":
             return
-        from infrastructure.resources.normalize import inspect_user_resource, resource_path
+        from infrastructure.resources.normalize import (
+            ROW_FIELD_CONFIG, ResourceParseError, inspect_user_resource, resource_path,
+        )
         path = resource_path(str(resource.get("storage_uri") or ""), settings.PROJECT_ROOT)
         if path is None or path.suffix.lower() != ".json":
             return
-        inspect_user_resource(path, field=field)
+        try:
+            inspect_user_resource(path, field=field)
+        except ResourceParseError:
+            # LLM 容错层（2026-09-05 用户定调，全功能点兜底）：规则归一失败
+            # （JSON 损坏/0 有效条目/字段不合规）时，用 GLM 把任意结构重构成该
+            # 字段的标准 JSON 后复检；重构失败维持原报错（42201 业务信封）。
+            if not self._llm_adapt_resource_file(field, path):
+                raise
+            inspect_user_resource(path, field=field)
+
+    def _llm_adapt_resource_file(self, field: str, path) -> bool:
+        """LLM 结构化适配：任意格式 → 字段标准结构。成功重写原文件并返回 True。"""
+        try:
+            raw = path.read_text(encoding="utf-8", errors="replace")[:20000]
+        except OSError:
+            return False
+        cfg = ROW_FIELD_CONFIG.get(field) or {}
+        label = cfg.get("label") or field
+        expect = cfg.get("expect") or "JSON 数组，每条为符合该资源字段含义的对象"
+        sysp = (
+            "你是数据格式转换专家。用户上传的 JSON 不符合目标字段的标准结构，"
+            f"请把它完整重构为标准结构。\n目标字段：{label}\n期望结构：{expect}\n"
+            "要求：保留全部原始信息不得丢弃条目；字段名用英文标准 key；值保持原文语言；"
+            "中文 key（如 标准词/变体/题名/摘要）必须映射到对应英文标准 key。"
+            "只输出 JSON 数组本身，不要任何解释或代码块标记。"
+        )
+        try:
+            out = self.semantic_service._glm.chat_json(
+                sysp, "用户上传内容：\n" + raw, timeout=90.0, temperature=0.0)
+        except Exception:  # noqa: BLE001 - LLM 不可用/失败 → 维持规则层报错
+            logger.warning("资源 LLM 容错重构调用失败: %s", path.name, exc_info=True)
+            return False
+        rows = out.get("data", out) if isinstance(out, dict) else out
+        if not isinstance(rows, list) or not rows:
+            return False
+        path.write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")
+        logger.info("资源已由 LLM 容错层重构: %s (字段=%s, %d 条)", path.name, field, len(rows))
+        return True
 
     def _graft_anchor_texts(self, field: str, resource: Dict[str, Any], payload: Dict[str, Any]) -> None:
         """纯标签映射（如 gold_label.json：仅 document_id+category）文本补全。
@@ -1312,6 +1410,76 @@ class ToolIntegrationService:
                 f"与请求文献编号一致（如 DOC001 与 DOC-001 可互相匹配，DOC001 与 DOC005 不匹配）。"
             )
 
+    def _dictionary_terms_from_upload(self, dictionary: Dict[str, Any]) -> list:
+        """用户词典文件 → 术语列表（规则解析 4 格式；复杂结构 LLM 兜底抽取）。
+
+        文件内容来自 _store_uploaded_resource 并入的 text_content（文本类）或
+        storage_uri 落盘文件（xlsx 等二进制）。规则解析产出 <2 条或结构复杂
+        （嵌套对象/中英混合 key）时，用 GLM 从内容中抽取术语列表兜底。
+        """
+        import csv as _csv
+        import io as _io
+
+        def _llm_extract(content: str) -> list:
+            try:
+                out = self.semantic_service._glm.chat_json(
+                    "你是术语抽取器。从用户上传的词典文件内容中抽取全部术语，"
+                    "输出 JSON：{\"data\": [\"术语1\", \"术语2\", ...]}。"
+                    "要求：保留原文语言不翻译；去重；跳过表头/编号/权重等非术语字段。",
+                    "文件内容：\n" + content[:20000], timeout=60.0, temperature=0.0)
+                rows = out.get("data", out) if isinstance(out, dict) else out
+                return [str(t).strip() for t in rows if str(t).strip()] if isinstance(rows, list) else []
+            except Exception:  # noqa: BLE001
+                return []
+
+        content = str(dictionary.get("text_content") or "")
+        fname = str(dictionary.get("file_name") or "").lower()
+        terms: list = []
+        if fname.endswith(".json") and content:
+            try:
+                data = json.loads(content)
+                rows = data if isinstance(data, list) else (
+                    next((v for v in data.values() if isinstance(v, list)), []) if isinstance(data, dict) else [])
+                for r in rows:
+                    if isinstance(r, str) and r.strip():
+                        terms.append(r.strip())
+                    elif isinstance(r, dict):
+                        t = r.get("term") or r.get("术语") or r.get("word") or r.get("name")
+                        if t:
+                            terms.append(str(t).strip())
+            except (ValueError, TypeError):
+                pass
+        elif fname.endswith(".txt") and content:
+            terms = [line.strip() for line in content.splitlines() if line.strip()]
+        elif fname.endswith(".csv") and content:
+            try:
+                for row in _csv.reader(_io.StringIO(content)):
+                    if row and row[0].strip() and not str(row[0]).strip().isdigit():
+                        terms.append(row[0].strip())
+            except _csv.Error:
+                pass
+        elif fname.endswith(".xlsx"):
+            uri = str(dictionary.get("storage_uri") or "")
+            if uri:
+                from pathlib import Path as _P
+                xp = _P(uri.removeprefix("project://")) if uri.startswith("project://") else _P(uri)
+                try:
+                    import openpyxl
+                    wb = openpyxl.load_workbook(xp, read_only=True, data_only=True)
+                    ws = wb.worksheets[0]
+                    for row in ws.iter_rows(values_only=True):
+                        if row and row[0] is not None and str(row[0]).strip():
+                            terms.append(str(row[0]).strip())
+                except Exception:  # noqa: BLE001
+                    pass
+        # 去重；不足 2 条（解析失败/结构复杂）→ LLM 兜底
+        terms = list(dict.fromkeys(terms))
+        if len(terms) < 2 and content:
+            llm_terms = _llm_extract(content)
+            if len(llm_terms) >= len(terms):
+                terms = list(dict.fromkeys(llm_terms))
+        return terms
+
     def _parameters(self, contract: ToolContract, payload: Dict[str, Any]) -> Dict[str, Any]:
         excluded = {
             "input_type", "text", "texts", "title", "abstract", "keywords", "documents", "file", "files",
@@ -1386,6 +1554,12 @@ class ToolIntegrationService:
                     payload.setdefault("dictionary_id", dtd.get("resource_id"))
                 elif dtd_mode == "custom":
                     custom_terms = dtd.get("terms") or []
+                    # 词典文件接线（2026-09-05）：手填术语为空时解析上传文件
+                    # （规则 4 格式 + LLM 兜底抽取），文件不再静默无效
+                    if not custom_terms and (dtd.get("text_content") or dtd.get("storage_uri")):
+                        parsed = self._dictionary_terms_from_upload(dtd)
+                        if parsed:
+                            custom_terms = parsed
                     payload.setdefault("custom_dictionary", {
                         "dictionary_name": dtd.get("dictionary_name") or dtd.get("name"),
                         "weight_boost": dtd.get("weight_boost", 0.08),
@@ -1817,6 +1991,19 @@ class ToolIntegrationService:
             entry = {
                 "cluster_id": str(cluster.get("cluster_id") or cluster.get("topic_id") or f"C{index + 1}"),
                 "phrases": phrases,
+                # 成员文献 ID 透传给标签引擎 → 输出 linked_document_ids（弹窗「关联文献」列）
+                "linked_document_ids": [
+                    str(m.get("document_id")) for m in (cluster.get("members") or [])
+                    if isinstance(m, dict) and m.get("document_id")
+                ] or [str(a) for a in (cluster.get("doc_indices") or []) if a],
+                # 证据上下文：代表文献题名 + 代表词（供标签引擎填充 evidence 字段）
+                "evidence_titles": [
+                    str(d.get("title") or "").strip() for d in (cluster.get("representative_documents") or [])
+                    if isinstance(d, dict) and str(d.get("title") or "").strip()
+                ][:3],
+                "evidence_terms_context": [
+                    str(t).strip() for t in (cluster.get("representative_terms") or []) if str(t).strip()
+                ][:6],
             }
             if distribution:
                 entry["category_distribution"] = [

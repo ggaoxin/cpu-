@@ -285,27 +285,6 @@ function clearUploadedResource(key: string) {
   if (resourceFileInputs[key]) resourceFileInputs[key]!.value = ''
 }
 
-async function saveResourceToDatabase(key: string) {
-  const file = uploadedResources[key]
-  if (!file) { resourceSaveError.value = '请先选择要上传的资源文件'; return }
-  savingResourceKey.value = key
-  resourceSaveError.value = ''
-  try {
-    const res = await uploadSemanticResource(file, key)
-    const rid = res?.data?.resource_id
-    if (!rid) throw new Error('资源未登记入库')
-    resourceSaveNotice.value = res?.data?.normalized_by === 'glm'
-      ? (res.message || '结构非标准，已自动整理为标准格式')
-      : ''
-    await loadRuntimeResources()
-    selectedResources[key] = rid
-    sourceModes[key] = 'database'
-  } catch (error) {
-    resourceSaveError.value = error instanceof Error ? error.message : '资源保存失败'
-  } finally {
-    savingResourceKey.value = null
-  }
-}
 
 function availableResources(key: string) {
   const resources = runtimeResourceCatalog[key] || []
@@ -379,7 +358,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
 <template>
   <div v-if="toolId === 'rq-detect'" class="settings-card requirement-supplement-card">
     <div class="field"><label><span class="label-main">文本格式要求</span><small>可选；未设置时自动识别</small></label><select v-model="textFormatRequirement" class="select"><option>自动识别</option><option>纯文本</option><option>章节结构文本</option><option>JSON 结构文本</option></select></div>
-    <div class="format-example-box"><b>格式说明</b><span>纯文本可直接粘贴正文；章节结构文本应保留标题层级；JSON 结构文本应包含章节名称和正文内容。</span></div>
+    
   </div>
 
   <div v-if="(toolId === 'citation-sentiment' || toolId === 'citation-intent') && mode === 'text'" class="settings-card requirement-supplement-card citation-metadata-card">
@@ -401,8 +380,8 @@ watchEffect(() => emit('update:payload', requestPayload.value))
             <input ref="citationReferenceFileInput" type="file" accept=".txt,.json,.jsonl,.csv" @change="handleCitationReferenceFile" />
             <span>⇧</span><b>{{ citationUploadName || '点击上传参考文献条目' }}</b><small>支持 TXT、JSON、JSONL、CSV</small>
           </label>
-          <button v-if="citationUploadName" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearCitationReferenceFile">✕ 取消</button>
-        </div>
+            <button v-if="citationUploadName" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearCitationReferenceFile">✕ 取消</button>
+          </div>
         <div class="citation-parser-action-row">
           <span v-if="citationParsing" class="citation-parse-status">解析中…（大模型解析多条条目约需数秒）</span>
           <span v-else-if="citationParseState === 'parsed'" class="citation-parse-status success">✓ 已解析 {{ citationMetadataList.length }} 条，请核对下方信息</span>
@@ -434,7 +413,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
           <span>⇧</span><b>{{ citationBatchMetadataFile?.name || '上传批量被引文献元数据' }}</b><small>支持 JSON、JSONL、CSV、XLSX、TXT</small>
         </label>
         <button v-if="citationBatchMetadataFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearCitationMetadataFile('batch')">✕ 取消</button>
-      </div>
+        </div>
     </div>
 
   </div>
@@ -454,7 +433,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         <span>⇧</span><b>{{ uploadedResources['document_metadata']?.name || '点击上传文献元数据' }}</b><small>支持 JSON、JSONL、CSV、XLSX</small>
       </label>
       <button v-if="uploadedResources['document_metadata']" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearUploadedResource('document_metadata')">✕ 取消</button>
-    </div>
+      </div>
     <div class="info-banner">元数据按文献编号或文件名与文献集逐篇关联；缺失字段由文件解析结果补充。</div>
   </div>
 
@@ -488,9 +467,9 @@ watchEffect(() => emit('update:payload', requestPayload.value))
               <span>⇧</span><b>{{ uploadedResources[field.key]?.name || `点击上传${field.label}` }}</b><small>{{ fieldHint(field.key) }}</small>
             </label>
             <button v-if="uploadedResources[field.key]" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearUploadedResource(field.key)">✕ 取消</button>
-          </div>
+            </div>
         </div>
-        <div v-if="sourceModes[field.key] === 'upload'" class="requirement-resource-summary"><span>入库方式</span><em>上传成功后生成资源编号并保存为可复用数据库资源</em><button type="button" class="primary-btn" :disabled="savingResourceKey === field.key || !uploadedResources[field.key]" @click="saveResourceToDatabase(field.key)">{{ savingResourceKey === field.key ? '保存中…' : '保存到数据库' }}</button></div>
+        
         <p v-if="sourceModes[field.key] === 'upload' && resourceSaveError" class="anchor-format-hint" style="color:#c0392b">{{ resourceSaveError }}</p>
         <p v-if="sourceModes[field.key] === 'upload' && resourceSaveNotice" class="anchor-format-hint">{{ resourceSaveNotice }}</p>
       </article>

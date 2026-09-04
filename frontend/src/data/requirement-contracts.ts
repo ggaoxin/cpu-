@@ -230,11 +230,11 @@ export const requirementContracts: Record<string, RequirementContract> = {
     inputs: [
       ['academic_abstract_or_technical_report_text', 'string | string[] | file | file[]', 'required', '中英文学术论文摘要或技术报告文本'],
       ...resourceDescriptorRows('multi_domain_scientific_corpus',
-        '多领域科研语料引用。科研实体(方法/数据集/工具/模型等)的判定规则与识别口径,注入提示词约束识别范围',
-        '自定义科研语料规范 JSON 文件(实体规范 + 标注示例)'),
+        '领域示例语料(可选上传)。传入你领域的示例文本+实体标注,作为 few-shot 校准识别——识别更准,实体类型体系不变(仍为方法/数据/仪器/理论/问题五类)。JSON 数组,每条字段:{"text":"示例文本","entities":[{"text":"实体","type":"METHOD|DATASET|INSTRUMENT|THEORY|TOPIC"}]}',
+        'JSON 数组,字段:text(示例文本)、entities[].text(实体)、entities[].type(五类之一)'),
       ...resourceDescriptorRows('manually_labeled_data',
-        '人工标注数据引用。科研实体人工标注样本,作 few-shot 参考校准实体边界与类型判定风格',
-        '自定义标注样本文件'),
+        '标准词表(可选上传)。识别出的实体变体(缩写/英文/别称)归一到你维护的标准词——确定性查表,查不到标"未映射"。JSON 数组,每条字段:{"canonical":"标准词","type":"五类之一","variants":["变体1","变体2",...],"canonical_en":"英文标准词(可选)"}',
+        'JSON 数组,字段:canonical(标准词)、type(五类之一)、variants(变体列表,含中英/全称缩写/别称)、canonical_en(可选)'),
     ],
     outputs: [
       ['entity_type', 'string', '科研实体类型'],

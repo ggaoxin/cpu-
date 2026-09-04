@@ -39,7 +39,7 @@ def _number(params: dict[str, Any], name: str, default: float) -> float:
         raise ValueError(f"{name} 必须为数值。") from exc
 
 
-def _prepare_vue_output(output: dict[str, Any]) -> dict[str, Any]:
+def _prepare_vue_output(output: dict[str, Any], _ctx_by_cluster: dict | None = None) -> dict[str, Any]:
     """Expose the verified engine result through the stable Vue field names.
 
     Only values derived from the current run are added.  Missing entities,
@@ -69,8 +69,9 @@ def _prepare_vue_output(output: dict[str, Any]) -> dict[str, Any]:
 
         evidence = item.get("evidence") if isinstance(item.get("evidence"), dict) else {}
         evidence.setdefault("keywords", list(item.get("evidence_terms") or []))
-        evidence.setdefault("named_entities", [])
-        evidence.setdefault("center_sentence", "")
+        _ev_ctx = (_ctx_by_cluster or {}).get(str(item.get("cluster_id") or ""), {})
+        evidence.setdefault("named_entities", list(_ev_ctx.get("terms") or []))
+        evidence.setdefault("center_sentence", str(_ev_ctx.get("title") or ""))
         item["evidence"] = evidence
 
         passed = bool((item.get("optimization") or {}).get(
@@ -134,6 +135,14 @@ def execute_cluster_labeling(
         encoder=m3_encoder,
         llm_client=llm,
     )
+    # phrase_sets 的证据上下文按 cluster_id 索引（代表文献题名 + 代表词）
+    _ctx_by_cluster = {}
+    for ps in phrase_sets:
+        if isinstance(ps, dict) and ps.get("cluster_id"):
+            _ctx_by_cluster[str(ps["cluster_id"])] = {
+                "title": (ps.get("evidence_titles") or [""])[0],
+                "terms": ps.get("evidence_terms_context") or [],
+            }
     output = generator.generate(
         phrase_sets,
         label_length_limit=label_length_limit,
@@ -168,7 +177,7 @@ def execute_cluster_labeling(
         "semantic_reranking_model": "bge-m3",
         "direct_input_contract": "deep_clustering_cluster_phrase_sets",
     })
-    _prepare_vue_output(output)
+    _prepare_vue_output(output, _ctx_by_cluster)
 
     result = SemanticResult(code=code, name=functional_point.name)
     result.success = True

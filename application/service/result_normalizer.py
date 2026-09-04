@@ -267,6 +267,7 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
 # 语步类别 → 规范化标签（中英文摘要语步识别的 GLM 输出是「类别→文本」扁平 dict，
 # 不是 moves 列表；这里给出有序类别集合，供 _moves 把扁平 dict 还原成结构化 moves）。
 _MOVE_CATEGORIES_ZH = ["研究背景", "研究目的", "研究方法", "研究结果", "研究结论"]
+_MOVE_CATEGORIES_FUND = ["立项依据", "研究目标", "技术实施方案", "预期成果", "应用价值"]
 
 
 def _title_text(*values: Any) -> str:
@@ -332,7 +333,9 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     # 既无 moves 也无 spans。此时按有序类别集合还原成结构化 moves，否则 moves 恒为空、
     # 前端与 move_segments 投影表都拿不到数据。
     if not source and isinstance(raw, dict):
-        categories = _MOVE_CATEGORIES_EN if tool_id == "en-abstract-move" else _MOVE_CATEGORIES_ZH
+        categories = (_MOVE_CATEGORIES_EN if tool_id == "en-abstract-move"
+                   else _MOVE_CATEGORIES_FUND if tool_id == "fund-move"
+                   else _MOVE_CATEGORIES_ZH)
         # 引擎输出的每语步句序号（语步句子在摘要中可能不相邻，拼接文本无法
         # indexOf 定位；句序号是非连续语步唯一忠实的定位方式）
         sent_idx_map = data.get("sentence_indices_by_move") if isinstance(data.get("sentence_indices_by_move"), dict) else {}
@@ -360,13 +363,21 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
                 "confidence": move_confidence.get(label, overall_confidence) if has_text
                               else move_confidence.get(label, overall_confidence),
             })
+    # fund-move 文本模式：语步内容在原文中的字符位置（与摘要平铺分支同款定位逻辑）
+    _fund_src_text = str(payload.get("text") or "").strip() if tool_id == "fund-move" else ""
+
     for index, item in enumerate(source):
         if not isinstance(item, dict):
             item = {"text": str(item)}
         label = item.get("label") or item.get("move_name") or item.get("move_type") or item.get("move") or item.get("type")
         content = item.get("content") or item.get("text") or item.get("sentence") or ""
+        _f_start = _f_end = None
+        if _fund_src_text and content:
+            _f_start, _f_end = _move_char_range(_fund_src_text, str(content))
         moves.append({
             **item,
+            "start": item.get("start") if item.get("start") is not None else _f_start,
+            "end": item.get("end") if item.get("end") is not None else _f_end,
             "move_code": item.get("move_code") or label,
             "move_name": item.get("move_name") or label,
             "label": label,

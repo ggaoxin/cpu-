@@ -444,6 +444,91 @@ def _repartition_anchor_aligned(
                 doc_axis_info[index]["topic_name"] = topic_name
                 doc_axis_info[index]["anchor_aligned"] = True
 
+    # ---- 单例簇合并（2026-09-05）----
+    # 锚定成功但只有 1 篇的簇（borderline 文献各成孤簇），三层合并策略：
+    # ⓪ 同 free 社区的单例先互合并成新簇（交通+交通=2篇新簇）
+    # ① 双候选第二类目匹配某已有簇 → 并入
+    # ② 类目名公共子串（≥2字）匹配 → 并入
+    # ③ 仍孤立的退回 free 归属（覆盖锚点库类目不足场景）
+    singleton_clusters = [c for c in new_clusters if c.get("partition") == "anchor_aligned" and c.get("size") == 1]
+    if len(new_clusters) - len(singleton_clusters) >= 2:
+        multi_clusters = [c for c in new_clusters if c not in singleton_clusters]
+
+        # ⓪ 同 free 社区的单例互合并
+        by_free: dict[str, list] = {}
+        for sc in singleton_clusters:
+            s_idx = sc["doc_indices"][0]
+            s_free = free_label_of.get(s_idx, "OUTLIER")
+            by_free.setdefault(s_free, []).append(sc)
+        for s_free, group in by_free.items():
+            if len(group) >= 2:
+                counter += 1
+                merged_id = f"C{counter:02d}"
+                all_indices = []
+                for sc in group:
+                    all_indices.extend(sc["doc_indices"])
+                    new_clusters.remove(sc)
+                sample_anchor = doc_anchors.get(str(papers[all_indices[0]]["document_id"])) or {}
+                new_clusters.append({
+                    "cluster_id": merged_id,
+                    "topic_name": sample_anchor.get("anchored_topic_name") or group[0].get("topic_name"),
+                    "anchored_topic_id": sample_anchor.get("anchored_topic_id"),
+                    "anchor_status": "anchored",
+                    "partition": "anchor_aligned",
+                    "size": len(all_indices),
+                    "doc_indices": sorted(all_indices),
+                    "representative_terms": [],
+                    "absorbed_singletons": [str(c.get("anchored_topic_id") or "") for c in group],
+                })
+                for index in all_indices:
+                    if index < len(doc_axis_info):
+                        doc_axis_info[index]["topic_id"] = merged_id
+                        doc_axis_info[index]["topic_name"] = new_clusters[-1]["topic_name"]
+                singleton_clusters = [c for c in new_clusters if c.get("partition") == "anchor_aligned" and c.get("size") == 1]
+                multi_clusters = [c for c in new_clusters if c not in singleton_clusters and c.get("size") > 1]
+
+        # ①②③ 逐个处理仍孤立的
+        for sc in singleton_clusters[:]:
+            s_idx = sc["doc_indices"][0]
+            s_anchor = doc_anchors.get(str(papers[s_idx]["document_id"])) or {}
+            s_topic = str(s_anchor.get("anchored_topic_id") or sc.get("anchored_topic_id") or "")
+            s_cands = [str(c.get("topic_id") or "") for c in (s_anchor.get("candidate_topics") or [])]
+            s_name = str(s_anchor.get("anchored_topic_name") or sc.get("topic_name") or "")
+            merged = False
+
+            def _absorb(mc, label):
+                mc["doc_indices"].extend(sc["doc_indices"])
+                mc["size"] = len(mc["doc_indices"])
+                mc.setdefault("absorbed_singletons", []).append(label)
+                new_clusters.remove(sc)
+                for index in sc["doc_indices"]:
+                    if index < len(doc_axis_info):
+                        doc_axis_info[index]["topic_id"] = mc["cluster_id"]
+                        doc_axis_info[index]["topic_name"] = mc["topic_name"]
+
+            # ① 双候选第二类目匹配
+            for mc in multi_clusters:
+                m_topic = str(mc.get("anchored_topic_id") or "")
+                if m_topic and m_topic in s_cands and m_topic != s_topic:
+                    _absorb(mc, s_topic); merged = True; break
+            if merged: continue
+
+            # ② 类目名公共子串
+            for mc in multi_clusters:
+                m_name = str(mc.get("topic_name") or "")
+                common = next((s_name[i:i+j] for i in range(len(s_name)-1)
+                               for j in range(min(len(s_name)-i, len(m_name)), 1, -1)
+                               if len(s_name[i:i+j]) >= 2 and s_name[i:i+j] in m_name), "")
+                if common:
+                    _absorb(mc, s_topic or s_name); merged = True; break
+            if merged: continue
+
+            # ③ 退回 free 归属
+            s_free_label = free_label_of.get(s_idx, "OUTLIER")
+            for mc in multi_clusters:
+                if any(free_label_of.get(idx) == s_free_label for idx in mc["doc_indices"]):
+                    _absorb(mc, s_topic or s_name); merged = True; break
+
     outlier_indices: list[int] = []
     for free_id, indices in sorted(remainder_groups.items(), key=lambda kv: -len(kv[1])):
         if free_id == "OUTLIER" or len(indices) < 2:

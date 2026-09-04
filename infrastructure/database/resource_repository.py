@@ -324,6 +324,15 @@ class DatabaseResourceRepository(IResourceRepository):
             row["metadata"] = _load(row.pop("metadata_json", None), {})
         return rows
 
+    def delete_semantic_resource(self, resource_id: str) -> bool:
+        """硬删除用户上传型资源行（一次性语义：测试结束即删，不保留复用）。"""
+        with self.db.session() as session:
+            cur = session.execute(
+                "DELETE FROM semantic_resources WHERE id=? AND source_type='upload'",
+                (resource_id,),
+            )
+            return cur.rowcount > 0
+
     def get_semantic_resource(self, resource_id: str) -> Optional[Dict[str, Any]]:
         with self.db.session() as session:
             row = session.fetchone("SELECT * FROM semantic_resources WHERE id=?", (resource_id,))

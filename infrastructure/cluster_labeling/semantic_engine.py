@@ -233,6 +233,8 @@ class SemanticClusterLabelGenerator:
                 "generation_method": winner.origin,
                 "phrase_count": len(cluster.phrases),
                 "optimization": optimization,
+                # 关联文献透传（来自 phrase_sets 的 metadata，供弹窗「关联文献」列）
+                "linked_document_ids": cluster.metadata.get("linked_document_ids") or [],
             })
 
         average = lambda key: round(sum(float(item[key]) for item in labels) / len(labels), 6)

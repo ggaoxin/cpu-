@@ -1,6 +1,7 @@
 import type { CallType, InputMode, ToolDefinition } from '../types'
 import { requirementContracts } from '../data/requirement-contracts.ts'
 import { demoResponseForMode } from '../data/tool-overrides.ts'
+import vizWhitelist from '../data/viz-field-whitelist.json' with { type: 'json' }
 import { clusterTaskOptions, databaseResourceCatalog, documentCollectionOptions } from '../data/database-preview.ts'
 
 export const modeLabels: Record<InputMode, string> = {
@@ -223,6 +224,7 @@ export function payloadFor(tool: ToolDefinition, mode: InputMode): Record<string
     }
   }
   if (tool.documentType === 'cluster-label') return {
+    cluster_task_id: base.cluster_task_id || null,
     cluster_phrase_sets: base.cluster_phrase_sets || [],
     label_length_limit: base.label_length_limit ?? 12,
     language_type: base.language_type || 'auto',
@@ -471,7 +473,18 @@ export function responseFor(tool: ToolDefinition, mode: InputMode) {
   // 调用文档与在线测试/可视化弹窗必须使用同一份分输入方式响应。
   // 这里不再单独选择旧的 API fixture，避免文本位置、文件章节、
   // 批量条数和数据库记录与弹窗不一致。
-  return demoResponseForMode(tool.requirementKey || '', tool, mode)
+  const demo = demoResponseForMode(tool.requirementKey || '', tool, mode)
+  return filterDemoByWhitelist(tool.requirementKey || '', demo)
+}
+
+/** 响应示例按弹窗渲染器白名单过滤 data 顶层字段（与后端 public_viz_result 同源） */
+function filterDemoByWhitelist(toolId: string, response: any): any {
+  const allowed = (vizWhitelist as Record<string, string[]>)[toolId]
+  if (!allowed || !response || typeof response !== 'object' || !response.data || typeof response.data !== 'object') {
+    return response
+  }
+  const allowSet = new Set(allowed)
+  return { ...response, data: Object.fromEntries(Object.entries(response.data).filter(([key]) => allowSet.has(key))) }
 }
 
 export function buildCallCode(tool: ToolDefinition, mode: InputMode, callType: CallType) {

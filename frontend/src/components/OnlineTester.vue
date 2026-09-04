@@ -414,6 +414,9 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
     return values
   }
   if (props.toolId === 'cluster-label') {
+    values.cluster_task_id = selectedClusterTaskId.value || null
+  }
+  if (props.toolId === 'cluster-label') {
     values.cluster_phrase_sets = selectedClusterTask.value?.phraseSets || []
     values.label_length_limit = Number(labelLengthLimit.value)
     values.language_type = labelLanguageType.value
@@ -536,12 +539,6 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
     // 系统预置模式不携带词典字段（后端 dictionary_usage=null、全部未命中属预期）
     if (dictionaryMode.value === 'system') {
       // 无词典参数
-    } else if (dictionaryMode.value === 'saved') {
-      // 请求模板白名单（strictRequirementPayload）只认合同字段 dictionary_id /
-      // custom_dictionary：此前发 domain_terminology_dictionary 会被整字段过滤，
-      // 后端收不到词典（dictionary_usage=null、命中全 false）。选中已存词典时
-      // 必须完整携带资源ID。
-      values.dictionary_id = selectedDictionaryId.value
     } else {
       values.custom_dictionary = {
         dictionary_name: customDictionaryName.value,
@@ -577,40 +574,17 @@ function handleDictionaryFile(event: Event) {
 }
 
 const dictionaryFileInput = ref<HTMLInputElement | null>(null)
+function clearCustomDictionary() {
+  clearDictionaryFile()
+  customDictionaryName.value = ''
+  customDictionaryTerms.value = ''
+}
 function clearDictionaryFile() {
   customDictionaryFile.value = null
   // 同时清空原生 input,否则重选同一文件不触发 change
   if (dictionaryFileInput.value) dictionaryFileInput.value.value = ''
 }
 
-async function saveCustomDictionary() {
-  const name = customDictionaryName.value.trim()
-  const terms = customDictionaryTerms.value.split(/[,，;；\n]/).map(item => item.trim()).filter(Boolean)
-  if (!name) { requestError.value = '保存词典失败：请填写词典名称'; return }
-  if (!terms.length) { requestError.value = '保存词典失败：请填写词典术语（文件词典将随在线测试上传，保存到数据库需手动填写术语）'; return }
-  savingDict.value = true
-  requestError.value = ''
-  try {
-    await saveDictionary({
-      name,
-      terms,
-      language: props.toolId === 'en-keyword' ? 'en' : 'zh',
-      weight_boost: Number(weightBoost.value),
-    })
-    await loadRuntimeDatabaseOptions()
-    const created = savedDictionaryOptions.value.find(item => item.name === name)
-    selectedDictionaryId.value = created?.id || savedDictionaryOptions.value[0]?.id || ''
-    dictionaryMode.value = 'saved'
-    customDictionaryName.value = ''
-    customDictionaryTerms.value = ''
-    customDictionaryFile.value = null
-  } catch (error) {
-    const message = error instanceof ApiRequestError ? error.message : (error instanceof Error ? error.message : '请求失败')
-    requestError.value = `保存词典失败：${message}`
-  } finally {
-    savingDict.value = false
-  }
-}
 
 function adjustThreshold(direction: 1 | -1) {
   const current = Number(form.threshold)
@@ -678,7 +652,7 @@ async function loadRuntimeDatabaseOptions() {
         id: item.task_id, name: item.label, dimension: item.dimension || '未记录',
         completedAt: item.created_at, documentCount: item.document_count || 0,
         clusterCount: item.cluster_count || 0,
-        phraseSets: (item.phrase_sets || []).map((row: any) => ({ clusterId: row.cluster_id, phrases: row.phrases || [] })),
+        phraseSets: (item.phrase_sets || []).map((row: any) => ({ clusterId: row.cluster_id, phrases: row.phrases || [], linked_document_ids: row.linked_document_ids || [] })),
       }))
     : []
   nerHistoryOptions.value = nerResponse.status === 'fulfilled'
@@ -880,6 +854,14 @@ function validateRequiredInputs(): string {
     if (!selectedClusterTaskId.value || !selectedClusterTask.value) return '请选择一项已完成的深度聚类任务。'
     if (!selectedClusterTask.value.phraseSets?.length) return '所选深度聚类任务没有可用的候选类目集合。'
     return ''
+  }
+
+  if (props.toolId === 'fund-move') {
+    if (mode.value === 'text' && !form.projectName.trim()) return '请输入项目名称。'
+    if (mode.value === 'batch-text') {
+      const noNameIndex = batchTexts.findIndex(item => !item.projectName.trim())
+      if (noNameIndex >= 0) return `请输入第 ${noNameIndex + 1} 条文本的项目名称。`
+    }
   }
 
   if (props.toolId === 'deep-cluster') {
@@ -1234,7 +1216,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
           </template>
           <template v-else-if="mode === 'text' && toolId !== 'relation-extract'">
             <div v-if="toolId === 'definition-detect'" class="settings-card definition-basic-options two-column"><div class="field"><label><span class="label-main">领域标签</span><small>注入领域语境辅助概念判定</small></label><select v-model="form.domain" class="select"><option value="自动识别">自动识别</option><option value="01">数学与计算科学</option><option value="02">力学与工程力学</option><option value="03">物理学与应用物理</option><option value="04">化学与化学科学</option><option value="05">天文学与空间科学</option><option value="06">地球科学与地质资源</option><option value="07">测绘遥感与地理信息</option><option value="08">气象海洋科学</option><option value="09">生物科学与生物技术</option><option value="10">医学与卫生健康</option><option value="11">药学与毒理学</option><option value="12">农业科学与农业工程</option><option value="13">林业畜牧兽医与水产</option><option value="14">材料科学与材料工程</option><option value="15">矿业与矿物加工</option><option value="16">石油与天然气工程</option><option value="17">冶金与金属加工</option><option value="18">机械工程与智能制造</option><option value="19">仪器仪表与计量检测</option><option value="20">能源与动力工程</option><option value="21">核科学与核工程</option><option value="22">电气工程与电力系统</option><option value="23">电子通信与半导体</option><option value="24">自动化与控制工程</option><option value="25">人工智能与计算机技术</option><option value="26">化学工程与过程工业</option><option value="27">轻工食品与纺织</option><option value="28">建筑与土木工程</option><option value="29">水利与水电工程</option><option value="30">交通运输工程</option><option value="31">航空航天工程</option><option value="32">环境与安全工程</option></select></div><div class="field"><label><span class="label-main">输出格式要求</span><small>附输出结构</small></label><select v-model="form.outputFormat" class="select"><option>JSON</option><option>CSV</option><option>数据库写入结构</option></select></div></div>
-            <div v-if="toolId === 'fund-move'" class="field fund-project-name-field"><label><span class="label-main">项目名称</span><small>可选；用于标识本次基金项目语步识别结果</small></label><input v-model="form.projectName" class="input" maxlength="200" placeholder="请输入项目名称" /></div>
+            <div v-if="toolId === 'fund-move'" class="field fund-project-name-field"><label><span class="label-main"><span class="required-mark">*</span> 项目名称</span><small>必填；用于标识本次基金项目语步识别结果</small></label><input v-model="form.projectName" class="input" maxlength="200" placeholder="请输入项目名称" /></div>
             <div v-if="needsDocumentTitle" class="field document-title-field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识响应结果及可视化弹窗中的当前文献</small></label><input v-model="form.documentTitle" class="input" maxlength="300" placeholder="请输入题目" /></div>
             <div class="field primary-text-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}</span><small>最多 8000 字</small></label><textarea v-model="form.text" class="textarea main-textarea primary-textarea" maxlength="8000" :placeholder="`请输入${textInputLabel}`"></textarea></div>
           </template>
@@ -1243,7 +1225,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
               <div class="special-panel-head"><div><strong>{{ textInputLabel }}集合</strong><span>已添加 {{ batchTexts.length }} 条，每条独立提交和返回结果</span></div><button class="outline-btn" type="button" @click="addBatchText">＋ 添加文本</button></div>
               <div v-for="(item,index) in batchTexts" :key="item.id" class="document-card batch-text-item-card">
                 <div class="document-card-head"><b><span class="required-mark">*</span> 文本 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" :disabled="batchTexts.length <= 1" @click="removeBatchText(item.id)">删除</button></div>
-                <div v-if="toolId === 'fund-move'" class="field fund-project-name-field"><label><span class="label-main">项目名称</span><small>可选；对应第 {{ index + 1 }} 条文本</small></label><input v-model="item.projectName" class="input" maxlength="200" :placeholder="`请输入第 ${index + 1} 个项目名称`" /></div>
+                <div v-if="toolId === 'fund-move'" class="field fund-project-name-field"><label><span class="label-main"><span class="required-mark">*</span> 项目名称</span><small>必填；对应第 {{ index + 1 }} 条文本</small></label><input v-model="item.projectName" class="input" maxlength="200" :placeholder="`请输入第 ${index + 1} 个项目名称`" /></div>
                 <div v-if="needsDocumentTitle" class="field document-title-field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；对应第 {{ index + 1 }} 条文本</small></label><input v-model="item.title" class="input" maxlength="300" :placeholder="`请输入第 ${index + 1} 篇文献题目`" /></div>
                 <div class="field batch-text-content-field"><div class="batch-text-limit">最多 8000 字</div><textarea v-model="item.text" class="textarea compact batch-textarea" maxlength="8000" :placeholder="`请输入第 ${index + 1} 条${textInputLabel}`"></textarea></div>
               </div>
@@ -1278,7 +1260,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                   <article v-for="(item,index) in uploadedFiles" :key="item.id" class="selected-file-row"><i>{{ index + 1 }}</i><span class="selected-file-type">{{ item.type }}</span><div><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }} · 等待提交</small></div><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article>
                 </template>
               </div>
-              <div class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
+              <div v-if="toolId === 'deep-cluster'" class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
                 <div class="field"><label><span class="label-main">训练样本</span><small>可选</small></label>
                   <div class="requirement-resource-controls">
                     <select v-model="anchorTrainSource" class="select resource-source-select"><option value="database">从数据库选择当前资源</option><option value="upload">用户上传资源</option></select>
@@ -1320,7 +1302,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
 
 
           <div v-if="toolId === 'zh-keyword'" class="settings-card generic-settings">
-            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="field"><label><span class="label-main">词典使用方式</span><small>区分数据库资源与用户录入</small></label><select v-model="dictionaryMode" class="select"><option value="system">使用系统预置术语词典（默认）</option><option value="saved">从数据库选择已保存的用户词典</option><option value="custom">新建或上传用户自定义领域词典</option></select></div><div v-if="dictionaryMode === 'system'" class="info-banner dictionary-status">✓ 默认状态：使用系统预置术语词典，不提交用户词典参数。</div><div v-else-if="dictionaryMode === 'saved'" class="database-selector-panel"><div class="database-selector-heading"><b>选择已保存的用户领域词典</b></div><select v-model="selectedDictionaryId" class="select"><option v-for="item in savedDictionaryOptions" :key="item.id" :value="item.id">{{ item.name }} · {{ item.termCount }} 词</option></select><div v-if="selectedDictionary" class="database-record-summary"><span>术语数量：{{ selectedDictionary.termCount }}</span><span>更新时间：{{ formatDateTime(selectedDictionary.updatedAt) }}</span></div></div><div v-else class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>上传用户词典文件</b><small>{{ customDictionaryFile ? customDictionaryFile.name : '上传后保存到数据库并生成词典编号' }}</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div><div class="field full dictionary-save-row"><button type="button" class="primary-btn" :disabled="savingDict" @click="saveCustomDictionary">{{ savingDict ? '保存中…' : '保存词典到数据库' }}</button></div></div></div>
+            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="field"><label><span class="label-main">词典使用方式</span><small>区分数据库资源与用户录入</small></label><select v-model="dictionaryMode" class="select"><option value="system">使用系统预置术语词典（默认）</option><option value="custom">新建或上传用户自定义领域词典</option></select></div><div v-if="dictionaryMode === 'system'" class="info-banner dictionary-status">✓ 默认状态：使用系统预置术语词典，不提交用户词典参数。</div><div v-else class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>上传用户词典文件</b><small>{{ customDictionaryFile ? customDictionaryFile.name : '上传词典文件' }}</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div></div></div>
           </div>
 
         </div>

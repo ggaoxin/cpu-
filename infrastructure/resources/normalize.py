@@ -180,15 +180,74 @@ def _normalize_term_rows(rows: List[Any]) -> List[Dict[str, Any]]:
 
 
 def _normalize_generic_rows(rows: List[Any]) -> List[Dict[str, Any]]:
-    """通用标注语料（NER 金标/训练数据等）：行是 dict 且含任一文本类字段即保留。"""
+    """通用标注语料（NER 金标/训练数据等）：行是 dict 且含任一文本类字段即保留。
+
+    中文别名归一到标准 key：题名/标题→title、摘要/正文→abstract、文本/句子→text、
+    标注/标签→label、实体→entities（列表原样），额外字段原样保留。
+    """
+    _ALIAS = {"题名": "title", "标题": "title", "摘要": "abstract", "正文": "content",
+              "文本": "text", "句子": "text", "标注": "label", "标签": "label",
+              "实体": "entities", "文献编号": "document_id"}
     out: List[Dict[str, Any]] = []
     for row in rows:
         if not isinstance(row, dict):
             continue
-        if _first_present(row, ("title", "abstract", "text", "content", "sentence",
-                                "document_id", "name", "entities", "label", "category",
-                                "题名", "标题", "摘要", "正文", "文献编号")):
-            out.append(row)
+        mapped = dict(row)
+        for zh, en in _ALIAS.items():
+            if zh in mapped and en not in mapped:
+                mapped[en] = mapped.pop(zh)
+        if _first_present(mapped, ("title", "abstract", "text", "content", "sentence",
+                                   "document_id", "name", "entities", "label", "category")):
+            out.append(mapped)
+    return out
+
+
+def _normalize_stdterm_rows(rows: List[Any]) -> List[Dict[str, Any]]:
+    """标准词簇表（research-ner 人工标注数据）：{canonical,type,variants} 簇结构。
+
+    别名映射：标准词→canonical、类型→type、变体→variants、英文标准词/英文→canonical_en。
+    有效行 = 有标准词(canonical/标准词)且有变体列表；variants 字符串形态拆成列表。
+    """
+    out: List[Dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        canonical = _first_present(row, ("canonical", "标准词", "标准术语", "standard_term"))
+        if not canonical:
+            continue
+        raw_variants = row.get("variants") if "variants" in row else row.get("变体")
+        if isinstance(raw_variants, str):
+            raw_variants = [v for v in raw_variants.replace("；", ";").replace("，", ";").replace(",", ";").split(";") if v.strip()]
+        variants = [str(v) for v in raw_variants] if isinstance(raw_variants, list) else []
+        normalized = {"canonical": str(canonical).strip(),
+                      "type": str(_first_present(row, ("type", "类型", "label")) or "").strip(),
+                      "variants": variants,
+                      "canonical_en": str(_first_present(row, ("canonical_en", "英文标准词", "en")) or "").strip()}
+        out.append(normalized)
+    return out
+
+
+def _normalize_corpus_rows(rows: List[Any]) -> List[Dict[str, Any]]:
+    """领域示例语料（research-ner 多领域科研语料）：{text, entities:[{text,type}]} few-shot 结构。
+
+    别名映射：示例文本/文本→text、识别结果/标注→entities、实体→entities[].text、类型→type。
+    """
+    out: List[Dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        text = _first_present(row, ("text", "示例文本", "文本", "sentence"))
+        raw_ents = row.get("entities") if "entities" in row else row.get("识别结果") or row.get("标注")
+        ents = []
+        for e in raw_ents or []:
+            if isinstance(e, dict):
+                et = _first_present(e, ("text", "实体", "name"))
+                if et:
+                    ents.append({"text": str(et), "type": str(_first_present(e, ("type", "类型")) or "").strip()})
+            elif isinstance(e, str) and e.strip():
+                ents.append({"text": e.strip(), "type": ""})
+        if text and ents:
+            out.append({"text": str(text), "entities": ents})
     return out
 
 
@@ -206,14 +265,14 @@ ROW_FIELD_CONFIG: Dict[str, Dict[str, Any]] = {
         "expect": "JSON 数组（术语字符串，或含 term 字段的对象）"},
     "manually_labeled_training_data": {"fn": _normalize_generic_rows, "label": "人工标注训练数据",
         "expect": "JSON 数组，每条为含文本/标注字段的对象"},
-    "manually_labeled_data": {"fn": _normalize_generic_rows, "label": "人工标注数据",
-        "expect": "JSON 数组，每条为含文本/标注字段的对象"},
+    "manually_labeled_data": {"fn": _normalize_stdterm_rows, "label": "标准词表(科研实体标注)",
+        "expect": "JSON 数组，每条为标准词簇：{\"canonical\":\"标准词\",\"type\":\"METHOD/DATASET/INSTRUMENT/THEORY/TOPIC\",\"variants\":[\"变体...\"],\"canonical_en\":\"英文标准词(可选)\"}（中文别名：标准词/类型/变体/英文标准词）"},
     "domain_labeled_training_data": {"fn": _normalize_generic_rows, "label": "领域标注训练数据",
         "expect": "JSON 数组，每条为含文本/标注字段的对象"},
     "general_domain_annotated_corpus": {"fn": _normalize_generic_rows, "label": "通用领域标注语料",
         "expect": "JSON 数组，每条为含文本/标注字段的对象"},
-    "multi_domain_scientific_corpus": {"fn": _normalize_generic_rows, "label": "多领域科研语料",
-        "expect": "JSON 数组，每条为含文本/标注字段的对象"},
+    "multi_domain_scientific_corpus": {"fn": _normalize_corpus_rows, "label": "领域示例语料(科研实体few-shot)",
+        "expect": "JSON 数组，每条为示例：{\"text\":\"示例文本\",\"entities\":[{\"text\":\"实体\",\"type\":\"五类之一\"}]}（中文别名：示例文本/识别结果/实体/类型）"},
 }
 
 # 纯配置型资源：仅做 JSON 解码校验（不做行结构要求，消费端按原样使用）
