@@ -593,36 +593,61 @@ function researchNerPayload(index: number) {
   }
 }
 
-const domainEntityProfiles = [
-  [['高校体育场馆', '研究对象', 'SPORT:VENUE'], ['智慧治理', '治理模式', 'SPORT:GOVERNANCE'], ['数据治理体系', '管理机制', 'SPORT:DATA-GOVERNANCE'], ['运营管理机制', '管理机制', 'SPORT:OPERATION']],
-  [['地震动记录', '工程数据', 'EQ:GROUND-MOTION'], ['震级', '地震参数', 'EQ:MAGNITUDE'], ['震中距', '地震参数', 'EQ:DISTANCE'], ['加速度反应谱', '工程指标', 'EQ:RESPONSE-SPECTRUM']],
-  [['糖尿病肾病', '疾病', 'MESH:DN'], ['VWF', '基因', 'HGNC:12726'], ['转录组数据', '生物医学数据', 'DATA:TRANSCRIPTOME'], ['加权基因共表达网络分析', '生物信息分析方法', 'METHOD:WGCNA'], ['GEO数据库', '生物医学数据库', 'DB:GEO']],
+// [实体文本, 类型英文码, 类型中文名, 知识库ID] —— 与真实 API 实体结构对齐
+// （type=英文码 + entity_type_name=中文名 + domain=医学/化工/物理）
+const domainEntityProfiles: [string, string, string, string][][] = [
+  [
+    ['2型糖尿病', 'DISEASE', '疾病', 'MESH:T2DM'],
+    ['二甲双胍', 'DRUG', '药物', 'ATC:A10BA02'],
+    ['胰岛素', 'DRUG', '药物', 'ATC:A10AB'],
+    ['代谢综合征', 'DISEASE', '疾病', 'MESH:MS'],
+    ['经皮冠状动脉介入治疗', 'TREATMENT', '治疗方法', 'ICD-9-PCS:00.66'],
+  ],
+  [
+    ['TiO2', 'COMPOUND', '化合物', 'CAS:13463-67-7'],
+    ['聚乳酸(PLA)', 'COMPOUND', '化合物', 'CAS:26100-51-6'],
+    ['聚乙二醇-400', 'COMPOUND', '化合物', 'CAS:25322-68-3'],
+    ['开环聚合反应', 'REACTION', '化学反应', 'RXN:ROP'],
+    ['介孔二氧化硅', 'MATERIAL', '材料', 'CAS:7631-86-9'],
+    ['石墨烯', 'MATERIAL', '材料', 'CAS:1034343-98-0'],
+  ],
+  [
+    ['量子力学', 'THEORY', '理论原理', 'THEORY:QM'],
+    ['密度泛函理论', 'THEORY', '理论原理', 'THEORY:DFT'],
+    ['量子霍尔效应', 'PHENOMENON', '现象', 'PHEN:QHE'],
+    ['量子隧穿', 'PHENOMENON', '现象', 'PHEN:QT'],
+    ['超导现象', 'PHENOMENON', '现象', 'PHEN:SC'],
+    ['能量守恒定律', 'LAW', '规律', 'LAW:COE'],
+  ],
 ]
 
 function domainNerPayload(index: number) {
   const profileIndex = index % 3
-  const domainName = profileIndex === 0 ? '体育科学' : profileIndex === 1 ? '地震工程' : '医学'
+  const domainName = ['医学', '化工', '物理'][profileIndex]
   const inputText = pureBatchTextByTool['domain-ner'][profileIndex]?.text || pureSingleTextByTool['domain-ner'] || ''
-  const entities = domainEntityProfiles[profileIndex].map(([text, type, id], itemIndex) => {
+  const entities = domainEntityProfiles[profileIndex].map(([text, type, typeName, id], itemIndex) => {
     const startIndex = inputText.indexOf(text)
     return {
       entity_id: `DNER-${index + 1}-${itemIndex + 1}`,
       text,
-      domain_name: domainName,
+      domain: domainName,
       type,
-      position: startIndex >= 0
-        ? { start: startIndex + 1, end: startIndex + text.length, __demo_exact: true }
-        : { chapter_path: ['（二）研究内容', itemIndex < 2 ? '1．研究对象' : '2．方法与数据', `2.${itemIndex + 1} ${text}`] },
+      entity_type_name: typeName,
+      start: startIndex >= 0 ? startIndex : 0,
+      end: startIndex >= 0 ? startIndex + text.length : text.length,
       context: inputText,
+      standard_names: { zh: text, en: text },
       standard_kb_id: id,
+      mapping_status: '已映射',
+      mapping_confidence: 0.98 - itemIndex * 0.02,
       confidence: 0.98 - itemIndex * 0.02,
     }
   })
   return {
-    selected_domain: profileIndex === 0 ? 'sports_science' : profileIndex === 1 ? 'earthquake_engineering' : 'medicine',
-    summary: { entity_count: entities.length, mapped_count: entities.length, pending_review_count: 0 },
+    selected_domain: { code: domainName, name: domainName, entity_domain_distribution: { [domainName]: entities.length } },
+    summary: { entity_count: entities.length, mapped_count: entities.length, pending_review_count: 0, by_type: entities.reduce((acc, item) => ({ ...acc, [item.entity_type_name]: (acc[item.entity_type_name] || 0) + 1 }), {} as Record<string, number>) },
     entities,
-    ontology_mappings: entities.map(item => ({ standard_kb_id: item.standard_kb_id, domain_name: item.domain_name, type: item.type, standard_names: { zh: item.text, en: item.text }, ontology_path: `${item.domain_name} / ${item.type} / ${item.text}`, aliases: [], observed_mentions: [{ text: item.text }], mapping_status: '已映射', mapping_confidence: item.confidence })),
+    ontology_mappings: entities.map(item => ({ standard_kb_id: item.standard_kb_id, domain: item.domain, type: item.entity_type_name, standard_names: { zh: item.text, en: item.text }, ontology_path: `${item.domain} / ${item.entity_type_name} / ${item.text}`, aliases: [], observed_mentions: [{ text: item.text }], mapping_status: '已映射', mapping_confidence: item.confidence })),
     document: { title: pureBatchTextByTool['domain-ner'][profileIndex]?.title || zhPapers[profileIndex].title, source_file: zhPapers[profileIndex].sourceFile },
   }
 }

@@ -346,7 +346,7 @@ onBeforeUnmount(() => {
         <div class="visualization-modal-header-v645">
           <div class="visualization-modal-heading-v645">
             <h3 id="visualizationModalTitleV645" class="visualization-modal-title-v645">{{ modalTitle }}</h3>
-            <div class="visualization-modal-subtitle-v645">可视化内容与当前响应 JSON 保持一致</div>
+            
           </div>
           <button
             id="visualizationModalCloseV645"

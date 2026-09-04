@@ -4541,6 +4541,39 @@ class SemanticApplicationService(ISemanticService):
         # 仅未上传词表时才走下方 LLM 生成标准词的兜底路径
         if code == 'ner_research' and _std_index and isinstance(out, list):
             self._apply_ner_standard_mapping(out, _std_index)
+        # 查表未命中的实体仍走 LLM 生成标准词（确定性优先，LLM 兜底管覆盖）
+        if code == 'ner_research' and _std_index and isinstance(out, list):
+            _unmapped = [e for e in out if isinstance(e, dict) and e.get('mapping_status') == '未映射']
+            if _unmapped:
+                _ents_llm = _unmapped  # 仅内置资源时 LLM 兜底；用户上传词表则严格查表
+                # 复用下方 LLM 生成逻辑，对未映射实体生成标准词并覆盖"未映射"状态
+                _msysp = (
+                    "你是科研术语标准化专家。输入一个从论文识别出的科研实体（可能是方法/"
+                    "数据集/仪器/理论/主题）及其类型与语境，输出该实体的标准术语名：\n"
+                    "- zh：学术规范的中文标准词\n- en：学术规范的英文标准词\n"
+                    "- confidence：0-1\n只输出JSON："
+                    '{"results":[{"zh":"中文标准词","en":"英文标准词","confidence":0.0}]}')
+                _mprompts = ["实体：%s\n类型：%s\n语境：%s" % (
+                    e.get("text", ""), e.get("type", ""), e.get("context", "")) for e in _ents_llm]
+                _mbatch = self._glm_chat_batch(
+                    _msysp, _mprompts, temperature=0.0, timeout=60.0, max_tokens=300, max_workers=5)
+                for e, c in zip(_ents_llm, _mbatch):
+                    if c is None:
+                        continue
+                    c = c.get("data", c) if isinstance(c, dict) else c
+                    rs = c if isinstance(c, list) else (c.get("results", []) if isinstance(c, dict) else [])
+                    if rs and isinstance(rs[0], dict):
+                        zh = (rs[0].get("zh") or "").strip()
+                        en = (rs[0].get("en") or "").strip()
+                        try:
+                            _mc = float(rs[0].get("confidence", 0.8))
+                        except (TypeError, ValueError):
+                            _mc = 0.8
+                        if zh or en:
+                            e["standard_names"] = {"zh": zh, "en": en}
+                            e["mapping_status"] = "已映射"
+                            e["mapping_confidence"] = _mc
+                            e.pop("mapping_source", None)  # LLM 生成的非用户词表
         if code in ('ner_research', 'ner_domain') and isinstance(out, list) and out \
                 and not (code == 'ner_research' and _std_index):
             _ents = [e for e in out if isinstance(e, dict)]

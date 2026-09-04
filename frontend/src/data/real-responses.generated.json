@@ -9363,17 +9363,73 @@
         "document": {
           "title": ""
         },
-        "input_type": "text",
         "entities": [
+          {
+            "text": "经皮冠状动脉介入治疗",
+            "type": "TREATMENT",
+            "domain": "医学",
+            "start": 70,
+            "end": 80,
+            "mapping": "",
+            "confidence": 0.96,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗。",
+            "standard_names": {
+              "zh": "经皮冠状动脉介入治疗",
+              "en": "Percutaneous Coronary Intervention"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "治疗方法"
+          },
+          {
+            "text": "2型糖尿病",
+            "type": "DISEASE",
+            "domain": "医学",
+            "start": 8,
+            "end": 13,
+            "mapping": "ICD-10:E11",
+            "confidence": 0.98,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+            "standard_names": {
+              "zh": "2型糖尿病",
+              "en": "Type 2 diabetes mellitus"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "疾病"
+          },
+          {
+            "text": "代谢综合征",
+            "type": "DISEASE",
+            "domain": "医学",
+            "start": 45,
+            "end": 50,
+            "mapping": "ICD-10:E88.81",
+            "confidence": 0.97,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+            "standard_names": {
+              "zh": "代谢综合征",
+              "en": "Metabolic Syndrome"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "疾病"
+          },
           {
             "text": "糖尿病肾病",
             "type": "DISEASE",
             "domain": "医学",
-            "start": 11,
-            "end": 16,
-            "mapping": "ICD-10:E10-E14",
-            "confidence": 0.95,
-            "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+            "start": 51,
+            "end": 56,
+            "mapping": "ICD-10:E11.2",
+            "confidence": 0.97,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
             "standard_names": {
               "zh": "糖尿病肾病",
               "en": "Diabetic Nephropathy"
@@ -9381,37 +9437,115 @@
             "mapping_status": "已映射",
             "mapping_confidence": 0.98,
             "standard_kb_id": "内置知识库",
-            "entity_id": null
+            "entity_id": null,
+            "entity_type_name": "疾病"
           },
           {
-            "text": "靶向治疗",
-            "type": "TREATMENT",
+            "text": "二甲双胍",
+            "type": "DRUG",
             "domain": "医学",
-            "start": 58,
-            "end": 62,
-            "mapping": "",
-            "confidence": 0.9,
-            "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+            "start": 20,
+            "end": 24,
+            "mapping": "ATC:A10BA02",
+            "confidence": 0.98,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
             "standard_names": {
-              "zh": "靶向治疗",
-              "en": "Targeted therapy"
+              "zh": "二甲双胍",
+              "en": "Metformin"
             },
             "mapping_status": "已映射",
-            "mapping_confidence": 0.95,
+            "mapping_confidence": 1,
             "standard_kb_id": "内置知识库",
-            "entity_id": null
+            "entity_id": null,
+            "entity_type_name": "药物"
+          },
+          {
+            "text": "胰岛素",
+            "type": "DRUG",
+            "domain": "医学",
+            "start": 26,
+            "end": 29,
+            "mapping": "ATC:A10A",
+            "confidence": 0.95,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+            "standard_names": {
+              "zh": "胰岛素",
+              "en": "Insulin"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "药物"
           }
         ],
         "entity_results": [
           {
+            "text": "经皮冠状动脉介入治疗",
+            "type": "TREATMENT",
+            "domain": "医学",
+            "start": 70,
+            "end": 80,
+            "mapping": "",
+            "confidence": 0.96,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗。",
+            "standard_names": {
+              "zh": "经皮冠状动脉介入治疗",
+              "en": "Percutaneous Coronary Intervention"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "治疗方法"
+          },
+          {
+            "text": "2型糖尿病",
+            "type": "DISEASE",
+            "domain": "医学",
+            "start": 8,
+            "end": 13,
+            "mapping": "ICD-10:E11",
+            "confidence": 0.98,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+            "standard_names": {
+              "zh": "2型糖尿病",
+              "en": "Type 2 diabetes mellitus"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "疾病"
+          },
+          {
+            "text": "代谢综合征",
+            "type": "DISEASE",
+            "domain": "医学",
+            "start": 45,
+            "end": 50,
+            "mapping": "ICD-10:E88.81",
+            "confidence": 0.97,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+            "standard_names": {
+              "zh": "代谢综合征",
+              "en": "Metabolic Syndrome"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "疾病"
+          },
+          {
             "text": "糖尿病肾病",
             "type": "DISEASE",
             "domain": "医学",
-            "start": 11,
-            "end": 16,
-            "mapping": "ICD-10:E10-E14",
-            "confidence": 0.95,
-            "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+            "start": 51,
+            "end": 56,
+            "mapping": "ICD-10:E11.2",
+            "confidence": 0.97,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
             "standard_names": {
               "zh": "糖尿病肾病",
               "en": "Diabetic Nephropathy"
@@ -9419,37 +9553,115 @@
             "mapping_status": "已映射",
             "mapping_confidence": 0.98,
             "standard_kb_id": "内置知识库",
-            "entity_id": null
+            "entity_id": null,
+            "entity_type_name": "疾病"
           },
           {
-            "text": "靶向治疗",
-            "type": "TREATMENT",
+            "text": "二甲双胍",
+            "type": "DRUG",
             "domain": "医学",
-            "start": 58,
-            "end": 62,
-            "mapping": "",
-            "confidence": 0.9,
-            "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+            "start": 20,
+            "end": 24,
+            "mapping": "ATC:A10BA02",
+            "confidence": 0.98,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
             "standard_names": {
-              "zh": "靶向治疗",
-              "en": "Targeted therapy"
+              "zh": "二甲双胍",
+              "en": "Metformin"
             },
             "mapping_status": "已映射",
-            "mapping_confidence": 0.95,
+            "mapping_confidence": 1,
             "standard_kb_id": "内置知识库",
-            "entity_id": null
+            "entity_id": null,
+            "entity_type_name": "药物"
+          },
+          {
+            "text": "胰岛素",
+            "type": "DRUG",
+            "domain": "医学",
+            "start": 26,
+            "end": 29,
+            "mapping": "ATC:A10A",
+            "confidence": 0.95,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+            "standard_names": {
+              "zh": "胰岛素",
+              "en": "Insulin"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "药物"
           }
         ],
         "mappings": [
           {
+            "text": "经皮冠状动脉介入治疗",
+            "type": "TREATMENT",
+            "domain": "医学",
+            "start": 70,
+            "end": 80,
+            "mapping": "",
+            "confidence": 0.96,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗。",
+            "standard_names": {
+              "zh": "经皮冠状动脉介入治疗",
+              "en": "Percutaneous Coronary Intervention"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "治疗方法"
+          },
+          {
+            "text": "2型糖尿病",
+            "type": "DISEASE",
+            "domain": "医学",
+            "start": 8,
+            "end": 13,
+            "mapping": "ICD-10:E11",
+            "confidence": 0.98,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+            "standard_names": {
+              "zh": "2型糖尿病",
+              "en": "Type 2 diabetes mellitus"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "疾病"
+          },
+          {
+            "text": "代谢综合征",
+            "type": "DISEASE",
+            "domain": "医学",
+            "start": 45,
+            "end": 50,
+            "mapping": "ICD-10:E88.81",
+            "confidence": 0.97,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+            "standard_names": {
+              "zh": "代谢综合征",
+              "en": "Metabolic Syndrome"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "疾病"
+          },
+          {
             "text": "糖尿病肾病",
             "type": "DISEASE",
             "domain": "医学",
-            "start": 11,
-            "end": 16,
-            "mapping": "ICD-10:E10-E14",
-            "confidence": 0.95,
-            "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+            "start": 51,
+            "end": 56,
+            "mapping": "ICD-10:E11.2",
+            "confidence": 0.97,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
             "standard_names": {
               "zh": "糖尿病肾病",
               "en": "Diabetic Nephropathy"
@@ -9457,113 +9669,115 @@
             "mapping_status": "已映射",
             "mapping_confidence": 0.98,
             "standard_kb_id": "内置知识库",
-            "entity_id": null
+            "entity_id": null,
+            "entity_type_name": "疾病"
           },
           {
-            "text": "靶向治疗",
-            "type": "TREATMENT",
+            "text": "二甲双胍",
+            "type": "DRUG",
             "domain": "医学",
-            "start": 58,
-            "end": 62,
-            "mapping": "",
-            "confidence": 0.9,
-            "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+            "start": 20,
+            "end": 24,
+            "mapping": "ATC:A10BA02",
+            "confidence": 0.98,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
             "standard_names": {
-              "zh": "靶向治疗",
-              "en": "Targeted therapy"
+              "zh": "二甲双胍",
+              "en": "Metformin"
             },
             "mapping_status": "已映射",
-            "mapping_confidence": 0.95,
+            "mapping_confidence": 1,
             "standard_kb_id": "内置知识库",
-            "entity_id": null
-          }
-        ],
-        "entity_mappings": [
+            "entity_id": null,
+            "entity_type_name": "药物"
+          },
           {
-            "text": "糖尿病肾病",
-            "type": "DISEASE",
+            "text": "胰岛素",
+            "type": "DRUG",
             "domain": "医学",
-            "start": 11,
-            "end": 16,
-            "mapping": "ICD-10:E10-E14",
+            "start": 26,
+            "end": 29,
+            "mapping": "ATC:A10A",
             "confidence": 0.95,
-            "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
             "standard_names": {
-              "zh": "糖尿病肾病",
-              "en": "Diabetic Nephropathy"
+              "zh": "胰岛素",
+              "en": "Insulin"
             },
             "mapping_status": "已映射",
-            "mapping_confidence": 0.98,
+            "mapping_confidence": 1,
             "standard_kb_id": "内置知识库",
-            "entity_id": null
-          },
-          {
-            "text": "靶向治疗",
-            "type": "TREATMENT",
-            "domain": "医学",
-            "start": 58,
-            "end": 62,
-            "mapping": "",
-            "confidence": 0.9,
-            "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
-            "standard_names": {
-              "zh": "靶向治疗",
-              "en": "Targeted therapy"
-            },
-            "mapping_status": "已映射",
-            "mapping_confidence": 0.95,
-            "standard_kb_id": "内置知识库",
-            "entity_id": null
-          }
-        ],
-        "standard_term_mappings": [
-          {
-            "text": "糖尿病肾病",
-            "type": "DISEASE",
-            "domain": "医学",
-            "start": 11,
-            "end": 16,
-            "mapping": "ICD-10:E10-E14",
-            "confidence": 0.95,
-            "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
-            "standard_names": {
-              "zh": "糖尿病肾病",
-              "en": "Diabetic Nephropathy"
-            },
-            "mapping_status": "已映射",
-            "mapping_confidence": 0.98,
-            "standard_kb_id": "内置知识库",
-            "entity_id": null
-          },
-          {
-            "text": "靶向治疗",
-            "type": "TREATMENT",
-            "domain": "医学",
-            "start": 58,
-            "end": 62,
-            "mapping": "",
-            "confidence": 0.9,
-            "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
-            "standard_names": {
-              "zh": "靶向治疗",
-              "en": "Targeted therapy"
-            },
-            "mapping_status": "已映射",
-            "mapping_confidence": 0.95,
-            "standard_kb_id": "内置知识库",
-            "entity_id": null
+            "entity_id": null,
+            "entity_type_name": "药物"
           }
         ],
         "ontology_mappings": [
           {
+            "text": "经皮冠状动脉介入治疗",
+            "type": "TREATMENT",
+            "domain": "医学",
+            "start": 70,
+            "end": 80,
+            "mapping": "",
+            "confidence": 0.96,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗。",
+            "standard_names": {
+              "zh": "经皮冠状动脉介入治疗",
+              "en": "Percutaneous Coronary Intervention"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "治疗方法"
+          },
+          {
+            "text": "2型糖尿病",
+            "type": "DISEASE",
+            "domain": "医学",
+            "start": 8,
+            "end": 13,
+            "mapping": "ICD-10:E11",
+            "confidence": 0.98,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+            "standard_names": {
+              "zh": "2型糖尿病",
+              "en": "Type 2 diabetes mellitus"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "疾病"
+          },
+          {
+            "text": "代谢综合征",
+            "type": "DISEASE",
+            "domain": "医学",
+            "start": 45,
+            "end": 50,
+            "mapping": "ICD-10:E88.81",
+            "confidence": 0.97,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+            "standard_names": {
+              "zh": "代谢综合征",
+              "en": "Metabolic Syndrome"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "疾病"
+          },
+          {
             "text": "糖尿病肾病",
             "type": "DISEASE",
             "domain": "医学",
-            "start": 11,
-            "end": 16,
-            "mapping": "ICD-10:E10-E14",
-            "confidence": 0.95,
-            "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+            "start": 51,
+            "end": 56,
+            "mapping": "ICD-10:E11.2",
+            "confidence": 0.97,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
             "standard_names": {
               "zh": "糖尿病肾病",
               "en": "Diabetic Nephropathy"
@@ -9571,58 +9785,79 @@
             "mapping_status": "已映射",
             "mapping_confidence": 0.98,
             "standard_kb_id": "内置知识库",
-            "entity_id": null
+            "entity_id": null,
+            "entity_type_name": "疾病"
           },
           {
-            "text": "靶向治疗",
-            "type": "TREATMENT",
+            "text": "二甲双胍",
+            "type": "DRUG",
             "domain": "医学",
-            "start": 58,
-            "end": 62,
-            "mapping": "",
-            "confidence": 0.9,
-            "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+            "start": 20,
+            "end": 24,
+            "mapping": "ATC:A10BA02",
+            "confidence": 0.98,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
             "standard_names": {
-              "zh": "靶向治疗",
-              "en": "Targeted therapy"
+              "zh": "二甲双胍",
+              "en": "Metformin"
             },
             "mapping_status": "已映射",
-            "mapping_confidence": 0.95,
+            "mapping_confidence": 1,
             "standard_kb_id": "内置知识库",
-            "entity_id": null
+            "entity_id": null,
+            "entity_type_name": "药物"
+          },
+          {
+            "text": "胰岛素",
+            "type": "DRUG",
+            "domain": "医学",
+            "start": 26,
+            "end": 29,
+            "mapping": "ATC:A10A",
+            "confidence": 0.95,
+            "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+            "standard_names": {
+              "zh": "胰岛素",
+              "en": "Insulin"
+            },
+            "mapping_status": "已映射",
+            "mapping_confidence": 1,
+            "standard_kb_id": "内置知识库",
+            "entity_id": null,
+            "entity_type_name": "药物"
           }
         ],
-        "statistics": {
-          "entity_count": 2,
-          "by_type": {
-            "DISEASE": 1,
-            "TREATMENT": 1
-          }
-        },
         "summary": {
-          "entity_count": 2,
+          "entity_count": 6,
           "by_type": {
-            "DISEASE": 1,
-            "TREATMENT": 1
+            "TREATMENT": 1,
+            "DISEASE": 3,
+            "DRUG": 2
           }
         },
-        "selected_domain": {}
+        "selected_domain": {
+          "code": "医学",
+          "name": "医学",
+          "entity_domain_distribution": {
+            "医学": 6
+          }
+        }
       },
       "meta": {
-        "request_id": "req_2abb9c766d434650b7c2778d690795c9",
+        "request_id": "req_80644330036044af87b2d4e202aaa697",
         "schema_version": "1.0",
         "model_version": "semantic-toolkit-2026.08",
         "taxonomy_version": null,
         "ontology_version": null,
-        "elapsed_ms": 5395,
-        "created_at": "2026-08-31T07:45:57.881559+00:00",
+        "elapsed_ms": 14815,
+        "created_at": "2026-09-04T11:02:12.373450+00:00",
         "database_dialect": "mysql",
-        "task_id": "tsk_0fb3bf121ea843919e1abd804c31b32c",
+        "task_id": "tsk_2124d466292f432f8cc137ca27106321",
         "input_type": "text",
         "total": 1,
         "success_count": 1,
         "failed_count": 0,
-        "record_id": "rec_3a2dc07c0d59486e9d9a71d05b034df8",
+        "record_id": "rec_f8d19b627ab6490b99a0fc132a3c3cbd",
         "file_name": null
       }
     },
@@ -9630,7 +9865,7 @@
       "code": 0,
       "message": "success",
       "data": {
-        "batch_id": "tsk_ae3b49dd51d24657adb40bf1c9b6120a",
+        "batch_id": "tsk_c5a7a997c40c4aa7a6a90ddb88dd7060",
         "input_type": "texts",
         "total": 3,
         "success_count": 3,
@@ -9642,27 +9877,490 @@
             "file_name": null,
             "status": "succeeded",
             "code": 0,
-            "record_id": "rec_184e5c23fa8d48758b3521bb97d2b8d1",
+            "record_id": "rec_224ffc6da9c4481b921e917a027618a9",
             "result": {
               "document": {
-                "title": "高校体育场馆智慧治理机制研究"
+                "title": "二甲双胍联合胰岛素治疗2型糖尿病的疗效观察"
               },
-              "input_type": "texts",
-              "entities": [],
-              "entity_results": [],
-              "mappings": [],
-              "entity_mappings": [],
-              "standard_term_mappings": [],
-              "ontology_mappings": [],
-              "statistics": {
-                "entity_count": 0,
-                "by_type": {}
-              },
+              "entities": [
+                {
+                  "text": "经皮冠状动脉介入治疗",
+                  "type": "TREATMENT",
+                  "domain": "医学",
+                  "start": 70,
+                  "end": 80,
+                  "mapping": "ICD-9-CM-3: 00.66",
+                  "confidence": 0.96,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗。",
+                  "standard_names": {
+                    "zh": "经皮冠状动脉介入治疗",
+                    "en": "Percutaneous Coronary Intervention"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "治疗方法"
+                },
+                {
+                  "text": "2型糖尿病",
+                  "type": "DISEASE",
+                  "domain": "医学",
+                  "start": 8,
+                  "end": 13,
+                  "mapping": "ICD-10: E11",
+                  "confidence": 0.98,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "2型糖尿病",
+                    "en": "Type 2 diabetes mellitus"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.99,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "疾病"
+                },
+                {
+                  "text": "代谢综合征",
+                  "type": "DISEASE",
+                  "domain": "医学",
+                  "start": 45,
+                  "end": 50,
+                  "mapping": "ICD-10: E88.81",
+                  "confidence": 0.97,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "代谢综合征",
+                    "en": "Metabolic Syndrome"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "疾病"
+                },
+                {
+                  "text": "糖尿病肾病",
+                  "type": "DISEASE",
+                  "domain": "医学",
+                  "start": 51,
+                  "end": 56,
+                  "mapping": "ICD-10: E11.2",
+                  "confidence": 0.97,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "糖尿病肾病",
+                    "en": "Diabetic Nephropathy"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "疾病"
+                },
+                {
+                  "text": "二甲双胍",
+                  "type": "DRUG",
+                  "domain": "医学",
+                  "start": 20,
+                  "end": 24,
+                  "mapping": "ATC: A10BA02",
+                  "confidence": 0.98,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "二甲双胍",
+                    "en": "Metformin"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "药物"
+                },
+                {
+                  "text": "胰岛素",
+                  "type": "DRUG",
+                  "domain": "医学",
+                  "start": 26,
+                  "end": 29,
+                  "mapping": "ATC: A10A",
+                  "confidence": 0.95,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "胰岛素",
+                    "en": "Insulin"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "药物"
+                }
+              ],
+              "entity_results": [
+                {
+                  "text": "经皮冠状动脉介入治疗",
+                  "type": "TREATMENT",
+                  "domain": "医学",
+                  "start": 70,
+                  "end": 80,
+                  "mapping": "ICD-9-CM-3: 00.66",
+                  "confidence": 0.96,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗。",
+                  "standard_names": {
+                    "zh": "经皮冠状动脉介入治疗",
+                    "en": "Percutaneous Coronary Intervention"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "治疗方法"
+                },
+                {
+                  "text": "2型糖尿病",
+                  "type": "DISEASE",
+                  "domain": "医学",
+                  "start": 8,
+                  "end": 13,
+                  "mapping": "ICD-10: E11",
+                  "confidence": 0.98,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "2型糖尿病",
+                    "en": "Type 2 diabetes mellitus"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.99,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "疾病"
+                },
+                {
+                  "text": "代谢综合征",
+                  "type": "DISEASE",
+                  "domain": "医学",
+                  "start": 45,
+                  "end": 50,
+                  "mapping": "ICD-10: E88.81",
+                  "confidence": 0.97,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "代谢综合征",
+                    "en": "Metabolic Syndrome"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "疾病"
+                },
+                {
+                  "text": "糖尿病肾病",
+                  "type": "DISEASE",
+                  "domain": "医学",
+                  "start": 51,
+                  "end": 56,
+                  "mapping": "ICD-10: E11.2",
+                  "confidence": 0.97,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "糖尿病肾病",
+                    "en": "Diabetic Nephropathy"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "疾病"
+                },
+                {
+                  "text": "二甲双胍",
+                  "type": "DRUG",
+                  "domain": "医学",
+                  "start": 20,
+                  "end": 24,
+                  "mapping": "ATC: A10BA02",
+                  "confidence": 0.98,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "二甲双胍",
+                    "en": "Metformin"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "药物"
+                },
+                {
+                  "text": "胰岛素",
+                  "type": "DRUG",
+                  "domain": "医学",
+                  "start": 26,
+                  "end": 29,
+                  "mapping": "ATC: A10A",
+                  "confidence": 0.95,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "胰岛素",
+                    "en": "Insulin"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "药物"
+                }
+              ],
+              "mappings": [
+                {
+                  "text": "经皮冠状动脉介入治疗",
+                  "type": "TREATMENT",
+                  "domain": "医学",
+                  "start": 70,
+                  "end": 80,
+                  "mapping": "ICD-9-CM-3: 00.66",
+                  "confidence": 0.96,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗。",
+                  "standard_names": {
+                    "zh": "经皮冠状动脉介入治疗",
+                    "en": "Percutaneous Coronary Intervention"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "治疗方法"
+                },
+                {
+                  "text": "2型糖尿病",
+                  "type": "DISEASE",
+                  "domain": "医学",
+                  "start": 8,
+                  "end": 13,
+                  "mapping": "ICD-10: E11",
+                  "confidence": 0.98,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "2型糖尿病",
+                    "en": "Type 2 diabetes mellitus"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.99,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "疾病"
+                },
+                {
+                  "text": "代谢综合征",
+                  "type": "DISEASE",
+                  "domain": "医学",
+                  "start": 45,
+                  "end": 50,
+                  "mapping": "ICD-10: E88.81",
+                  "confidence": 0.97,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "代谢综合征",
+                    "en": "Metabolic Syndrome"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "疾病"
+                },
+                {
+                  "text": "糖尿病肾病",
+                  "type": "DISEASE",
+                  "domain": "医学",
+                  "start": 51,
+                  "end": 56,
+                  "mapping": "ICD-10: E11.2",
+                  "confidence": 0.97,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "糖尿病肾病",
+                    "en": "Diabetic Nephropathy"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "疾病"
+                },
+                {
+                  "text": "二甲双胍",
+                  "type": "DRUG",
+                  "domain": "医学",
+                  "start": 20,
+                  "end": 24,
+                  "mapping": "ATC: A10BA02",
+                  "confidence": 0.98,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "二甲双胍",
+                    "en": "Metformin"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "药物"
+                },
+                {
+                  "text": "胰岛素",
+                  "type": "DRUG",
+                  "domain": "医学",
+                  "start": 26,
+                  "end": 29,
+                  "mapping": "ATC: A10A",
+                  "confidence": 0.95,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "胰岛素",
+                    "en": "Insulin"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "药物"
+                }
+              ],
+              "ontology_mappings": [
+                {
+                  "text": "经皮冠状动脉介入治疗",
+                  "type": "TREATMENT",
+                  "domain": "医学",
+                  "start": 70,
+                  "end": 80,
+                  "mapping": "ICD-9-CM-3: 00.66",
+                  "confidence": 0.96,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗。",
+                  "standard_names": {
+                    "zh": "经皮冠状动脉介入治疗",
+                    "en": "Percutaneous Coronary Intervention"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "治疗方法"
+                },
+                {
+                  "text": "2型糖尿病",
+                  "type": "DISEASE",
+                  "domain": "医学",
+                  "start": 8,
+                  "end": 13,
+                  "mapping": "ICD-10: E11",
+                  "confidence": 0.98,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "2型糖尿病",
+                    "en": "Type 2 diabetes mellitus"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.99,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "疾病"
+                },
+                {
+                  "text": "代谢综合征",
+                  "type": "DISEASE",
+                  "domain": "医学",
+                  "start": 45,
+                  "end": 50,
+                  "mapping": "ICD-10: E88.81",
+                  "confidence": 0.97,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "代谢综合征",
+                    "en": "Metabolic Syndrome"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "疾病"
+                },
+                {
+                  "text": "糖尿病肾病",
+                  "type": "DISEASE",
+                  "domain": "医学",
+                  "start": 51,
+                  "end": 56,
+                  "mapping": "ICD-10: E11.2",
+                  "confidence": 0.97,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "糖尿病肾病",
+                    "en": "Diabetic Nephropathy"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "疾病"
+                },
+                {
+                  "text": "二甲双胍",
+                  "type": "DRUG",
+                  "domain": "医学",
+                  "start": 20,
+                  "end": 24,
+                  "mapping": "ATC: A10BA02",
+                  "confidence": 0.98,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "二甲双胍",
+                    "en": "Metformin"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "药物"
+                },
+                {
+                  "text": "胰岛素",
+                  "type": "DRUG",
+                  "domain": "医学",
+                  "start": 26,
+                  "end": 29,
+                  "mapping": "ATC: A10A",
+                  "confidence": 0.95,
+                  "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+                  "standard_names": {
+                    "zh": "胰岛素",
+                    "en": "Insulin"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "药物"
+                }
+              ],
               "summary": {
-                "entity_count": 0,
-                "by_type": {}
+                "entity_count": 6,
+                "by_type": {
+                  "TREATMENT": 1,
+                  "DISEASE": 3,
+                  "DRUG": 2
+                }
               },
-              "selected_domain": {}
+              "selected_domain": {
+                "code": "医学",
+                "name": "医学",
+                "entity_domain_distribution": {
+                  "医学": 6
+                }
+              }
             }
           },
           {
@@ -9670,363 +10368,718 @@
             "file_name": null,
             "status": "succeeded",
             "code": 0,
-            "record_id": "rec_859b6c772ca04d68afddc77fe732dbfe",
+            "record_id": "rec_40085ad1adc446cea086aa510920b906",
             "result": {
               "document": {
-                "title": "地震动记录特征与工程指标分析"
+                "title": "介孔二氧化硅负载石墨烯复合材料的制备与性能"
               },
-              "input_type": "texts",
               "entities": [
                 {
-                  "text": "震级",
-                  "type": "PHENOMENON",
-                  "domain": "物理",
-                  "start": 16,
-                  "end": 18,
-                  "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选",
-                  "standard_names": {
-                    "zh": "震级",
-                    "en": "Earthquake magnitude"
-                  },
-                  "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
-                  "standard_kb_id": "内置知识库",
-                  "entity_id": null
-                },
-                {
-                  "text": "震中距",
-                  "type": "PHENOMENON",
-                  "domain": "物理",
-                  "start": 19,
-                  "end": 22,
-                  "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选。",
-                  "standard_names": {
-                    "zh": "震中距",
-                    "en": "Epicentral distance"
-                  },
-                  "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
-                  "standard_kb_id": "内置知识库",
-                  "entity_id": null
-                },
-                {
-                  "text": "加速度反应谱",
-                  "type": "LAW",
-                  "domain": "物理",
-                  "start": 23,
+                  "text": "聚乳酸(PLA)",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 21,
                   "end": 29,
                   "mapping": "",
-                  "confidence": 0.8,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
                   "standard_names": {
-                    "zh": "加速度反应谱",
-                    "en": "Acceleration Response Spectrum"
+                    "zh": "聚乳酸",
+                    "en": "Polylactic acid"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.98,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
+                },
+                {
+                  "text": "聚乙二醇-400",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 30,
+                  "end": 38,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "聚乙二醇400",
+                    "en": "Polyethylene glycol 400"
                   },
                   "mapping_status": "已映射",
                   "mapping_confidence": 0.95,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
+                },
+                {
+                  "text": "N-甲基吡咯烷酮",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 66,
+                  "end": 74,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能。",
+                  "standard_names": {
+                    "zh": "N-甲基吡咯烷酮",
+                    "en": "N-Methyl-2-pyrrolidone"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.98,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
+                },
+                {
+                  "text": "开环聚合反应",
+                  "type": "REACTION",
+                  "domain": "化工",
+                  "start": 13,
+                  "end": 19,
+                  "mapping": "",
+                  "confidence": 0.97,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "开环聚合反应",
+                    "en": "Ring-opening polymerization"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.95,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化学反应"
+                },
+                {
+                  "text": "介孔二氧化硅",
+                  "type": "MATERIAL",
+                  "domain": "化工",
+                  "start": 47,
+                  "end": 53,
+                  "mapping": "",
+                  "confidence": 0.95,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "介孔二氧化硅",
+                    "en": "Mesoporous silica"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.95,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "材料"
+                },
+                {
+                  "text": "自由基聚合",
+                  "type": "REACTION",
+                  "domain": "化工",
+                  "start": 79,
+                  "end": 84,
+                  "mapping": "",
+                  "confidence": 0.97,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能。",
+                  "standard_names": {
+                    "zh": "自由基聚合",
+                    "en": "Free-radical polymerization"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.95,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化学反应"
+                },
+                {
+                  "text": "TiO2",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 1,
+                  "end": 5,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "二氧化钛",
+                    "en": "Titanium dioxide"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.98,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
+                },
+                {
+                  "text": "石墨烯",
+                  "type": "MATERIAL",
+                  "domain": "化工",
+                  "start": 56,
+                  "end": 59,
+                  "mapping": "",
+                  "confidence": 0.99,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "石墨烯",
+                    "en": "graphene"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "材料"
+                },
+                {
+                  "text": "CO2",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 89,
+                  "end": 92,
+                  "mapping": "",
+                  "confidence": 0.99,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "二氧化碳",
+                    "en": "Carbon dioxide"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
                 }
               ],
               "entity_results": [
                 {
-                  "text": "震级",
-                  "type": "PHENOMENON",
-                  "domain": "物理",
-                  "start": 16,
-                  "end": 18,
-                  "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选",
-                  "standard_names": {
-                    "zh": "震级",
-                    "en": "Earthquake magnitude"
-                  },
-                  "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
-                  "standard_kb_id": "内置知识库",
-                  "entity_id": null
-                },
-                {
-                  "text": "震中距",
-                  "type": "PHENOMENON",
-                  "domain": "物理",
-                  "start": 19,
-                  "end": 22,
-                  "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选。",
-                  "standard_names": {
-                    "zh": "震中距",
-                    "en": "Epicentral distance"
-                  },
-                  "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
-                  "standard_kb_id": "内置知识库",
-                  "entity_id": null
-                },
-                {
-                  "text": "加速度反应谱",
-                  "type": "LAW",
-                  "domain": "物理",
-                  "start": 23,
+                  "text": "聚乳酸(PLA)",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 21,
                   "end": 29,
                   "mapping": "",
-                  "confidence": 0.8,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
                   "standard_names": {
-                    "zh": "加速度反应谱",
-                    "en": "Acceleration Response Spectrum"
+                    "zh": "聚乳酸",
+                    "en": "Polylactic acid"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.98,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
+                },
+                {
+                  "text": "聚乙二醇-400",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 30,
+                  "end": 38,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "聚乙二醇400",
+                    "en": "Polyethylene glycol 400"
                   },
                   "mapping_status": "已映射",
                   "mapping_confidence": 0.95,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
+                },
+                {
+                  "text": "N-甲基吡咯烷酮",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 66,
+                  "end": 74,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能。",
+                  "standard_names": {
+                    "zh": "N-甲基吡咯烷酮",
+                    "en": "N-Methyl-2-pyrrolidone"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.98,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
+                },
+                {
+                  "text": "开环聚合反应",
+                  "type": "REACTION",
+                  "domain": "化工",
+                  "start": 13,
+                  "end": 19,
+                  "mapping": "",
+                  "confidence": 0.97,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "开环聚合反应",
+                    "en": "Ring-opening polymerization"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.95,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化学反应"
+                },
+                {
+                  "text": "介孔二氧化硅",
+                  "type": "MATERIAL",
+                  "domain": "化工",
+                  "start": 47,
+                  "end": 53,
+                  "mapping": "",
+                  "confidence": 0.95,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "介孔二氧化硅",
+                    "en": "Mesoporous silica"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.95,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "材料"
+                },
+                {
+                  "text": "自由基聚合",
+                  "type": "REACTION",
+                  "domain": "化工",
+                  "start": 79,
+                  "end": 84,
+                  "mapping": "",
+                  "confidence": 0.97,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能。",
+                  "standard_names": {
+                    "zh": "自由基聚合",
+                    "en": "Free-radical polymerization"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.95,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化学反应"
+                },
+                {
+                  "text": "TiO2",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 1,
+                  "end": 5,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "二氧化钛",
+                    "en": "Titanium dioxide"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.98,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
+                },
+                {
+                  "text": "石墨烯",
+                  "type": "MATERIAL",
+                  "domain": "化工",
+                  "start": 56,
+                  "end": 59,
+                  "mapping": "",
+                  "confidence": 0.99,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "石墨烯",
+                    "en": "graphene"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "材料"
+                },
+                {
+                  "text": "CO2",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 89,
+                  "end": 92,
+                  "mapping": "",
+                  "confidence": 0.99,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "二氧化碳",
+                    "en": "Carbon dioxide"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
                 }
               ],
               "mappings": [
                 {
-                  "text": "震级",
-                  "type": "PHENOMENON",
-                  "domain": "物理",
-                  "start": 16,
-                  "end": 18,
-                  "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选",
-                  "standard_names": {
-                    "zh": "震级",
-                    "en": "Earthquake magnitude"
-                  },
-                  "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
-                  "standard_kb_id": "内置知识库",
-                  "entity_id": null
-                },
-                {
-                  "text": "震中距",
-                  "type": "PHENOMENON",
-                  "domain": "物理",
-                  "start": 19,
-                  "end": 22,
-                  "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选。",
-                  "standard_names": {
-                    "zh": "震中距",
-                    "en": "Epicentral distance"
-                  },
-                  "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
-                  "standard_kb_id": "内置知识库",
-                  "entity_id": null
-                },
-                {
-                  "text": "加速度反应谱",
-                  "type": "LAW",
-                  "domain": "物理",
-                  "start": 23,
+                  "text": "聚乳酸(PLA)",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 21,
                   "end": 29,
                   "mapping": "",
-                  "confidence": 0.8,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
                   "standard_names": {
-                    "zh": "加速度反应谱",
-                    "en": "Acceleration Response Spectrum"
+                    "zh": "聚乳酸",
+                    "en": "Polylactic acid"
                   },
                   "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
+                  "mapping_confidence": 0.98,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
-                }
-              ],
-              "entity_mappings": [
-                {
-                  "text": "震级",
-                  "type": "PHENOMENON",
-                  "domain": "物理",
-                  "start": 16,
-                  "end": 18,
-                  "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选",
-                  "standard_names": {
-                    "zh": "震级",
-                    "en": "Earthquake magnitude"
-                  },
-                  "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
-                  "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
                 },
                 {
-                  "text": "震中距",
-                  "type": "PHENOMENON",
-                  "domain": "物理",
-                  "start": 19,
-                  "end": 22,
+                  "text": "聚乙二醇-400",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 30,
+                  "end": 38,
                   "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选。",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
                   "standard_names": {
-                    "zh": "震中距",
-                    "en": "Epicentral distance"
+                    "zh": "聚乙二醇400",
+                    "en": "Polyethylene glycol 400"
                   },
                   "mapping_status": "已映射",
                   "mapping_confidence": 0.95,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
                 },
                 {
-                  "text": "加速度反应谱",
-                  "type": "LAW",
-                  "domain": "物理",
-                  "start": 23,
-                  "end": 29,
+                  "text": "N-甲基吡咯烷酮",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 66,
+                  "end": 74,
                   "mapping": "",
-                  "confidence": 0.8,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能。",
                   "standard_names": {
-                    "zh": "加速度反应谱",
-                    "en": "Acceleration Response Spectrum"
+                    "zh": "N-甲基吡咯烷酮",
+                    "en": "N-Methyl-2-pyrrolidone"
                   },
                   "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
+                  "mapping_confidence": 0.98,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
-                }
-              ],
-              "standard_term_mappings": [
-                {
-                  "text": "震级",
-                  "type": "PHENOMENON",
-                  "domain": "物理",
-                  "start": 16,
-                  "end": 18,
-                  "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选",
-                  "standard_names": {
-                    "zh": "震级",
-                    "en": "Earthquake magnitude"
-                  },
-                  "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
-                  "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
                 },
                 {
-                  "text": "震中距",
-                  "type": "PHENOMENON",
-                  "domain": "物理",
-                  "start": 19,
-                  "end": 22,
+                  "text": "开环聚合反应",
+                  "type": "REACTION",
+                  "domain": "化工",
+                  "start": 13,
+                  "end": 19,
                   "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选。",
+                  "confidence": 0.97,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
                   "standard_names": {
-                    "zh": "震中距",
-                    "en": "Epicentral distance"
+                    "zh": "开环聚合反应",
+                    "en": "Ring-opening polymerization"
                   },
                   "mapping_status": "已映射",
                   "mapping_confidence": 0.95,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "化学反应"
                 },
                 {
-                  "text": "加速度反应谱",
-                  "type": "LAW",
-                  "domain": "物理",
-                  "start": 23,
-                  "end": 29,
+                  "text": "介孔二氧化硅",
+                  "type": "MATERIAL",
+                  "domain": "化工",
+                  "start": 47,
+                  "end": 53,
                   "mapping": "",
-                  "confidence": 0.8,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选",
+                  "confidence": 0.95,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
                   "standard_names": {
-                    "zh": "加速度反应谱",
-                    "en": "Acceleration Response Spectrum"
+                    "zh": "介孔二氧化硅",
+                    "en": "Mesoporous silica"
                   },
                   "mapping_status": "已映射",
                   "mapping_confidence": 0.95,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "材料"
+                },
+                {
+                  "text": "自由基聚合",
+                  "type": "REACTION",
+                  "domain": "化工",
+                  "start": 79,
+                  "end": 84,
+                  "mapping": "",
+                  "confidence": 0.97,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能。",
+                  "standard_names": {
+                    "zh": "自由基聚合",
+                    "en": "Free-radical polymerization"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.95,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化学反应"
+                },
+                {
+                  "text": "TiO2",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 1,
+                  "end": 5,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "二氧化钛",
+                    "en": "Titanium dioxide"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.98,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
+                },
+                {
+                  "text": "石墨烯",
+                  "type": "MATERIAL",
+                  "domain": "化工",
+                  "start": 56,
+                  "end": 59,
+                  "mapping": "",
+                  "confidence": 0.99,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "石墨烯",
+                    "en": "graphene"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "材料"
+                },
+                {
+                  "text": "CO2",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 89,
+                  "end": 92,
+                  "mapping": "",
+                  "confidence": 0.99,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "二氧化碳",
+                    "en": "Carbon dioxide"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
                 }
               ],
               "ontology_mappings": [
                 {
-                  "text": "震级",
-                  "type": "PHENOMENON",
-                  "domain": "物理",
-                  "start": 16,
-                  "end": 18,
-                  "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选",
-                  "standard_names": {
-                    "zh": "震级",
-                    "en": "Earthquake magnitude"
-                  },
-                  "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
-                  "standard_kb_id": "内置知识库",
-                  "entity_id": null
-                },
-                {
-                  "text": "震中距",
-                  "type": "PHENOMENON",
-                  "domain": "物理",
-                  "start": 19,
-                  "end": 22,
-                  "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选。",
-                  "standard_names": {
-                    "zh": "震中距",
-                    "en": "Epicentral distance"
-                  },
-                  "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
-                  "standard_kb_id": "内置知识库",
-                  "entity_id": null
-                },
-                {
-                  "text": "加速度反应谱",
-                  "type": "LAW",
-                  "domain": "物理",
-                  "start": 23,
+                  "text": "聚乳酸(PLA)",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 21,
                   "end": 29,
                   "mapping": "",
-                  "confidence": 0.8,
-                  "context": "研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
                   "standard_names": {
-                    "zh": "加速度反应谱",
-                    "en": "Acceleration Response Spectrum"
+                    "zh": "聚乳酸",
+                    "en": "Polylactic acid"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.98,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
+                },
+                {
+                  "text": "聚乙二醇-400",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 30,
+                  "end": 38,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "聚乙二醇400",
+                    "en": "Polyethylene glycol 400"
                   },
                   "mapping_status": "已映射",
                   "mapping_confidence": 0.95,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
+                },
+                {
+                  "text": "N-甲基吡咯烷酮",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 66,
+                  "end": 74,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能。",
+                  "standard_names": {
+                    "zh": "N-甲基吡咯烷酮",
+                    "en": "N-Methyl-2-pyrrolidone"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.98,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
+                },
+                {
+                  "text": "开环聚合反应",
+                  "type": "REACTION",
+                  "domain": "化工",
+                  "start": 13,
+                  "end": 19,
+                  "mapping": "",
+                  "confidence": 0.97,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "开环聚合反应",
+                    "en": "Ring-opening polymerization"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.95,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化学反应"
+                },
+                {
+                  "text": "介孔二氧化硅",
+                  "type": "MATERIAL",
+                  "domain": "化工",
+                  "start": 47,
+                  "end": 53,
+                  "mapping": "",
+                  "confidence": 0.95,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "介孔二氧化硅",
+                    "en": "Mesoporous silica"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.95,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "材料"
+                },
+                {
+                  "text": "自由基聚合",
+                  "type": "REACTION",
+                  "domain": "化工",
+                  "start": 79,
+                  "end": 84,
+                  "mapping": "",
+                  "confidence": 0.97,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能。",
+                  "standard_names": {
+                    "zh": "自由基聚合",
+                    "en": "Free-radical polymerization"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.95,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化学反应"
+                },
+                {
+                  "text": "TiO2",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 1,
+                  "end": 5,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "二氧化钛",
+                    "en": "Titanium dioxide"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 0.98,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
+                },
+                {
+                  "text": "石墨烯",
+                  "type": "MATERIAL",
+                  "domain": "化工",
+                  "start": 56,
+                  "end": 59,
+                  "mapping": "",
+                  "confidence": 0.99,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "石墨烯",
+                    "en": "graphene"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "材料"
+                },
+                {
+                  "text": "CO2",
+                  "type": "COMPOUND",
+                  "domain": "化工",
+                  "start": 89,
+                  "end": 92,
+                  "mapping": "",
+                  "confidence": 0.99,
+                  "context": "以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能",
+                  "standard_names": {
+                    "zh": "二氧化碳",
+                    "en": "Carbon dioxide"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "化合物"
                 }
               ],
-              "statistics": {
-                "entity_count": 3,
-                "by_type": {
-                  "PHENOMENON": 2,
-                  "LAW": 1
-                }
-              },
               "summary": {
-                "entity_count": 3,
+                "entity_count": 9,
                 "by_type": {
-                  "PHENOMENON": 2,
-                  "LAW": 1
+                  "COMPOUND": 5,
+                  "REACTION": 2,
+                  "MATERIAL": 2
                 }
               },
-              "selected_domain": {}
+              "selected_domain": {
+                "code": "化工",
+                "name": "化工",
+                "entity_domain_distribution": {
+                  "化工": 9
+                }
+              }
             }
           },
           {
@@ -10034,269 +11087,810 @@
             "file_name": null,
             "status": "succeeded",
             "code": 0,
-            "record_id": "rec_ea162e5a7311490698ce6a5ceeb85872",
+            "record_id": "rec_e7a84e84b9404a92944e45945bf407c2",
             "result": {
               "document": {
-                "title": "糖尿病肾病关键基因识别与潜在靶点分析"
+                "title": "石墨烯中的量子霍尔效应与超导现象研究"
               },
-              "input_type": "texts",
               "entities": [
                 {
-                  "text": "糖尿病肾病",
-                  "type": "DISEASE",
-                  "domain": "医学",
-                  "start": 11,
-                  "end": 16,
-                  "mapping": "ICD-10:E10-E14",
-                  "confidence": 0.95,
-                  "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+                  "text": "热力学第二定律",
+                  "type": "LAW",
+                  "domain": "物理",
+                  "start": 56,
+                  "end": 63,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现。",
                   "standard_names": {
-                    "zh": "糖尿病肾病",
-                    "en": "Diabetic Nephropathy"
+                    "zh": "热力学第二定律",
+                    "en": "Second law of thermodynamics"
                   },
                   "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
+                  "mapping_confidence": 1,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "规律"
                 },
                 {
-                  "text": "靶向治疗",
-                  "type": "TREATMENT",
-                  "domain": "医学",
-                  "start": 58,
-                  "end": 62,
+                  "text": "密度泛函理论",
+                  "type": "THEORY",
+                  "domain": "物理",
+                  "start": 9,
+                  "end": 15,
                   "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
                   "standard_names": {
-                    "zh": "靶向治疗",
-                    "en": "Targeted therapy"
+                    "zh": "密度泛函理论",
+                    "en": "Density Functional Theory"
                   },
                   "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
+                  "mapping_confidence": 1,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "理论原理"
+                },
+                {
+                  "text": "量子霍尔效应",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 22,
+                  "end": 28,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象。",
+                  "standard_names": {
+                    "zh": "量子霍尔效应",
+                    "en": "quantum Hall effect"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "能量守恒定律",
+                  "type": "LAW",
+                  "domain": "物理",
+                  "start": 49,
+                  "end": 55,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现。",
+                  "standard_names": {
+                    "zh": "能量守恒定律",
+                    "en": "Law of Conservation of Energy"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "规律"
+                },
+                {
+                  "text": "波粒二象性",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 72,
+                  "end": 77,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "波粒二象性",
+                    "en": "Wave–particle duality"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "量子力学",
+                  "type": "THEORY",
+                  "domain": "物理",
+                  "start": 4,
+                  "end": 8,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象",
+                  "standard_names": {
+                    "zh": "量子力学",
+                    "en": "Quantum Mechanics"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "理论原理"
+                },
+                {
+                  "text": "量子隧穿",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 29,
+                  "end": 33,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "量子隧穿",
+                    "en": "Quantum tunneling"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "超导现象",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 41,
+                  "end": 45,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "超导现象",
+                    "en": "Superconductivity"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "量子纠缠",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 67,
+                  "end": 71,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现。",
+                  "standard_names": {
+                    "zh": "量子纠缠",
+                    "en": "Quantum entanglement"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "石墨烯",
+                  "type": "MATERIAL",
+                  "domain": "化工",
+                  "start": 17,
+                  "end": 20,
+                  "mapping": "",
+                  "confidence": 0.95,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "石墨烯",
+                    "en": "graphene"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "材料"
                 }
               ],
               "entity_results": [
                 {
-                  "text": "糖尿病肾病",
-                  "type": "DISEASE",
-                  "domain": "医学",
-                  "start": 11,
-                  "end": 16,
-                  "mapping": "ICD-10:E10-E14",
-                  "confidence": 0.95,
-                  "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+                  "text": "热力学第二定律",
+                  "type": "LAW",
+                  "domain": "物理",
+                  "start": 56,
+                  "end": 63,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现。",
                   "standard_names": {
-                    "zh": "糖尿病肾病",
-                    "en": "Diabetic Nephropathy"
+                    "zh": "热力学第二定律",
+                    "en": "Second law of thermodynamics"
                   },
                   "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
+                  "mapping_confidence": 1,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "规律"
                 },
                 {
-                  "text": "靶向治疗",
-                  "type": "TREATMENT",
-                  "domain": "医学",
-                  "start": 58,
-                  "end": 62,
+                  "text": "密度泛函理论",
+                  "type": "THEORY",
+                  "domain": "物理",
+                  "start": 9,
+                  "end": 15,
                   "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
                   "standard_names": {
-                    "zh": "靶向治疗",
-                    "en": "Targeted therapy"
+                    "zh": "密度泛函理论",
+                    "en": "Density Functional Theory"
                   },
                   "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
+                  "mapping_confidence": 1,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "理论原理"
+                },
+                {
+                  "text": "量子霍尔效应",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 22,
+                  "end": 28,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象。",
+                  "standard_names": {
+                    "zh": "量子霍尔效应",
+                    "en": "quantum Hall effect"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "能量守恒定律",
+                  "type": "LAW",
+                  "domain": "物理",
+                  "start": 49,
+                  "end": 55,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现。",
+                  "standard_names": {
+                    "zh": "能量守恒定律",
+                    "en": "Law of Conservation of Energy"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "规律"
+                },
+                {
+                  "text": "波粒二象性",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 72,
+                  "end": 77,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "波粒二象性",
+                    "en": "Wave–particle duality"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "量子力学",
+                  "type": "THEORY",
+                  "domain": "物理",
+                  "start": 4,
+                  "end": 8,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象",
+                  "standard_names": {
+                    "zh": "量子力学",
+                    "en": "Quantum Mechanics"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "理论原理"
+                },
+                {
+                  "text": "量子隧穿",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 29,
+                  "end": 33,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "量子隧穿",
+                    "en": "Quantum tunneling"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "超导现象",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 41,
+                  "end": 45,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "超导现象",
+                    "en": "Superconductivity"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "量子纠缠",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 67,
+                  "end": 71,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现。",
+                  "standard_names": {
+                    "zh": "量子纠缠",
+                    "en": "Quantum entanglement"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "石墨烯",
+                  "type": "MATERIAL",
+                  "domain": "化工",
+                  "start": 17,
+                  "end": 20,
+                  "mapping": "",
+                  "confidence": 0.95,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "石墨烯",
+                    "en": "graphene"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "材料"
                 }
               ],
               "mappings": [
                 {
-                  "text": "糖尿病肾病",
-                  "type": "DISEASE",
-                  "domain": "医学",
-                  "start": 11,
-                  "end": 16,
-                  "mapping": "ICD-10:E10-E14",
-                  "confidence": 0.95,
-                  "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+                  "text": "热力学第二定律",
+                  "type": "LAW",
+                  "domain": "物理",
+                  "start": 56,
+                  "end": 63,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现。",
                   "standard_names": {
-                    "zh": "糖尿病肾病",
-                    "en": "Diabetic Nephropathy"
+                    "zh": "热力学第二定律",
+                    "en": "Second law of thermodynamics"
                   },
                   "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
+                  "mapping_confidence": 1,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "规律"
                 },
                 {
-                  "text": "靶向治疗",
-                  "type": "TREATMENT",
-                  "domain": "医学",
-                  "start": 58,
-                  "end": 62,
+                  "text": "密度泛函理论",
+                  "type": "THEORY",
+                  "domain": "物理",
+                  "start": 9,
+                  "end": 15,
                   "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
                   "standard_names": {
-                    "zh": "靶向治疗",
-                    "en": "Targeted therapy"
+                    "zh": "密度泛函理论",
+                    "en": "Density Functional Theory"
                   },
                   "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
+                  "mapping_confidence": 1,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
-                }
-              ],
-              "entity_mappings": [
-                {
-                  "text": "糖尿病肾病",
-                  "type": "DISEASE",
-                  "domain": "医学",
-                  "start": 11,
-                  "end": 16,
-                  "mapping": "ICD-10:E10-E14",
-                  "confidence": 0.95,
-                  "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
-                  "standard_names": {
-                    "zh": "糖尿病肾病",
-                    "en": "Diabetic Nephropathy"
-                  },
-                  "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
-                  "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "理论原理"
                 },
                 {
-                  "text": "靶向治疗",
-                  "type": "TREATMENT",
-                  "domain": "医学",
-                  "start": 58,
-                  "end": 62,
+                  "text": "量子霍尔效应",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 22,
+                  "end": 28,
                   "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象。",
                   "standard_names": {
-                    "zh": "靶向治疗",
-                    "en": "Targeted therapy"
+                    "zh": "量子霍尔效应",
+                    "en": "quantum Hall effect"
                   },
                   "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
+                  "mapping_confidence": 1,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
-                }
-              ],
-              "standard_term_mappings": [
-                {
-                  "text": "糖尿病肾病",
-                  "type": "DISEASE",
-                  "domain": "医学",
-                  "start": 11,
-                  "end": 16,
-                  "mapping": "ICD-10:E10-E14",
-                  "confidence": 0.95,
-                  "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
-                  "standard_names": {
-                    "zh": "糖尿病肾病",
-                    "en": "Diabetic Nephropathy"
-                  },
-                  "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
-                  "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "现象"
                 },
                 {
-                  "text": "靶向治疗",
-                  "type": "TREATMENT",
-                  "domain": "医学",
-                  "start": 58,
-                  "end": 62,
+                  "text": "能量守恒定律",
+                  "type": "LAW",
+                  "domain": "物理",
+                  "start": 49,
+                  "end": 55,
                   "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现。",
                   "standard_names": {
-                    "zh": "靶向治疗",
-                    "en": "Targeted therapy"
+                    "zh": "能量守恒定律",
+                    "en": "Law of Conservation of Energy"
                   },
                   "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
+                  "mapping_confidence": 1,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "规律"
+                },
+                {
+                  "text": "波粒二象性",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 72,
+                  "end": 77,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "波粒二象性",
+                    "en": "Wave–particle duality"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "量子力学",
+                  "type": "THEORY",
+                  "domain": "物理",
+                  "start": 4,
+                  "end": 8,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象",
+                  "standard_names": {
+                    "zh": "量子力学",
+                    "en": "Quantum Mechanics"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "理论原理"
+                },
+                {
+                  "text": "量子隧穿",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 29,
+                  "end": 33,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "量子隧穿",
+                    "en": "Quantum tunneling"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "超导现象",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 41,
+                  "end": 45,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "超导现象",
+                    "en": "Superconductivity"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "量子纠缠",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 67,
+                  "end": 71,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现。",
+                  "standard_names": {
+                    "zh": "量子纠缠",
+                    "en": "Quantum entanglement"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "石墨烯",
+                  "type": "MATERIAL",
+                  "domain": "化工",
+                  "start": 17,
+                  "end": 20,
+                  "mapping": "",
+                  "confidence": 0.95,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "石墨烯",
+                    "en": "graphene"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "材料"
                 }
               ],
               "ontology_mappings": [
                 {
-                  "text": "糖尿病肾病",
-                  "type": "DISEASE",
-                  "domain": "医学",
-                  "start": 11,
-                  "end": 16,
-                  "mapping": "ICD-10:E10-E14",
-                  "confidence": 0.95,
-                  "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+                  "text": "热力学第二定律",
+                  "type": "LAW",
+                  "domain": "物理",
+                  "start": 56,
+                  "end": 63,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现。",
                   "standard_names": {
-                    "zh": "糖尿病肾病",
-                    "en": "Diabetic Nephropathy"
+                    "zh": "热力学第二定律",
+                    "en": "Second law of thermodynamics"
                   },
                   "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
+                  "mapping_confidence": 1,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "规律"
                 },
                 {
-                  "text": "靶向治疗",
-                  "type": "TREATMENT",
-                  "domain": "医学",
-                  "start": 58,
-                  "end": 62,
+                  "text": "密度泛函理论",
+                  "type": "THEORY",
+                  "domain": "物理",
+                  "start": 9,
+                  "end": 15,
                   "mapping": "",
-                  "confidence": 0.85,
-                  "context": "研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
                   "standard_names": {
-                    "zh": "靶向治疗",
-                    "en": "Targeted therapy"
+                    "zh": "密度泛函理论",
+                    "en": "Density Functional Theory"
                   },
                   "mapping_status": "已映射",
-                  "mapping_confidence": 0.95,
+                  "mapping_confidence": 1,
                   "standard_kb_id": "内置知识库",
-                  "entity_id": null
+                  "entity_id": null,
+                  "entity_type_name": "理论原理"
+                },
+                {
+                  "text": "量子霍尔效应",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 22,
+                  "end": 28,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象。",
+                  "standard_names": {
+                    "zh": "量子霍尔效应",
+                    "en": "quantum Hall effect"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "能量守恒定律",
+                  "type": "LAW",
+                  "domain": "物理",
+                  "start": 49,
+                  "end": 55,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现。",
+                  "standard_names": {
+                    "zh": "能量守恒定律",
+                    "en": "Law of Conservation of Energy"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "规律"
+                },
+                {
+                  "text": "波粒二象性",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 72,
+                  "end": 77,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "波粒二象性",
+                    "en": "Wave–particle duality"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "量子力学",
+                  "type": "THEORY",
+                  "domain": "物理",
+                  "start": 4,
+                  "end": 8,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象",
+                  "standard_names": {
+                    "zh": "量子力学",
+                    "en": "Quantum Mechanics"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "理论原理"
+                },
+                {
+                  "text": "量子隧穿",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 29,
+                  "end": 33,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "量子隧穿",
+                    "en": "Quantum tunneling"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "超导现象",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 41,
+                  "end": 45,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "超导现象",
+                    "en": "Superconductivity"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "量子纠缠",
+                  "type": "PHENOMENON",
+                  "domain": "物理",
+                  "start": 67,
+                  "end": 71,
+                  "mapping": "",
+                  "confidence": 0.98,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现。",
+                  "standard_names": {
+                    "zh": "量子纠缠",
+                    "en": "Quantum entanglement"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "现象"
+                },
+                {
+                  "text": "石墨烯",
+                  "type": "MATERIAL",
+                  "domain": "化工",
+                  "start": 17,
+                  "end": 20,
+                  "mapping": "",
+                  "confidence": 0.95,
+                  "context": "本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现",
+                  "standard_names": {
+                    "zh": "石墨烯",
+                    "en": "graphene"
+                  },
+                  "mapping_status": "已映射",
+                  "mapping_confidence": 1,
+                  "standard_kb_id": "内置知识库",
+                  "entity_id": null,
+                  "entity_type_name": "材料"
                 }
               ],
-              "statistics": {
-                "entity_count": 2,
-                "by_type": {
-                  "DISEASE": 1,
-                  "TREATMENT": 1
-                }
-              },
               "summary": {
-                "entity_count": 2,
+                "entity_count": 10,
                 "by_type": {
-                  "DISEASE": 1,
-                  "TREATMENT": 1
+                  "LAW": 2,
+                  "THEORY": 2,
+                  "PHENOMENON": 5,
+                  "MATERIAL": 1
                 }
               },
-              "selected_domain": {}
+              "selected_domain": {
+                "code": "物理",
+                "name": "物理",
+                "entity_domain_distribution": {
+                  "物理": 9,
+                  "化工": 1
+                }
+              }
             }
           }
         ]
       },
       "meta": {
-        "request_id": "req_8e3e9107ee91476dad95eb4531d556bf",
+        "request_id": "req_d774fa6a98304f6c8e752f53e695fc71",
         "schema_version": "1.0",
         "model_version": "semantic-toolkit-2026.08",
         "taxonomy_version": null,
         "ontology_version": null,
-        "elapsed_ms": 11446,
-        "created_at": "2026-08-31T07:47:56.246211+00:00",
+        "elapsed_ms": 15994,
+        "created_at": "2026-09-04T11:02:28.400437+00:00",
         "database_dialect": "mysql",
-        "task_id": "tsk_ae3b49dd51d24657adb40bf1c9b6120a",
+        "task_id": "tsk_c5a7a997c40c4aa7a6a90ddb88dd7060",
         "input_type": "texts",
         "total": 3,
         "success_count": 3,

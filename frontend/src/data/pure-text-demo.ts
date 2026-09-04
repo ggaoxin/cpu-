@@ -16,7 +16,7 @@ const definitionText = '高校体育场馆的智慧化建设需要明确核心�
 
 const generalNerText = '刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心的 PEER 数据库开展地震动记录研究，并在南京完成了实验分析。'
 const researchNerText = '研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异。'
-const domainNerText = '研究从GEO数据库获取糖尿病肾病转录组数据，利用加权基因共表达网络分析和机器学习方法筛选关键基因，其中VWF具有潜在靶向治疗价值。'
+const domainNerText = '研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗。'
 
 type TextItem = { projectName: string; title: string; text: string }
 
@@ -84,18 +84,18 @@ const researchNerBatch: TextItem[] = [
 const domainNerBatch: TextItem[] = [
   {
     projectName: '',
-    title: '高校体育场馆智慧治理机制研究',
-    text: '高校体育场馆智慧治理研究以高校体育场馆为研究对象，围绕数据治理体系和运营管理机制分析场馆智慧治理模式。',
-  },
-  {
-    projectName: '',
-    title: '地震动记录特征与工程指标分析',
-    text: '研究以地震动记录为工程数据，分析震级、震中距与加速度反应谱之间的关系，用于地震工程场景下的记录筛选。',
-  },
-  {
-    projectName: '',
-    title: '糖尿病肾病关键基因识别与潜在靶点分析',
+    title: '二甲双胍联合胰岛素治疗2型糖尿病的疗效观察',
     text: domainNerText,
+  },
+  {
+    projectName: '',
+    title: '介孔二氧化硅负载石墨烯复合材料的制备与性能',
+    text: '以TiO2为光催化剂，通过开环聚合反应合成聚乳酸(PLA)与聚乙二醇-400的嵌段共聚物，制备介孔二氧化硅负载的石墨烯复合材料，并在N-甲基吡咯烷酮溶剂中考察自由基聚合反应速率与CO2吸附性能。',
+  },
+  {
+    projectName: '',
+    title: '石墨烯中的量子霍尔效应与超导现象研究',
+    text: '本文基于量子力学与密度泛函理论研究石墨烯中的量子霍尔效应与量子隧穿现象，实验观测到超导现象，验证了能量守恒定律与热力学第二定律，并讨论量子纠缠在波粒二象性实验中的表现。',
   },
 ]
 const enBatch: TextItem[] = [

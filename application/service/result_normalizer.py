@@ -1107,13 +1107,77 @@ def _entities(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
             continue
         entity_type = item.get("type") or item.get("entity_type") or item.get("label")
         confidence = _confidence(item)
+        # 实体类型中文名（前端弹窗按中文名统计各分类数量，仅靠英文码全部为 0）
+        _NER_TYPE_ZH = {
+            # 科研实体
+            "METHOD": "科研方法", "DATASET": "数据资料",
+            "INSTRUMENT": "仪器设备", "THEORY": "理论原理", "TOPIC": "研究问题",
+            # 通用命名实体
+            "PERSON": "人名", "LOCATION": "地名", "ORGANIZATION": "机构名称", "EVENT": "事件",
+            # 专业领域实体
+            "DRUG": "药物", "DISEASE": "疾病", "TREATMENT": "治疗方法",
+            "COMPOUND": "化合物", "REACTION": "化学反应", "MATERIAL": "材料",
+            "PHENOMENON": "现象", "LAW": "规律", "BODY": "机构名称",
+        }
         items.append({
             **item,
             "entity_id": item.get("entity_id"),
             "text": item.get("text") or item.get("entity") or item.get("name") or "",
             "type": entity_type,
+            "entity_type_name": item.get("entity_type_name") or _NER_TYPE_ZH.get(entity_type, entity_type),
             "confidence": confidence,
         })
+    # ---- 实体去重（原子性优先）----
+    # NER 最佳实践：输出原子概念单元，不输出复合短语。三层去重：
+    # ① 位置嵌套（跨类型）：A 的 [start,end] 完全在 B 内 → 删 A（内嵌/不完整）
+    # ② 复合短语去除（同类型）：长实体的文本包含 ≥2 个其他已保留实体 → 它是复合短语，删长留短
+    # ③ 标准词（同类型）：归一到同一标准词 → 保留首个
+    def _norm_txt(s):
+        return str(s or "").replace("\n", "").replace(" ", "").casefold()
+    def _pos(a, b):
+        try:
+            as_, ae, bs, be = int(a["start"]), int(a["end"]), int(b["start"]), int(b["end"])
+            return bs <= as_ and ae <= be and (ae - as_) < (be - bs)
+        except (KeyError, TypeError, ValueError):
+            return False
+
+    # ① 位置嵌套去重（短→长排序，长实体优先保留位置权）
+    _by_pos = sorted(items, key=lambda x: -len(str(x.get("text") or "")))
+    _pos_deduped = []
+    for item in _by_pos:
+        if not any(_pos(item, kept) for kept in _pos_deduped):
+            _pos_deduped.append(item)
+
+    # ② 复合短语去除：检查每个实体是否包含 ≥2 个其他实体的文本（同类型或跨类型均可）
+    #    "基于Transformer模型的门诊量预测方法" 包含 "Transformer模型"(METHOD) + "门诊量预测"(TOPIC) → 删
+    _all_txts = [_norm_txt(e.get("text")) for e in _pos_deduped if len(str(e.get("text") or "")) >= 3]
+    _atomic = []
+    for item in _pos_deduped:
+        _txt = _norm_txt(item.get("text"))
+        if len(_txt) < 6:
+            _atomic.append(item)  # 短实体直接保留
+            continue
+        # 统计有多少个其他实体的文本被包含在此实体中
+        _contained = sum(1 for t in _all_txts if t != _txt and len(t) >= 3 and t in _txt)
+        if _contained >= 2:
+            continue  # 复合短语，去除
+        _atomic.append(item)
+
+    # ③ 标准词去重（同类型）
+    _deduped = []
+    for item in _atomic:
+        _std = str((item.get("standard_names") or {}).get("zh") or "").casefold()
+        _typ = str(item.get("type") or "")
+        _dup = False
+        for kept in _deduped:
+            if str(kept.get("type") or "") == _typ:
+                _kept_std = str((kept.get("standard_names") or {}).get("zh") or "").casefold()
+                if _std and _std == _kept_std:
+                    _dup = True; break
+        if not _dup:
+            _deduped.append(item)
+    items = _deduped
+
     statistics = data.get("summary") or data.get("statistics") or {
         "entity_count": len(items),
         "by_type": dict(Counter(item.get("type") for item in items if item.get("type"))),
@@ -1136,6 +1200,20 @@ def _entities(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
             "code": payload.get("domain"),
             "name": payload.get("domain"),
         })
+    else:
+        # 领域自动判定：用户未显式指定 domain 时，从实体领域标签分布推导
+        # 主要领域（频次最高；并列取首个），供前端"识别领域"展示
+        _dom_counts = Counter(
+            str(e.get("domain") or "").strip()
+            for e in items if str(e.get("domain") or "").strip()
+        )
+        if _dom_counts:
+            _top_dom, _top_n = _dom_counts.most_common(1)[0]
+            result.setdefault("selected_domain", {
+                "code": _top_dom,
+                "name": _top_dom,
+                "entity_domain_distribution": dict(_dom_counts),
+            })
     if payload.get("ontology_version_id") is not None:
         result.setdefault("ontology_version", payload.get("ontology_version_id"))
     result.setdefault("standard_term_mappings", data.get("standard_term_mappings") or items)
