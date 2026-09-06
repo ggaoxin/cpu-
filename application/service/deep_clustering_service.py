@@ -220,7 +220,10 @@ def _input_documents(values: list[Any]) -> list[dict[str, Any] | str]:
                 "publication_date": _publication_date_from_text(full_text),
             })
         else:
-            documents.append({"text": raw})
+            # 纯字符串文献（API 直传 texts=["...", ...]，非 JSON 序列化 dict）：
+            # 同样补 full_text 映射——语步提取只读 full_text/abstract/title，
+            # 只给 text 键会拿到空文本，聚类退化为"空文献集"单簇（部署实测回归）
+            documents.append({"text": raw, "full_text": raw})
     return documents
 
 
