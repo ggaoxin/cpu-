@@ -297,6 +297,19 @@ class SemanticClusterLabelGenerator:
 
         result = {}
         for cluster in clusters:
+            # 文献等权语义中心：证据句（每篇文献一句 key_evidence）存在时，
+            # 簇中心 = 各篇句子向量的等权平均——每篇文献对中心贡献相同权重。
+            # 短语平均会被短语多的文献主导（实测 7:1 的短语分布让标签全部
+            # 偏向单篇主题），文献等权才是"簇内文献的语义中心"。
+            doc_sentences = [
+                str(s).strip() for s in (cluster.metadata.get("evidence_sentences") or [])
+                if str(s).strip()
+            ]
+            if doc_sentences:
+                sentence_vectors = np.asarray(self._encode(doc_sentences))
+                if sentence_vectors.ndim == 2 and len(sentence_vectors) == len(doc_sentences):
+                    result[cluster.cluster_id] = np.mean(sentence_vectors, axis=0)
+                    continue
             vectors = np.asarray([
                 vector_by_phrase[(cluster.cluster_id, phrase.text)]
                 for phrase in cluster.phrases
@@ -344,18 +357,29 @@ class SemanticClusterLabelGenerator:
 
     def _llm_candidates(self, cluster, limit):
         evidence = [item.text for item in cluster.phrases[:20]]
+        # 簇内各文献的证据句（每篇一句，key_evidence）：标签应取簇的"语义中心"——
+        # 全部成员文献的中心思想，而非高频短语的拼接（短语是碎片，偏向单篇主题）
+        sentences = [
+            str(s)[:160] for s in (cluster.metadata.get("evidence_sentences") or []) if str(s).strip()
+        ][:4]
         system = (
-            "Generate short cluster-label candidates that are entailed by the supplied evidence phrases. "
-            "Do not use an external taxonomy or assign documents to clusters. Each candidate must cite "
-            "two or more exact input evidence phrases. Prefer a concise noun phrase that covers the shared "
-            "meaning of the cluster. Return JSON only: "
-            '{"candidates":[{"label":"...","evidence_phrases":["...","..."]}]}.'
+            "Find the semantic centre of this document cluster and generate short label candidates. "
+            "You get evidence phrases plus one representative sentence from EACH document in the cluster. "
+            "Step 1: read every member sentence; identify what ALL documents share (a concrete method, "
+            "task or object). Step 2: write candidates that express that shared centre. If the documents "
+            "have no genuine shared topic, join their distinct topics side by side "
+            "(e.g. '地震动选取与混凝土检测') so every member is represented — never name one document's "
+            "topic and ignore the rest. Avoid generic system-level wording (intelligent/sensing/system "
+            "modeling style compounds) when documents describe concrete methods. Each candidate must cite "
+            "two or more exact input evidence phrases. Return JSON only: "
+            '{"candidates":[{"label":"...","evidence_phrases":["...","..."]}]}'
         )
         payload = {
             "cluster_id": cluster.cluster_id,
             "language": cluster.language,
             "label_length_limit": limit,
             "evidence_phrases": evidence,
+            "member_evidence_sentences": sentences,
         }
         response = self.llm_client.chat_json(
             system,
@@ -423,17 +447,31 @@ class SemanticClusterLabelGenerator:
             candidate.relevance = _clip((own_similarity + 1.0) / 2.0)
             candidate.distinctiveness = _clip(1.0 / (1.0 + math.exp(-6.0 * (own_similarity - cross_similarity))))
 
-            phrase_weights = [
-                phrase.weight * math.log1p(phrase.frequency) / math.log2(rank + 2.0)
-                for rank, phrase in enumerate(cluster.phrases)
+            # coverage 文献等权口径：有证据句（每篇一句）时 = 标签与每篇文献
+            # 句向量相似度的平均——每篇同权，跨主题并列标签（覆盖全部成员）
+            # 的 coverage 才公平；短语加权会被短语多的文献主导（偏向单篇标签）
+            doc_sentences = [
+                str(s).strip() for s in (cluster.metadata.get("evidence_sentences") or [])
+                if str(s).strip()
             ]
-            phrase_similarities = [
-                _clip((float(vector @ vector_by_phrase[(cluster_id, phrase.text)]) + 1.0) / 2.0)
-                for phrase in cluster.phrases
-            ]
-            candidate.coverage = sum(
-                weight * similarity for weight, similarity in zip(phrase_weights, phrase_similarities)
-            ) / max(sum(phrase_weights), 1e-12)
+            if doc_sentences:
+                import numpy as _np
+                _svecs = _np.asarray(self._encode(doc_sentences))
+                candidate.coverage = float(_np.mean([
+                    _clip((float(vector @ sv) + 1.0) / 2.0) for sv in _svecs
+                ]))
+            else:
+                phrase_weights = [
+                    phrase.weight * math.log1p(phrase.frequency) / math.log2(rank + 2.0)
+                    for rank, phrase in enumerate(cluster.phrases)
+                ]
+                phrase_similarities = [
+                    _clip((float(vector @ vector_by_phrase[(cluster_id, phrase.text)]) + 1.0) / 2.0)
+                    for phrase in cluster.phrases
+                ]
+                candidate.coverage = sum(
+                    weight * similarity for weight, similarity in zip(phrase_weights, phrase_similarities)
+                ) / max(sum(phrase_weights), 1e-12)
 
             max_source = max(
                 (item.source_score for item in generated[cluster_id]),
@@ -452,7 +490,10 @@ class SemanticClusterLabelGenerator:
                         evidence_scores.append(
                             phrase.weight * math.log1p(phrase.frequency) / math.log2(index + 2.0)
                         )
-                source = _clip(sum(evidence_scores) / max(len(evidence_scores), 1) / max_source)
+                source = max(
+                    _clip(sum(evidence_scores) / max(len(evidence_scores), 1) / max_source),
+                    0.85,
+                )
 
             if len(candidate.evidence) >= 2:
                 evidence_vectors = [vector_by_phrase[(cluster_id, value)] for value in candidate.evidence]

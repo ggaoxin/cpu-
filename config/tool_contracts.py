@@ -38,7 +38,7 @@ CONTRACTS = [
     # 标签工具处理的是深度聚类输出的类簇短语集合。一个类簇也可以生成标签，
     # 不能沿用深度聚类对文献数量的下限。
     ToolContract("cluster-label", "cl_label", "类簇标签自动生成", collection_tool=True, min_items=1, max_items=50),
-    ToolContract("structured-review", "sr_review", "结构化自动综述生成", collection_tool=True, export_formats=("json", "csv", "report"), min_items=3, max_items=50),
+    ToolContract("structured-review", "sr_review", "结构化自动综述生成", collection_tool=True, export_formats=("json", "csv", "report"), min_items=2, max_items=50),
 ]
 
 BY_TOOL_ID: Dict[str, ToolContract] = {item.tool_id: item for item in CONTRACTS}

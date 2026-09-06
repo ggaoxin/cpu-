@@ -123,6 +123,13 @@ export async function listSemanticResources() {
   return parseResponse(response)
 }
 
+export async function listClusterCollections() {
+  // 聚类标签生成任务的簇文献集（结构化综述"指定文献集"数据源）。
+  // 直接按任务时间倒序全量返回，用户从下拉框直接选择（无主题相似度过滤）
+  const query = new URLSearchParams({ limit: '200' })
+  return parseResponse(await fetch(apiUrl(`/api/v1/collections/cluster-sets?${query}`), { headers: { Accept: 'application/json' } }))
+}
+
 export async function listDocumentCollections(topic?: string) {
   const query = new URLSearchParams({ limit: '200' })
   if (topic && topic.trim()) {
@@ -160,6 +167,3 @@ export async function uploadSemanticResource(file: File, resourceKey: string) {
   }))
 }
 
-export async function evaluateDeepCluster(payload: Record<string, unknown>) {
-  return executeToolRequest('/api/v1/cluster/deep/evaluate', 'batch-text', payload)
-}

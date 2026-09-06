@@ -22,10 +22,8 @@ export type RequirementContract = {
 
 /** 资源引用结构的公共字段说明(展开在每个资源参数之后) */
 const resourceDescriptorRows = (field: string, resourceDesc: string, uploadHint: string): RequirementInputRow[] => [
-  [field, 'object', 'required', resourceDesc],
-  [`${field}.source`, 'string', 'required', '资源提供方式。枚举:`database`(从系统资源库选择)、`upload`(用户上传)'],
-  [`${field}.resource_id`, 'string', 'conditional', '`source=database` 时必填。资源库中的资源编号(如 RES-BUNDLED-XXX)'],
-  [`${field}.file`, 'file', 'conditional', '`source=upload` 时必填(仅 multipart 表单模式)。' + uploadHint],
+  [field, 'object', 'optional', resourceDesc + '。内置模式不提交该字段（使用系统预置资源），仅用户上传时携带'],
+  [`${field}.file`, 'file', 'conditional', '用户上传资源时必填(仅 multipart 表单模式)。' + uploadHint],
 ]
 
 export const requirementContracts: Record<string, RequirementContract> = {

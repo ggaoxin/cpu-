@@ -6,6 +6,7 @@ import json
 import re
 import uuid
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from typing import Any, Dict, List, Optional
 
 from config.settings import settings
@@ -18,7 +19,7 @@ def _id(prefix: str) -> str:
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
 
 
 _DICT_STAMP_RE = re.compile(r"_\d{8}_\d{4}$")

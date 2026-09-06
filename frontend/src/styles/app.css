@@ -683,6 +683,11 @@ body.v663-fund-move-active .fund-move-src-sep {
 .label-generation-report > footer { padding: 12px 28px; color: #94a0b1; background: #f7f9fc; font-size: 9.5px; text-align: right; }
 .optimization-status { display: inline-flex; padding: 3px 8px; color: #9a5b16; background: #fff5df; border-radius: 999px; font-size: 10px; }
 .optimization-status.passed { color: #16835d; background: #eaf8f2; }
+.cluster-label-review-actions-v705 { display: inline-flex; gap: 6px; }
+.cluster-label-review-actions-v705 .ghost-btn { padding: 3px 10px; font-size: 11px; }
+.cluster-label-review-edit-v705 { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+.cluster-label-review-edit-v705 .input { flex: 1; min-width: 110px; padding: 4px 8px; font-size: 12px; }
+.cluster-label-review-edit-v705 .outline-btn { padding: 4px 12px; font-size: 11px; white-space: nowrap; }
 .cluster-induction-note, .trend-period-note { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 12px; padding: 11px 13px; color: #65758d; background: #f5f8fd; border: 1px solid #dfe7f2; border-radius: 9px; font-size: 11px; }
 .cluster-induction-note b, .trend-period-note span { flex: 0 0 auto; color: #334761; }
 .trend-period-note b { color: #315efb; }
@@ -1206,7 +1211,7 @@ body.figma-ui-v717 .platform-frame-v640 .app { grid-template-columns: minmax(0, 
 body.figma-ui-v717 .platform-frame-v640 .content-wrap { padding-left: 8px !important; }
 .mobile-nav-fab { display: none !important; }
 /* 深度聚类锚点资源上传格式提示（训练样本/人工标注类目标签，仅上传模式显示） */
-.anchor-format-hint { margin: 6px 0 0; color: #8a94a6; font-size: 11px; line-height: 1.6; }
+
 .one-shot-upload-hint { min-width: 0; flex: 1; color: #98a4b5; font-size: 10.5px; font-style: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
 
 /* 弹窗内长表格允许纵向滚动（2026-09-04）：原型 .distribution-table-wrap 的
@@ -1225,4 +1230,37 @@ body.figma-ui-v717 .platform-frame-v640 .content-wrap { padding-left: 8px !impor
 .visualization-modal-body-v645 .distribution-table-wrap,
 .specialized-visualization-host-v804 .distribution-table-wrap {
   scrollbar-width: none;
+}
+
+/* 基金语步内容原文片段高亮（2026-09-05）：语步文本中能在原文找到的片段
+   （原描述/原句）用黄色背景标出，与 LLM 归纳内容区分 */
+mark.fund-move-orig-mark-v663 {
+  background: #ffe66e;
+  color: #b45309;
+  font-weight: 600;
+  padding: 0 2px;
+  border-radius: 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* 专业领域实体"查看详情"按钮左移（2026-09-05）：距操作列右边界留出呼吸空间 */
+.domain-research-results-table .domain-research-detail-btn {
+  transform: translateX(-24px);
+}
+
+/* 深度聚类汇总卡：六卡等分单行（2026-09-06，v3 指标卡布局） */
+.deep-cluster-summary-grid {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 8px;
+}
+@media (max-width: 900px) {
+  .deep-cluster-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
+.deep-cluster-term-row { display: flex !important; flex-wrap: nowrap !important; gap: 6px; }
+.deep-cluster-term-row .deep-cluster-term {
+  flex: 1 1 0 !important; min-width: 0 !important;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center;
 }

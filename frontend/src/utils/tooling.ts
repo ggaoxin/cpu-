@@ -208,6 +208,10 @@ export const CUSTOM_BATCH_PAYLOADS: Record<string, Record<string, unknown>> = {
 }
 
 export function payloadFor(tool: ToolDefinition, mode: InputMode): Record<string, unknown> {
+  return stripEmptyResourceDescriptors(payloadForImpl(tool, mode))
+}
+
+function payloadForImpl(tool: ToolDefinition, mode: InputMode): Record<string, unknown> {
   const base = typeof tool.payload === 'object' && tool.payload ? { ...tool.payload } : {}
   const configuration = Object.fromEntries(Object.entries(base).filter(([key]) => !['input_type', 'text', 'texts', 'title', 'abstract', 'keywords', 'documents', 'file', 'files', 'collection_id', 'cluster_task_id', 'citation_sentence', 'previous_context', 'next_context', 'citations'].includes(key)))
   if (tool.documentType === 'structured-review') {
@@ -241,10 +245,9 @@ export function payloadFor(tool: ToolDefinition, mode: InputMode): Record<string
       clustering_algorithm_type: base.clustering_algorithm_type || base.algorithm || 'auto',
       cluster_count: base.cluster_count ?? null,
       output_format: base.output_format || 'JSON',
-      // 锚点资源可选字段必须在模板中声明：requestPayloadFor 按模板白名单过滤，
-      // 漏声明会导致 OnlineTester 设置的资源选择被静默丢弃（用户类目不生效的根因）
-      training_samples: base.training_samples ?? { source: 'database', resource_id: null },
-      manually_labeled_category_data: base.manually_labeled_category_data ?? { source: 'database', resource_id: null },
+      // 锚点资源（可选）：上传的 File 对象经此透传到 FormData；内置不写 = 无锚点
+      training_samples: base.training_samples ?? null,
+      manually_labeled_category_data: base.manually_labeled_category_data ?? null,
     }
     const rawDocuments = (base.scientific_document_texts || base.documents || []) as Array<Record<string, unknown>>
     const documents = rawDocuments.map((item, index) => ({
@@ -266,9 +269,8 @@ export function payloadFor(tool: ToolDefinition, mode: InputMode): Record<string
       clustering_algorithm_type: base.clustering_algorithm_type || base.algorithm || 'auto',
       cluster_count: base.cluster_count ?? null,
       output_format: base.output_format || 'JSON',
-      // 同上：锚点资源可选字段必须进入模板白名单，否则被 requestPayloadFor 过滤
-      training_samples: base.training_samples ?? { source: 'database', resource_id: null },
-      manually_labeled_category_data: base.manually_labeled_category_data ?? { source: 'database', resource_id: null },
+      training_samples: base.training_samples ?? null,
+      manually_labeled_category_data: base.manually_labeled_category_data ?? null,
     }
   }
   if (tool.documentType === 'fund') {
@@ -318,10 +320,42 @@ export function payloadFor(tool: ToolDefinition, mode: InputMode): Record<string
     }
     return { ...configuration, input_type: 'texts', texts: (tool as any).demoBatchTexts || [{ id: 'text1', text: '科技文本一……' }, { id: 'text2', text: '科技文本二……' }] }
   }
-  if (mode === 'file') return { ...configuration, input_type: 'file', file: '@paper.pdf' }
-  if (mode === 'batch') return { ...configuration, input_type: 'files', files: ['@paper_01.pdf', '@paper_02.docx'] }
-  if (mode === 'existing-result') return { ...configuration, input_type: 'existing_result', cluster_task_id: clusterTaskOptions[0]?.id || 'DCL-20260815-001', label_length_limit: 12, language_type: 'auto', distinctiveness_threshold: 0.75 }
-  return { ...configuration, input_type: 'collection', collection_id: documentCollectionOptions[0]?.id || 'COLL-202608-VLM-01' }
+  if (mode === 'file') return stripEmptyResourceDescriptors({ ...configuration, input_type: 'file', file: '@paper.pdf' })
+  if (mode === 'batch') return stripEmptyResourceDescriptors({ ...configuration, input_type: 'files', files: ['@paper_01.pdf', '@paper_02.docx'] })
+  if (mode === 'existing-result') return stripEmptyResourceDescriptors({ ...configuration, input_type: 'existing_result', cluster_task_id: clusterTaskOptions[0]?.id || 'DCL-20260815-001', label_length_limit: 12, language_type: 'auto', distinctiveness_threshold: 0.75 })
+  return stripEmptyResourceDescriptors({ ...configuration, input_type: 'collection', collection_id: documentCollectionOptions[0]?.id || 'COLL-202608-VLM-01' })
+}
+
+/**
+ * 剔除空的资源字段占位（资源描述符空壳 {}、{source:'database'} 无 resource_id、
+ * 以及空字符串的 X.file 展开键）。
+ * 2026-09-06 资源模式改为「内置（不提交字段）/用户上传」后，默认调用示例与
+ * 在线测试内置模式一致：不带资源字段——带空描述符会被后端校验拒绝
+ * （实测 42201「未选择数据库资源」）。用户上传资源的调用另行通过 multipart 演示。
+ */
+const RESOURCE_FIELD_NAMES = new Set([
+  'clc_labeled_data', 'classification_standard_mapping_table', 'domain_terminology_library',
+  'manually_labeled_training_data', 'manually_labeled_data', 'domain_classification_rules',
+  'preprocessed_training_set', 'general_domain_annotated_corpus', 'multi_domain_scientific_corpus',
+  'ontology_classification_system', 'domain_labeled_training_data',
+  'training_samples', 'manually_labeled_category_data',
+])
+function stripEmptyResourceDescriptors(payload: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(payload)) {
+    if (/\.file$/.test(key) && (value === '' || value === null || value === undefined)) continue
+    if (RESOURCE_FIELD_NAMES.has(key)) {
+      if (value === null || value === undefined) continue
+      if (typeof value === 'object' && !Array.isArray(value)) {
+        const record = value as Record<string, unknown>
+        const hasUpload = record.source === 'upload' && (record.file || record.file_name || record.storage_uri)
+        const hasDatabaseId = record.source === 'database' && record.resource_id
+        if (!hasUpload && !hasDatabaseId) continue // {} / {source:'database'} 等空壳：内置=不提交
+      }
+    }
+    out[key] = value
+  }
+  return out
 }
 
 /**
@@ -453,10 +487,61 @@ function nestedParameterRows(
 }
 
 /** 当前输入方式下，API 示例与在线测试共同使用的完整参数清单。 */
+/**
+ * 必填/选填状态以后端 API 实际校验为准（2026-09-06 实测校准）：
+ * - document_title/project_name API 层可选（缺省响应回退空串，实测 200）
+ * - deep-cluster 批量输入与逐篇元数据必填（缺则 42201）
+ * - cluster-label 短语集与任务编号二选一（conditional）
+ * - structured-review 文献集必填；批量文本模式元数据逐篇必填
+ * - citation 文件/批量模式的上传文件必填
+ */
+const PARAM_STATUS_OVERRIDES: Record<string, Record<string, string>> = {
+  'zh-abstract-move': { document_title: 'optional' },
+  'en-abstract-move': { document_title: 'optional' },
+  'fund-move': { project_name: 'optional' },
+  'zh-classify': { document_title: 'optional' },
+  'en-classify': { document_title: 'optional' },
+  'domain-classify': { document_title: 'optional' },
+  'zh-keyword': { document_title: 'optional' },
+  'en-keyword': { document_title: 'optional' },
+  'rq-detect': { document_title: 'optional' },
+  'citation-sentiment': { document_title: 'optional' },
+  'citation-intent': { document_title: 'optional' },
+  'cluster-label': { cluster_task_id: 'conditional' },
+}
+
+/** 按模式区分的状态：元数据在批量文本模式逐篇必填，文件/文献集模式为可选补充 */
+const MODE_PARAM_STATUS: Record<string, Record<string, Record<string, string>>> = {
+  'deep-cluster': {
+    'batch-text': { scientific_document_texts: 'required', document_metadata: 'required' },
+    batch: { scientific_document_texts: 'required', document_metadata: 'optional' },
+  },
+  'structured-review': {
+    'batch-text': { document_set: 'required', document_metadata: 'required' },
+    batch: { document_set: 'required', document_metadata: 'conditional' },
+    collection: { document_set: 'required', document_metadata: 'conditional' },
+  },
+}
+
+/** 各工具可选上传资源字段（内置模式不提交；示例载荷已剔除空占位，参数表仍需展示可选行） */
+const OPTIONAL_RESOURCE_PARAMS: Record<string, Array<[string, string]>> = {
+  'zh-classify': [['clc_labeled_data', '中图分类标注数据（.json）']],
+  'en-classify': [['clc_labeled_data', '中图分类标注数据（.json）']],
+  'domain-classify': [['domain_classification_rules', '领域分类规则（.json）'], ['manually_labeled_training_data', '人工标注训练数据（.json）']],
+  'en-keyword': [['domain_terminology_library', '领域术语库（.json）'], ['classification_standard_mapping_table', '分类标准映射表（.json）']],
+  'citation-intent': [['preprocessed_training_set', '引用预处理训练集（.json）']],
+  'general-ner': [['general_domain_annotated_corpus', '通用领域标注语料（.json）']],
+  'research-ner': [['multi_domain_scientific_corpus', '多领域科研语料（.json）'], ['manually_labeled_data', '科研实体标准词表（.json）']],
+  'domain-ner': [['ontology_classification_system', '专业领域本体（.json）'], ['domain_labeled_training_data', '领域标注训练数据（.json）']],
+  'deep-cluster': [['training_samples', '训练样本锚点（.json：编号+文本+题名）'], ['manually_labeled_category_data', '人工标注类目标签锚点（.json：编号+人工标注类目标签）']],
+}
+
 export function requestParameterRowsFor(tool: ToolDefinition, mode: InputMode) {
   const payload = payloadFor(tool, mode)
+  const toolId = tool.requirementKey || ''
   const declared = new Map((tool.params || []).map(row => [row[0], row]))
-  return Object.entries(payload).flatMap(([key, value]) => {
+  const overrides = { ...(PARAM_STATUS_OVERRIDES[toolId] || {}), ...((MODE_PARAM_STATUS[toolId] || {})[mode] || {}) }
+  const rows = Object.entries(payload).flatMap(([key, value]) => {
     const declared_row = declared.get(key) || [key, parameterValueType(value), 'optional', key]
     // 联合类型按当前模式的实际载荷收窄:文本模式只显示 string,批量显示 string[],
     // 文件模式显示 file——各模式各写各的,不把其他模式的类型混进来
@@ -465,8 +550,22 @@ export function requestParameterRowsFor(tool: ToolDefinition, mode: InputMode) {
     if (declared_row[1] && declared_row[1].includes('|') && actualType && !actualType.includes('|')) {
       top = [declared_row[0], actualType, declared_row[2], declared_row[3]]
     }
-    return [top, ...nestedParameterRows(value, key, top[2], tool.requirementKey || '')]
+    if (overrides[key]) top = [top[0], top[1], overrides[key], top[3]]
+    return [top, ...nestedParameterRows(value, key, overrides[key] || top[2], toolId)]
   }) as Array<[string, string, string, string]>
+  // citation 文件/批量模式：上传文件本身必填（载荷里是占位路径，声明行常标 optional）
+  if (toolId.startsWith('citation-') && (mode === 'file' || mode === 'batch')) {
+    const field = mode === 'file' ? 'file' : 'files'
+    const row = rows.find(item => item[0] === field)
+    if (row) row[2] = 'required'
+  }
+  // 可选上传资源行补回：默认示例按内置模式不带资源字段，但参数表必须让开发者知道可传
+  for (const [field, desc] of (OPTIONAL_RESOURCE_PARAMS[toolId] || [])) {
+    if (!rows.some(item => item[0] === field)) {
+      rows.push([field, 'file (.json)', 'optional', `可选上传资源：${desc}。内置模式不提交该字段（使用系统预置资源）`])
+    }
+  }
+  return rows
 }
 
 export function responseFor(tool: ToolDefinition, mode: InputMode) {
@@ -566,41 +665,6 @@ print(result)`
     return `import json\nimport mimetypes\nimport os\nimport requests\n\nurl = "https://api.example.com${endpoint}"\nheaders = {"Authorization": "Bearer YOUR_API_KEY"}\nfile_paths = ${paths}\nstreams = []\nfiles = []\ntry:\n    for path in file_paths:\n        stream = open(path, "rb")\n        streams.append(stream)\n        mime = mimetypes.guess_type(path)[0] or "application/octet-stream"\n        files.append(("${field}", (os.path.basename(path), stream, mime)))\n    form_values = json.loads(r'''${JSON.stringify(formData, null, 2)}''')\n    data = {\n        key: json.dumps(value, ensure_ascii=False) if isinstance(value, (dict, list)) else value\n        for key, value in form_values.items()\n    }\n    response = requests.post(url, headers=headers, files=files, data=data, timeout=300)\n    print(response.json())\nfinally:\n    for stream in streams:\n        stream.close()`
   }
   return `import json\nimport requests\n\nurl = "https://api.example.com${endpoint}"\nheaders = {\n    "Content-Type": "application/json",\n    "Authorization": "Bearer YOUR_API_KEY"\n}\npayload = json.loads(r'''${JSON.stringify(payload, null, 2)}''')\n\nresponse = requests.post(url, headers=headers, json=payload, timeout=300)\nprint(response.json())`
-}
-
-export const deepClusterEvaluationParameters: Array<[string, string, string, string]> = [
-  ['training_samples', 'resource|file', 'required', '独立模型评测使用的训练样本资源'],
-  ['manually_labeled_category_data', 'resource|file', 'required', '用于计算 ARI、NMI、纯度等指标的人工标注答案'],
-]
-
-export function buildDeepClusterEvaluationCallCode(callType: CallType) {
-  const payload = {
-    training_samples: { source: 'database', resource_id: 'TRAINING_SAMPLE_CURRENT', file: null },
-    manually_labeled_category_data: { source: 'database', resource_id: 'CLUSTER_GOLD_CURRENT', file: null },
-  }
-  if (callType === 'sdk') return `from semantic_toolkit_sdk import SemanticToolkitClient
-
-client = SemanticToolkitClient(
-    base_url="https://api.example.com",
-    api_key="YOUR_API_KEY"
-)
-
-result = client.evaluate_deep_cluster(
-    payload=${JSON.stringify(payload, null, 4).replace(/\n/g, '\n    ')}
-)
-
-print(result)`
-  return `import requests
-
-url = "https://api.example.com/api/v1/cluster/deep/evaluate"
-headers = {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer YOUR_API_KEY"
-}
-payload = ${JSON.stringify(payload, null, 2)}
-
-response = requests.post(url, headers=headers, json=payload, timeout=300)
-print(response.json())`
 }
 
 export const pretty = (value: unknown) => JSON.stringify(value, null, 2)

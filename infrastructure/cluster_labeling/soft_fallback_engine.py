@@ -461,12 +461,18 @@ class SoftFallbackClusterLabelGenerator:
 
     def _llm_candidates(self, cluster, limit):
         evidence = [item.text for item in cluster.phrases[:20]]
+        # 每篇文献一句证据句（key_evidence）：标签取簇的"语义中心"——全部成员
+        # 文献的中心思想，而非高频短语的拼接（短语碎片会偏向短语多的单篇）
+        sentences = [
+            str(s)[:160] for s in (cluster.metadata.get("evidence_sentences") or []) if str(s).strip()
+        ][:4]
         system = (
-            "你是科技文献类簇标签生成专家。根据当前类簇的代表短语生成3到5个专业、自然、"
-            "简洁的候选标签。标签必须使用输入指定的语言，并概括类簇共享的技术路线、研究对象"
-            "或应用场景；避免把短语机械并列，也避免使用过窄的单篇文献专名。允许生成由多条"
-            "证据共同蕴含的保守上位概念，但不得使用外部主题库、不得改变类簇归属、不得引入"
-            "证据无法支持的方向。每个候选必须引用至少两条完全来自 evidence_phrases 的原始短语。"
+            "你是科技文献类簇标签生成专家。先阅读每篇成员文献的代表性句子，找到全部文献"
+            "共享的具体方法、任务或对象（语义中心），再生成3到5个专业、自然、简洁的候选标签。"
+            "覆盖规则：标签必须代表簇内每一篇文献——若文献间没有真实共享的主题词，就把各篇"
+            "主题并列（如'地震动选取与混凝土检测'），绝不能只覆盖其中一篇而忽略其余。"
+            "避免抽象体系词拼凑（智能/感知/系统建模类组合），不得使用外部主题库、不得改变"
+            "类簇归属。每个候选必须引用至少两条完全来自 evidence_phrases 的原始短语。"
             "中文标签长度按汉字、英文标签长度按单词计算，不得超过 label_length_limit。"
             "只返回JSON："
             '{"candidates":[{"label":"候选标签","evidence_phrases":["原始短语1","原始短语2"]}]}。'
@@ -476,6 +482,7 @@ class SoftFallbackClusterLabelGenerator:
             "language": cluster.language,
             "label_length_limit": limit,
             "evidence_phrases": evidence,
+            "member_evidence_sentences": sentences,
         }
         response = self.llm_client.chat_json(
             system,

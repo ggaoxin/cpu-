@@ -77,6 +77,70 @@ def _first_present(row: Dict[str, Any], keys: Iterable[str]) -> Optional[str]:
 # ---------------- 各资源字段的归一化配置 ----------------
 
 
+_SAMPLE_TEXT_KEYS = ("abstract", "ch_abstract", "en_abstract", "text", "content",
+                     "semantic_text", "full_text", "body", "文本", "摘要", "正文", "简介")
+_TITLE_KEYS = ("ch_name", "en_name", "title", "name", "document_title", "题名", "标题", "文献题目")
+_DOC_ID_KEYS = ("document_id", "doc_id", "id", "文献编号", "编号")
+_LABEL_KEYS = ("category", "category_id", "label", "class", "cluster", "cluster_name", "topic",
+               "technical_cluster_name", "application_cluster_name",
+               "人工标注类目标签", "人工标签", "标签", "类目", "分类", "所属类目", "类别")
+
+
+def _normalize_sample_rows(rows: List[Any]) -> List[Dict[str, Any]]:
+    """深度聚类训练样本：{编号, 文本, 题名}。
+
+    类目不在本文件——由人工标注类目标签数据按编号关联（deep_clustering_service
+    负责 join）。兼容旧格式：行内自带类目字段的行原样保留（直接作锚点行）。
+    行有效性：编号 / 题名 / 文本任一存在。
+    """
+    out: List[Dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        title = _first_present(row, _TITLE_KEYS)
+        body = _first_present(row, _SAMPLE_TEXT_KEYS)
+        doc_id = _first_present(row, _DOC_ID_KEYS)
+        if not (doc_id or (title or "").strip() or (body or "").strip()):
+            continue
+        new = dict(row)
+        if doc_id:
+            new.setdefault("document_id", doc_id)
+        if title:
+            new.setdefault("title", title)
+        if body:
+            new.setdefault("text", body)
+        out.append(new)
+    return out
+
+
+def _normalize_label_rows(rows: List[Any]) -> List[Dict[str, Any]]:
+    """人工标注类目标签数据：{编号, 人工标注类目标签}。
+
+    按编号与训练样本关联（不需要文本）；兼容旧格式：自带题名/文本的标签行
+    直接作锚点行。行有效性：有类目 +（编号 或 题名）。
+    """
+    out: List[Dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        label = _first_present(row, _LABEL_KEYS)
+        title = _first_present(row, _TITLE_KEYS)
+        doc_id = _first_present(row, _DOC_ID_KEYS)
+        if not label or not (doc_id or (title or "").strip()):
+            continue
+        new = dict(row)
+        new["category"] = label
+        new["technical_cluster_id"] = label
+        new["application_cluster_id"] = label
+        new.setdefault("cluster_name", label)
+        if doc_id:
+            new.setdefault("document_id", doc_id)
+        if title:
+            new.setdefault("title", title)
+        out.append(new)
+    return out
+
+
 def _normalize_anchor_rows(rows: List[Any]) -> List[Dict[str, Any]]:
     """深度聚类锚点（训练样本/人工标注类目）。
 
@@ -196,8 +260,14 @@ def _normalize_generic_rows(rows: List[Any]) -> List[Dict[str, Any]]:
         for zh, en in _ALIAS.items():
             if zh in mapped and en not in mapped:
                 mapped[en] = mapped.pop(zh)
-        if _first_present(mapped, ("title", "abstract", "text", "content", "sentence",
-                                   "document_id", "name", "entities", "label", "category")):
+        # 行有效性判定：任一字段有实质内容即保留（字符串非空 / 列表或对象非空）。
+        # 原判定只认字符串值，导致 entities 列表（通用语料的核心字段，内置
+        # gold 即此结构）被判"字段不存在"整行丢弃——实测与内置资源同构的
+        # 合规文件全部被拒（"未提取到有效业务数据"）。
+        if any(
+            (isinstance(v, str) and v.strip()) or (isinstance(v, (list, dict)) and v)
+            for v in mapped.values()
+        ):
             out.append(mapped)
     return out
 
@@ -253,10 +323,10 @@ def _normalize_corpus_rows(rows: List[Any]) -> List[Dict[str, Any]]:
 
 # 字段 → (归一化函数, 中文名, 期望结构说明)
 ROW_FIELD_CONFIG: Dict[str, Dict[str, Any]] = {
-    "training_samples": {"fn": _normalize_anchor_rows, "label": "训练样本",
-        "expect": "JSON 数组，每条含 title/abstract 与类目标注（technical_cluster_id 或 category 等别名）"},
-    "manually_labeled_category_data": {"fn": _normalize_anchor_rows, "label": "人工标注类目标签数据",
-        "expect": "JSON 数组，每条含 title/abstract 与类目标注（technical_cluster_id 或 category 等别名）"},
+    "training_samples": {"fn": _normalize_sample_rows, "label": "训练样本",
+        "expect": "JSON 数组，每条含 编号（document_id）、文本（text）、题名（title）；类目由人工标注文件按编号关联"},
+    "manually_labeled_category_data": {"fn": _normalize_label_rows, "label": "人工标注类目标签数据",
+        "expect": "JSON 数组，每条含 编号（document_id）与人工标注类目标签（category），按编号与训练样本对应"},
     "clc_labeled_data": {"fn": _normalize_clc_rows, "label": "中图分类标注数据",
         "expect": "JSON 数组，每条含分类号（clc_code 或 code 等别名）与可选类目名称"},
     "classification_standard_mapping_table": {"fn": _normalize_mapping_rows, "label": "分类标准映射表",

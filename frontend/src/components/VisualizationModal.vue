@@ -15,7 +15,6 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ close: [] }>()
 const visualizationHost = ref<HTMLElement | null>(null)
-const correctionLogs = ref<Array<{ operation: string; object: string; target: string; reason: string; status: string }>>([])
 const prototypeBodyClasses: Record<string, string[]> = {
   'fund-move': ['v663-fund-move-active'],
   'zh-abstract-move': ['v663-fund-move-active'],
@@ -77,13 +76,7 @@ function switchPanels(root: Element | null, tabSelector: string, panelSelector: 
   })
 }
 
-function renderCorrectionLog(panel: Element | null) {
-  const tbody = panel?.querySelector('[data-correction-log]')
-  if (!tbody) return
-  tbody.innerHTML = correctionLogs.value.length
-    ? correctionLogs.value.map((row, index) => `<tr><td>${index + 1}</td><td>${row.operation}</td><td>${row.object}</td><td>${row.target}</td><td>${row.reason}</td><td>${row.status}</td></tr>`).join('')
-    : '<tr><td colspan="6" style="text-align:center;color:#8a96a6">暂无校正记录</td></tr>'
-}
+
 
 // 确认成功后，用所选候选的主/次分类替换本地响应副本，触发可视化重渲染
 function applyConfirmedClassification(recordIndex: string, candidateId: string, primaryCode: string, secondaryCodes: string[]) {
@@ -267,41 +260,96 @@ function handleVisualizationClick(event: MouseEvent) {
     return
   }
 
-  const correctionButton = target.closest<HTMLElement>('[data-correction-action]')
-  if (correctionButton) {
-    const panel = correctionButton.closest('[data-viz-panel="correction"]')
-    const documentSelect = panel?.querySelector<HTMLSelectElement>('[data-correction-document]')
-    const targetSelect = panel?.querySelector<HTMLSelectElement>('[data-correction-target]')
-    const reasonInput = panel?.querySelector<HTMLInputElement>('[data-correction-reason]')
-    const selected = documentSelect?.selectedOptions?.[0]
-    const sourceCluster = selected?.dataset.cluster || '—'
-    const operationCode = correctionButton.dataset.correctionAction || 'move'
-    const labels: Record<string, string> = { move: '移动文献', merge: '合并类簇', split: '拆分类簇' }
-    correctionLogs.value.push({
-      operation: labels[operationCode] || operationCode,
-      object: operationCode === 'move' ? documentSelect?.value || '—' : sourceCluster,
-      target: operationCode === 'split' ? `${sourceCluster}-NEW` : targetSelect?.value || '—',
-      reason: reasonInput?.value.trim() || '未填写',
-      status: '待提交',
-    })
-    renderCorrectionLog(panel)
-    const status = panel?.querySelector('[data-correction-status]')
-    if (status) status.textContent = `已记录 ${correctionLogs.value.length} 条校正，等待提交。`
+  const labelOkButton = target.closest('[data-viz-label-ok]')
+  if (labelOkButton) {
+    submitLabelReview(labelOkButton, labelOkButton.getAttribute('data-viz-label-text') || '')
     return
   }
 
-  const correctionSubmit = target.closest('[data-correction-submit]')
-  if (correctionSubmit) {
-    const panel = correctionSubmit.closest('[data-viz-panel="correction"]')
-    const status = panel?.querySelector('[data-correction-status]')
-    if (!correctionLogs.value.length) {
-      if (status) status.textContent = '请先记录至少一条移动、合并或拆分操作。'
+  const labelEditButton = target.closest('[data-viz-label-edit]')
+  if (labelEditButton) {
+    const rowId = labelEditButton.getAttribute('data-viz-label-edit') || ''
+    const row = labelEditButton.closest('[data-viz-group]')?.querySelector<HTMLElement>(`[data-viz-label-row="${CSS.escape(rowId)}"]`)
+    if (row) {
+      row.hidden = !row.hidden
+      if (!row.hidden) row.querySelector<HTMLInputElement>('input')?.focus()
+    }
+    return
+  }
+
+  const labelSubmitButton = target.closest('[data-viz-label-submit]')
+  if (labelSubmitButton) {
+    const rowId = labelSubmitButton.getAttribute('data-viz-label-submit') || ''
+    const panel = labelSubmitButton.closest('[data-viz-panel]')
+    const input = panel?.querySelector<HTMLInputElement>(`[data-viz-label-input="${CSS.escape(rowId)}"]`)
+    const text = (input?.value || '').trim()
+    if (!text) {
+      window.alert('请填写合适的标签后再提交')
+      input?.focus()
       return
     }
-    correctionLogs.value = correctionLogs.value.map(row => ({ ...row, status: '已提交' }))
-    renderCorrectionLog(panel)
-    if (status) status.textContent = `已提交 ${correctionLogs.value.length} 条校正反馈。`
+    submitLabelReview(labelSubmitButton, text)
+    return
   }
+
+}
+
+function clusterLabelItems(): { recordId: string; labels: any[] } | null {
+  const resp: any = localResponse.value
+  const data = resp?.data ?? resp
+  let payload: any = null
+  let recordId = ''
+  if (Array.isArray(data?.results) && data.results[0]) {
+    payload = data.results[0].result ?? data.results[0].data ?? data.results[0]
+    recordId = String(data.results[0].record_id || '')
+  } else {
+    payload = data
+    recordId = String(resp?.meta?.record_id || data?.record_id || '')
+  }
+  if (!payload || typeof payload !== 'object') return null
+  return { recordId, labels: Array.isArray(payload.labels) ? payload.labels : [] }
+}
+
+// 类簇标签人工复核：✓正确=按推荐标签确认入库；✕修改=人工填写新标签后入库
+function submitLabelReview(button: Element, labelText: string) {
+  const clusterId = button.getAttribute('data-viz-label-ok') || button.getAttribute('data-viz-label-submit') || ''
+  const panel = button.closest('[data-viz-panel]')
+  const recordId = panel?.getAttribute('data-viz-label-record') || clusterLabelItems()?.recordId || ''
+  if (!recordId) {
+    window.alert('缺少 record_id，无法确认入库（请刷新结果后重试）')
+    return
+  }
+  const submitBtn = button as HTMLButtonElement
+  const resetText = submitBtn.textContent
+  submitBtn.textContent = '提交中…'
+  submitBtn.setAttribute('disabled', 'disabled')
+  fetch(apiUrl(`/api/v1/cluster-labels/${encodeURIComponent(recordId)}/confirm`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cluster_id: clusterId, label_text: labelText }),
+  })
+    .then(r => r.json())
+    .then(body => {
+      if (body.code !== 0) throw new Error(body.detail || body.message || '确认失败')
+      const found = clusterLabelItems()
+      const item = found?.labels.find(entry => String(entry.cluster_id) === clusterId)
+      if (item) {
+        const original = String(item.recommended_label ?? item.label ?? '')
+        item.label = labelText
+        item.recommended_label = labelText
+        item.user_confirmed = true
+        item.manual_label = labelText !== original
+        item.optimization_status = 'passed'
+        item.difference_explanation = item.manual_label
+          ? `人工复核：推荐标签「${original}」不正确，已人工改为「${labelText}」并入库。`
+          : '人工复核：推荐标签正确，已确认入库。'
+      }
+    })
+    .catch(err => {
+      window.alert(err.message || '确认失败')
+      submitBtn.textContent = resetText
+      submitBtn.removeAttribute('disabled')
+    })
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -311,13 +359,11 @@ function onKeydown(event: KeyboardEvent) {
 watch(() => props.open, open => {
   setBodyState(open)
   if (open) {
-    correctionLogs.value = []
     nextTick(removePrototypeExportActions)
   }
 })
 
 watch(() => [props.toolId, props.response], () => {
-  correctionLogs.value = []
   if (props.open) {
     setBodyState(true)
     nextTick(removePrototypeExportActions)

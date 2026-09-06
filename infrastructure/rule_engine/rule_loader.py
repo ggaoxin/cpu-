@@ -73,6 +73,15 @@ class RuleLibrary:
             parts.append("\n\n【输出格式】必须输出符合如下 JSON Schema 的 JSON 对象：")
             parts.append(json.dumps(self.output_schema, ensure_ascii=False, indent=2))
             parts.append("仅输出 JSON，不要附加任何解释性文字。")
+        if self.examples:
+            # few-shot 标注样本：对齐人工标注的判定风格（边界句式 > 关键词枚举，
+            # 泛化性更好）。样本应为完整输入+人工标注输出对，注入 prompt 尾部。
+            parts.append("\n\n【标注示例（人工标注口径，判定风格与其对齐）】")
+            for index, example in enumerate(self.examples[:4], 1):
+                input_value = example.get("input") or example.get("text") or ""
+                output_value = example.get("output") or example.get("label") or ""
+                parts.append(f"\n示例{index} 输入：\n{str(input_value).strip()}")
+                parts.append(f"示例{index} 人工标注输出：\n{json.dumps(output_value, ensure_ascii=False)}")
 
         return "\n".join(parts)
 

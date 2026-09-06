@@ -203,15 +203,14 @@ function alignAbstract(response: AnyRecord, english: boolean, startIndex = 0) {
   payloads(result).forEach((data, index) => {
     const profileIndex = (startIndex + index) % papers.length
     const paper = papers[profileIndex]
-    // V7.74 schema：moves 含 move_code/move_name/label/text/sentence_indices(从0起)/
-    // start/end/confidence；data 含 move_count/sentence_count/move_statistics/
-    // move_confidence/input_type/confidence。文本模式不暴露文件来源(source)。
-    const moves = paper.moves.map((move, moveIndex) => ({
+    // moves 含 move_code/move_name/label/text/start/end/confidence（句序号
+    // sentence_indices 为内部定位数据不进响应）；data 含 move_count/sentence_count/
+    // move_statistics/move_confidence/input_type/confidence。文本模式不暴露文件来源(source)。
+    const moves = paper.moves.map(move => ({
       move_code: move.label,
       move_name: move.label,
       label: move.label,
       text: move.text,
-      sentence_indices: [moveIndex],
       start: move.start,
       end: move.end,
       confidence: move.confidence,
@@ -671,17 +670,6 @@ const deepClusterResponse = {
     tool: '深度聚类工具', input_type: 'texts', cluster_dimension: 'technology', cluster_dimension_name: '技术路线',
     input_summary: { document_count: 5, parsed_sentence_count: 286, file_names: ['18.pdf', '24.pdf', '28.pdf', '26.pdf', '30.pdf'], extracted_fields: ['text', 'publication_date'], year_range: [2026, 2026] },
     clustering_quality: { cluster_count: 3, noise_document_count: 0, silhouette_score: 0.781, average_intra_cluster_similarity: 0.846, average_inter_cluster_separation: 0.802 },
-    training_evaluation: {
-      dataset_version: 'DEEP-CLUSTER-DEMO-EVAL-2026.08',
-      evidence_status: 'prototype_demo_configuration',
-      notice: '当前数值用于原型演示，正式系统应从所选人工标注评测资源计算并返回；未配置评测资源时应显示“未配置”，不能用 0 代替。',
-      metrics: {
-        silhouette_score: 0.781,
-        normalized_mutual_information: 0.804,
-        adjusted_rand_index: 0.762,
-        expert_agreement: 0.860,
-      },
-    },
     clusters: [
       { cluster_id: 'TECH-01', size: 2, ratio: 0.4, representative_terms: ['推理多样性', '策略优化', '慢思考', '多步推理'], representative_sentences: ['通过策略优化或慢思考机制增强模型的多路径推理能力。'], feature_statistics: { intra_cluster_similarity: 0.84, inter_cluster_separation: 0.81, semantic_density: 0.86, average_sentence_count: 58 }, representative_documents: [{ document_id: 'DOC-EN-018', title: enPapers[0].title, publication_year: 2026 }, { document_id: 'DOC-EN-026', title: 'Can Slow-Thinking LLMs Reason Over Time?', publication_year: 2026 }] },
       { cluster_id: 'TECH-02', size: 2, ratio: 0.4, representative_terms: ['分层资源分配', '块掩码', '特征复用', '高效推理'], representative_sentences: ['根据时间步、关键帧和视觉令牌重要性动态分配推理计算。'], feature_statistics: { intra_cluster_similarity: 0.87, inter_cluster_separation: 0.82, semantic_density: 0.88, average_sentence_count: 61 }, representative_documents: [{ document_id: 'DOC-EN-024', title: enPapers[1].title, publication_year: 2026 }, { document_id: 'DOC-EN-028', title: enPapers[2].title, publication_year: 2026 }] },
@@ -958,7 +946,7 @@ export function demoApiPayloadForTool(toolId: string): AnyRecord | undefined {
   const payloadsByTool: Record<string, AnyRecord> = {
     'zh-abstract-move': { input_type: 'text', text: zhAbstractMovePapers[0].abstract, language: 'zh', return_confidence: true, aggregate_by_move: true },
     'en-abstract-move': { input_type: 'text', text: enAbstractMovePapers[0].abstract, language: 'en', return_confidence: true, aggregate_by_move: true },
-    'fund-move': { input_type: 'text', project_name: 'TiAl合金中氢原子团簇的第一性原理计算及实验研究', text: 'TiAl合金是一种在汽车及航空航天等领域具有广阔应用前景的轻质高强结构材料。本项目拟采用第一性原理计算和必要的实验方法，研究α2相、γ相及α2/γ界面中的氢原子团簇行为和氢脆微观机理。', aggregate_by_move: true, return_source_section: true },
+    'fund-move': { input_type: 'text', project_name: 'TiAl合金中氢原子团簇的第一性原理计算及实验研究', text: '一、立项依据\nTiAl合金是一种轻质高强结构材料，在汽车及航空航天等领域具有广阔应用前景，但其服役环境中氢原子引起的环境脆化仍缺少系统认识，本项目针对该科学问题开展研究。\n二、研究目标\n本项目拟揭示TiAl合金中氢原子团簇及固溶行为的微观机理，为TiAl合金设计、制备和服役行为理解提供理论基础。\n三、技术实施方案与考核指标\n采用第一性原理计算结合必要实验验证的技术路线，研究α2相、γ相及α2/γ界面中氢原子团簇行为，结合电子结构分析辨析氢脆微观机理。年度研究计划分两阶段实施，预期成果发表SCI论文4篇，培养研究生2名。依托单位具备开展第一性原理计算的研究基础。', aggregate_by_move: true, return_source_section: true },
     'zh-classify': { input_type: 'text', document_title: zhPapers[1].title, chinese_scientific_document_text: zhPapers[1].abstract, clc_labeled_data: { source: 'database', resource_id: 'RES-BUNDLED-CLC-ZH' } },
     'en-classify': { input_type: 'text', document_title: enClassificationPapers[0].title, english_scientific_document_text: enClassificationPapers[0].abstract, clc_labeled_data: { source: 'database', resource_id: 'RES-BUNDLED-CLC-ZH' } },
     'domain-classify': { input_type: 'text', document_title: zhPapers[2].title, domain_scientific_literature_data: zhPapers[2].abstract, professional_domain: 'biomedical_informatics', domain_classification_rules: { source: 'database', resource_id: 'RES-BUNDLED-DOMAIN-RULE' }, manually_labeled_training_data: { source: 'database', resource_id: 'RES-BUNDLED-DOMAIN-GOLD' } },

@@ -94,6 +94,15 @@ def classify_full(
         # 未触发审核时，冲突标记仍保留供诊断
         n_conflicts = len(res["conflicts"])
 
+    # 口径校准（需求评审）：结果段末尾连续的总结性句子（"……能力得到显著提升"类
+    # 数据+总结落点复合句被分句器切开后的尾子句）改判研究结论。LLM 与冲突审核对
+    # 该落点判定不稳定，按确定规则校准；英文 profile 无此语步对则跳过。
+    from training.rule_engine import relocate_summary_tail_sentences
+    _n_relocated = relocate_summary_tail_sentences(sentences, final_labels)
+    if _n_relocated:
+        res.setdefault("deterministic_issues", []).append(
+            f"结果段末 {_n_relocated} 个总结性句子已按口径改判研究结论")
+
     final_spans = reassemble_spans(abstract, final_labels)
     n_sent = max(1, len(sentences))
     confidence = round((n_sent - len(res["conflicts"])) / n_sent, 3)

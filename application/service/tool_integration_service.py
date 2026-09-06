@@ -9,6 +9,7 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 import threading
 from threading import Event
 from typing import Any, Dict, List, Optional, Tuple
@@ -261,7 +262,8 @@ def _id(prefix: str) -> str:
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    # 北京时间（+08:00）：记录/展示统一用标准北京时间，不再存 UTC
+    return datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
 
 
 @dataclass
@@ -781,7 +783,7 @@ class ToolIntegrationService:
             "document", "summary", "classification_confidence", "data_distribution_report",
             "literature_distribution_analysis_report", "research_question_statistics",
             "citation_sentiment_statistics", "citation_intent_statistics",
-            "statistical_analysis_report", "clustering_quality", "training_evaluation",
+            "statistical_analysis_report", "clustering_quality",
             "input_summary", "theme_trend_analysis", "parameters",
             "label_generation_process_report", "label_distinctiveness_optimization_result",
         }
@@ -1013,7 +1015,10 @@ class ToolIntegrationService:
             return [InputItem("upstream", text, {"source_mode": "structured"})] if text else []
 
         if payload.get("input_type") == "collection" or payload.get("collection_id"):
-            documents = self._collection_documents(str(payload.get("collection_id") or ""))
+            _cid = str(payload.get("collection_id") or "")
+            # 复合 id "{task_id}:{cluster_id}" = 聚类标签生成任务的簇文献集；
+            # 普通纯 collection_id 仍走数据库文献集表
+            documents = self._cluster_set_documents(_cid) if ":" in _cid else self._collection_documents(_cid)
             return [InputItem(str(item.get("id", index)), self._document_text(item), item) for index, item in enumerate(documents)]
 
         if contract.tool_id == "cluster-label" and payload.get("cluster_task_id"):
@@ -1334,82 +1339,6 @@ class ToolIntegrationService:
         logger.info("资源已由 LLM 容错层重构: %s (字段=%s, %d 条)", path.name, field, len(rows))
         return True
 
-    def _graft_anchor_texts(self, field: str, resource: Dict[str, Any], payload: Dict[str, Any]) -> None:
-        """纯标签映射（如 gold_label.json：仅 document_id+category）文本补全。
-
-        按 document_id 把本次请求的输入文献（题名/摘要）嫁接到缺文本的锚点行上，
-        使"编号→类目"式标注文件无需自带全文即可生效；嫁接后仍无任何可用文本
-        （≥30字）则按零有效条目报错。注：归一化缓存按资源路径共享，同一资源
-        配不同文献集重复调用时以最后一次嫁接为准（上传资源通常配套固定文献集）。
-        编号匹配用规范化键（去连字符/空格等排版差异、忽略大小写）：表单常填
-        "DOC001"，标注文件常写 "DOC-001"/"DOC‑001"(U+2011)，逐字符相等会误判无法关联。
-        """
-        import re as _re
-
-        def _join_key(value: str) -> str:
-            return _re.sub(r"[^0-9a-z一-鿿]+", "", str(value or "").lower())
-
-        from infrastructure.resources.normalize import (
-            ResourceParseError, normalized_rows_for, register_normalized,
-        )
-        path_uri = str(resource.get("storage_uri") or "")
-        if not path_uri:
-            return
-        from infrastructure.resources.normalize import resource_path
-        path = resource_path(path_uri, settings.PROJECT_ROOT)
-        if path is None:
-            return
-        rows = normalized_rows_for(path)
-        if not rows:
-            return
-        # 请求文献 → {规范化编号: (title, abstract)}（文本数组与元数据按下标对齐）
-        texts = payload.get("scientific_document_texts")
-        if not isinstance(texts, list):
-            return
-        mets = payload.get("document_metadata") if isinstance(payload.get("document_metadata"), list) else []
-        doc_map: Dict[str, tuple] = {}
-        for index, item in enumerate(texts):
-            met = mets[index] if index < len(mets) and isinstance(mets[index], dict) else {}
-            doc_id = str(met.get("document_id") or "").strip()
-            if isinstance(item, dict):
-                title = str(item.get("title") or item.get("ch_name") or "").strip()
-                body = str(item.get("abstract") or item.get("text") or "").strip()
-            else:
-                title = str(met.get("title") or "").strip()
-                body = str(item or "").strip()
-            key = _join_key(doc_id)
-            if key and (title or body):
-                doc_map[key] = (title, body)
-
-        def _text_len(row: Dict[str, Any]) -> bool:
-            joined = "\n".join(str(row.get(k) or "") for k in ("title", "abstract", "text", "content"))
-            return len(joined.strip()) >= 30
-
-        if not any(not _text_len(row) for row in rows):
-            return  # 全部行已有文本，无需嫁接
-        grafted = 0
-        for row in rows:
-            if _text_len(row):
-                continue
-            doc_id = str(row.get("document_id") or "").strip()
-            key = _join_key(doc_id)
-            if key and key in doc_map:
-                title, body = doc_map[key]
-                if title:
-                    row.setdefault("title", title)
-                if body:
-                    row.setdefault("abstract", body)
-                grafted += 1
-        if grafted or any(_text_len(row) for row in rows):
-            register_normalized(path, rows)
-        if not any(_text_len(row) for row in rows):
-            raise ResourceParseError(
-                f"文件解析完成，但标注条目既缺少文献文本，也无法与本次请求文献按 "
-                f"document_id 关联（{field}，已忽略连字符/大小写等排版差异后匹配）。"
-                f"请在标注文件中提供 title/abstract，或确保标注条目的 document_id "
-                f"与请求文献编号一致（如 DOC001 与 DOC-001 可互相匹配，DOC001 与 DOC005 不匹配）。"
-            )
-
     def _dictionary_terms_from_upload(self, dictionary: Dict[str, Any]) -> list:
         """用户词典文件 → 术语列表（规则解析 4 格式；复杂结构 LLM 兜底抽取）。
 
@@ -1490,8 +1419,8 @@ class ToolIntegrationService:
         excluded.update({"document_title", "scientific_document_full_text"})
         params = {key: value for key, value in payload.items() if key not in excluded and value is not None}
         resolved_resources: Dict[str, Any] = {}
-        # deep-cluster 的训练样本/人工标注类目是可选资源（小样本聚类锚点辅助），
-        # 不在必填的 SEMANTIC_RESOURCE_FIELDS 里，这里一并解析给引擎。
+        # 深度聚类的训练样本/人工标注类目是可选锚点资源（v3 语步级锚点引导）：
+        # 用户上传时内部提取语步做类目档案引导分组；默认（内置/不选）纯 v3 自由分组
         resource_fields = set(SEMANTIC_RESOURCE_FIELDS)
         if contract.tool_id == "deep-cluster":
             resource_fields.update({"training_samples", "manually_labeled_category_data"})
@@ -1505,42 +1434,7 @@ class ToolIntegrationService:
                 # 失败抛 ResourceParseError(ValueError) → execute 统一 42201 业务信封，
                 # 杜绝"上传成功但解析 0 条、静默回退内置"（内置 bundled 资源跳过）。
                 self._inspect_user_resource_file(field, resource)
-                if contract.tool_id == "deep-cluster" and field in (
-                    "training_samples", "manually_labeled_category_data"
-                ):
-                    self._graft_anchor_texts(field, resource, payload)
                 resolved_resources[field] = resource
-        # 深度聚类系统内置半监督引导：请求未携带训练样本/人工标注类目字段（未上传
-        # 也未显式选择）时，回退加载内置资源（bundled 1000 篇标注语料），使默认
-        # 分支为系统原型引导的半监督聚类而非纯无监督；界面显式选「不使用」（字段
-        # 存在但 resource_id 为空）保持完全无监督，不受此回退影响。
-        if contract.tool_id == "deep-cluster" and not any(
-            isinstance(payload.get(field), dict)
-            for field in ("training_samples", "manually_labeled_category_data")
-        ):
-            for field in ("training_samples", "manually_labeled_category_data"):
-                builtin = next(
-                    (row for row in self.resource_repository.list_semantic_resources(
-                        settings.DEFAULT_WORKSPACE_ID, resource_key=field, limit=10,
-                    ) if str(row.get("source_type") or "") == "bundled"),
-                    None,
-                )
-                if builtin:
-                    resolved_resources.setdefault(field, builtin)
-        # 锚定模式可观测标记（输出 anchor_assist.mode，供回归核对）：
-        # 用户/内置资源解析到任一即半监督原型引导，全部内置=系统原型，否则无监督。
-        if contract.tool_id == "deep-cluster":
-            anchor_rows = [
-                resolved_resources[field]
-                for field in ("training_samples", "manually_labeled_category_data")
-                if resolved_resources.get(field)
-            ]
-            params["anchor_mode"] = (
-                "unsupervised_free" if not anchor_rows else
-                "semi_supervised_system_prototype"
-                if all(str(row.get("source_type") or "") == "bundled" for row in anchor_rows)
-                else "semi_supervised_user_prototype"
-            )
         if resolved_resources:
             params["resolved_resources"] = resolved_resources
         # zh-keyword 前端发送 domain_terminology_dictionary（Vue 公共字段名），后端
@@ -1738,8 +1632,12 @@ class ToolIntegrationService:
             return "domain 为必填项"
         for field in REQUIRED_RESOURCE_FIELDS.get(contract.tool_id, ()):
             descriptor = payload.get(field)
+            # 内置模式（2026-09-06 定调）：不提交该资源字段 = 使用系统预置资源，
+            # 消费端均有内置回退；仅当显式携带 descriptor 时才校验来源与内容
+            if descriptor is None:
+                continue
             if not isinstance(descriptor, dict):
-                return f"{field} 为必填资源，请选择数据库当前资源或上传资源文件"
+                return f"{field} 资源格式不正确"
             source = str(descriptor.get("source") or "database")
             if source == "database":
                 resource_id = str(descriptor.get("resource_id") or "")
@@ -1928,6 +1826,154 @@ class ToolIntegrationService:
             return cls._document_text(value) if isinstance(value, dict) else str(value or "").strip()
         return ""
 
+    def cluster_set_options(self, workspace_id: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+        """聚类标签生成任务的簇 → 结构化综述"指定文献集"选项（簇名/时间/篇数）。
+
+        每个已完成的标签生成任务展开为多个文献集（每簇一个）：id 为
+        "{task_id}:{cluster_id}"，name 用簇推荐标签。综述按此 id 取簇内文献。
+        按任务时间倒序全量返回（2026-09-06 用户定调：移除主题语义相似度
+        过滤，研究主题不再影响文献集列表）。
+        """
+        workspace = workspace_id or settings.DEFAULT_WORKSPACE_ID
+        options: List[Dict[str, Any]] = []
+        tasks = [
+            task for task in self.repository.list_tasks(workspace, limit=200)
+            if task.get("tool_id") == "cluster-label" and task.get("status") == "succeeded"
+        ][:limit]
+        for summary in tasks:
+            task = self.repository.get_task(summary["id"]) or summary
+            records = self.repository.list_results(summary["id"])
+            result = records[0]["result"] if records else {}
+            # 人工复核状态（2026-09-06 用户定调）：待复核的簇只有在人工确认
+            # （✓ 正确 / 修改标签）后才进入文献集供结构化综述使用；已通过差异
+            # 化检查的直接进入；人工改过的标签优先作为簇名
+            confirmed_labels: Dict[str, str] = (
+                self.repository.label_confirmations_by_record(records[0]["id"]) if records else {})
+            threshold = float((result.get("parameters") or {}).get("distinctiveness_threshold") or 0.75)
+            # 上游文献题名映射（相似度证据之一）
+            payload = task.get("request_payload") or {}
+            upstream_id = str(payload.get("cluster_task_id") or "")
+            doc_titles: Dict[str, str] = {}
+            if upstream_id:
+                upstream_result = self._result_from_task(upstream_id)
+                doc_titles = {
+                    str(a.get("document_id")): str(a.get("title") or "")
+                    for a in (upstream_result.get("document_assignments") or [])
+                    if isinstance(a, dict)
+                }
+            for item in result.get("labels") or []:
+                if not isinstance(item, dict):
+                    continue
+                cluster_id = str(item.get("cluster_id") or "")
+                confirmed = confirmed_labels.get(cluster_id)
+                passed = str(item.get("optimization_status") or "") == "passed" or (
+                    isinstance(item.get("distinctiveness"), (int, float))
+                    and float(item["distinctiveness"]) >= threshold)
+                if not passed and not confirmed:
+                    continue  # 待复核且未人工确认：不入文献集
+                docs = item.get("linked_document_ids") or []
+                name = str(confirmed or item.get("recommended_label") or item.get("label") or cluster_id)
+                phrases = [str(p) for p in (item.get("phrases") or item.get("representative_terms") or [])[:6]]
+                titles = [doc_titles.get(str(d), "") for d in docs if doc_titles.get(str(d))]
+                options.append({
+                    "id": f"{summary['id']}:{item.get('cluster_id')}",
+                    "name": name,
+                    "document_count": len(docs),
+                    "created_at": task.get("created_at"),
+                    "source_tool": "聚类标签生成工具",
+                    "sim_text": " ".join([name] + phrases + titles),
+                })
+        for opt in options:
+            opt.pop("sim_text", None)
+        return sorted(options, key=lambda o: str(o.get("created_at") or ""), reverse=True)
+
+    def _cluster_set_documents(self, set_id: str) -> List[Dict[str, Any]]:
+        """"{task_id}:{cluster_id}" → 簇内文献（题名+文本）。
+
+        簇成员取自标签生成结果 labels[].linked_document_ids；文献全文从标签任务
+        的上游深度聚类任务（cluster_task_id）的请求文献恢复（批量文本输入时
+        每篇带 title/text）。
+        """
+        task_id, _, cluster_id = str(set_id or "").partition(":")
+        if not task_id or not cluster_id:
+            return []
+        label_result = self._result_from_task(task_id)
+        label = next((row for row in (label_result.get("labels") or [])
+                      if isinstance(row, dict) and str(row.get("cluster_id")) == cluster_id), None)
+        if not label:
+            return []
+        wanted = {str(doc) for doc in (label.get("linked_document_ids") or [])}
+        if not wanted:
+            return []
+        label_task = self.repository.get_task(task_id) or {}
+        payload = label_task.get("request_payload") or {}
+        upstream_id = str(payload.get("cluster_task_id") or "")
+        source_task = (self.repository.get_task(upstream_id) or {}) if upstream_id else label_task
+        source_payload = source_task.get("request_payload") or {}
+        documents = (source_payload.get("scientific_document_texts")
+                     or source_payload.get("documents") or source_payload.get("texts") or [])
+        # 文献定位：文件模式上游 payload 文献 id 是适配层编号（FILE001…），而
+        # 聚类引擎输出的簇成员用 document_metadata 的编号（DOC001…）——两套
+        # 体系错位会全部匹配失败（综述"没有可处理的输入数据"的根因）。按
+        # document_metadata 与文献数组同序建立 DOCxxx→FILExxx 别名，两种编号都认
+        meta_rows = [row for row in (source_payload.get("document_metadata") or []) if isinstance(row, dict)]
+        alias: Dict[str, str] = {}
+        for idx, row in enumerate(meta_rows):
+            meta_id = str(row.get("document_id") or row.get("id") or "").strip()
+            if meta_id and idx < len(documents) and isinstance(documents[idx], dict):
+                file_id = str(documents[idx].get("document_id") or documents[idx].get("id") or "").strip()
+                if file_id and file_id != meta_id:
+                    alias[meta_id] = file_id
+        wanted = {alias.get(doc, doc) for doc in wanted}
+        # 题名/元数据映射：texts 只带 document_id+text；文件模式的发表时间/作者/
+        # 关键词都在上游 document_metadata（DOCxxx 编号，过别名映射到 FILExxx）。
+        # 综述的趋势分析/热点分布依赖发表年份，缺了整块为空
+        meta_by_file_id: Dict[str, Dict[str, Any]] = {}
+        for row in (source_payload.get("document_metadata") or []):
+            if isinstance(row, dict):
+                meta_id = str(row.get("document_id") or row.get("id") or "")
+                meta_by_file_id[alias.get(meta_id, meta_id)] = dict(row)
+        titles = {fid: str(row.get("title") or "") for fid, row in meta_by_file_id.items()}
+        # 文献内容恢复（2026-09-06）：文件模式任务载荷的 content 为空（轻量透传），
+        # 依次回退 ① 上游聚类结果 documents[].content_summary（新链路存 LLM 单篇
+        # 摘要）② document_assignments[].key_evidence（每篇的关键证据句，老任务也有）
+        upstream_result = self._result_from_task(upstream_id) if upstream_id else {}
+        text_by_id: Dict[str, str] = {}
+        for row in upstream_result.get("documents") or []:
+            if isinstance(row, dict):
+                body = str(row.get("content_summary") or row.get("text") or row.get("full_text") or "").strip()
+                if body:
+                    text_by_id[str(row.get("document_id") or "")] = body
+        for row in upstream_result.get("document_assignments") or []:
+            if isinstance(row, dict):
+                rid = str(row.get("document_id") or "")
+                if rid and not text_by_id.get(rid):
+                    evidence = " ".join(str(e) for e in (row.get("key_evidence") or []) if str(e).strip()) \
+                        if isinstance(row.get("key_evidence"), list) else str(row.get("key_evidence") or "")
+                    if evidence.strip():
+                        text_by_id[rid] = evidence.strip()
+        out: List[Dict[str, Any]] = []
+        for index, item in enumerate(documents):
+            if not isinstance(item, dict):
+                continue
+            doc_id = str(item.get("document_id") or item.get("id") or f"DOC{index + 1}")
+            if doc_id in wanted:
+                # 载荷无文本时用恢复的内容（DOC 编号同样过别名映射）
+                recovered = (text_by_id.get(doc_id)
+                             or text_by_id.get(next((m for m, f in alias.items() if f == doc_id), ""), ""))
+                if not str(item.get("content") or item.get("text") or "").strip() and recovered:
+                    item = {**item, "content": recovered}
+                meta_row = meta_by_file_id.get(doc_id) or {}
+                item = {**meta_row, **item} if meta_row else item
+                out.append({
+                    "id": doc_id,
+                    "title": str(item.get("title") or titles.get(doc_id) or doc_id),
+                    "abstract_text": "",
+                    "content_text": self._document_text(item),
+                    "metadata_json": item,
+                })
+        return out
+
     def _inputs_from_task(self, task_id: str) -> List[InputItem]:
         task = self.repository.get_task(task_id)
         if not task:
@@ -1941,6 +1987,30 @@ class ToolIntegrationService:
     def _result_from_task(self, task_id: str) -> Dict[str, Any]:
         records = self.repository.list_results(task_id)
         return records[0]["result"] if records else {}
+
+    @staticmethod
+    def _cluster_evidence_sentences(cluster: Dict[str, Any], result: Dict[str, Any]) -> List[str]:
+        """簇内成员文献的关键证据句（document_assignments.key_evidence）。
+
+        文件模式下文献题名=上传文件名（含 .pdf），直接当"中心句"展示不合适；
+        key_evidence 是每篇文献内容里的真实句子（如方法句/结论句），取簇内
+        最长（信息量最高）的前 2 句作为证据句。
+        """
+        member_ids = {
+            str(m.get("document_id")) for m in (cluster.get("members") or [])
+            if isinstance(m, dict) and m.get("document_id")
+        }
+        if not member_ids:
+            return []
+        sentences = [
+            str(a.get("key_evidence") or "").strip()
+            for a in (result.get("document_assignments") or [])
+            if isinstance(a, dict) and str(a.get("document_id")) in member_ids
+            and str(a.get("key_evidence") or "").strip()
+        ]
+        # 每篇文献一句（key_evidence 本身每篇一条）：语义中心式标签需要
+        # 每个成员的视角，漏掉任何一篇都会让标签偏向其余篇目
+        return sentences[:6]
 
     @staticmethod
     def _cluster_phrase_sets(result: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -1962,30 +2032,21 @@ class ToolIntegrationService:
         for index, cluster in enumerate(result.get("clusters") or []):
             if not isinstance(cluster, dict):
                 continue
-            distribution: Counter = Counter()
-            for member in cluster.get("members") or []:
-                if not isinstance(member, dict):
-                    continue
-                assignment = assignments.get(str(member.get("document_id")))
-                if not assignment:
-                    continue
-                primary = str(assignment.get("anchored_topic_name") or "").strip()
-                if primary:
-                    distribution[primary] += 1
-                for candidate in assignment.get("candidate_topics") or []:
-                    name = str((candidate or {}).get("topic_name") or "").strip()
-                    if name and name != primary:
-                        distribution[name] += 1
-            phrases = [
-                name for name, count in distribution.most_common() for _ in range(int(count))
-            ] if distribution else []
+            # v3 语步对齐聚类：短语集 = 簇代表词（来自语步句关键词，本身就是
+            # 综述粒度的内容词）；锚定类目分布分支已随主题库删除（体系级抽象词
+            # 会把标签带偏成"智能感知XX"类变体）
+            content_terms = [
+                t for t in (_clean_cluster_term(value) for value in (
+                    cluster.get("representative_terms") or cluster.get("keywords")
+                    or cluster.get("top_terms") or cluster.get("phrases") or []))
+                if t
+            ]
+            # v3 簇名（LLM 综述粒度命名，如「语言模型推理增强」）置于短语首位——
+            # 标签引擎的胜者多出自首短语，簇名优先保证标签语义；内容词随后佐证
+            cluster_name = str(cluster.get("topic_name") or "").strip()
+            phrases = list(dict.fromkeys(([cluster_name] if cluster_name else []) + content_terms))
             if not phrases:
-                phrases = [
-                    t for t in (_clean_cluster_term(value) for value in (
-                        cluster.get("representative_terms") or cluster.get("keywords")
-                        or cluster.get("top_terms") or cluster.get("phrases") or []))
-                    if t
-                ]
+                phrases = [cluster_name] if cluster_name else []
             if not phrases:
                 continue
             entry = {
@@ -1996,20 +2057,21 @@ class ToolIntegrationService:
                     str(m.get("document_id")) for m in (cluster.get("members") or [])
                     if isinstance(m, dict) and m.get("document_id")
                 ] or [str(a) for a in (cluster.get("doc_indices") or []) if a],
-                # 证据上下文：代表文献题名 + 代表词（供标签引擎填充 evidence 字段）
+                # 证据上下文：成员题名 + 代表词（供标签引擎填充 evidence 字段）
                 "evidence_titles": [
-                    str(d.get("title") or "").strip() for d in (cluster.get("representative_documents") or [])
+                    str(d.get("title") or "").strip() for d in (cluster.get("members") or [])
                     if isinstance(d, dict) and str(d.get("title") or "").strip()
                 ][:3],
                 "evidence_terms_context": [
                     str(t).strip() for t in (cluster.get("representative_terms") or []) if str(t).strip()
                 ][:6],
+                # 证据句（簇内成员文献的关键证据句，真实句子非文件名）：
+                # 标签引擎 evidence.center_sentence 优先取此处的首句
+                "evidence_sentences": ToolIntegrationService._cluster_evidence_sentences(cluster, result),
+                # v3 标记：簇名即 LLM 综述粒度命名，标签工具直采（不再重生成）
+                "topic_name": cluster_name,
+                "input_source": "move_aligned" if cluster_name else "legacy",
             }
-            if distribution:
-                entry["category_distribution"] = [
-                    {"name": name, "count": count} for name, count in distribution.most_common()
-                ]
-                entry["input_source"] = "anchor_category_distribution"
             phrase_sets.append(entry)
         return phrase_sets
     def _collection_documents(self, collection_id: str) -> List[Dict[str, Any]]:

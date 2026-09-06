@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
+import { computed, reactive, ref, watch, watchEffect } from 'vue'
 import type { InputMode } from '../types'
-import { databaseResourceCatalog } from '../data/database-preview'
-import { listSemanticResources, parseCitationMetadata, uploadSemanticResource } from '../services/api'
+import { parseCitationMetadata, uploadSemanticResource } from '../services/api'
 
 type ResourceField = {
   key: string
@@ -87,7 +86,6 @@ const resourceGroups: Record<string, { title: string; description: string; field
 }
 
 const sourceModes = reactive<Record<string, string>>({})
-const selectedResources = reactive<Record<string, string>>({})
 const uploadedResources = reactive<Record<string, File | null>>({})
 const citationRawReference = ref('')
 const citationParseState = ref<'idle' | 'parsed' | 'partial' | 'empty'>('idle')
@@ -103,8 +101,6 @@ const citationMetadataList = ref<CitationMetaEntry[]>([])
 const citationParsing = ref(false)
 const citationParseError = ref('')
 const textFormatRequirement = ref('自动识别')
-const runtimeResourceCatalog = reactive<Record<string, typeof databaseResourceCatalog[string]>>({})
-const resourceLoadError = ref('')
 const currentGroup = computed(() => resourceGroups[props.toolId])
 
 function parsedCitationBatchMetadata() {
@@ -140,11 +136,10 @@ const requestPayload = computed<Record<string, unknown>>(() => {
   }
 
   currentGroup.value?.fields.forEach(field => {
-    const source = sourceModes[field.key]
-    if (source === 'embedded') return
-    payload[field.key] = source === 'upload'
-      ? uploadedResources[field.key] || { source: 'upload', resource_id: null }
-      : { source: 'database', resource_id: selectedResources[field.key] || null }
+    // 内置 = 不提交该资源字段，后端使用系统预置资源；仅用户上传时携带文件
+    if (sourceModes[field.key] !== 'upload') return
+    const file = uploadedResources[field.key]
+    if (file) payload[field.key] = file
   })
   return payload
 })
@@ -241,25 +236,25 @@ function handleCitationMetadataFile(event: Event, target: 'batch' | 'fallback') 
 const savingResourceKey = ref<string | null>(null)
 const resourceSaveError = ref('')
 const resourceSaveNotice = ref('')
-// 各资源字段上传 JSON 的必含字段清单（与后端 normalize.py 行有效性规则对应）
+// 各资源字段上传文件的格式与字段说明（与后端 normalize.py 行有效性规则对应，
+// 文案样式与深度聚类锚点上传一致：仅 .json：字段 + 字段）
 const resourceFieldHints: Record<string, string> = {
-  clc_labeled_data: '中图分类号、类目名称',
-  classification_standard_mapping_table: '英文术语、中图分类号',
-  domain_terminology_library: '术语词条',
-  manually_labeled_training_data: '文献正文（或题名、摘要）及标注内容',
-  manually_labeled_data: '文献正文（或题名、摘要）及标注内容',
-  domain_labeled_training_data: '文献正文（或题名、摘要）及标注内容',
-  general_domain_annotated_corpus: '文献正文（或题名、摘要）及标注内容',
-  multi_domain_scientific_corpus: '文献正文（或题名、摘要）及标注内容',
-  training_samples: '文献编号、所属类目（可另附题名、摘要）',
-  manually_labeled_category_data: '文献编号、所属类目（可另附题名、摘要）',
-  domain_classification_rules: '中图分类号、类目名称',
-  preprocessed_training_set: '识别规则配置',
-  ontology_classification_system: '实体标准名、实体类型、同义词列表',
+  clc_labeled_data: '仅 .json：中图分类号 + 类目名称',
+  classification_standard_mapping_table: '仅 .json：英文术语 + 中图分类号',
+  domain_terminology_library: '仅 .json：术语词条',
+  manually_labeled_training_data: '仅 .json：文本 + 标注内容',
+  manually_labeled_data: '仅 .json：标准词 + 实体类型 + 同义词列表',
+  domain_labeled_training_data: '仅 .json：示例文本 + 实体（实体词 + 类型）',
+  general_domain_annotated_corpus: '仅 .json：示例文本 + 实体（实体词 + 类型）',
+  multi_domain_scientific_corpus: '仅 .json：示例文本 + 实体（实体词 + 类型）',
+  training_samples: '仅 .json：编号 + 文本 + 题名',
+  manually_labeled_category_data: '仅 .json：编号 + 人工标注类目标签',
+  domain_classification_rules: '仅 .json：领域分类规则配置',
+  preprocessed_training_set: '仅 .json：引用预处理规则配置',
+  ontology_classification_system: '仅 .json：实体标准名 + 实体类型 + 同义词列表',
 }
 function fieldHint(key: string): string {
-  const list = resourceFieldHints[key]
-  return list ? `仅支持 JSON 文件；需包含字段：${list}` : '仅支持 JSON 文件'
+  return resourceFieldHints[key] || '仅 .json'
 }
 
 function handleResourceUpload(event: Event, key: string) {
@@ -286,51 +281,11 @@ function clearUploadedResource(key: string) {
 }
 
 
-function availableResources(key: string) {
-  const resources = runtimeResourceCatalog[key] || []
-  const wantedStatus = sourceModes[key] === 'history' ? 'history' : 'current'
-  return resources.filter(item => (item.status || 'current') === wantedStatus)
-}
-
-function selectedResource(key: string) {
-  return (runtimeResourceCatalog[key] || []).find(item => item.id === selectedResources[key])
-}
-
-async function loadRuntimeResources() {
-  resourceLoadError.value = ''
-  try {
-    const response = await listSemanticResources()
-    Object.keys(runtimeResourceCatalog).forEach(key => delete runtimeResourceCatalog[key])
-    for (const item of response.data || []) {
-      const key = String(item.resource_key || '')
-      if (!key) continue
-      ;(runtimeResourceCatalog[key] ||= []).push({
-        id: String(item.id),
-        name: String(item.name),
-        version: String(item.version),
-        recordCount: item.record_count == null ? '未配置' : `${item.record_count} 条`,
-        language: String(item.language || '未配置'),
-        updatedAt: String(item.updated_at || ''),
-        status: item.status === 'history' ? 'history' : 'current',
-      })
-    }
-    currentGroup.value?.fields.forEach(field => {
-      selectedResources[field.key] = availableResources(field.key)[0]?.id || ''
-    })
-  } catch (error) {
-    resourceLoadError.value = error instanceof Error ? error.message : '数据库资源读取失败'
-  }
-}
-
-onMounted(loadRuntimeResources)
-
 watch(() => props.toolId, () => {
   Object.keys(sourceModes).forEach(key => delete sourceModes[key])
-  Object.keys(selectedResources).forEach(key => delete selectedResources[key])
   Object.keys(uploadedResources).forEach(key => delete uploadedResources[key])
   currentGroup.value?.fields.forEach(field => {
-    sourceModes[field.key] = props.toolId === 'structured-review' ? 'embedded' : 'database'
-    selectedResources[field.key] = availableResources(field.key)[0]?.id || ''
+    sourceModes[field.key] = 'builtin'
   })
   citationRawReference.value = ''
   citationParseState.value = 'idle'
@@ -343,14 +298,6 @@ watch(() => props.toolId, () => {
   citationMetadataList.value = []
   textFormatRequirement.value = '自动识别'
 }, { immediate: true })
-
-watch(sourceModes, modes => {
-  Object.entries(modes).forEach(([key, sourceMode]) => {
-    if (sourceMode === 'upload' || sourceMode === 'embedded') return
-    const options = availableResources(key)
-    if (!options.some(item => item.id === selectedResources[key])) selectedResources[key] = options[0]?.id || ''
-  })
-}, { deep: true })
 
 watchEffect(() => emit('update:payload', requestPayload.value))
 </script>
@@ -378,7 +325,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         <div v-else class="resource-upload-wrap">
           <label class="resource-upload-zone citation-reference-upload-zone">
             <input ref="citationReferenceFileInput" type="file" accept=".txt,.json,.jsonl,.csv" @change="handleCitationReferenceFile" />
-            <span>⇧</span><b>{{ citationUploadName || '点击上传参考文献条目' }}</b><small>支持 TXT、JSON、JSONL、CSV</small>
+            <span>⇧</span><b>{{ citationUploadName || '点击上传参考文献条目' }}</b><small>支持 TXT/JSON/JSONL/CSV：参考文献条目原文</small>
           </label>
             <button v-if="citationUploadName" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearCitationReferenceFile">✕ 取消</button>
           </div>
@@ -410,7 +357,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
       <div class="resource-upload-wrap">
         <label class="resource-upload-zone citation-metadata-upload-zone">
           <input ref="citationBatchMetadataFileInput" type="file" accept=".json,.jsonl,.csv,.xlsx,.txt" @change="handleCitationMetadataFile($event, 'batch')" />
-          <span>⇧</span><b>{{ citationBatchMetadataFile?.name || '上传批量被引文献元数据' }}</b><small>支持 JSON、JSONL、CSV、XLSX、TXT</small>
+          <span>⇧</span><b>{{ citationBatchMetadataFile?.name || '上传批量被引文献元数据' }}</b><small>支持 JSON/JSONL/CSV/XLSX/TXT：引用标记 + 参考文献原文</small>
         </label>
         <button v-if="citationBatchMetadataFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearCitationMetadataFile('batch')">✕ 取消</button>
         </div>
@@ -430,7 +377,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
     <div v-if="sourceModes.document_metadata === 'upload'" class="resource-upload-wrap">
       <label class="resource-upload-zone">
         <input :ref="el => setResourceFileInput('document_metadata', el)" type="file" accept=".json,.jsonl,.csv,.xlsx" @change="handleResourceUpload($event, 'document_metadata')" />
-        <span>⇧</span><b>{{ uploadedResources['document_metadata']?.name || '点击上传文献元数据' }}</b><small>支持 JSON、JSONL、CSV、XLSX</small>
+        <span>⇧</span><b>{{ uploadedResources['document_metadata']?.name || '点击上传文献元数据' }}</b><small>支持 JSON/JSONL/CSV/XLSX：文献编号（或文件名）+ 题名 + 作者 + 年份 + 来源</small>
       </label>
       <button v-if="uploadedResources['document_metadata']" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearUploadedResource('document_metadata')">✕ 取消</button>
       </div>
@@ -451,17 +398,10 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         <p>{{ field.description }}</p>
         <div class="requirement-resource-controls">
           <select v-model="sourceModes[field.key]" class="select resource-source-select">
-            <option value="database">从数据库选择当前资源</option>
-            <option v-if="!['zh-classify', 'domain-classify', 'en-classify', 'en-keyword', 'citation-intent', 'general-ner', 'research-ner', 'domain-ner'].includes(toolId)" value="history">从数据库选择历史版本</option>
+            <option value="builtin">内置</option>
             <option value="upload">用户上传资源</option>
           </select>
-          <select v-if="sourceModes[field.key] !== 'upload'" v-model="selectedResources[field.key]" class="select">
-            <option value="" disabled>{{ field.placeholder }}</option>
-            <!-- 展示层只渲染资源文件名：version 是内容摘要随机串（如 789b9168abd6），
-                 不展示给用户；option value 仍传完整资源ID，接口参数不受影响 -->
-            <option v-for="item in availableResources(field.key)" :key="item.id" :value="item.id">{{ item.name }}</option>
-          </select>
-          <div v-else class="resource-upload-wrap">
+          <div v-if="sourceModes[field.key] === 'upload'" class="resource-upload-wrap">
             <label class="resource-upload-zone">
               <input :ref="el => setResourceFileInput(field.key, el)" type="file" :accept="field.accept || '.json'" @change="handleResourceUpload($event, field.key)" />
               <span>⇧</span><b>{{ uploadedResources[field.key]?.name || `点击上传${field.label}` }}</b><small>{{ fieldHint(field.key) }}</small>

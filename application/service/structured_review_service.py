@@ -29,8 +29,8 @@ def execute_structured_review(
     raw_documents = request.texts or []
     if not raw_documents:
         raise ValueError("结构化自动综述需提供 document_set 文献集")
-    if len(raw_documents) < 3:
-        raise ValueError("结构化自动综述至少需要3篇文献")
+    if len(raw_documents) < 2:
+        raise ValueError("结构化自动综述至少需要2篇文献")
     if len(raw_documents) > 50:
         raise ValueError("结构化自动综述一次最多处理50篇文献")
 

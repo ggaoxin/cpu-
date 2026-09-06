@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import uuid
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from typing import Any, Dict, Iterable, List, Optional
 
 from domain.entity.analysis_task import AnalysisTask, ResultRecord, TaskStatus
@@ -17,7 +18,7 @@ def _id(prefix: str) -> str:
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
 
 
 def _dump(value: Any) -> str:
@@ -316,6 +317,21 @@ class DatabaseTaskRepository(ITaskRepository):
                 (confirmation_id, record_id, str(payload["cluster_id"]), payload["label_text"], payload.get("actor_id"), now),
             )
         return {"id": confirmation_id, "result_record_id": record_id, "cluster_id": str(payload["cluster_id"]), "label_text": payload["label_text"], "created_at": now}
+
+    def label_confirmations_by_record(self, record_id: str) -> Dict[str, str]:
+        """某结果记录的人工确认标签：{cluster_id: label_text}（多次确认取最新）。"""
+        with self.db.session() as session:
+            rows = session.fetchall(
+                "SELECT cluster_id, label_text FROM cluster_label_confirmations "
+                "WHERE result_record_id=? ORDER BY created_at DESC, id DESC",
+                (record_id,),
+            )
+        confirmed: Dict[str, str] = {}
+        for row in rows or []:
+            cid = str(row.get("cluster_id") or "")
+            if cid and cid not in confirmed:
+                confirmed[cid] = str(row.get("label_text") or "")
+        return confirmed
 
     def save_feedback(self, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         feedback_id = _id("fbk")

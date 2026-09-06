@@ -45,3 +45,4 @@ output/
 rules/deep_clustering/gold/
 rag_store/deep_clustering_anchor/
 *.bak_*
+.vite/

@@ -205,7 +205,10 @@ def _candidate(
     undersized = sum(value for value in counts.values() if value < min_cluster_size) / len(labels)
     stability_part = 0.0 if stability is None else stability
     silhouette_part = 0.0 if silhouette is None else silhouette
-    score = 0.60 * silhouette_part + 0.25 * stability_part + 0.15 * balance - 0.60 * undersized
+    # undersized 罚分 1.2：实测 5 篇强异质文献 spectral k=4（3 单例簇，undersized=0.6）
+    # 凭 stability 满分压过 k=2/3 胜出（score 0.063）——过半文档成单例的划分
+    # 不是可用的聚类结构，罚分须盖过 0.25 的稳定性权重
+    score = 0.60 * silhouette_part + 0.25 * stability_part + 0.15 * balance - 1.20 * undersized
     warnings = []
     if undersized:
         warnings.append(

@@ -8,6 +8,7 @@ import re
 import csv
 import io
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -16,7 +17,6 @@ from fastapi.responses import FileResponse, JSONResponse
 from starlette.datastructures import UploadFile as StarletteUploadFile
 
 from application.service.tool_integration_service import ToolIntegrationService
-from application.service.deep_cluster_evaluation_service import DeepClusterEvaluationService
 from application.service.result_normalizer import public_viz_result
 from application.service.export_service import export_service
 from application.service.resource_service import resource_service
@@ -819,7 +819,8 @@ def _file_endpoint(tool_id: str, multiple: bool):
                 if isinstance(descriptor, dict) else descriptor
             )
         payload.setdefault("input_type", "files" if multiple else "file")
-        upload_limit_mb = 80 if tool_id == "structured-review" else settings.MAX_UPLOAD_SIZE_MB
+        # 单文件上限统一 50MB（结构化综述不再放宽；需求 2026-09-05：所有功能点单文件 ≤50M、批量 ≤20 篇）
+        upload_limit_mb = settings.MAX_UPLOAD_SIZE_MB
         try:
             if tool_id in ABSTRACT_MOVE_TOOLS:
                 # 摘要语步识别：只送纯摘要（四层融合解析），过滤标题/关键词/全文
@@ -938,40 +939,6 @@ def relation_dependency_preview(payload: Dict[str, Any] = Body(...)) -> Dict[str
         return {"code": 0, "message": f"已生成 {len(arcs)} 条依存弧", "data": arcs}
     except Exception as exc:
         raise HTTPException(status_code=422, detail=f"依存句法分析失败: {exc}") from exc
-
-
-@router.post("/cluster/deep/evaluate")
-async def evaluate_deep_cluster(
-    request: Request,
-    service: ToolIntegrationService = Depends(get_integration_service),
-) -> Dict[str, Any]:
-    """Run an independent, gold-backed clustering evaluation.
-
-    This does not alter or block the user's ordinary document clustering task.
-    """
-    if "multipart/form-data" in request.headers.get("content-type", ""):
-        form = await request.form()
-        payload: Dict[str, Any] = {}
-        uploaded_resources: Dict[str, Dict[str, Any]] = {}
-        for key, value in form.multi_items():
-            if isinstance(value, StarletteUploadFile):
-                base_key = key.split("__", 1)[0]
-                uploaded_resources[base_key] = await _store_uploaded_resource(base_key, value, service)
-                await value.close()
-            else:
-                payload[key] = _parse_form_value(value)
-        for key, descriptor in uploaded_resources.items():
-            current = payload.get(key)
-            payload[key] = {**(current if isinstance(current, dict) else {}), **descriptor}
-    else:
-        payload = await request.json()
-        if not isinstance(payload, dict):
-            raise HTTPException(status_code=422, detail="JSON 请求体必须是对象")
-    try:
-        value = DeepClusterEvaluationService(service).evaluate(payload)
-    except (ValueError, RuntimeError) as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return {"code": 0, "message": "success", "data": value}
 
 
 @router.post("/review/structured/collections/{collection_id}")
@@ -1218,7 +1185,7 @@ def compatible_history(
 
 @router.get("/database/health")
 def database_health() -> Dict[str, Any]:
-    return {"code": 0, "data": task_repository.healthcheck(), "created_at": datetime.now(timezone.utc).isoformat()}
+    return {"code": 0, "data": task_repository.healthcheck(), "created_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()}
 
 
 @router.post("/upstream-records/{kind}")
@@ -1237,6 +1204,20 @@ def create_collection(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return {"code": 0, "message": "文献集合已创建", "data": value}
+
+
+@router.get("/collections/cluster-sets")
+def cluster_collection_options(
+    workspace_id: str = Query(settings.DEFAULT_WORKSPACE_ID),
+    limit: int = Query(50, ge=1, le=200),
+    service: ToolIntegrationService = Depends(get_integration_service),
+) -> Dict[str, Any]:
+    """聚类标签生成任务的簇文献集列表（结构化综述"指定文献集"数据源）。
+
+    每个已完成的标签生成任务按簇展开：簇名（推荐标签）、任务时间、簇内篇数。
+    按任务时间倒序返回，不做主题相似度过滤（2026-09-06 用户定调：直接下拉选择）。
+    """
+    return {"code": 0, "data": service.cluster_set_options(workspace_id, limit)}
 
 
 @router.get("/collections")

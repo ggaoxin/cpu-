@@ -85,8 +85,9 @@ _VIZ_KEEP_FIELDS: Dict[str, frozenset] = {
     }),
     "deep-cluster": frozenset({
         "clusters", "semantic_projection", "clustering_quality",
-        "theme_trend_analysis", "training_evaluation", "document_assignments",
+        "theme_trend_analysis", "document_assignments",
         "input_summary", "cluster_dimension_name",
+        "csv_content", "database_records", "output_format",
     }),
     "cluster-label": frozenset({
         "labels", "cluster_labels", "label_generation_process_report",
@@ -139,6 +140,13 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
     if tool_id == "definition-detect":
         data = raw if isinstance(raw, dict) else {}
         defs = _list(data.get("definitions") if data else raw)
+        # 定义句输出契约 = 弹窗读取字段：概念词/定义句/定义内容/置信度/复核状态/
+        # 来源位置(positionLabel)。pattern(命中规则内部值)/normalized_concept/
+        # context_before/context_after(引擎中间字段)弹窗不读取，不进公开响应
+        for _d in defs:
+            if isinstance(_d, dict):
+                for _drop in ("pattern", "normalized_concept", "context_before", "context_after"):
+                    _d.pop(_drop, None)
         mappings = _list(data.get("concept_definition_mappings") or data.get("mappings")) if data else []
         if not mappings:
             mappings = [{
@@ -323,6 +331,160 @@ def _move_char_range(abstract: str, text: str) -> tuple:
     return start_idx, (last_idx if last_idx is not None else start_idx) + 1
 
 
+def _locate_spliced_move(abstract: str, spliced_text: str) -> tuple:
+    """非连续拼接语步的兜底定位：按句切分逐句在原文定位。
+
+    LLM 输出的语步文本可能是原文中不相邻句子的拼接（如 Background=句1,2,4,5），
+    且拼接处常丢失句间空格（"systems.This approach"）。处理：
+    ① 把拼接文本按句末标点切分，逐句（去空白对比）在原文定位；
+    ② 命中的句子用原文原样（含正确空格）按原文字符顺序重组 text；
+    ③ 返回 (首句start, 首句end, 重组text)；一句都定位不到则返回 (None, None, 原text)。
+    """
+    if not abstract or not spliced_text:
+        return None, None, spliced_text
+    # 按句末标点切分（LLM 拼接丢空格，句点后直接跟大写字母也算句界）
+    import re as _re
+    parts = [p.strip() for p in _re.split(r"(?<=[.!?。！？])\s*", spliced_text) if p.strip()]
+    if len(parts) < 2:
+        return None, None, spliced_text
+    hits = []  # (start, end, 原文句子)
+    for part in parts:
+        st, en = _move_char_range(abstract, part)
+        if st is not None:
+            hits.append((st, en, abstract[st:en]))
+    if not hits:
+        return None, None, spliced_text
+    hits.sort(key=lambda x: x[0])
+    # 至少两句命中才认定是拼接场景（单句直接走 _move_char_range 已处理）
+    if len(hits) < 2:
+        return None, None, spliced_text
+    first_start, first_end = hits[0][0], hits[0][1]
+    # 原文句子重组：句间补一个空格（英文摘要原文句间即空格；中文无空格也兼容）
+    rebuilt = hits[0][2]
+    for _, _, sent in hits[1:]:
+        rebuilt += (" " if not sent[:1].isspace() and not rebuilt[-1:].isspace() else "") + sent
+    return first_start, first_end, rebuilt
+
+
+_SENT_BOUNDARY_RE = None
+
+
+def _split_sentences(text: str) -> list:
+    """按句末标点（。！？!?）把原文切成完整句子，返回 [(start, end)]，含标点。
+
+    英文句点需后随空白/行尾/引号才判定句末（避免小数 1.2、缩写 e.g. 被切开）；
+    分号不算句末（含分号的并列长句仍是一个完整句子）。
+    """
+    import re as _re
+    global _SENT_BOUNDARY_RE
+    if _SENT_BOUNDARY_RE is None:
+        # 中文句末标点直接断句；英文句点看后一字符
+        _SENT_BOUNDARY_RE = _re.compile(r"[。！？]|(?:\.)(?=[\s\"'”’\)\]]|$)")
+    spans = []
+    start = 0
+    for m in _SENT_BOUNDARY_RE.finditer(text):
+        end = m.end()
+        # 句末标点后的收尾引号/括号并入本句
+        while end < len(text) and text[end] in "”’\"')]}":
+            end += 1
+        seg = text[start:end]
+        if seg.strip():
+            spans.append((start, end))
+        start = end
+    if start < len(text) and text[start:].strip():
+        spans.append((start, len(text)))
+    return spans
+
+
+def _align_moves_to_sentences(moves: list, abstract: str) -> None:
+    """摘要语步句子完整性对齐与重建：以句子为原子单元重组各语步。
+
+    LLM 常见三类缺陷在此统一修复：
+    ① 拆句——一句话从中间拆给两个语步（前语步截断在逗号、后语步从半截开始）；
+    ② 漏句——五段拼接没有覆盖原文全部句子（Background 只给 1 句丢 4 句）；
+    ③ 拼接丢空格——非连续句子拼接处句点后无空格，导致整体定位失败。
+    规则：
+    ① 无位置的语步先补定位（indexOf + 去空白两级）；
+    ② 句子归属：分给 [start,end) 与其重叠最多的语步；
+    ③ 未被认领的句子延续归属给原文中前一句的语步（move 是连续区段，漏句就近
+       归并，不丢弃任何原文句子）；
+    ④ 用原文句子按原文字符顺序重组各语步 text（恢复句间空格），位置取首句；
+    ⑤ 参与竞争但没赢得句子的语步置空；始终定位不到的语步保留原文摘录不动。
+    """
+    if not abstract or not moves:
+        return
+    sents = _split_sentences(abstract)
+    if not sents:
+        return
+
+    def _overlap(a0, a1, b0, b1):
+        return max(0, min(a1, b1) - max(a0, b0))
+
+    # 定位失败的语步先补定位；仍失败的标记为不参与竞争
+    _competing = []
+    for mi, mv in enumerate(moves):
+        if (mv.get("start") is None or mv.get("end") is None) and mv.get("text"):
+            st, en = _move_char_range(abstract, str(mv["text"]))
+            if st is not None:
+                mv["start"], mv["end"] = st, en
+        if mv.get("start") is not None and mv.get("end") is not None:
+            _competing.append(mi)
+
+    # 每句归属：句子分给重叠最多的参与语步
+    owners = {}  # sent_idx -> move_idx
+    for si, (s0, s1) in enumerate(sents):
+        best_mi, best_ov = None, 0
+        for mi in _competing:
+            mv = moves[mi]
+            ov = _overlap(mv["start"], mv["end"], s0, s1)
+            if ov > best_ov:
+                best_mi, best_ov = mi, ov
+        if best_mi is not None:
+            owners[si] = best_mi
+    # 未认领句子延续归属：按原文顺序，归给前一个已认领句的语步
+    # （LLM 漏句时不丢句子，就近并入前一语步——move 连续区段假设）
+    _last_owner = None
+    for si in range(len(sents)):
+        if si in owners:
+            _last_owner = owners[si]
+        elif _last_owner is not None:
+            owners[si] = _last_owner
+    # 首部未认领句（第一个认领句之前）：归给第一个有内容的语步
+    if owners:
+        _first_claimed = min(owners)
+        if _first_claimed > 0:
+            _first_move = next((mi for mi, mv in enumerate(moves) if mv.get("text")), None)
+            if _first_move is not None:
+                for si in range(_first_claimed):
+                    owners[si] = _first_move
+    # 按语步重组：每个语步的句子集合（保持原文顺序），重算 text/start/end
+    by_move = {}
+    for si, mi in owners.items():
+        by_move.setdefault(mi, []).append(si)
+    for mi, mv in enumerate(moves):
+        sis = by_move.get(mi)
+        if not sis:
+            # 参与了竞争但没赢得任何句子（半截句被邻居吞并）→ 置空；
+            # 未参与竞争（定位不到原文，如文件模式摘要抽取失败）→ 保留原文摘录不动
+            if mi in _competing:
+                mv["text"] = ""
+                mv["start"] = None
+                mv["end"] = None
+            continue
+        s0 = sents[sis[0]][0]
+        s1 = sents[sis[-1]][1]
+        # strip 首尾空白但保留句末标点，并同步重算精确字符范围
+        raw_seg = abstract[s0:s1]
+        stripped = raw_seg.strip()
+        if not stripped:
+            mv["text"], mv["start"], mv["end"] = "", None, None
+            continue
+        lead = len(raw_seg) - len(raw_seg.lstrip())
+        mv["start"] = s0 + lead
+        mv["end"] = mv["start"] + len(stripped)
+        mv["text"] = stripped
+
+
 def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     data = raw if isinstance(raw, dict) else {}
     overall_confidence = data.get("confidence")
@@ -336,9 +498,8 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         categories = (_MOVE_CATEGORIES_EN if tool_id == "en-abstract-move"
                    else _MOVE_CATEGORIES_FUND if tool_id == "fund-move"
                    else _MOVE_CATEGORIES_ZH)
-        # 引擎输出的每语步句序号（语步句子在摘要中可能不相邻，拼接文本无法
-        # indexOf 定位；句序号是非连续语步唯一忠实的定位方式）
-        sent_idx_map = data.get("sentence_indices_by_move") if isinstance(data.get("sentence_indices_by_move"), dict) else {}
+        # 引擎输出的 sentence_indices_by_move（每语步句序号）是内部定位数据，
+        # 不进公开响应（下方 data.pop 一并清除），定位由 start/end 表达
         # 摘要原文（优先 document.abstract，文件模式由 _result_payload 回填）
         abstract_text = ""
         document_data = data.get("document") if isinstance(data.get("document"), dict) else {}
@@ -352,12 +513,16 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
             start = end = None
             if has_text and abstract_text:
                 start, end = _move_char_range(abstract_text, str(text))
+                if start is None:
+                    # 非连续拼接定位失败（语步句子在原文中不相邻，或 LLM 拼接时丢空格）：
+                    # 按句切分逐句定位，用原文句子重组 text（恢复句间空格），位置取首句
+                    start, end, text = _locate_spliced_move(abstract_text, str(text))
             moves.append({
-                "move_code": label,
-                "move_name": label,
+                # moves 输出契约 = 弹窗四要素：语步类别(label) + 原文片段(text) +
+                # 句子位置(start/end) + 置信度评分(confidence)。move_code/move_name
+                # 与 label 同值冗余，不输出；句序号等内部定位数据同样不进公开响应
                 "label": label,
                 "text": text or "",
-                "sentence_indices": sent_idx_map.get(label) or None,
                 "start": start,
                 "end": end,
                 "confidence": move_confidence.get(label, overall_confidence) if has_text
@@ -378,18 +543,19 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
             **item,
             "start": item.get("start") if item.get("start") is not None else _f_start,
             "end": item.get("end") if item.get("end") is not None else _f_end,
-            "move_code": item.get("move_code") or label,
-            "move_name": item.get("move_name") or label,
             "label": label,
             "text": content,
-            "sentence_index": item.get("sentence_index"),
-            "sentence_indices": item.get("sentence_indices") or item.get("position") or (
-                {"start": item.get("start"), "end": item.get("end")}
-                if item.get("start") is not None or item.get("end") is not None else None
-            ),
+            # sentence_index/sentence_indices/position 为内部定位数据，弹窗不展示，
+            # 不进公开响应；定位信息统一由 start/end + source_sections 表达
             "source_sections": _list(item.get("source_sections") or item.get("source_section")),
             "confidence": _confidence(item, move_confidence.get(label, overall_confidence)),
         })
+        # 引擎/上游中间字段不进公开响应：move_code/move_name(与 label 同值冗余)、
+        # content/move_type(已被 text/label 替代)、sources(source_sections 同值副本)、
+        # n_fragments(内部聚合计数)、sentence 定位系列
+        for _drop in ("move_code", "move_name", "content", "move_type", "move", "type",
+                      "sources", "n_fragments", "sentence_index", "sentence_indices", "position"):
+            moves[-1].pop(_drop, None)
     statistics = data.get("move_statistics")
     data.pop("sentence_indices_by_move", None)  # 中间字段，不进公开响应
     if not statistics:
@@ -411,6 +577,18 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     if not document.get("abstract"):
         document["abstract"] = (payload.get("text") or payload.get("project_document_text")
                                 or payload.get("abstract") or data.get("abstract") or "")
+    # 基金语步的原文片段来自申报书全文（文件模式下 abstract 只是摘要，匹配会大面积
+    # 失败）：用引擎传出的内部全文（source_full_text，不进公开响应）作为高亮定位源
+    if tool_id == "fund-move":
+        _full = str(data.get("source_full_text") or "")
+        if _full and len(_full) > len(str(document.get("abstract") or "")):
+            document["abstract"] = _full
+        data.pop("source_full_text", None)
+    # 摘要语步句子完整性对齐：一个句子不能被拆给两个语步（LLM 可能从句中截断，
+    # 如"…降低 61%、56、"结尾 + "42%，系统…"开头）。对齐到句末标点边界，
+    # 重叠句归重叠更多的语步，被让空的语步置空。基金语步是归纳性文本不做对齐。
+    if tool_id in {"zh-abstract-move", "en-abstract-move"} and document.get("abstract"):
+        _align_moves_to_sentences(moves, str(document["abstract"]))
     result = {
         **data,
         "document": document,
@@ -502,13 +680,14 @@ def _domain_classification(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
         l1 = cpath[0] if cpath else ""
         l2 = cpath[1] if len(cpath) > 1 else l1
         l3 = cpath[-1] if cpath else l1
+        # 分类对象输出契约 = 弹窗读取字段：classification_path/level_1-3/confidence/role。
+        # order(内部排序)/classification_code(候选 optionKey 只读 candidate_classifications)/
+        # evidence(恒空)弹窗不读取，不进公开响应
         multilevel.append({
-            "order": 1, "role": "main",
-            "classification_code": clc.get("clc_code"),
+            "role": "main",
             "level_1": l1, "level_2": l2, "level_3": l3,
             "classification_path": cpath,
             "confidence": clc.get("confidence", 0.0),
-            "evidence": [],
         })
 
     # 5. classification_confidence
@@ -907,6 +1086,21 @@ def _classification(raw: Any, tool_id: str) -> Dict[str, Any]:
             "evidence": [{"reason": "语义检索候选（CLC 知识库）"}],
         })
 
+    # 分类对象输出契约 = 弹窗读取字段：label/clc_code/classification_path/confidence/role
+    # （+ 渲染降级链 code/category_name/path）。path_codes/path_names 已被 _path_of 收敛进
+    # classification_path；rag_entry_id(检索命中内部ID)/clc_name(与 label 同值)等
+    # 引擎中间字段弹窗不读取，不进公开响应
+    _cls_keep = ("role", "label", "confidence", "classification_path",
+                 "clc_code", "code", "category_name", "path", "level_1", "level_2", "level_3")
+    for _c in items:
+        if not _c.get("classification_path"):
+            _p = _path_of(_c)
+            if _p:
+                _c["classification_path"] = _p
+        for _k in list(_c):
+            if _k not in _cls_keep:
+                _c.pop(_k)
+
     manual_confirmation = {
         "status": "pending",
         "confirmed_candidate_id": None,
@@ -951,6 +1145,12 @@ def _keywords(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
             "rank": value.get("rank", index + 1),
             "terminology_source": value.get("terminology_source") or value.get("source"),
         })
+        # 关键词输出契约 = 弹窗读取字段：关键词/标准词/排名/置信度/术语来源/
+        # 分类映射/词典命中/权重调整/来源库。score(排序内部分)/weight(原始权重)、
+        # matched_dictionary_term_id(词典条目内部ID)/type/source_position(无位置列)
+        # 弹窗不读取，不进公开响应
+        for _drop in ("score", "weight", "matched_dictionary_term_id", "type", "source_position"):
+            items[-1].pop(_drop, None)
     # 语言判定：优先显式入参字段（英文工具主字段存在即英文），否则按文本中文
     # 字符占比推断。此前用 any(item.get("term")) 判定——关键词行恒带 term 字段，
     # 导致中文摘要恒被标成 "en"，干扰语言相关展示与词典链路校验。
@@ -988,14 +1188,38 @@ def _keywords(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
 def _research_questions(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
     data = raw if isinstance(raw, dict) else {}
     if data and any(key in data for key in ("research_question_sentences", "research_question_phrases", "structured_research_questions")):
+        # 三级数组输出契约 = 弹窗读取字段：
+        # 句子级: sentence_id/sentence/expression_type/confidence
+        # 短语级: phrase_id/sentence_id/phrase/normalized_question/confidence
+        # 结构化: research_question_id/role/parent_id/normalized_question/question_type/
+        #         research_object/constraints/confidence
+        # phrase_start/end(短语定位)、parent_index/sentence_index/source_sections(中间
+        # 关联值)、句子级冗余的 question_type/research_object/role/constraints 等
+        # 弹窗不读取，不进公开响应
+        sentences = _list(data.get("research_question_sentences"))
+        phrases = _list(data.get("research_question_phrases"))
+        structured = _list(data.get("structured_research_questions"))
+        _sent_keep = ("sentence_id", "id", "sentence", "text", "expression_type", "type", "confidence")
+        _phrase_keep = ("phrase_id", "id", "sentence_id", "phrase", "text",
+                        "normalized_question", "question", "confidence")
+        for _s in sentences:
+            if isinstance(_s, dict):
+                for _k in list(_s):
+                    if _k not in _sent_keep:
+                        _s.pop(_k)
+        for _p in phrases:
+            if isinstance(_p, dict):
+                for _k in list(_p):
+                    if _k not in _phrase_keep:
+                        _p.pop(_k)
         statistics = data.get("research_question_statistics") or data.get("statistics") or {}
         return {
             **data,
             "document": data.get("document") or {"title": payload.get("document_title") or payload.get("title") or ""},
             "input_type": payload.get("input_type"),
-            "research_question_sentences": _list(data.get("research_question_sentences")),
-            "research_question_phrases": _list(data.get("research_question_phrases")),
-            "structured_research_questions": _list(data.get("structured_research_questions")),
+            "research_question_sentences": sentences,
+            "research_question_phrases": phrases,
+            "structured_research_questions": structured,
             "statistics": statistics,
             "research_question_statistics": statistics,
         }
@@ -1012,15 +1236,23 @@ def _research_questions(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
         if expression_type:
             expr_counts[expression_type] += 1
         sentence_id = item.get("id") or f"RQS{index + 1}"
-        sentences.append({**item, "expression_type": expression_type, "id": sentence_id, "text": sentence, "confidence": _confidence(item)})
+        # 句子级输出契约 = 弹窗读取字段：编号/研究问题句/表达方式/置信度。
+        # 不展开 LLM 原始键（implication/parent_index/phrase_*/start/end 等中间值）
+        sentences.append({
+            "sentence": sentence,
+            "text": sentence,
+            "id": sentence_id,
+            "expression_type": expression_type,
+            "confidence": _confidence(item),
+        })
         # 规范化问题：优先 normalized_question，回退 implication/phrase/sentence
         norm_q = item.get("normalized_question") or item.get("implication") or phrase or sentence
         if phrase:
+            # 短语级输出契约 = 弹窗读取字段：编号/来源句/短语/规范化问题/置信度
             phrases.append({
                 "id": f"RQP{index + 1}",
                 "text": phrase,
                 "sentence_id": sentence_id,                       # 来源句（指向 RQS{index+1}）
-                "source_sentence_index": index,
                 "normalized_question": norm_q,                      # 规范化问题
                 "confidence": _confidence(item),
             })
@@ -1086,6 +1318,11 @@ def _citations(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any
             },
             "confidence": _confidence(item),
         })
+        # 引用输出契约 = 弹窗读取字段：引用句/标记/上下文(对象)/情感或意图/置信度。
+        # 顶层扁平 context_before/context_after 已收敛进 context 对象；sub_span(子跨度
+        # 分析中间值)/source_position(无位置列)弹窗不读取，不进公开响应
+        for _drop in ("context_before", "context_after", "sub_span", "source_position"):
+            normalized[-1].pop(_drop, None)
     statistics = data.get(f"{result_key.removesuffix('_results')}_statistics") or data.get("statistics") or dict(Counter(item.get(label_key) for item in normalized if item.get(label_key)))
     return {
         **data,
@@ -1127,6 +1364,9 @@ def _entities(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
             "entity_type_name": item.get("entity_type_name") or _NER_TYPE_ZH.get(entity_type, entity_type),
             "confidence": confidence,
         })
+        # GLM output_schema 会带 mapping 字段（LLM 生成的知识库 ID 猜测），
+        # 弹窗知识库 ID 列读 standard_kb_id，mapping 不展示不输出
+        items[-1].pop("mapping", None)
     # ---- 实体去重（原子性优先）----
     # NER 最佳实践：输出原子概念单元，不输出复合短语。三层去重：
     # ① 位置嵌套（跨类型）：A 的 [start,end] 完全在 B 内 → 删 A（内嵌/不完整）
@@ -1325,6 +1565,10 @@ def _clusters(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
     all_rep = [c.get("representative_terms") or [] for c in clusters]
     for i, c in enumerate(clusters):
         scores = c.pop("_in_scores", [])
+        # 引擎已算好真实向量指标（v3 语步句向量）→ 尊重真值；仅旧引擎无指标时
+        # 用主题匹配分派生（避免 0 值假象）
+        if isinstance(c.get("feature_statistics"), dict) and c["feature_statistics"].get("intra_cluster_similarity"):
+            continue
         intra = (sum(scores) / len(scores)) / 0.6 if scores else 0.0
         intra = min(1.0, max(0.0, intra))
         inter = 1.0 - max((_jaccard(all_rep[i], all_rep[j]) for j in range(len(clusters)) if j != i), default=0.0)
@@ -1334,22 +1578,28 @@ def _clusters(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
             "inter_cluster_separation": round(inter, 3),
             "semantic_density": round(density, 3),
         }
-    # 文献归属：每篇文献 → 其所选轴的类簇
+    # 文献归属：优先用引擎输出的 document_assignments（v3 已带真实中心相似度与
+    # 证据句）；引擎未输出时（旧管线）从 documents 重建
     assignments = []
-    for doc in documents:
-        if not isinstance(doc, dict):
-            continue
-        axis_info = doc.get(axis) or {}
-        assignments.append({
-            "document_id": doc.get("document_id") or doc.get("id") or "",
-            "title": doc.get("title", ""),
-            "publication_year": doc.get("publication_year") or doc.get("year"),
-            "publication_date": doc.get("published_at") or doc.get("publication_date"),
-            "cluster_id": axis_info.get("topic_id", ""),
-            "similarity_to_centroid": axis_info.get("score"),
-            "key_evidence": axis_info.get("key_evidence") or axis_info.get("topic_name", ""),
-            "input_representation": doc.get("input_representation") or {},
-        })
+    engine_assignments = _list(data.get("document_assignments"))
+    if engine_assignments and isinstance(engine_assignments[0], dict) \
+            and any(a.get("cluster_id") for a in engine_assignments):
+        assignments = engine_assignments
+    else:
+        for doc in documents:
+            if not isinstance(doc, dict):
+                continue
+            axis_info = doc.get(axis) or {}
+            assignments.append({
+                "document_id": doc.get("document_id") or doc.get("id") or "",
+                "title": doc.get("title", ""),
+                "publication_year": doc.get("publication_year") or doc.get("year"),
+                "publication_date": doc.get("published_at") or doc.get("publication_date"),
+                "cluster_id": axis_info.get("topic_id", ""),
+                "similarity_to_centroid": axis_info.get("score"),
+                "key_evidence": axis_info.get("key_evidence") or axis_info.get("topic_name", ""),
+                "input_representation": doc.get("input_representation") or {},
+            })
     dimension_name = data.get("cluster_dimension_name") or ("应用场景聚类" if axis == "application" else "技术路线聚类")
     quality = data.get("clustering_quality") if isinstance(data.get("clustering_quality"), dict) else {}
     quality.setdefault("cluster_count", len(clusters))
@@ -1444,18 +1694,11 @@ def _clusters(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
         "document_assignments": data.get("document_assignments") or assignments,
         "semantic_projection": data.get("semantic_projection") or projection,
         "theme_trend_analysis": data.get("theme_trend_analysis") or trend,
-        "training_evaluation": data.get("training_evaluation") or {
-            "dataset_version": None,
-            "evidence_status": "not_evaluated",
-            "notice": "本次仅执行用户文献聚类，未运行独立模型性能评测。",
-            "metrics": {},
-        },
         "dimension": dimension,
         "quality_metrics": data.get("quality_metrics"),
         "correction_status": data.get("correction_status", "unreviewed"),
         # 锚点体系诊断块（库规模/门槛/两级资源裁决）落库留档供验收与审计；
         # 弹窗不读 → 公开响应仍被 public_viz_result 白名单剔除（严格一致原则）
-        "anchor_assist": data.get("anchor_assist"),
         "algorithm_metadata": data.get("algorithm_metadata"),
     }
 

@@ -3173,6 +3173,10 @@ class SemanticApplicationService(ISemanticService):
             "moves": out_moves,
             "confidence": overall_confidence,
             "document": {"title": project_name} if project_name else {},
+            # 全文作为内部定位源传给 normalizer（弹窗"原文片段高亮"用全文匹配语步
+            # 片段；文件模式 document.abstract 只有摘要，语步片段多来自全文正文）。
+            # 该键不在弹窗白名单，public_viz_result 出口自动滤除，不进公开响应。
+            "source_full_text": full_text[:20000],
         }
         result.evidence = [{"source": a["source"], "move_type": mt, "confidence": a["confidence"]}
                            for mt in move_types for a in aggregated[mt]]
@@ -3464,15 +3468,10 @@ class SemanticApplicationService(ISemanticService):
             citations = []
 
         if not citations:
-            # 规则未命中不等于可以跳过模型。仍由 GLM-5.2 审核文本片段，
-            # 只有模型确认没有引用句时才返回空结果。
-            probe = [{
-                "sentence": text[:3000],
-                "citation_marker": "",
-                "context_before": "",
-                "context_after": "",
-            }]
-            citations = self._llm_confirm_citations(probe)
+            # 规则未命中不等于可以跳过模型。正则覆盖不到的引用格式（作者-年份、
+            # 罕见标记等）由 GLM 从全文分块提取引用句——不再只探前 3000 字符
+            # （长论文的引用句常集中在 3000 字之后，实测会被整篇漏掉）。
+            citations = self._llm_extract_citations_fallback(text)
 
         if not citations:
             result.success = True
@@ -3610,6 +3609,11 @@ class SemanticApplicationService(ISemanticService):
         if ref_match:
             text = text[:ref_match.start()]
 
+        # 全角引用标记归一化：中文期刊 PDF 常用全角方括号 ［1］/［1-2］/［1，2］，
+        # 抽取正则与 citation_marker 提取只认半角 [n]（实测 LSTM.pdf 34 处全角标记
+        # 全部漏抽）。仅归一化内容为数字/连字符/逗号的全角括号，不影响文字性括号。
+        text = _re.sub(r'［\s*([0-9\-–,，\s]+?)\s*］',
+                       lambda m: '[' + m.group(1).replace('，', ',') + ']', text)
         # 清理 MinerU 残缺 LaTeX（孤立 \command 转 unicode、去孤立 $），避免引用句裸露符号
         text = self._clean_citation_latex(text)
         # 删 mineru 图片 vlm 描述标签 <summary>natural_image</summary>（连同内容），
@@ -3713,6 +3717,45 @@ class SemanticApplicationService(ISemanticService):
                     "context_after": _next,
                 })
         return certain, uncertain
+
+    def _llm_extract_citations_fallback(self, text: str) -> list:
+        """正则零命中时的全文引用句提取兜底：GLM 分块扫描全文找出引用句。
+
+        覆盖正则模式之外的引用格式（作者-年份、无标记转述、特殊符号标记等）。
+        全文按 3000 字分块（引用句不跨块截断的粒度由 LLM 语句边界弥补），每块
+        提取的句子按 citation 模式补 marker。返回结构同 _extract_citations 的确定项。
+        """
+        if not text.strip():
+            return []
+        sysp = ("你是学术引用句识别专家。从给定文本中找出所有引用他人研究成果的句子"
+                "（含文献编号标记、作者+年份、或明确提及他人工作的转述）。"
+                "逐字摘录原句，不得改写。只输出JSON："
+                '{"data":{"results":[{"sentence":"引用句原文"}]}}，无引用句输出空数组。')
+        chunks = [text[i:i + 3000] for i in range(0, len(text), 2800)]
+        found: list = []
+        for chunk in chunks[:12]:  # 上限 12 块（约 3.4 万字），防超长全文调用失控
+            try:
+                d = self._glm.chat_json(sysp, f"文本：\n{chunk}", timeout=60.0,
+                                        max_tokens=2000, temperature=0.0)
+            except Exception:  # noqa: BLE001
+                continue  # 单块失败不阻塞其余块
+            d = d.get("data", d) if isinstance(d, dict) else {}
+            for r in (d.get("results") or []):
+                if not isinstance(r, dict):
+                    continue
+                sent = str(r.get("sentence") or "").strip()
+                if len(sent) < 8:
+                    continue
+                marker = ""
+                for _p in self._CITATION_PATTERNS:
+                    _m = _p.search(sent)
+                    if _m:
+                        marker = _m.group()
+                        break
+                if sent not in [f["sentence"] for f in found]:
+                    found.append({"sentence": sent, "citation_marker": marker,
+                                  "context_before": "", "context_after": ""})
+        return found
 
     def _llm_confirm_citations(self, uncertain: list) -> list:
         """LLM 判定不确定句是否引用句（分批，每批10句）。返回确认的引用句。"""

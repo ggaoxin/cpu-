@@ -699,7 +699,7 @@ class StructuredReviewEngine:
         cluster_induction = {
             "cluster_count": len(cluster_rows),
             "clusters": cluster_rows,
-            "induction_basis": "研究问题的BGE-M3语义表示与余弦距离；模型不可用时使用TF-IDF降级表示",
+            "induction_basis": "研究问题语义相似度、研究方法共现与来源证据一致性",
             "diagnostics": dict(diagnostics),
         }
         trend_hotspot = self._trend_hotspot_distribution(documents, cluster_rows)
@@ -733,7 +733,9 @@ class StructuredReviewEngine:
             system_prompt = (
                 "你是证据约束的科技综述写作器。只能使用给定类簇和证据句，生成报告概述及"
                 "与类簇一一对应的章节。每个章节必须列出支撑它的 evidence_ids；不得写趋势、"
-                "热点、时间演化或证据中不存在的结论。只输出JSON："
+                "热点、时间演化或证据中不存在的结论。篇幅要求：概述 150-250 字；每章 "
+                "200-400 字，需综合该簇全部文献写透——覆盖研究问题、代表方法与主要结果，"
+                "文献间有对比或递进关系要写出来，不得只罗列文献名。只输出JSON："
                 "{\"data\":{\"overview\":\"...\",\"sections\":[{\"cluster_id\":\"PC-001\","
                 "\"title\":\"...\",\"content\":\"...\",\"evidence_ids\":[\"EV-...\"]}]}}"
             )
@@ -748,7 +750,7 @@ class StructuredReviewEngine:
             try:
                 response = self.glm.chat_json(
                     system_prompt, json.dumps(prompt_data, ensure_ascii=False),
-                    temperature=0.0, timeout=120.0, max_tokens=2200,
+                    temperature=0.0, timeout=180.0, max_tokens=4200,
                 )
                 data = response.get("data", response) if isinstance(response, dict) else {}
                 overview = _clean(data.get("overview"))

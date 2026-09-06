@@ -16055,7 +16055,7 @@ body.v704-deep-cluster-active .deep-cluster-only-v704[hidden] { display: none !i
     cursor: pointer;
   }
   .deep-cluster-result-use-actions-v704 button:hover { border-color: #87a9e9; color: #285dcc; }
-  body.v704-deep-cluster-active .deep-cluster-result-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  body.v704-deep-cluster-active .deep-cluster-result-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .deep-cluster-correction-layout-v704 { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); gap: 12px; }
   .deep-cluster-correction-card-v704 {
     padding: 14px;

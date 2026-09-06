@@ -32,11 +32,20 @@ principles: 'Judge by language mechanism, not isolated vocabulary. Attend to:
 
   4. Results vs Conclusion boundary: Results state objective facts; Conclusion interprets them, gives implications or suggestions. Conclusion usually follows Results; if a suggestion appears before Results, it is Objective.
 
-  5. Objective vs Methods boundary: in compound sentences with both "to address ... problem" (purpose clause) and "we propose ... method" (main clause), recognize the clause boundary; do not label the whole sentence Objective merely because of "to address".
+  5. Objective vs Methods boundary: a sentence declaring what THIS paper proposes
+  ("To address this, we propose X...", "In this paper, we present X...", "We introduce X,
+  which ...") is the paper''s Objective — the proposal declaration itself states the research
+  aim. Methods covers the SUBSEQUENT technical-detail sentences ("Specifically, we ...",
+  "We first ...", "In addition, we ...", experimental setup). Do not merge the proposal
+  declaration into Methods merely because it contains "propose".
 
-  6. Discourse order: typically Background→Objective→Methods→Results→Conclusion; position is only auxiliary evidence.
+  6. Paradigm-description sentences (how the existing approach/paradigm works, e.g.
+  "Based on these sequences, GR predicts the next item by ...") describe prior-art
+  mechanics, not this paper''s method — label them Background, not Methods.
 
-  7. Output must be verbatim excerpts; five spans reconstruct the abstract.'
+  7. Discourse order: typically Background→Objective→Methods→Results→Conclusion; position is only auxiliary evidence.
+
+  8. Output must be verbatim excerpts; five spans reconstruct the abstract.'
 dictionaries:
   Background:
   - however
@@ -55,6 +64,10 @@ dictionaries:
   - we investigate
   - the objective
   - goal
+  - to address this, we propose
+  - in this paper, we propose
+  - in this paper, we present
+  - in this work, we
   Methods:
   - propose
   - develop
@@ -147,6 +160,26 @@ pattern_rules:
   exclusion_conditions:
   - kind: keyword
     any_of: [previous studies, prior work, existing research]
+  - kind: keyword
+    any_of: [to address this, to address these, to tackle, to this end, in this paper, in this work, aimed to address]
+- id: MR-EN-006
+  layer: universal
+  scope: global
+  target_move: Objective
+  action: +score
+  level: soft
+  weight: 0.6
+  description: 'Proposal declaration sentence ("To address this, we propose X" / "In this paper, we present X") states the research aim — label it Objective, not Methods'
+  necessary_conditions:
+  - kind: keyword
+    any_of: [we propose, we present, we introduce, we develop, we design]
+  - kind: keyword
+    any_of: [to address this, to address these, to tackle, to this end, in this paper, in this work, we propose]
+  exclusion_conditions:
+  - kind: keyword
+    any_of: [previous studies, prior work, existing research]
+  - kind: keyword
+    any_of: [specifically, we first, in addition, finally, we then, we conduct]
 - id: MR-EN-005
   layer: universal
   scope: global

@@ -6916,61 +6916,6 @@ export const deepClusterRuntime = {
         "stable_cluster_id": "TECH-02",
         "summary": "技术类簇由传统视觉与时间序列建模相关短语，逐步扩展到大模型语义理解、图推理和跨模态可信分析相关短语。"
       },
-      "training_evaluation": {
-        "dataset_version": "MED-CLUSTER-DEMO-2026.07",
-        "evidence_status": "prototype_demo_configuration",
-        "notice": "以下规模和指标仅用于静态原型展示，不代表真实训练数据、模型评测结论或生产性能。接入项目数据后应替换为可审计的数据版本、划分策略和评测报告。",
-        "datasets": [
-          {
-            "name": "医学文献训练集",
-            "version": "MED-TRAIN-DEMO-V1",
-            "size": 12000,
-            "unit": "篇",
-            "purpose": "句子编码与聚类模型训练",
-            "status": "演示配置"
-          },
-          {
-            "name": "人工标注样本",
-            "version": "MED-ANNOTATED-DEMO-V1",
-            "size": 3200,
-            "unit": "篇",
-            "purpose": "类簇归属与主题一致性监督",
-            "status": "演示配置"
-          },
-          {
-            "name": "在线评测集",
-            "version": "MED-ONLINE-EVAL-DEMO-V1",
-            "size": 800,
-            "unit": "篇",
-            "purpose": "按时间顺序模拟在线评测",
-            "status": "演示配置"
-          },
-          {
-            "name": "随机评测集",
-            "version": "MED-RANDOM-EVAL-DEMO-V1",
-            "size": 800,
-            "unit": "篇",
-            "purpose": "随机抽样稳定性评测",
-            "status": "演示配置"
-          }
-        ],
-        "metrics": {
-          "silhouette_score": 0.712,
-          "normalized_mutual_information": 0.781,
-          "adjusted_rand_index": 0.736,
-          "expert_agreement": 0.846
-        },
-        "correction_loop": {
-          "supported_operations": [
-            "move_document",
-            "merge_clusters",
-            "split_cluster"
-          ],
-          "correction_count": 0,
-          "update_status": "not_submitted",
-          "incremental_version": "pending"
-        }
-      },
       "manual_correction": {
         "supported_operations": [
           "move_document",
@@ -7661,61 +7606,6 @@ export const deepClusterRuntime = {
         "stable_cluster_id": "TECH-02",
         "summary": "技术类簇由传统视觉与时间序列建模相关短语，逐步扩展到大模型语义理解、图推理和跨模态可信分析相关短语。"
       },
-      "training_evaluation": {
-        "dataset_version": "MED-CLUSTER-DEMO-2026.07",
-        "evidence_status": "prototype_demo_configuration",
-        "notice": "以下规模和指标仅用于静态原型展示，不代表真实训练数据、模型评测结论或生产性能。接入项目数据后应替换为可审计的数据版本、划分策略和评测报告。",
-        "datasets": [
-          {
-            "name": "医学文献训练集",
-            "version": "MED-TRAIN-DEMO-V1",
-            "size": 12000,
-            "unit": "篇",
-            "purpose": "句子编码与聚类模型训练",
-            "status": "演示配置"
-          },
-          {
-            "name": "人工标注样本",
-            "version": "MED-ANNOTATED-DEMO-V1",
-            "size": 3200,
-            "unit": "篇",
-            "purpose": "类簇归属与主题一致性监督",
-            "status": "演示配置"
-          },
-          {
-            "name": "在线评测集",
-            "version": "MED-ONLINE-EVAL-DEMO-V1",
-            "size": 800,
-            "unit": "篇",
-            "purpose": "按时间顺序模拟在线评测",
-            "status": "演示配置"
-          },
-          {
-            "name": "随机评测集",
-            "version": "MED-RANDOM-EVAL-DEMO-V1",
-            "size": 800,
-            "unit": "篇",
-            "purpose": "随机抽样稳定性评测",
-            "status": "演示配置"
-          }
-        ],
-        "metrics": {
-          "silhouette_score": 0.712,
-          "normalized_mutual_information": 0.781,
-          "adjusted_rand_index": 0.736,
-          "expert_agreement": 0.846
-        },
-        "correction_loop": {
-          "supported_operations": [
-            "move_document",
-            "merge_clusters",
-            "split_cluster"
-          ],
-          "correction_count": 0,
-          "update_status": "not_submitted",
-          "incremental_version": "pending"
-        }
-      },
       "manual_correction": {
         "supported_operations": [
           "move_document",
@@ -8073,61 +7963,6 @@ export const deepClusterRuntime = {
         "emerging_cluster_id": "TECH-05",
         "stable_cluster_id": "TECH-02",
         "summary": "技术类簇由传统视觉与时间序列建模相关短语，逐步扩展到大模型语义理解、图推理和跨模态可信分析相关短语。"
-      },
-      "training_evaluation": {
-        "dataset_version": "MED-CLUSTER-DEMO-2026.07",
-        "evidence_status": "prototype_demo_configuration",
-        "notice": "以下规模和指标仅用于静态原型展示，不代表真实训练数据、模型评测结论或生产性能。接入项目数据后应替换为可审计的数据版本、划分策略和评测报告。",
-        "datasets": [
-          {
-            "name": "医学文献训练集",
-            "version": "MED-TRAIN-DEMO-V1",
-            "size": 12000,
-            "unit": "篇",
-            "purpose": "句子编码与聚类模型训练",
-            "status": "演示配置"
-          },
-          {
-            "name": "人工标注样本",
-            "version": "MED-ANNOTATED-DEMO-V1",
-            "size": 3200,
-            "unit": "篇",
-            "purpose": "类簇归属与主题一致性监督",
-            "status": "演示配置"
-          },
-          {
-            "name": "在线评测集",
-            "version": "MED-ONLINE-EVAL-DEMO-V1",
-            "size": 800,
-            "unit": "篇",
-            "purpose": "按时间顺序模拟在线评测",
-            "status": "演示配置"
-          },
-          {
-            "name": "随机评测集",
-            "version": "MED-RANDOM-EVAL-DEMO-V1",
-            "size": 800,
-            "unit": "篇",
-            "purpose": "随机抽样稳定性评测",
-            "status": "演示配置"
-          }
-        ],
-        "metrics": {
-          "silhouette_score": 0.712,
-          "normalized_mutual_information": 0.781,
-          "adjusted_rand_index": 0.736,
-          "expert_agreement": 0.846
-        },
-        "correction_loop": {
-          "supported_operations": [
-            "move_document",
-            "merge_clusters",
-            "split_cluster"
-          ],
-          "correction_count": 0,
-          "update_status": "not_submitted",
-          "incremental_version": "pending"
-        }
       },
       "manual_correction": {
         "supported_operations": [

@@ -1,0 +1,54 @@
+[
+  {
+    "lang": "en",
+    "name": "MACRec-生成式推荐",
+    "abstract": "Generative Recommendation (GR) has emerged as a new paradigm in recommender systems. This approach relies on quantized representations to discretize item features, modeling users historical interactions as sequences of discrete tokens. Based on these tokenized sequences, GR predicts the next item by employing next-token prediction methods. The challenges of GR lie in constructing high-quality semantic identifiers (IDs) that are hierarchically organized, minimally conflicting, and conducive to effective generative model training. However, current approaches remain limited in their ability to harness multimodal information and to capture the deep and intricate interactions among diverse modalities, both of which are essential for learning high-quality semantic IDs and for effectively training GR models. To address this, we propose Multi-Aspect Cross-modal quantization for generative Recommendation (MACRec), which introduces multimodal information and incorporates it into both semantic ID learning and generative model training from different aspects. Specifically, we first introduce cross-modal quantization during the ID learning process, which effectively reduces conflict rates and thus improves codebook usability through the complementary integration of multimodal information. In addition, to further enhance the generative ability of our GR model, we incorporate multi-aspect cross-modal alignments, including the implicit and explicit alignments. Finally, we conduct extensive experiments on three well-known recommendation datasets to demonstrate the effectiveness of our proposed method.",
+    "labels": [
+      "Background",
+      "Background",
+      "Background",
+      "Background",
+      "Background",
+      "Objective",
+      "Methods",
+      "Methods",
+      "Methods"
+    ]
+  },
+  {
+    "lang": "en",
+    "name": "EdgeFormer-边缘推理",
+    "abstract": "Deep neural networks have revolutionized computer vision, yet their energy consumption remains prohibitive for edge deployment. In this paper, we propose EdgeFormer, a lightweight transformer architecture with dynamic token pruning. We evaluate EdgeFormer on ImageNet and COCO benchmarks across five mobile devices. Experimental results demonstrate that EdgeFormer achieves 94.2% top-1 accuracy with 3.8x lower latency and 61% energy reduction compared to mobile baselines. Ablation studies further confirm that dynamic token pruning contributes 42% of the efficiency gain. These findings suggest that architecture-level sparsity is a promising direction for sustainable edge AI.",
+    "labels": [
+      "Background",
+      "Objective",
+      "Methods",
+      "Results",
+      "Results",
+      "Conclusion"
+    ]
+  },
+  {
+    "lang": "zh",
+    "name": "马赫数控制",
+    "abstract": "针对高超声速飞行器的马赫数控制问题，本文提出一种基于LSTM预测补偿的抗扰动控制方法。仿真设置三类典型工况验证方法有效性。结果表明：在理想情况下，目标马赫数1.2、0.95、0.8时马赫数均方根误差（RMS）分别降低76%、82%、51%；即使在引入LSTM模型预测误差后，RMS仍分别降低61%、56%、42%，系统抗扰动能力得到显著提升。该方法为高超声速飞行器的工程应用提供了参考。",
+    "labels": [
+      "研究目的",
+      "研究方法",
+      "研究结论",
+      "研究结论"
+    ]
+  },
+  {
+    "lang": "zh",
+    "name": "高校体育场馆",
+    "abstract": "高校体育场馆管理正由经验管理向数据驱动的智慧治理转变，但仍面临数据孤岛与决策滞后等现实困境。本研究探究大数据赋能高校体育场馆智慧化建设的作用机理、现实困境与实现路径。采用文献资料法和逻辑分析法，围绕数据治理与运营协同开展归纳分析。研究发现，数据要素汇聚能够重塑管理决策并优化资源配置，但数据治理体系与协同机制仍需完善。由此提出应构建数据治理体系并创新运营管理机制，以促进高校体育场馆可持续发展。",
+    "labels": [
+      "研究背景",
+      "研究目的",
+      "研究方法",
+      "研究结果",
+      "研究结论"
+    ]
+  }
+]

@@ -376,7 +376,7 @@ def _candidate(matrix: np.ndarray, method: str, k: int, min_cluster_size: int, s
         + 0.25 * stability_part
         + 0.15 * balance
         - 0.30 * noise_ratio
-        - 0.60 * undersized_ratio
+        - 1.20 * undersized_ratio  # 过半单例的划分不是可用聚类结构（同 bge_m3_sparse 罚分口径）
     )
     return Candidate(
         labels, method, used, k, silhouette, stability, balance,

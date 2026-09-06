@@ -88,6 +88,39 @@ def matched_sources(rule: Rule, sentence: str, feats: Dict[str, str], ctx: Dict[
     return sources
 
 
+_SUMMARY_TAIL_RE = re.compile(
+    r"(能力|性能|效果|精度|鲁棒性|抗扰|泛化)(能力)?(得到|获得)?(显著|明显|大幅|有效)?(提升|改善|提高|增强)"
+)
+
+
+def relocate_summary_tail_sentences(sentences: List[str], final_labels: List[str]) -> int:
+    """确定性口径校准：结果段末尾连续的总结性句子改判研究结论（需求评审口径）。
+
+    "结果表明：数据A%；即使引入误差，数据B%，系统能力得到显著提升。"这类复合句
+    分号被分句器切开后，尾子句（数据+总结性评价）的落点是总体性评价——按口径归
+    研究结论。LLM 与冲突审核对该落点判定不稳定，此处按确定规则校准：
+    仅从句子序列末尾向前扫描"研究结果"标签的连续块，命中总结性模式的句子改判
+    "研究结论"（中间命中的结果句不动，避免误伤）；英文 profile 无此二语步则跳过。
+    返回改判句数。
+    """
+    p = get_profile()
+    if "研究结论" not in p.moves or "研究结果" not in p.moves:
+        return 0
+    changed = 0
+    for i in range(len(sentences) - 1, -1, -1):
+        if final_labels[i] == "研究结果":
+            if _SUMMARY_TAIL_RE.search(sentences[i]):
+                final_labels[i] = "研究结论"
+                changed += 1
+            else:
+                break  # 尾部连续结果块结束（纯数据句是边界）
+        elif final_labels[i] == "研究结论":
+            continue  # 已是结论的尾句跳过，继续向前找结果句块
+        else:
+            break
+    return changed
+
+
 def _deterministic_checks(abstract: str, sentences: List[str], spans: Dict[str, str]) -> List[str]:
     """确定性校验，返回发现的问题清单（可自动修正的在此处修正并记录）。"""
     p = get_profile()

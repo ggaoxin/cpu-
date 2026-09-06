@@ -5,6 +5,7 @@ import json
 import uuid
 from collections import defaultdict
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from typing import Any, Dict, Iterable
 
@@ -13,7 +14,7 @@ from config.settings import settings
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
 
 
 def _rows(value: Any) -> list[dict[str, Any]]:

@@ -5,6 +5,7 @@ import contextlib
 import logging
 import sqlite3
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from typing import Any, Dict, Iterable, Iterator, Optional, Sequence
 from urllib.parse import parse_qs, unquote, urlparse
@@ -113,7 +114,7 @@ class Database:
     def _seed_bundled_semantic_resources(self) -> None:
         from config.default_semantic_resources import BUNDLED_SEMANTIC_RESOURCES
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
         verb = "INSERT IGNORE" if self.dialect == "mysql" else "INSERT OR IGNORE"
         with self.session() as session:
             for resource_id, resource_key, name, storage_uri, language in BUNDLED_SEMANTIC_RESOURCES:

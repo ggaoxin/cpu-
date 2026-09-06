@@ -2,8 +2,9 @@
 import { computed, reactive, ref, watch } from 'vue'
 import type { InputMode, ToolDefinition } from '../types'
 import { endpointFor, modesFor, pretty, requestPayloadFor, supportsVisualization } from '../utils/tooling'
-import { ApiRequestError, apiUrl, executeToolRequest, listCompatibleHistory, listDictionaries, listDocumentCollections, listSemanticResources, parseCitationMetadata, saveDictionary } from '../services/api'
+import { ApiRequestError, apiUrl, executeToolRequest, listCompatibleHistory, listDictionaries, listClusterCollections, listDocumentCollections, listSemanticResources, parseCitationMetadata, saveDictionary } from '../services/api'
 import { requirementInputsFor } from '../data/requirement-contracts'
+import { copyText } from '../utils/clipboard'
 import ModeSwitch from './ModeSwitch.vue'
 import RequirementSupplement from './RequirementSupplement.vue'
 
@@ -247,72 +248,17 @@ async function parseBatchCitationRefs(item: CitationBatchItem) {
 function removeBatchMetaEntry(item: CitationBatchItem, index: number) {
   item.metaList.splice(index, 1)
 }
-// 深度聚类锚点资源:先选文件,点提交后上传入库并自动选中;取消则清空待上传文件
+
+// 深度聚类锚点资源（可选）：内置=纯 v3 分组；上传=语步级锚点引导
+const anchorTrainMode = ref('builtin')
+const anchorGoldMode = ref('builtin')
 const anchorTrainFile = ref<File | null>(null)
 const anchorGoldFile = ref<File | null>(null)
-const anchorUploadingKey = ref('')
-let anchorFileInput: HTMLInputElement | null = null
-function handleAnchorFileChange(resourceKey: string, event: Event) {
-  anchorFileInput = event.target as HTMLInputElement
-  const file = (event.target as HTMLInputElement).files?.[0] || null
-  // 仅放行 .json：accept 只过滤系统选择器，切"所有文件"仍可选 txt/csv
-  if (file && !file.name.toLowerCase().endsWith('.json')) {
-    if (resourceKey === 'training_samples') anchorTrainFile.value = null
-    else anchorGoldFile.value = null
-    if (anchorFileInput) anchorFileInput.value = ''
-    setAnchorNotice(resourceKey, '仅支持标准 JSON 文件（CSV、JSONL、TXT 暂不支持）')
-    return
-  }
-  setAnchorNotice(resourceKey, '')
-  if (resourceKey === 'training_samples') anchorTrainFile.value = file
+function handleAnchorUpload(field: 'training_samples' | 'manually_labeled_category_data', event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0] || null
+  if (field === 'training_samples') anchorTrainFile.value = file
   else anchorGoldFile.value = file
-}
-function clearAnchorFile(resourceKey: string) {
-  if (resourceKey === 'training_samples') anchorTrainFile.value = null
-  else anchorGoldFile.value = null
-  if (anchorFileInput) anchorFileInput.value = ''
-}
-// 上传文件类型提示（含拦截反馈与大模型整理成功通知），两个锚点资源各自独立
-const anchorTrainNotice = ref('')
-const anchorGoldNotice = ref('')
-function setAnchorNotice(resourceKey: string, message: string) {
-  if (resourceKey === 'training_samples') anchorTrainNotice.value = message
-  else anchorGoldNotice.value = message
-}
-async function submitAnchorResource(resourceKey: string) {
-  const file = resourceKey === 'training_samples' ? anchorTrainFile.value : anchorGoldFile.value
-  if (!file) return
-  anchorUploadingKey.value = resourceKey
-  try {
-    const formData = new FormData()
-    formData.append('resource_key', resourceKey)
-    formData.append('upload', file)
-    const response = await fetch(apiUrl('/api/v1/semantic-resources/upload'), { method: 'POST', body: formData })
-    const data = await response.json()
-    if (data.code === 0) {
-      const rid = data.data?.resource_id
-      setAnchorNotice(resourceKey, data.data?.normalized_by === 'glm'
-        ? (data.message || '结构非标准，已自动整理为标准格式')
-        : '')
-      await loadAnchorOptions()
-      if (resourceKey === 'training_samples') {
-        selectedAnchorTrain.value = rid
-        anchorTrainFile.value = null
-        anchorTrainSource.value = 'database'
-      } else {
-        selectedAnchorGold.value = rid
-        anchorGoldFile.value = null
-        anchorGoldSource.value = 'database'
-      }
-      if (anchorFileInput) anchorFileInput.value = ''
-    } else {
-      requestError.value = data.detail || '上传失败'
-    }
-  } catch (error) {
-    requestError.value = error instanceof Error ? error.message : '上传请求失败'
-  } finally {
-    anchorUploadingKey.value = ''
-  }
 }
 const supplementalPayload = ref<Record<string, unknown>>({})
 const labelLengthLimit = ref(12)
@@ -373,33 +319,7 @@ const selectedDictionary = computed(() => savedDictionaryOptions.value.find(item
 const documentTitleToolIds = new Set(['zh-classify', 'en-classify', 'domain-classify', 'zh-keyword', 'en-keyword', 'rq-detect', 'zh-abstract-move', 'en-abstract-move', 'citation-sentiment', 'citation-intent'])
 const needsDocumentTitle = computed(() => documentTitleToolIds.has(props.toolId))
 
-// 深度聚类锚点资源（训练样本/人工标注类目，随「文本与文献元数据」面板展示）
-type AnchorResourceOption = { id: string; name: string; version: string }
-const anchorTrainOptions = ref<AnchorResourceOption[]>([])
-const anchorGoldOptions = ref<AnchorResourceOption[]>([])
-const anchorTrainSource = ref('database')
-const anchorGoldSource = ref('database')
-const selectedAnchorTrain = ref('')
-const selectedAnchorGold = ref('')
-async function loadAnchorOptions() {
-  const response = await listSemanticResources()
-  const items = (response.data || []) as Array<Record<string, unknown>>
-  const toOption = (item: Record<string, unknown>) => ({ id: String(item.id), name: String(item.name), version: String(item.version), bundled: String(item.source_type ?? '') === 'bundled' })
-  anchorTrainOptions.value = items.filter(item => item.resource_key === 'training_samples').map(toOption)
-  anchorGoldOptions.value = items.filter(item => item.resource_key === 'manually_labeled_category_data').map(toOption)
-}
-// 默认选中系统内置预置资源（半监督系统原型引导）：不上传用户自定义文件时
-// 界面默认即走内置分支；用户仍可改选数据库其它资源、上传或「不使用」。
-const preferBuiltin = (list: Array<{ id: string; bundled: boolean }>) =>
-  list.find(item => item.bundled)?.id || list[0]?.id || ''
-watch(() => props.toolId, async toolId => {
-  if (toolId !== 'deep-cluster') return
-  try {
-    await loadAnchorOptions()
-    selectedAnchorTrain.value = preferBuiltin(anchorTrainOptions.value)
-    selectedAnchorGold.value = preferBuiltin(anchorGoldOptions.value)
-  } catch { /* 资源拉取失败不阻断聚类 */ }
-}, { immediate: true })
+// 深度聚类锚点资源已随主题库删除（v3 语步对齐聚类不再使用锚点资源）
 
 const onlineRequestValues = computed<Record<string, unknown>>(() => {
   const values: Record<string, unknown> = { ...supplementalPayload.value }
@@ -434,13 +354,6 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
     values.clustering_algorithm_type = form.algorithm
     values.cluster_count = form.clusterCount === '' ? null : Number(form.clusterCount)
     values.output_format = form.outputFormat
-    // 锚点辅助资源（可选）：选择后小样本聚类主题锚定到人工标注类目
-    values.training_samples = anchorTrainSource.value === 'upload'
-      ? { source: 'upload', resource_id: null }
-      : { source: 'database', resource_id: selectedAnchorTrain.value || null }
-    values.manually_labeled_category_data = anchorGoldSource.value === 'upload'
-      ? { source: 'upload', resource_id: null }
-      : { source: 'database', resource_id: selectedAnchorGold.value || null }
     return values
   }
   if (props.toolId === 'structured-review') {
@@ -548,6 +461,17 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
       }
     }
   }
+  // 深度聚类锚点资源（可选）：上传模式的文件由 executeToolRequest 的 FormData
+  // 直接携带（File 对象进 payload 后 appendFormValue 走 multipart 文件字段）；
+  // 内置模式不写字段 = 纯 v3 自由分组
+  if (props.toolId === 'deep-cluster') {
+    if (anchorTrainMode.value === 'upload' && anchorTrainFile.value) {
+      values.training_samples = anchorTrainFile.value
+    }
+    if (anchorGoldMode.value === 'upload' && anchorGoldFile.value) {
+      values.manually_labeled_category_data = anchorGoldFile.value
+    }
+  }
   return values
 })
 
@@ -625,16 +549,28 @@ function formatDateTime(value: unknown): string {
   return match ? `${match[1]} ${match[2]}` : text
 }
 
-// 结构化综述至少需要 3 篇文献：下拉只保留满足数量的文献集，
-// 避免选中后提交才报"至少需要 3 项输入数据"。
+// 结构化综述至少需要 2 篇文献：下拉只保留满足数量的文献集，
+// 避免选中后提交才报"至少需要 2 项输入数据"（2026-09-06 门槛由 3 降为 2）。
+// 数据源为聚类标签生成任务的簇：每簇一个文献集（簇名/时间/篇数）。
 function mapUsableCollections(data: any[]) {
-  return (data || []).map(mapCollectionItem).filter(item => Number(item.documentCount) >= 3)
+  return (data || [])
+    .map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      source: item.source_tool || '聚类标签生成工具',
+      documentCount: item.document_count,
+      timeRange: String(item.created_at || '').slice(0, 10),
+      updatedAt: item.created_at,
+      topicSimilarity: item.topic_similarity ?? null,
+    }))
+    .filter(item => Number(item.documentCount) >= 2)
 }
 
 async function loadRuntimeDatabaseOptions() {
   const [dictionaryResponse, collectionResponse, clusterResponse, nerResponse] = await Promise.allSettled([
     listDictionaries(),
-    listDocumentCollections(),
+    // 指定文献集数据源 = 聚类标签生成任务的簇（簇名/时间/篇数，时间倒序全量）
+    listClusterCollections(),
     listCompatibleHistory('cluster-label', 'cluster'),
     listCompatibleHistory('relation-extract', 'entity'),
   ])
@@ -697,25 +633,6 @@ watch(() => props.toolId, () => {
   void loadRuntimeDatabaseOptions()
 }, { immediate: true })
 
-// 结构化综述：研究主题变化时，按主题↔场景标签语义相似度刷新"已有文献集"下拉，
-// 只显示与主题相似度≥阈值的场景文献集（用户设计闭环，省得文献集累积多了得一直找）。
-let topicRefreshTimer: ReturnType<typeof setTimeout> | null = null
-watch(() => form.topic, (topic) => {
-  if (props.toolId !== 'structured-review') return
-  if (topicRefreshTimer) clearTimeout(topicRefreshTimer)
-  topicRefreshTimer = setTimeout(async () => {
-    try {
-      const response = await listDocumentCollections(topic)
-      documentCollectionOptions.value = mapUsableCollections(response.data)
-      if (!documentCollectionOptions.value.some(item => item.id === selectedCollectionId.value)) {
-        selectedCollectionId.value = documentCollectionOptions.value[0]?.id || ''
-      }
-    } catch {
-      // 过滤失败保持原列表
-    }
-  }, 400)
-})
-
 watch(mode, (next, previous) => {
   if (next !== previous && (next === 'file' || next === 'batch')) uploadedFiles.splice(0)
   if (next === 'batch-text' && batchTexts.length === 0) {
@@ -762,7 +679,7 @@ function removeCitationBatchItem(id: number) {
 }
 
 const MAX_BATCH_FILES = 20
-function perFileLimitMB() { return props.toolId === 'structured-review' ? 80 : 50 }
+function perFileLimitMB() { return 50 }  // 单文件上限统一 50MB（所有功能点）
 function handleFileSelection(event: Event, multiple: boolean) {
   const input = event.target as HTMLInputElement
   const files = Array.from(input.files || [])
@@ -791,7 +708,9 @@ function handleFileSelection(event: Event, multiple: boolean) {
       size: file.size,
       type: file.name.split('.').pop()?.toUpperCase() || '文件',
       documentId: `DOC${String(uploadedFiles.length + 1).padStart(3, '0')}`,
-      title: '',
+      // 题名默认取文件全名（含扩展名，如 xxx.pdf）：上传场景无需手填题名；
+      // 发表时间仍需用户填写（趋势分析维度），文献编号已自动生成
+      title: file.name,
       authors: '',
       publicationDate: '',
       source: '',
@@ -894,7 +813,7 @@ function validateRequiredInputs(): string {
     if (!form.topic.trim()) return '请输入研究主题或关键词。'
     if (mode.value === 'collection') return selectedCollectionId.value ? '' : '请选择指定文献集。'
     if (mode.value === 'batch-text') {
-      if (docs.length < 3) return '结构化自动综述至少需要3篇文献文本。'
+      if (docs.length < 2) return '结构化自动综述至少需要2篇文献文本。'
       const invalidIndex = docs.findIndex(item => !item.id.trim() || !item.title.trim() || !item.text.trim())
       if (invalidIndex >= 0) {
         const doc = docs[invalidIndex]
@@ -1009,13 +928,31 @@ let resultCopyTimer: ReturnType<typeof setTimeout> | undefined
 async function copyResult() {
   if (!result.value) return
   try {
-    await navigator.clipboard.writeText(pretty(result.value))
+    await copyText(pretty(result.value))
     resultCopied.value = true
     clearTimeout(resultCopyTimer)
     resultCopyTimer = setTimeout(() => { resultCopied.value = false }, 1200)
   } catch { resultCopied.value = false }
 }
-function downloadResult() { if (!result.value) return; const blob = new Blob([pretty(result.value)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${props.toolId}_result.json`; a.click(); URL.revokeObjectURL(url) }
+function downloadResult() {
+  if (!result.value) return
+  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
+  const fmt = String((onlineRequestValues.value as Record<string, unknown>).output_format
+    ?? (onlineRequestValues.value as Record<string, unknown>).output_format_requirement
+    ?? 'JSON')
+  // 深度聚类：按用户选择的输出格式下载（CSV→csv_content 文本 / 数据库→database_records JSON）
+  if (props.toolId === 'deep-cluster') {
+    if (fmt.toUpperCase().startsWith('CSV') && typeof data?.csv_content === 'string') {
+      const blob = new Blob(['\ufeff' + data.csv_content], { type: 'text/csv;charset=utf-8' })
+      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${props.toolId}_result.csv`; a.click(); URL.revokeObjectURL(url); return
+    }
+    if ((fmt.includes('数据库') || fmt.toUpperCase().includes('DATABASE')) && Array.isArray(data?.database_records)) {
+      const blob = new Blob([JSON.stringify(data.database_records, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${props.toolId}_database_records.json`; a.click(); URL.revokeObjectURL(url); return
+    }
+  }
+  const blob = new Blob([pretty(result.value)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${props.toolId}_result.json`; a.click(); URL.revokeObjectURL(url)
+}
 </script>
 
 <template>
@@ -1085,7 +1022,6 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
                   <option v-if="!clusterTaskOptions.length" value="" disabled>暂无已完成的深度聚类任务</option>
                   <option v-for="task in clusterTaskOptions" :key="task.id" :value="task.id">{{ task.name || '未命名任务' }}</option>
                 </select>
-                <div v-if="!clusterTaskOptions.length" class="info-banner" style="margin-top:8px"><b>暂无数据</b><span>请先在"深度聚类工具"中完成至少一次聚类,再回来选择任务</span></div>
                 <div v-if="selectedClusterTask" class="database-task-summary">
                   <span><small>聚类维度</small><b>{{ selectedClusterTask.dimension }}</b></span><span><small>文献数量</small><b>{{ selectedClusterTask.documentCount }} 篇</b></span><span><small>类簇数量</small><b>{{ selectedClusterTask.clusterCount }} 个</b></span><span><small>完成时间</small><b>{{ formatDateTime(selectedClusterTask.completedAt) }}</b></span>
                 </div>
@@ -1125,19 +1061,20 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
               <div class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
                 <div class="field"><label><span class="label-main">训练样本</span><small>可选</small></label>
                   <div class="requirement-resource-controls">
-                    <select v-model="anchorTrainSource" class="select resource-source-select"><option value="database">从数据库选择当前资源</option><option value="upload">用户上传资源</option></select>
-                    <select v-if="anchorTrainSource === 'database'" v-model="selectedAnchorTrain" class="select"><option value="">不使用</option><option v-for="item in anchorTrainOptions" :key="item.id" :value="item.id">{{ item.name }}</option></select>
-                    <div v-else class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorFileChange('training_samples', $event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传训练样本' }}</b><small>仅标准 JSON 数组生效</small></label><div class="anchor-upload-actions"><button type="button" class="primary-btn" :disabled="anchorUploadingKey === 'training_samples' || !anchorTrainFile" @click="submitAnchorResource('training_samples')">{{ anchorUploadingKey === 'training_samples' ? '提交中…' : '提交' }}</button><button v-if="anchorTrainFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearAnchorFile('training_samples')">✕ 取消</button></div></div><p class="anchor-format-hint">仅支持 JSON 文件；需包含字段：文献编号、所属类目（可另附题名、摘要）</p><p v-if="anchorTrainNotice" class="anchor-format-hint" style="color:#c0392b">{{ anchorTrainNotice }}</p>
+                    <select v-model="anchorTrainMode" class="select resource-source-select"><option value="builtin">内置</option><option value="upload">用户上传资源</option></select>
+                    <div v-if="anchorTrainMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload('training_samples', $event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传训练样本' }}</b><small>仅 .json：编号 + 文本 + 题名</small></label></div>
+
                   </div>
                 </div>
                 <div class="field"><label><span class="label-main">人工标注类目标签数据</span><small>可选</small></label>
                   <div class="requirement-resource-controls">
-                    <select v-model="anchorGoldSource" class="select resource-source-select"><option value="database">从数据库选择当前资源</option><option value="upload">用户上传资源</option></select>
-                    <select v-if="anchorGoldSource === 'database'" v-model="selectedAnchorGold" class="select"><option value="">不使用</option><option v-for="item in anchorGoldOptions" :key="item.id" :value="item.id">{{ item.name }}</option></select>
-                    <div v-else class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorFileChange('manually_labeled_category_data', $event)" /><span>⇧</span><b>{{ anchorGoldFile?.name || '点击上传人工标注类目标签数据' }}</b><small>仅标准 JSON 数组生效</small></label><div class="anchor-upload-actions"><button type="button" class="primary-btn" :disabled="anchorUploadingKey === 'manually_labeled_category_data' || !anchorGoldFile" @click="submitAnchorResource('manually_labeled_category_data')">{{ anchorUploadingKey === 'manually_labeled_category_data' ? '提交中…' : '提交' }}</button><button v-if="anchorGoldFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearAnchorFile('manually_labeled_category_data')">✕ 取消</button></div></div><p class="anchor-format-hint">仅支持 JSON 文件；需包含字段：文献编号、所属类目（可另附题名、摘要）</p><p v-if="anchorGoldNotice" class="anchor-format-hint" style="color:#c0392b">{{ anchorGoldNotice }}</p>
+                    <select v-model="anchorGoldMode" class="select resource-source-select"><option value="builtin">内置</option><option value="upload">用户上传资源</option></select>
+                    <div v-if="anchorGoldMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload('manually_labeled_category_data', $event)" /><span>⇧</span><b>{{ anchorGoldFile?.name || '点击上传类目标签数据' }}</b><small>仅 .json：编号 + 人工标注类目标签</small></label></div>
+
                   </div>
                 </div>
               </div>
+
             </div>
           </template>
 
@@ -1147,7 +1084,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
 
           <template v-else-if="toolId === 'structured-review' && mode === 'batch-text'">
             <div class="special-panel structured-review-document-set">
-              <div class="special-panel-head"><div><strong>文献集</strong><span>{{ docs.length }} 篇，至少需要 3 篇</span></div></div>
+              <div class="special-panel-head"><div><strong>文献集</strong><span>{{ docs.length }} 篇，至少需要 2 篇</span></div></div>
               <div v-if="!docs.length" class="empty-input"><b>尚未添加文献</b><span>逐篇录入文本及对应元数据。</span><button class="outline-btn" @click="addDoc">＋ 添加第一篇文献</button></div>
               <div v-for="(doc,index) in docs" :key="doc.id" class="document-card review-document-card-v634">
                 <div class="document-card-head"><b>文献 {{ index + 1 }} · {{ doc.id }}</b><button class="ghost-btn danger" @click="docs.splice(index,1)">删除</button></div>
@@ -1236,8 +1173,8 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
           </template>
           <template v-else-if="mode === 'batch' && toolId !== 'relation-extract'">
             <div class="special-panel batch-file-panel">
-              <div class="special-panel-head"><div><strong><span class="required-mark">*</span> {{ toolId === 'structured-review' ? '文献集文件' : '批量文件上传' }}</strong><span>必填；{{ textInputLabel }}<span class="nowrap-chunk"> · 已选择 {{ uploadedFiles.length }} 个文件</span></span></div><label class="outline-btn file-add-button"><input type="file" multiple accept=".pdf,.docx,.txt" @change="handleFileSelection($event, true)" />＋ 添加文件</label></div>
-              <label class="upload-zone batch-file-upload-zone"><input type="file" multiple accept=".pdf,.docx,.txt" @change="handleFileSelection($event, true)" /><span class="upload-icon">⇧</span><b>一次选择或拖拽多个文件</b><small>支持 PDF、DOCX、TXT；单文件最大 {{ toolId === 'structured-review' ? '80' : '50' }} MB</small></label>
+              <div class="special-panel-head"><div><strong><span class="required-mark">*</span> {{ toolId === 'structured-review' ? '文献集文件' : '批量文件上传' }}</strong><span>必填<span class="nowrap-chunk"> · 已选择 {{ uploadedFiles.length }} 个文件</span></span></div><label class="outline-btn file-add-button"><input type="file" multiple accept=".pdf,.docx,.txt" @change="handleFileSelection($event, true)" />＋ 添加文件</label></div>
+              <label class="upload-zone batch-file-upload-zone"><input type="file" multiple accept=".pdf,.docx,.txt" @change="handleFileSelection($event, true)" /><span class="upload-icon">⇧</span><b>一次选择或拖拽多个文件</b><small>支持 PDF、DOCX、TXT；单文件最大 50 MB</small></label>
               <div class="batch-file-queue">
                 <div class="batch-file-queue-head"><b>待处理文件队列</b><span>{{ uploadedFiles.length }} 个文件</span></div>
                 <div v-if="!uploadedFiles.length" class="batch-file-empty">选择文件后，将在这里逐项显示文件名称、大小和处理状态。</div>
@@ -1263,35 +1200,35 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
               <div v-if="toolId === 'deep-cluster'" class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
                 <div class="field"><label><span class="label-main">训练样本</span><small>可选</small></label>
                   <div class="requirement-resource-controls">
-                    <select v-model="anchorTrainSource" class="select resource-source-select"><option value="database">从数据库选择当前资源</option><option value="upload">用户上传资源</option></select>
-                    <select v-if="anchorTrainSource === 'database'" v-model="selectedAnchorTrain" class="select"><option value="">不使用</option><option v-for="item in anchorTrainOptions" :key="item.id" :value="item.id">{{ item.name }}</option></select>
-                    <div v-else class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorFileChange('training_samples', $event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传训练样本' }}</b><small>仅标准 JSON 数组生效</small></label><div class="anchor-upload-actions"><button type="button" class="primary-btn" :disabled="anchorUploadingKey === 'training_samples' || !anchorTrainFile" @click="submitAnchorResource('training_samples')">{{ anchorUploadingKey === 'training_samples' ? '提交中…' : '提交' }}</button><button v-if="anchorTrainFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearAnchorFile('training_samples')">✕ 取消</button></div></div><p class="anchor-format-hint">仅支持 JSON 文件；需包含字段：文献编号、所属类目（可另附题名、摘要）</p><p v-if="anchorTrainNotice" class="anchor-format-hint" style="color:#c0392b">{{ anchorTrainNotice }}</p>
+                    <select v-model="anchorTrainMode" class="select resource-source-select"><option value="builtin">内置</option><option value="upload">用户上传资源</option></select>
+                    <div v-if="anchorTrainMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload('training_samples', $event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传训练样本' }}</b><small>仅 .json：编号 + 文本 + 题名</small></label></div>
+
                   </div>
                 </div>
                 <div class="field"><label><span class="label-main">人工标注类目标签数据</span><small>可选</small></label>
                   <div class="requirement-resource-controls">
-                    <select v-model="anchorGoldSource" class="select resource-source-select"><option value="database">从数据库选择当前资源</option><option value="upload">用户上传资源</option></select>
-                    <select v-if="anchorGoldSource === 'database'" v-model="selectedAnchorGold" class="select"><option value="">不使用</option><option v-for="item in anchorGoldOptions" :key="item.id" :value="item.id">{{ item.name }}</option></select>
-                    <div v-else class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorFileChange('manually_labeled_category_data', $event)" /><span>⇧</span><b>{{ anchorGoldFile?.name || '点击上传人工标注类目标签数据' }}</b><small>仅标准 JSON 数组生效</small></label><div class="anchor-upload-actions"><button type="button" class="primary-btn" :disabled="anchorUploadingKey === 'manually_labeled_category_data' || !anchorGoldFile" @click="submitAnchorResource('manually_labeled_category_data')">{{ anchorUploadingKey === 'manually_labeled_category_data' ? '提交中…' : '提交' }}</button><button v-if="anchorGoldFile" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearAnchorFile('manually_labeled_category_data')">✕ 取消</button></div></div><p class="anchor-format-hint">仅支持 JSON 文件；需包含字段：文献编号、所属类目（可另附题名、摘要）</p><p v-if="anchorGoldNotice" class="anchor-format-hint" style="color:#c0392b">{{ anchorGoldNotice }}</p>
+                    <select v-model="anchorGoldMode" class="select resource-source-select"><option value="builtin">内置</option><option value="upload">用户上传资源</option></select>
+                    <div v-if="anchorGoldMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload('manually_labeled_category_data', $event)" /><span>⇧</span><b>{{ anchorGoldFile?.name || '点击上传类目标签数据' }}</b><small>仅 .json：编号 + 人工标注类目标签</small></label></div>
+
                   </div>
                 </div>
               </div>
+
             </div>
           </template>
           <template v-else-if="(mode === 'existing-result' || mode === 'collection') && toolId !== 'relation-extract'">
             <div class="settings-card database-collection-card">
-              <div class="settings-title"><b>{{ mode === 'existing-result' ? '数据库历史聚类任务' : '指定文献集' }}</b><span>{{ mode === 'collection' ? '从科技文献检索结果集、科技情报平台、科研管理系统或知识库选择' : '从系统数据库读取已完成并持久化保存的聚类结果' }}</span></div>
+              <div class="settings-title"><b>{{ mode === 'existing-result' ? '数据库历史聚类任务' : '指定文献集' }}</b><span>{{ mode === 'collection' ? '数据来源是聚类标签生成工具的簇与簇内文件' : '从系统数据库读取已完成并持久化保存的聚类结果' }}</span></div>
               <div v-if="mode === 'collection'" class="database-selector-panel">
                 <div class="database-selector-heading"><b><span class="required-mark">*</span> 选择已有文献集</b><span>必填</span></div>
-                <select v-model="selectedCollectionId" class="select"><option v-if="!documentCollectionOptions.length" value="" disabled>暂无文献数据集</option><option v-for="collection in documentCollectionOptions" :key="collection.id" :value="collection.id">{{ collection.name }} · {{ collection.documentCount }} 篇<template v-if="collection.topicSimilarity != null"> · 相似度 {{ collection.topicSimilarity }}</template></option></select>
-                <div v-if="!documentCollectionOptions.length" class="info-banner" style="margin-top:8px"><b>暂无数据</b><span>暂无满足数量要求的文献数据集（综述至少需要 3 篇文献，不足 3 篇的文献集已过滤）；请先在"聚类标签生成工具"中完成标签生成或更换包含 3 篇以上文献的文献集</span></div>
+                <select v-model="selectedCollectionId" class="select"><option v-if="!documentCollectionOptions.length" value="" disabled>暂无文献数据集</option><option v-for="collection in documentCollectionOptions" :key="collection.id" :value="collection.id">{{ collection.name }} · {{ collection.documentCount }} 篇 · {{ collection.updatedAt ? formatDateTime(collection.updatedAt) : '—' }}</option></select>
+                <div v-if="!documentCollectionOptions.length" class="info-banner" style="margin-top:8px"><b>暂无数据</b><span>暂无满足数量要求的簇文献集（综述至少需要 2 篇文献，不足 2 篇的簇已过滤）；请先在"聚类标签生成工具"中完成标签生成，或选择包含 2 篇以上文献的簇</span></div>
                 <div v-if="selectedCollection" class="database-task-summary collection-summary"><span><small>数据来源</small><b>{{ selectedCollection.source }}</b></span><span><small>文献数量</small><b>{{ selectedCollection.documentCount }} 篇</b></span><span><small>时间范围</small><b>{{ selectedCollection.timeRange }}</b></span><span><small>更新时间</small><b>{{ formatDateTime(selectedCollection.updatedAt) }}</b></span></div>
                 <div class="info-banner">系统根据文献集编号读取每篇文献的文本和对应元数据；用户不需要手工填写数据库编号或文本。</div>
               </div>
               <div v-else class="database-selector-panel">
                 <div class="database-selector-heading"><b><span class="required-mark">*</span> 选择已完成的深度聚类任务</b><span>必填</span></div>
                 <select v-model="selectedClusterTaskId" class="select"><option v-if="!clusterTaskOptions.length" value="" disabled>暂无已完成的深度聚类任务</option><option v-for="task in clusterTaskOptions" :key="task.id" :value="task.id">{{ task.name }} · {{ task.id }}</option></select>
-                <div v-if="!clusterTaskOptions.length" class="info-banner" style="margin-top:8px"><b>暂无数据</b><span>请先在"深度聚类工具"中完成至少一次聚类,再回来选择任务</span></div>
                 <div v-if="selectedClusterTask" class="database-task-summary"><span><small>聚类维度</small><b>{{ selectedClusterTask.dimension }}</b></span><span><small>文献数量</small><b>{{ selectedClusterTask.documentCount }} 篇</b></span><span><small>类簇数量</small><b>{{ selectedClusterTask.clusterCount }} 个</b></span><span><small>完成时间</small><b>{{ formatDateTime(selectedClusterTask.completedAt) }}</b></span></div>
                 <div class="info-banner">系统使用任务编号读取关联类簇和短语集合，任务编号仅用于数据库关联。</div>
               </div>
@@ -1302,7 +1239,7 @@ function downloadResult() { if (!result.value) return; const blob = new Blob([pr
 
 
           <div v-if="toolId === 'zh-keyword'" class="settings-card generic-settings">
-            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="field"><label><span class="label-main">词典使用方式</span><small>区分数据库资源与用户录入</small></label><select v-model="dictionaryMode" class="select"><option value="system">使用系统预置术语词典（默认）</option><option value="custom">新建或上传用户自定义领域词典</option></select></div><div v-if="dictionaryMode === 'system'" class="info-banner dictionary-status">✓ 默认状态：使用系统预置术语词典，不提交用户词典参数。</div><div v-else class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>上传用户词典文件</b><small>{{ customDictionaryFile ? customDictionaryFile.name : '上传词典文件' }}</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div></div></div>
+            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="field"><label><span class="label-main">词典使用方式</span><small>区分数据库资源与用户录入</small></label><select v-model="dictionaryMode" class="select"><option value="system">使用系统预置术语词典（默认）</option><option value="custom">新建或上传用户自定义领域词典</option></select></div><div v-if="dictionaryMode === 'system'" class="info-banner dictionary-status">✓ 默认状态：使用系统预置术语词典，不提交用户词典参数。</div><div v-else class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>{{ customDictionaryFile?.name || '上传用户词典文件' }}</b><small>支持 JSON/CSV/XLSX/TXT：术语词条</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div></div></div>
           </div>
 
         </div>

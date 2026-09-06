@@ -407,6 +407,162 @@ function enrichStructuredReviewResult(value: unknown) {
 }
 
 const clusterLabelBatchTextResult = enrichClusterLabelResult((clusterLabelRuntimeResponses as any).batchText)
+
+// ==================== 响应示例与可视化弹窗字段对齐（2026-09-06）====================
+// 要求：以可视化弹窗渲染器实际读取的字段为准（prototypeVisualizationRenderers），
+// 示例 data 只含弹窗会用到的字段——弹窗已移除的指标（轮廓系数/训练评测/命名实体等）
+// 不得再出现在示例里；区分度用真实计算值语义（可低于 1，触发待复核）。
+export const alignedDeepClusterDemo: Record<string, any> = {
+  code: 0, message: 'success',
+  data: {
+    input_summary: { document_count: 5, parsed_sentence_count: 34 },
+    cluster_dimension_name: '技术路线聚类',
+    clustering_quality: { cluster_count: 3, intra_cluster_similarity: 0.87, algorithm_used: 'llm_review_granularity_grouping' },
+    clusters: [
+      { cluster_id: 'C01', topic_name: 'Reasoning model training', size: 2, ratio: 0.4,
+        representative_terms: ['reverse-perplexity curriculum', 'SFT', 'synthetic data'],
+        feature_statistics: { intra_cluster_similarity: 0.89, semantic_density: 1.0 },
+        representative_documents: [
+          { document_id: 'DOC003', title: '11.pdf' }, { document_id: 'DOC004', title: '12.pdf' }] },
+      { cluster_id: 'C02', topic_name: 'Autoregressive entity retrieval', size: 1, ratio: 0.2,
+        representative_terms: ['GENRE', 'autoregressive formulation'],
+        feature_statistics: { intra_cluster_similarity: 1.0, semantic_density: 1.0 },
+        representative_documents: [{ document_id: 'DOC001', title: '1.pdf' }] },
+      { cluster_id: 'C03', topic_name: 'Unsupervised contrastive learning', size: 2, ratio: 0.4,
+        representative_terms: ['Divide and Contrast', 'Di-COT', 'unsupervised framework'],
+        feature_statistics: { intra_cluster_similarity: 0.84, semantic_density: 0.96 },
+        representative_documents: [
+          { document_id: 'DOC002', title: '10.pdf' }, { document_id: 'DOC005', title: '15.pdf' }] },
+    ],
+    semantic_projection: [
+      { document_id: 'DOC001', title: '1.pdf', cluster_id: 'C02', x: 0.18, y: 0.74 },
+      { document_id: 'DOC002', title: '10.pdf', cluster_id: 'C03', x: 0.71, y: 0.22 },
+      { document_id: 'DOC003', title: '11.pdf', cluster_id: 'C01', x: 0.36, y: 0.83 },
+      { document_id: 'DOC004', title: '12.pdf', cluster_id: 'C01', x: 0.42, y: 0.79 },
+      { document_id: 'DOC005', title: '15.pdf', cluster_id: 'C03', x: 0.66, y: 0.18 },
+    ],
+    document_assignments: [
+      { document_id: 'DOC001', title: '1.pdf', publication_year: 2024, cluster_id: 'C02', similarity_to_centroid: 0.0, key_evidence: 'We formulate entity retrieval as an autoregressive generation problem (GENRE).' },
+      { document_id: 'DOC002', title: '10.pdf', publication_year: 2025, cluster_id: 'C03', similarity_to_centroid: 0.91, key_evidence: 'Di-COT divides the corpus and contrasts partitions to learn representations without labels.' },
+      { document_id: 'DOC003', title: '11.pdf', publication_year: 2025, cluster_id: 'C01', similarity_to_centroid: 0.93, key_evidence: 'We train reasoning models with SFT on reverse-perplexity curated synthetic data.' },
+      { document_id: 'DOC004', title: '12.pdf', publication_year: 2025, cluster_id: 'C01', similarity_to_centroid: 0.9, key_evidence: 'A curriculum over synthetic data improves reasoning accuracy of SFT models.' },
+      { document_id: 'DOC005', title: '15.pdf', publication_year: 2024, cluster_id: 'C03', similarity_to_centroid: 0.88, key_evidence: 'The unsupervised contrastive framework learns representations by dividing and contrasting.' },
+    ],
+    theme_trend_analysis: {
+      years: [2024, 2025],
+      series: [
+        { cluster_id: 'C01', yearly_counts: [0, 2] },
+        { cluster_id: 'C02', yearly_counts: [1, 0] },
+        { cluster_id: 'C03', yearly_counts: [1, 1] },
+      ],
+      rising_cluster_id: 'C01', emerging_cluster_id: 'C03', stable_cluster_id: 'C02',
+      summary: 'C01（Reasoning model training）2025 年新增 2 篇，为上升类簇；C03 两年度持续出现，为稳定发展的新兴方向；C02 为 2024 年的稳定工作。',
+    },
+  },
+}
+
+export const alignedClusterLabelDemo: Record<string, any> = {
+  code: 0, message: 'success',
+  data: {
+    labels: [
+      { cluster_id: 'C01', recommended_label: 'Reasoning model training', label: 'Reasoning model training',
+        candidate_labels: ['Reasoning model training', 'SFT curriculum', 'synthetic data training'],
+        evidence: { keywords: ['reverse-perplexity curriculum', 'SFT', 'synthetic data'], center_sentence: 'We train reasoning models with SFT on reverse-perplexity curated synthetic data.' },
+        confidence: 0.92, distinctiveness: 0.85,
+        difference_explanation: '以 SFT 课程与合成数据训练为 distinctive 主题，与其他簇无术语重叠。',
+        optimization_status: 'passed', linked_document_ids: ['DOC003', 'DOC004'] },
+      { cluster_id: 'C02', recommended_label: 'Autoregressive entity retrieval', label: 'Autoregressive entity retrieval',
+        candidate_labels: ['Autoregressive entity retrieval', 'GENRE'],
+        evidence: { keywords: ['GENRE', 'autoregressive formulation'], center_sentence: 'Entity retrieval is formulated as autoregressive generation.' },
+        confidence: 0.88, distinctiveness: 1.0,
+        difference_explanation: '检索式生成主题独立，与训练类簇无共享术语。',
+        optimization_status: 'passed', linked_document_ids: ['DOC001'] },
+      { cluster_id: 'C03', recommended_label: 'Unsupervised contrastive learning', label: 'Unsupervised contrastive learning',
+        candidate_labels: ['Unsupervised contrastive learning', 'Divide and Contrast', 'Di-COT'],
+        evidence: { keywords: ['Divide and Contrast', 'Di-COT', 'unsupervised framework'], center_sentence: 'Di-COT learns representations without labels by dividing and contrasting partitions.' },
+        confidence: 0.9, distinctiveness: 0.68,
+        difference_explanation: '与其他簇存在少量表示学习术语重叠，未达到当前类簇间差异阈值，建议人工复核。',
+        optimization_status: 'needs_review', linked_document_ids: ['DOC002', 'DOC005'] },
+    ],
+    cluster_count: 3, generated_label_count: 3,
+    parameters: { label_length_limit: 12, language_type: 'auto', distinctiveness_threshold: 0.75 },
+    statistics: { average_confidence: 0.9, average_distinctiveness: 0.84, soft_fallback_triggered_count: 0, soft_fallback_changed_count: 0 },
+    label_generation_process_report: {
+      report_id: 'RPT-LBL-20260906-001', generated_at: '2026-09-06T18:40:00+08:00', strategy: 'adaptive_label_generation',
+      stages: [
+        { order: 1, name: '读取类簇结果', status: 'completed', output: '3 个类簇' },
+        { order: 2, name: '汇总代表特征', status: 'completed', output: '关键词和中心句' },
+        { order: 3, name: '生成候选标签', status: 'completed', output: '8 个候选标签' },
+        { order: 4, name: '差异化筛选', status: 'completed', output: '阈值 0.75' },
+        { order: 5, name: '输出推荐标签', status: 'completed', output: '3 个标签' },
+      ],
+      summary: '本次共处理 3 个类簇，生成 3 个推荐标签；其中 2 个类簇通过差异化检查，1 个类簇建议人工复核后确认。',
+    },
+    label_distinctiveness_optimization_result: {
+      threshold: 0.75,
+      clusters: [
+        { cluster_id: 'C01', recommended_label: 'Reasoning model training', distinctiveness: 0.85, optimization_status: 'passed', optimization_explanation: '已通过差异化检查。' },
+        { cluster_id: 'C02', recommended_label: 'Autoregressive entity retrieval', distinctiveness: 1.0, optimization_status: 'passed', optimization_explanation: '已通过差异化检查。' },
+        { cluster_id: 'C03', recommended_label: 'Unsupervised contrastive learning', distinctiveness: 0.68, optimization_status: 'needs_review', optimization_explanation: '推荐标签未达到当前类簇间差异阈值，建议人工复核。' },
+      ],
+    },
+  },
+}
+
+export const alignedStructuredReviewDemo: Record<string, any> = {
+  code: 0, message: 'success',
+  data: {
+    tree: [
+      { question_id: 'RQ-001', research_question: '如何提升大模型推理训练数据的质量与课程安排？',
+        methods: [
+          { method_id: 'M-001-1', method: '逆困惑度课程数据合成',
+            progress: [
+              { progress_id: 'M-001-1-P1', summary: '按逆困惑度对合成数据排序构建课程，训练后推理准确率提升。', conclusion: '数据课程对推理能力有稳定增益。', source_ids: ['DOC003', 'DOC004'],
+                source_evidence: [
+                  { document_id: 'DOC003', source_section: 'Methods > Data Curriculum', evidence_excerpt: 'We order synthetic samples by reverse perplexity to build the training curriculum.' },
+                  { document_id: 'DOC004', source_section: 'Experiments', evidence_excerpt: 'Curriculum ordering yields consistent accuracy gains over random ordering.' }] },
+            ] },
+        ] },
+      { question_id: 'RQ-002', research_question: '无监督场景下如何学习可迁移的文本表示？',
+        methods: [
+          { method_id: 'M-002-1', method: '分块对比学习（Di-COT）',
+            progress: [
+              { progress_id: 'M-002-1-P1', summary: '将语料分块后对齐对比，不依赖标注即获得可迁移表示。', conclusion: '无标注条件下表示质量接近有监督基线。', source_ids: ['DOC002', 'DOC005'],
+                source_evidence: [
+                  { document_id: 'DOC002', source_section: 'Method', evidence_excerpt: 'Di-COT divides the corpus into partitions and contrasts them to learn representations.' },
+                  { document_id: 'DOC005', source_section: 'Results', evidence_excerpt: 'The unsupervised framework approaches supervised baselines on transfer tasks.' }] },
+            ] },
+        ] },
+    ],
+    cluster_induction_results: {
+      cluster_count: 2,
+      clusters: [
+        { cluster_id: 'PC-001', label: '推理训练数据课程', summary: '两条主线工作均围绕合成数据质量与课程安排提升推理能力。', document_count: 2 },
+        { cluster_id: 'PC-002', label: '无监督对比表示', summary: '以分块对比学习替代标注，实现可迁移文本表示。', document_count: 2 },
+      ],
+      induction_basis: '研究问题语义相似度、研究方法共现与来源证据一致性',
+    },
+    structured_report: {
+      overview: '围绕大模型推理训练与无监督表示学习两类主题，对 5 篇文献的研究问题、方法与结果进行结构化归纳：推理侧以逆困惑度课程合成数据为主线，表示侧以分块对比学习去除标注依赖，两条主线均报告了稳定的性能收益。',
+      sections: [
+        { title: '推理训练数据课程', content: 'DOC003 与 DOC004 均利用合成数据课程训练推理模型：前者按逆困惑度排序构建课程，后者系统比较课程策略；两篇文献一致报告课程化数据相比随机排列带来稳定准确率增益，构成从数据构造到训练策略的递进关系。' },
+        { title: '无监督对比表示', content: 'DOC002 提出 Di-COT 分块对比框架，DOC005 将其扩展至迁移任务；在无标注条件下表示质量逐步接近有监督基线，体现了方法从提出到验证的研究进展。' },
+      ],
+    },
+    trend_hotspot_distribution: {
+      time_range: '2024–2025',
+      hotspots: [
+        { name: '推理训练数据课程', score: 0.86, status: '上升' },
+        { name: '无监督对比表示', score: 0.64, status: '持续关注' },
+      ],
+    },
+  },
+}
+
+function variantOf(base: Record<string, any>, patch: Record<string, any>): Record<string, any> {
+  const clone = JSON.parse(JSON.stringify(base))
+  return { ...clone, ...patch, data: { ...clone.data, ...(patch.data || {}) } }
+}
 const clusterLabelBatchFileResult = enrichClusterLabelResult((clusterLabelRuntimeResponses as any).batchFile)
 const clusterLabelHistoryResult = enrichClusterLabelResult((clusterLabelRuntimeResponses as any).history)
 const structuredReviewBatchTextResult = enrichStructuredReviewResult((structuredReviewRuntime as any).batchText)
@@ -1010,9 +1166,9 @@ const finalOverrides: Record<string, Partial<ToolDefinition>> = {
     batchTextEndpoint: '/api/v1/cluster/deep/texts', batchFileEndpoint: '/api/v1/cluster/deep/files',
     collectionEndpoint: '/api/v1/cluster/deep/collection',
     payload: demoDeepClusterPayload,
-    demoBatchTextResult: (deepClusterRuntime as ToolDefinition).demoBatchTextResult,
-    demoBatchFileResult: (deepClusterRuntime as ToolDefinition).demoBatchFileResult,
-    demoCollectionResult: deepCollectionResult,
+    demoBatchTextResult: alignedDeepClusterDemo,
+    demoBatchFileResult: variantOf(alignedDeepClusterDemo, { meta: { input_type: 'files' } }),
+    demoCollectionResult: variantOf(alignedDeepClusterDemo, { meta: { input_type: 'collection' } }),
     params: [
       ['input_type', 'string', 'required', '输入方式：texts、files 或 collection'],
       ['documents', 'object[]', 'conditional', '批量文本；每个对象同时包含 text 和对应的文献编号、发表时间、题名、作者、来源、关键词等元数据'],
@@ -1022,7 +1178,9 @@ const finalOverrides: Record<string, Partial<ToolDefinition>> = {
       ['algorithm', 'string', 'optional', '聚类算法，默认自动选择'],
       ['cluster_count', 'integer', 'optional', '目标类簇数量，留空时自动估计'],
       ['minimum_cluster_size', 'integer', 'optional', '最小类簇规模'],
-      ['similarity_metric', 'string', 'optional', '语义相似度度量方式']
+      ['similarity_metric', 'string', 'optional', '语义相似度度量方式'],
+      ['training_samples', 'file (.json)', 'optional', '可选锚点：训练样本。JSON 数组，每条 = 编号（document_id）+ 文本（text）+ 题名（title）'],
+      ['manually_labeled_category_data', 'file (.json)', 'optional', '可选锚点：人工标注类目标签。JSON 数组，每条 = 编号（document_id）+ 人工标注类目标签（category），按编号与训练样本对应']
     ],
     response: (deepClusterRuntime as ToolDefinition).response as Record<string, unknown>
   },
@@ -1042,10 +1200,10 @@ const finalOverrides: Record<string, Partial<ToolDefinition>> = {
       ['language_type', 'string', 'optional', '输出语言：自动、中文或英文'],
       ['distinctiveness_threshold', 'number', 'optional', '类簇间差异阈值，范围 0—1']
     ],
-    demoBatchTextResult: clusterLabelBatchTextResult,
-    demoBatchFileResult: clusterLabelBatchFileResult,
-    demoHistoryResult: clusterLabelHistoryResult,
-    response: clusterLabelBatchTextResult
+    demoBatchTextResult: alignedClusterLabelDemo,
+    demoBatchFileResult: variantOf(alignedClusterLabelDemo, { meta: { input_type: 'files' } }),
+    demoHistoryResult: variantOf(alignedClusterLabelDemo, { meta: { input_type: 'existing_result' } }),
+    response: alignedClusterLabelDemo
   },
   'structured-review': {
     documentType: 'structured-review', inputModes: ['batch-text', 'batch', 'collection'],
@@ -1061,10 +1219,10 @@ const finalOverrides: Record<string, Partial<ToolDefinition>> = {
       ['topic_or_keywords', 'string|string[]', 'required', '研究主题或关键词'],
       ['document_metadata', 'object[]|resource', 'required', '与文献逐篇对应的元数据；文献编号用于关联，题名、作者、年份、来源和关键词等字段可按实际数据提供']
     ],
-    demoBatchTextResult: structuredReviewBatchTextResult,
-    demoBatchFileResult: structuredReviewBatchFileResult,
-    demoCollectionResult: structuredReviewCollectionResult,
-    response: structuredReviewBatchTextResult
+    demoBatchTextResult: alignedStructuredReviewDemo,
+    demoBatchFileResult: variantOf(alignedStructuredReviewDemo, { meta: { input_type: 'files' } }),
+    demoCollectionResult: variantOf(alignedStructuredReviewDemo, { meta: { input_type: 'collection' } }),
+    response: alignedStructuredReviewDemo
   }
 }
 

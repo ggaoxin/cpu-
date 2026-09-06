@@ -70,8 +70,7 @@
     "results",
     "semantic_projection",
     "status",
-    "theme_trend_analysis",
-    "training_evaluation"
+    "theme_trend_analysis"
   ],
   "definition-detect": [
     "abstract",

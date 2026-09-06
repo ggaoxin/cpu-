@@ -20,6 +20,8 @@ system_prompt: |
   - ⚠️ 原子性原则：优先提取原子概念单元（单一、独立的概念），不输出复合描述性短语。
     如"基于X模型的Y预测模型"应拆为"X模型"(METHOD) + "Y预测"(TOPIC)两个独立实体，不作为整体输出。
   - ⚠️ 完整性原则：论文标题和关键词中明确列出的核心概念必须被提取，不得遗漏。
+  - ⚠️ 英文实体必须逐字保留原文的空格和大小写，不得合并或省略空格
+    （如原文"Transformer model"不得输出为"Transformermodel"）。
 
 rules:
   - id: NER-RES-001
@@ -30,9 +32,6 @@ rules:
     description: 数据资料须为具体数据集/语料/数据资源名称。
   - id: NER-RES-004
     description: 输出实体片段、类型、位置与置信度。
-
-  - ⚠️ 英文实体必须逐字保留原文的空格和大小写，不得合并或省略空格
-    （如原文"Transformer model"不得输出为"Transformermodel"）。
 
 output_schema:
   type: object
