@@ -251,6 +251,9 @@ _TASK_EXECUTOR = ThreadPoolExecutor(max_workers=settings.ASYNC_WORKERS, thread_n
 
 # ---- 批量执行进程池 worker（fork 继承，无需 pickle service）----
 _FORK_SERVICE: Any = None
+_FORK_LOCK = threading.Lock()
+_FORK_ACTIVE = 0          # 当前活跃 fork 子进程数（防多任务同时批量时进程爆炸）
+_FORK_MAX_TOTAL = 12      # 全局 fork 子进程上限（6 worker × 2 任务 = 12 已饱和 8 核）
 
 def _fork_execute_group(args: tuple) -> Dict[str, Any]:
     """子进程 worker：重新初始化 DB 连接（fork 的连接已失效），执行单篇。
@@ -720,8 +723,21 @@ class ToolIntegrationService:
              params, payload, tool_id, contract.backend_code, task_id)
             for index, group in enumerate(execution_groups)
         ]
-        with _ctx.Pool(min(workers, total)) as _pool:
+        global _FORK_ACTIVE
+        with _FORK_LOCK:
+            _FORK_ACTIVE += min(workers, total)
+        _pool = _ctx.Pool(min(workers, total))
+        try:
             _results = _pool.map(_fork_execute_group, _fork_args)
+        finally:
+            with _FORK_LOCK:
+                _FORK_ACTIVE -= min(workers, total)
+            # 显式 close+join 替代 __exit__ 的 terminate()——fork 子进程可能
+            # 继承 socket fd，terminate() 后变为僵尸不被 init 回收（连续多次
+            # 批量请求后进程数累积 → 后端崩溃的根因）。close() 让 worker 正常
+            # 退出，join() 等待回收完成。
+            _pool.close()
+            _pool.join()
         # 按序收集进度（进程池 map 有序返回）
         success_count = sum(1 for r in _results if r["status"] == "succeeded")
         failed_count = sum(1 for r in _results if r["status"] == "failed")
