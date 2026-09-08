@@ -1,9 +1,22 @@
-"""Layout-aware citation sentence extraction for academic PDFs."""
+"""Layout-aware abstract and citation extraction for academic PDFs."""
 
-from .models import Citation, CitationSentence, ParseConfig, ParseResult, ReferenceEntry, ReferenceSection
+from .abstracts import AbstractExtractor
+from .models import (
+    AbstractConfig,
+    AbstractSection,
+    Citation,
+    CitationSentence,
+    ParseConfig,
+    ParseResult,
+    ReferenceEntry,
+    ReferenceSection,
+)
 from .parser import CitationParser
 
 __all__ = [
+    "AbstractConfig",
+    "AbstractExtractor",
+    "AbstractSection",
     "Citation",
     "CitationParser",
     "CitationSentence",
@@ -13,4 +26,4 @@ __all__ = [
     "ReferenceSection",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

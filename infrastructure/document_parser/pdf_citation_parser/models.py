@@ -22,6 +22,17 @@ class ParseConfig:
 
 
 @dataclass(slots=True)
+class AbstractConfig:
+    """Conservative abstract-location policy for text-layer PDFs."""
+
+    search_pages: int = 8
+    min_chars: int = 60
+    max_chars: int = 6500
+    min_confidence: float = 0.55
+    enable_unheaded: bool = True
+
+
+@dataclass(slots=True)
 class TextBlock:
     page: int
     block_no: int
@@ -75,6 +86,21 @@ class ReferenceEntry:
     number: int | None = None
     years: list[str] = field(default_factory=list)
     doi: str | None = None
+
+
+@dataclass(slots=True)
+class AbstractSection:
+    text: str
+    raw_text: str
+    heading: str | None
+    start: int
+    end: int
+    page: int
+    method: Literal["headed", "unheaded"]
+    confidence: float
+    language: Literal["en", "zh", "mixed", "unknown"]
+    structured_labels: list[str] = field(default_factory=list)
+    evidence: dict[str, float | str | int | bool] = field(default_factory=dict)
 
 
 @dataclass(slots=True)

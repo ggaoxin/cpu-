@@ -251,12 +251,19 @@ def reconstruct_pages(page_dicts: list[dict[str, Any]], config: ParseConfig | No
     return LayoutDocument(text, pages, text_chars)
 
 
-def extract_layout(pdf: str | Path, config: ParseConfig | None = None) -> LayoutDocument:
+def extract_layout(
+    pdf: str | Path,
+    config: ParseConfig | None = None,
+    *,
+    max_pages: int | None = None,
+) -> LayoutDocument:
     import fitz
 
     page_dicts: list[dict[str, Any]] = []
     with fitz.open(str(pdf)) as document:
-        for page in document:
+        for page_no, page in enumerate(document):
+            if max_pages is not None and page_no >= max(0, max_pages):
+                break
             data = page.get_text("dict", sort=False)
             data["width"] = float(page.rect.width)
             data["height"] = float(page.rect.height)
