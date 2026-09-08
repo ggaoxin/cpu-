@@ -283,11 +283,43 @@ def _llm_summary_one(paper: dict[str, Any], glm) -> str:
         return ""
 
 
-def _llm_document_summaries(papers: list[dict[str, Any]], glm) -> list[str]:
-    """并发生成每篇文献摘要（4 并发；单篇失败由调用方回退语步句汇总）。"""
+def _llm_summary_batch(papers: list[dict[str, Any]], glm) -> list[str]:
+    """批量 LLM 摘要（3 篇/次，2026-09-08）：原逐篇 6 次并发→2 次调用。"""
+    items = []
+    for i, p in enumerate(papers):
+        text = str(p.get("full_text") or p.get("abstract") or p.get("text") or "").strip()
+        items.append({"index": i, "title": str(p.get("title") or "").strip()[:60], "text": text[:6000]})
+    valid = [it for it in items if len(it["text"]) >= 50]
+    if not valid:
+        return [""] * len(papers)
+    batches = [valid[j:j+3] for j in range(0, len(valid), 3)]
+    summaries = {it["index"]: "" for it in items}
     from concurrent.futures import ThreadPoolExecutor
-    with ThreadPoolExecutor(max_workers=4) as pool:
-        return list(pool.map(lambda p: _llm_summary_one(p, glm), papers))
+    def _one(batch):
+        listing = "\n".join(f"({it['index']}) 题名：{it['title']}\n内容：{it['text'][:4000]}" for it in batch)
+        try:
+            raw = glm.chat_json(
+                "你是科技文献摘要专家。对下面每篇文献各用一段话（250-400字）概括研究内容、"
+                "采用的方法、主要结果与结论。语言与原文一致，不编造。\n"
+                "只输出JSON：{\"items\":[{\"index\":编号,\"summary\":\"...\"},...]}",
+                listing, temperature=0.1, timeout=120.0, max_tokens=2400)
+            if isinstance(raw, dict) and isinstance(raw.get("data"), dict):
+                raw = raw["data"]
+            for it in (raw or {}).get("items") or []:
+                if isinstance(it, dict):
+                    try: idx = int(it.get("index"))
+                    except (TypeError, ValueError): continue
+                    s = str(it.get("summary") or "").strip()
+                    if s: summaries[idx] = s[:1200]
+        except Exception:  # noqa: BLE001
+            pass
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        list(pool.map(_one, batches))
+    return [summaries.get(i, "") for i in range(len(papers))]
+
+def _llm_document_summaries(papers: list[dict[str, Any]], glm) -> list[str]:
+    """批量摘要（3 篇/次并发）；空结果的由调用方回退语步句汇总。"""
+    return _llm_summary_batch(papers, glm)
 
 
 def execute_deep_clustering(

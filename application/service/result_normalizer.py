@@ -128,6 +128,14 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
                 result["literature_distribution_analysis_report"] = report
             if not result.get("cross_language_mapping"):
                 result["cross_language_mapping"] = _en_cross_language_mapping(result, payload)
+            # 用户独立映射规则命中 → 跨语言映射块透出命中术语与来源（弹窗 enMappingCell 展示）
+            applied = result.get("user_mapping_applied")
+            if isinstance(applied, dict) and applied.get("term"):
+                clm = result["cross_language_mapping"]
+                clm["status"] = "已映射（用户映射规则命中）"
+                hit_terms = [t for t in (applied.get("matched_terms") or []) if t]
+                clm["source_terms"] = [{"label": t} for t in hit_terms[:4]] or clm.get("source_terms") or []
+                clm["mapping_source"] = "user_mapping_table"
         return result
     if tool_id == "domain-classify":
         return _domain_classification(raw, payload)

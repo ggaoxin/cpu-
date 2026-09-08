@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import type { InputMode, ToolDefinition } from '../types'
 import { endpointFor, modesFor, pretty, requestPayloadFor, supportsVisualization } from '../utils/tooling'
 import { ApiRequestError, apiUrl, executeToolRequest, listCompatibleHistory, listDictionaries, listClusterCollections, listDocumentCollections, listSemanticResources, parseCitationMetadata, saveDictionary } from '../services/api'
@@ -14,6 +14,17 @@ const mode = ref<InputMode>('text')
 const running = ref(false)
 const result = ref<unknown | null>(null)
 const requestError = ref('')
+// 输入侧校验提示（2 秒淡出小弹窗）：不占用响应结果区——响应区只显示
+// 真实接口返回/失败；文件超限、批次超量、必填缺失等边界报错走这里
+const toastMessage = ref('')
+let toastTimer: ReturnType<typeof setTimeout> | undefined
+function showToast(message: string) {
+  toastMessage.value = message
+  if (toastTimer) clearTimeout(toastTimer)
+  // 时长按文案长度伸缩：短提示 2 秒，长校验文案多留阅读时间（上限 6 秒）
+  const duration = Math.min(6000, 2000 + Math.max(0, message.length - 20) * 50)
+  toastTimer = setTimeout(() => { toastMessage.value = '' }, duration)
+}
 const dictionaryMode = ref('system')
 const weightBoost = ref('0.08')
 const selectedDictionaryId = ref('')
@@ -72,6 +83,12 @@ type UploadedFileItem = {
   publicationDate: string
   source: string
   keywords: string
+  // 上传即解析（2026-09-07）：文件→文本在上传动作完成，提交只带 parse_id
+  parseState: 'waiting' | 'uploading' | 'parsing' | 'done' | 'error'
+  parseProgress: number
+  parseId?: string
+  parsedChars?: number
+  parseError?: string
 }
 
 const docs = reactive<ReviewDocument[]>([])
@@ -176,13 +193,13 @@ function forceAutoExtractCitation() {
 // 重复提取时先清理旧的）
 function autoExtractBatchCitation(item: CitationBatchItem) {
   const text = (item.documentText || '').trim()
-  if (!text) { requestError.value = '请先填写本条的文献文本，再自动提取引用句。'; return }
+  if (!text) { showToast('请先填写本条的文献文本，再自动提取引用句。'); return }
   const sentences = text.split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
   const hits: Array<{ s: string, i: number, marker: string, subSpan: string }> = []
   sentences.forEach((s, i) => {
     for (const { marker, subSpan } of splitSentenceByMarkers(s)) hits.push({ s, i, marker, subSpan })
   })
-  if (!hits.length) { requestError.value = '本条文献文本中未发现引用标记（如 [1]），请手动填写引用句。'; return }
+  if (!hits.length) { showToast('本条文献文本中未发现引用标记（如 [1]），请手动填写引用句。'); return }
   requestError.value = ''
   const fill = (target: CitationBatchItem, hit: { s: string, i: number, marker: string, subSpan: string }) => {
     target.citationSentence = hit.s
@@ -522,9 +539,13 @@ function adjustWeightBoost(direction: 1 | -1) {
   weightBoost.value = next.toFixed(2)
 }
 const textInputLabel = computed(() => ({
-  'zh-abstract-move': '中文科技文献摘要文本',
+  'zh-abstract-move': '输入文本',
   'en-abstract-move': '英文科技论文摘要',
 } as Record<string, string>)[props.toolId] || '文本')
+// 占位提示与标签分开：标签短、占位可以给更具体的引导
+const textInputPlaceholder = computed(() => ({
+  'zh-abstract-move': '请输入中文科技文献摘要文本',
+} as Record<string, string>)[props.toolId] || `请输入${textInputLabel.value}`)
 const inputModeHint = computed(() => {
   if (props.toolId === 'rq-detect') return '支持单文本、批量文本、单文件、批量文件调用'
   if (props.toolId.startsWith('citation-')) return '支持引用句与上下文、批量结构化引用、单篇全文和批量全文'
@@ -645,17 +666,35 @@ watch(mode, (next, previous) => {
   }
 })
 
+const MAX_BATCH_TEXTS = 20
+
 function addBatchText() {
+  if (batchTexts.length >= MAX_BATCH_TEXTS) {
+    showToast(`批量文本数量不能超过 ${MAX_BATCH_TEXTS} 条：当前已有 ${batchTexts.length} 条`)
+    return
+  }
+  requestError.value = ''
   batchTexts.push({ id: ++batchItemSequence, projectName: '', title: '', text: '' })
+  // 新文本框就地在按钮附近出现，滚动使其可见并聚焦
+  nextTick(() => {
+    const cards = document.querySelectorAll('.batch-text-item-card')
+    const last = cards[cards.length - 1] as HTMLElement | undefined
+    last?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    last?.querySelector<HTMLTextAreaElement>('.batch-textarea')?.focus()
+  })
 }
 
 function removeBatchText(id: number) {
-  if (batchTexts.length <= 1) return
+  if (batchTexts.length <= 2) return
   const index = batchTexts.findIndex(item => item.id === id)
   if (index >= 0) batchTexts.splice(index, 1)
 }
 
 function addCitationBatchItem() {
+  if (citationBatchItems.length >= MAX_BATCH_TEXTS) {
+    showToast(`批量引用数据不能超过 ${MAX_BATCH_TEXTS} 条：当前已有 ${citationBatchItems.length} 条`)
+    return
+  }
   citationBatchItems.push({
     id: ++batchItemSequence,
     title: '',
@@ -673,7 +712,7 @@ function addCitationBatchItem() {
 }
 
 function removeCitationBatchItem(id: number) {
-  if (citationBatchItems.length <= 1) return
+  if (citationBatchItems.length <= 2) return
   const index = citationBatchItems.findIndex(item => item.id === id)
   if (index >= 0) citationBatchItems.splice(index, 1)
 }
@@ -682,26 +721,48 @@ const MAX_BATCH_FILES = 20
 function perFileLimitMB() { return 50 }  // 单文件上限统一 50MB（所有功能点）
 function handleFileSelection(event: Event, multiple: boolean) {
   const input = event.target as HTMLInputElement
-  const files = Array.from(input.files || [])
+  processSelectedFiles(Array.from(input.files || []), multiple, () => { input.value = '' })
+}
+
+// 拖拽上传：整块上传框都是感应区（原生 file input 只认自己那一小块，
+// 表现为"拖放感应范围太小"）；drop 到框内任意位置即等效点击选择。
+// accept 只过滤选择器，拖拽会绕过——这里补扩展名过滤
+function handleFileDrop(event: DragEvent, multiple: boolean) {
+  const dropped = Array.from(event.dataTransfer?.files || [])
+  const allowed = /\.(pdf|docx|txt)$/i
+  const rejected = dropped.filter(file => !allowed.test(file.name))
+  if (rejected.length) {
+    showToast(`不支持的文件格式：${rejected.map(f => f.name).join('、')}。仅支持 PDF、DOCX、TXT`)
+    return
+  }
+  processSelectedFiles(dropped.filter(file => allowed.test(file.name)), multiple)
+}
+
+function processSelectedFiles(files: File[], multiple: boolean, reset?: () => void) {
+  // 单文件模式：一次只能上传一个文件——拖入多个直接报错，整个拒绝（不静默取第一个）
+  if (!multiple && files.length > 1) {
+    showToast(`只能同时上传一个文件：本次选择了 ${files.length} 个（${files.slice(0, 3).map(f => f.name).join('、')}${files.length > 3 ? ' 等' : ''}），请只选择一个`)
+    return
+  }
   if (!multiple) uploadedFiles.splice(0)
   // 客户端即时校验:超限文件/超量批次在选择阶段直接拒绝,不必等后端报错
   const limitMB = perFileLimitMB()
   const oversized = files.filter(file => file.size > limitMB * 1024 * 1024)
   if (oversized.length) {
-    requestError.value = `文件超过大小上限：${oversized.map(f => f.name).join('、')} 单个文件不能超过 ${limitMB}MB，请压缩后重新选择`
-    input.value = ''
+    showToast(`文件超过大小上限：${oversized.map(f => f.name).join('、')} 单个文件不能超过 ${limitMB}MB`)
+    reset?.()
     return
   }
   if (multiple && uploadedFiles.length + files.length > MAX_BATCH_FILES) {
-    requestError.value = `批量文件数量不能超过 ${MAX_BATCH_FILES} 个（错误码 42201）：当前已选 ${uploadedFiles.length} 个，本次又选择 ${files.length} 个`
-    input.value = ''
+    showToast(`批量文件数量不能超过 ${MAX_BATCH_FILES} 个：当前已选 ${uploadedFiles.length} 个，本次又选择 ${files.length} 个`)
+    reset?.()
     return
   }
-  requestError.value = 
+  requestError.value = ''
   files.forEach(file => {
     const duplicate = uploadedFiles.some(item => item.name === file.name && item.size === file.size && item.file.lastModified === file.lastModified)
     if (duplicate) return
-    uploadedFiles.push({
+    const entry: UploadedFileItem = {
       id: `${file.name}-${file.size}-${file.lastModified}`,
       file,
       name: file.name,
@@ -715,9 +776,80 @@ function handleFileSelection(event: Event, multiple: boolean) {
       publicationDate: '',
       source: '',
       keywords: '',
-    })
+      parseState: 'waiting',
+      parseProgress: 0,
+    }
+    uploadedFiles.push(entry)
+    // 上传即解析（并发池调度）：入列即排队，文件→文本前置完成。
+    // 必须取 reactive 代理引用（uploadedFiles 内的元素），持原始对象改属性不触发视图更新
+    queueParse(uploadedFiles[uploadedFiles.length - 1])
   })
   input.value = ''
+}
+
+// 上传即解析：XHR 以获取真实上传进度（fetch 无法跟踪上传字节），上传完进入
+// 服务端解析态，完成后保存 parse_id——点「在线测试」只剩功能执行时间。
+// 批量文件并发解析（4 路池）：串行 20×45s 不可接受；FastAPI 端点异步天然
+// 支持多请求并发，mineru 回退路径由后端 PageBudgetPool 限流保护
+const PARSE_CONCURRENCY = 4
+let activeParses = 0
+const parseQueue: UploadedFileItem[] = []
+
+function queueParse(item: UploadedFileItem) {
+  parseQueue.push(item)
+  pumpParses()
+}
+
+function pumpParses() {
+  while (activeParses < PARSE_CONCURRENCY && parseQueue.length) {
+    const item = parseQueue.shift()!
+    activeParses += 1
+    uploadAndParse(item, () => { activeParses -= 1; pumpParses() })
+  }
+}
+
+function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
+  item.parseState = 'uploading'
+  item.parseProgress = 0
+  item.parseError = ''
+  const xhr = new XMLHttpRequest()
+  const form = new FormData()
+  form.append('tool_id', props.toolId)
+  form.append('files', item.file, item.name)
+  xhr.open('POST', apiUrl('/api/v1/files/parse'))
+  xhr.upload.onprogress = event => {
+    if (event.lengthComputable) item.parseProgress = Math.max(1, Math.round(event.loaded / event.total * 100))
+  }
+  xhr.upload.onload = () => { item.parseState = 'parsing' }
+  xhr.onload = () => {
+    try {
+      const body = JSON.parse(xhr.responseText)
+      const row = body?.data?.results?.[0]
+      if (body.code === 0 && row) {
+        item.parseId = row.parse_id
+        item.parsedChars = row.char_count
+        item.parseState = 'done'
+      } else {
+        item.parseState = 'error'
+        item.parseError = body?.message || '解析失败'
+      }
+    } catch {
+      item.parseState = 'error'
+      item.parseError = '解析响应异常'
+    }
+    onDone()
+  }
+  xhr.onerror = () => {
+    item.parseState = 'error'
+    item.parseError = '网络错误，解析未完成'
+    onDone()
+  }
+  xhr.send(form)
+}
+
+function retryParse(item: UploadedFileItem) {
+  if (item.parseState === 'uploading' || item.parseState === 'parsing') return
+  queueParse(item)
 }
 
 function removeUploadedFile(id: string) {
@@ -731,6 +863,10 @@ function formatFileSize(size: number) {
 }
 
 function addDoc() {
+  if (docs.length >= MAX_BATCH_TEXTS) {
+    showToast(`文献数量不能超过 ${MAX_BATCH_TEXTS} 篇：当前已有 ${docs.length} 篇`)
+    return
+  }
   docs.push({
     id: `DOC${String(docs.length + 1).padStart(3, '0')}`,
     title: '', authors: '', institutions: '', publication_date: '', source: '', keywords: '',
@@ -768,6 +904,21 @@ function requiredResourceError(): string {
 
 function validateRequiredInputs(): string {
   if (props.toolId === 'relation-extract') return selectedNerRecordId.value ? '' : '请选择一条已完成的命名实体识别记录。'
+
+  // 批量文件：提交时最少 2 个（深度聚类按后端契约最少 4 个），不足给小弹窗提示
+  if (mode.value === 'batch' && props.toolId !== 'relation-extract') {
+    const minimum = props.toolId === 'deep-cluster' ? 4 : 2
+    if (uploadedFiles.length < minimum) {
+      return `批量文件至少需要 ${minimum} 个（当前 ${uploadedFiles.length} 个）。`
+    }
+  }
+  // 上传即解析：文件必须全部解析完成才能提交（点测试后只剩功能执行时间）
+  if ((mode.value === 'file' || mode.value === 'batch') && uploadedFiles.length) {
+    const pending = uploadedFiles.filter(item => item.parseState === 'uploading' || item.parseState === 'parsing' || item.parseState === 'waiting')
+    const failed = uploadedFiles.filter(item => item.parseState === 'error')
+    if (pending.length) return `仍有 ${pending.length} 个文件在解析中，请等待解析完成后再测试。`
+    if (failed.length) return `${failed.length} 个文件解析失败（${failed[0].name}${failed.length > 1 ? ' 等' : ''}），请点击重试或移除后再测试。`
+  }
 
   if (props.toolId === 'cluster-label') {
     if (!selectedClusterTaskId.value || !selectedClusterTask.value) return '请选择一项已完成的深度聚类任务。'
@@ -837,7 +988,7 @@ function validateRequiredInputs(): string {
       const invalidCard = citationCards.find(card => !card.sentence.trim() || !card.previousContext.trim() || !card.nextContext.trim())
       if (invalidCard) return '存在引用句卡片未填写完整（引用句、上文、下文均需填写）。'
     } else if (mode.value === 'batch-text') {
-      if (!citationBatchItems.length) return '请至少添加一条引用数据。'
+      if (citationBatchItems.length < 2) return '批量引用数据至少需要 2 条。'
       const noTitleIndex = citationBatchItems.findIndex(item => !item.title.trim())
       if (noTitleIndex >= 0) return `请输入引用数据${noTitleIndex + 1}的题目（必填，用于标识每条响应结果及可视化弹窗中的文献）。`
       const noMetaIndex = citationBatchItems.findIndex(item => !item.metaList.length)
@@ -864,7 +1015,7 @@ function validateRequiredInputs(): string {
   if (props.toolId === 'domain-classify' && (!form.domain || form.domain === '请选择专业领域')) return '请选择专业领域。'
   if (mode.value === 'text' && !form.text.trim()) return `请输入${textInputLabel.value}。`
   if (mode.value === 'batch-text') {
-    if (!batchTexts.length) return '请至少添加一条文本。'
+    if (batchTexts.length < 2) return '批量文本至少需要 2 条。'
     const invalidIndex = batchTexts.findIndex(item => !item.text.trim())
     if (invalidIndex >= 0) return `请输入文本${invalidIndex + 1}的内容。`
   }
@@ -890,7 +1041,7 @@ async function run() {
   const validationError = validateRequiredInputs()
   if (validationError) {
     result.value = null
-    requestError.value = `必填参数未完成：${validationError}`
+    showToast(validationError)
     running.value = false
     return
   }
@@ -898,10 +1049,22 @@ async function run() {
   result.value = null
   requestError.value = ''
   try {
+    // 预解析提交：文件模式全部解析完成时，剥离文件本体、只带 parse_id——
+    // 点测试后的耗时只剩功能执行（解析已在上传动作完成）
+    let payload: Record<string, unknown> = currentRequestPayload.value
+    if ((mode.value === 'file' || mode.value === 'batch') && uploadedFiles.length
+        && uploadedFiles.every(item => item.parseState === 'done')) {
+      payload = { ...payload, preparsed: JSON.stringify(uploadedFiles.map(item => item.parseId)) }
+      for (const [key, value] of Object.entries(payload)) {
+        if (value instanceof File || (Array.isArray(value) && value.length && value.every(x => x instanceof File))) {
+          delete payload[key]
+        }
+      }
+    }
     result.value = await executeToolRequest(
       endpointFor(props.tool, mode.value),
       mode.value,
-      currentRequestPayload.value,
+      payload,
     )
     // 引用工具文件模式：PDF 解析成功但未检测到引用标记时引擎返回空结果，
     // 给出业务提示（后端不报参数错误），避免用户只看到空列表
@@ -957,6 +1120,14 @@ function downloadResult() {
 
 <template>
   <section class="section online-test-section">
+    <!-- 输入侧校验提示：屏幕上方居中的小弹窗，出现后 2 秒淡出。
+         必须 Teleport 到 body——.page-shell 的 backdrop-filter 会创建
+         containing block，fixed 元素会被定位到视口外（实测 y=-1146） -->
+    <Teleport to="body">
+      <transition name="toast-fade">
+        <div v-if="toastMessage" class="input-toast">{{ toastMessage }}</div>
+      </transition>
+    </Teleport>
     <div class="section-header">
       <div class="test-header-left"><h2 class="section-title">在线测试</h2><span class="pill ready">{{ running ? '执行中' : '就绪' }}</span></div>
       <button class="primary-btn" type="button" :disabled="running || !!clusterCountError" :title="clusterCountError || undefined" @click="run">{{ running ? '正在测试…' : '▶ 在线测试' }}</button>
@@ -1121,7 +1292,7 @@ function downloadResult() {
             <div class="special-panel batch-text-panel citation-batch-panel">
               <div class="special-panel-head"><div><strong>批量引用数据</strong><span>已添加 {{ citationBatchItems.length }} 条，每条作为一个独立任务</span></div><button class="outline-btn" type="button" @click="addCitationBatchItem">＋ 添加引用数据</button></div>
               <div v-for="(item,index) in citationBatchItems" :key="item.id" class="document-card batch-text-item-card citation-batch-item-card">
-                <div class="document-card-head"><b>引用数据 {{ index + 1 }}<span v-if="item.citationMarker" class="citation-marker-bind"> · 文献 {{ item.citationMarker }}</span></b><button class="ghost-btn danger" type="button" :disabled="citationBatchItems.length <= 1" @click="removeCitationBatchItem(item.id)">删除</button></div>
+                <div class="document-card-head"><b>引用数据 {{ index + 1 }}<span v-if="item.citationMarker" class="citation-marker-bind"> · 文献 {{ item.citationMarker }}</span></b><button class="ghost-btn danger" type="button" :disabled="citationBatchItems.length <= 2" @click="removeCitationBatchItem(item.id)">删除</button></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识本条响应结果及可视化弹窗中的文献</small></label><input v-model="item.title" class="input" maxlength="300" placeholder="请输入本条文献题目" /></div>
                 <div v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="item.documentText" class="textarea compact" maxlength="8000" placeholder="请输入本条引用所属的文献文本"></textarea></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><button v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" type="button" class="citation-extract-btn" @click="autoExtractBatchCitation(item)"><i>✦</i>从文献文本自动提取</button></label><textarea v-model="item.citationSentence" class="textarea compact citation-sentence-area" placeholder="可点击右上按钮从本条文献文本自动提取，也可手动填写"></textarea></div>
@@ -1155,33 +1326,35 @@ function downloadResult() {
             <div v-if="toolId === 'definition-detect'" class="settings-card definition-basic-options two-column"><div class="field"><label><span class="label-main">领域标签</span><small>注入领域语境辅助概念判定</small></label><select v-model="form.domain" class="select"><option value="自动识别">自动识别</option><option value="01">数学与计算科学</option><option value="02">力学与工程力学</option><option value="03">物理学与应用物理</option><option value="04">化学与化学科学</option><option value="05">天文学与空间科学</option><option value="06">地球科学与地质资源</option><option value="07">测绘遥感与地理信息</option><option value="08">气象海洋科学</option><option value="09">生物科学与生物技术</option><option value="10">医学与卫生健康</option><option value="11">药学与毒理学</option><option value="12">农业科学与农业工程</option><option value="13">林业畜牧兽医与水产</option><option value="14">材料科学与材料工程</option><option value="15">矿业与矿物加工</option><option value="16">石油与天然气工程</option><option value="17">冶金与金属加工</option><option value="18">机械工程与智能制造</option><option value="19">仪器仪表与计量检测</option><option value="20">能源与动力工程</option><option value="21">核科学与核工程</option><option value="22">电气工程与电力系统</option><option value="23">电子通信与半导体</option><option value="24">自动化与控制工程</option><option value="25">人工智能与计算机技术</option><option value="26">化学工程与过程工业</option><option value="27">轻工食品与纺织</option><option value="28">建筑与土木工程</option><option value="29">水利与水电工程</option><option value="30">交通运输工程</option><option value="31">航空航天工程</option><option value="32">环境与安全工程</option></select></div><div class="field"><label><span class="label-main">输出格式要求</span><small>附输出结构</small></label><select v-model="form.outputFormat" class="select"><option>JSON</option><option>CSV</option><option>数据库写入结构</option></select></div></div>
             <div v-if="toolId === 'fund-move'" class="field fund-project-name-field"><label><span class="label-main"><span class="required-mark">*</span> 项目名称</span><small>必填；用于标识本次基金项目语步识别结果</small></label><input v-model="form.projectName" class="input" maxlength="200" placeholder="请输入项目名称" /></div>
             <div v-if="needsDocumentTitle" class="field document-title-field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识响应结果及可视化弹窗中的当前文献</small></label><input v-model="form.documentTitle" class="input" maxlength="300" placeholder="请输入题目" /></div>
-            <div class="field primary-text-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}</span><small>最多 8000 字</small></label><textarea v-model="form.text" class="textarea main-textarea primary-textarea" maxlength="8000" :placeholder="`请输入${textInputLabel}`"></textarea></div>
+            <div class="field primary-text-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}</span><small>最多 8000 字</small></label><textarea v-model="form.text" class="textarea main-textarea primary-textarea" maxlength="8000" :placeholder="textInputPlaceholder"></textarea></div>
           </template>
           <template v-else-if="mode === 'batch-text' && toolId !== 'relation-extract'">
             <div class="special-panel batch-text-panel">
-              <div class="special-panel-head"><div><strong>{{ textInputLabel }}集合</strong><span>已添加 {{ batchTexts.length }} 条，每条独立提交和返回结果</span></div><button class="outline-btn" type="button" @click="addBatchText">＋ 添加文本</button></div>
+              <div class="special-panel-head"><div><strong>{{ textInputLabel }}集合</strong><span>已添加 {{ batchTexts.length }} 条，每条独立提交和返回结果</span></div></div>
               <div v-for="(item,index) in batchTexts" :key="item.id" class="document-card batch-text-item-card">
-                <div class="document-card-head"><b><span class="required-mark">*</span> 文本 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" :disabled="batchTexts.length <= 1" @click="removeBatchText(item.id)">删除</button></div>
+                <div class="document-card-head"><b><span class="required-mark">*</span> 文本 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" :disabled="batchTexts.length <= 2" @click="removeBatchText(item.id)">删除</button></div>
                 <div v-if="toolId === 'fund-move'" class="field fund-project-name-field"><label><span class="label-main"><span class="required-mark">*</span> 项目名称</span><small>必填；对应第 {{ index + 1 }} 条文本</small></label><input v-model="item.projectName" class="input" maxlength="200" :placeholder="`请输入第 ${index + 1} 个项目名称`" /></div>
                 <div v-if="needsDocumentTitle" class="field document-title-field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；对应第 {{ index + 1 }} 条文本</small></label><input v-model="item.title" class="input" maxlength="300" :placeholder="`请输入第 ${index + 1} 篇文献题目`" /></div>
                 <div class="field batch-text-content-field"><div class="batch-text-limit">最多 8000 字</div><textarea v-model="item.text" class="textarea compact batch-textarea" maxlength="8000" :placeholder="`请输入第 ${index + 1} 条${textInputLabel}`"></textarea></div>
               </div>
+              <!-- 添加按钮放在列表末尾右下：点击后新文本框就在按钮处出现，无需回滚顶部 -->
+              <div class="batch-text-add-row"><button class="outline-btn" type="button" @click="addBatchText">＋ 添加文本</button></div>
             </div>
           </template>
           <template v-else-if="mode === 'file' && toolId !== 'relation-extract'">
-            <div class="field single-file-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}文件</span><small>本次只处理一个文件</small></label><label class="upload-zone single-file-upload-zone"><input type="file" accept=".pdf,.docx,.txt" @change="handleFileSelection($event, false)" /><span class="upload-icon">⇧</span><b>选择一个文件或拖拽到此处</b><small>支持 PDF、DOCX、TXT，单文件最大 50 MB</small></label><div v-if="uploadedFiles.length" class="selected-file-list single-file-list"><article v-for="item in uploadedFiles.slice(0,1)" :key="item.id" class="selected-file-row"><span class="selected-file-type">{{ item.type }}</span><div><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }} · 等待提交</small></div><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article></div></div>
+            <div class="field single-file-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}文件</span><small>本次只处理一个文件</small></label><label class="upload-zone single-file-upload-zone" @dragover.prevent @drop.prevent="handleFileDrop($event, false)"><input type="file" accept=".pdf,.docx,.txt" @change="handleFileSelection($event, false)" /><span class="upload-icon">⇧</span><b>选择一个文件或拖拽到此处</b><small>支持 PDF、DOCX、TXT，单文件最大 50 MB</small></label><div v-if="uploadedFiles.length" class="selected-file-list single-file-list"><article v-for="item in uploadedFiles.slice(0,1)" :key="item.id" class="selected-file-row"><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">已解析 {{ item.parsedChars }} 字</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">解析失败，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span><div><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }}</small></div><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article></div></div>
           </template>
           <template v-else-if="mode === 'batch' && toolId !== 'relation-extract'">
             <div class="special-panel batch-file-panel">
-              <div class="special-panel-head"><div><strong><span class="required-mark">*</span> {{ toolId === 'structured-review' ? '文献集文件' : '批量文件上传' }}</strong><span>必填<span class="nowrap-chunk"> · 已选择 {{ uploadedFiles.length }} 个文件</span></span></div><label class="outline-btn file-add-button"><input type="file" multiple accept=".pdf,.docx,.txt" @change="handleFileSelection($event, true)" />＋ 添加文件</label></div>
-              <label class="upload-zone batch-file-upload-zone"><input type="file" multiple accept=".pdf,.docx,.txt" @change="handleFileSelection($event, true)" /><span class="upload-icon">⇧</span><b>一次选择或拖拽多个文件</b><small>支持 PDF、DOCX、TXT；单文件最大 50 MB</small></label>
+              <div class="special-panel-head"><div><strong><span class="required-mark">*</span> {{ toolId === 'structured-review' ? '文献集文件' : '批量文件上传' }}</strong><span>必填<span class="nowrap-chunk"> · 已选择 {{ uploadedFiles.length }} 个文件</span></span></div></div>
+              <label class="upload-zone batch-file-upload-zone" @dragover.prevent @drop.prevent="handleFileDrop($event, true)"><input type="file" multiple accept=".pdf,.docx,.txt" @change="handleFileSelection($event, true)" /><span class="upload-icon">⇧</span><b>一次选择或拖拽多个文件</b><small>支持 PDF、DOCX、TXT；单文件最大 50 MB，最少 2 个、最多 20 个</small></label>
               <div class="batch-file-queue">
                 <div class="batch-file-queue-head"><b>待处理文件队列</b><span>{{ uploadedFiles.length }} 个文件</span></div>
                 <div v-if="!uploadedFiles.length" class="batch-file-empty">选择文件后，将在这里逐项显示文件名称、大小和处理状态。</div>
                 <template v-if="toolId === 'deep-cluster'">
                   <article v-for="(item,index) in uploadedFiles" :key="item.id" class="document-card deep-cluster-file-card">
                     <div class="document-card-head"><b>文件 {{ index + 1 }} · {{ item.name }}</b><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></div>
-                    <div class="selected-file-summary"><span class="selected-file-type">{{ item.type }}</span><span>{{ formatFileSize(item.size) }} · 等待提交</span></div>
+                    <div class="selected-file-summary"><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">已解析 {{ item.parsedChars }} 字</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">解析失败，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span></div>
                     <div class="settings-title deep-cluster-metadata-title"><b>文献元数据</b><span>由用户填写，与当前文件一一关联</span></div>
                     <div class="two-column deep-cluster-metadata-grid">
                       <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="item.documentId" class="input" placeholder="例如：DOC001" /></div>
@@ -1194,7 +1367,7 @@ function downloadResult() {
                   </article>
                 </template>
                 <template v-else>
-                  <article v-for="(item,index) in uploadedFiles" :key="item.id" class="selected-file-row"><i>{{ index + 1 }}</i><span class="selected-file-type">{{ item.type }}</span><div><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }} · 等待提交</small></div><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article>
+                  <article v-for="(item,index) in uploadedFiles" :key="item.id" class="selected-file-row"><i>{{ index + 1 }}</i><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">已解析 {{ item.parsedChars }} 字</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">解析失败，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span><div><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }}</small></div><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article>
                 </template>
               </div>
               <div v-if="toolId === 'deep-cluster'" class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">

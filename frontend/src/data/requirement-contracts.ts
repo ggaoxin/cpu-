@@ -21,8 +21,8 @@ export type RequirementContract = {
  */
 
 /** 资源引用结构的公共字段说明(展开在每个资源参数之后) */
-const resourceDescriptorRows = (field: string, resourceDesc: string, uploadHint: string): RequirementInputRow[] => [
-  [field, 'object', 'optional', resourceDesc + '。内置模式不提交该字段（使用系统预置资源），仅用户上传时携带'],
+const resourceDescriptorRows = (field: string, resourceDesc: string, uploadHint: string, status: 'optional' | 'required' = 'optional'): RequirementInputRow[] => [
+  [field, 'object', status, resourceDesc + '。内置模式不提交该字段（使用系统预置资源），仅用户上传时携带'],
   [`${field}.file`, 'file', 'conditional', '用户上传资源时必填(仅 multipart 表单模式)。' + uploadHint],
 ]
 
@@ -85,9 +85,8 @@ export const requirementContracts: Record<string, RequirementContract> = {
     inputs: [
             ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
             ['english_scientific_document_text', 'string | string[] | file | file[]', 'required', '英文科技文献文本'],
-      ...resourceDescriptorRows('clc_labeled_data',
-        '中图分类标准数据引用(与中文分类共用同一资源)。内置 bge-m3 跨语言索引支持英文→中文类目直接映射',
-        '自定义分类体系 JSON 文件(格式同中文)'),
+      ...resourceDescriptorRows('clc_labeled_data', '必填；用户可手动上传', 'JSON 数组，每条 {中图分类号, 类目名称}', 'required'),
+      ...resourceDescriptorRows('classification_standard_mapping_table', '必填；用户可手动上传', 'JSON 数组，每条 {英文术语 term, 中图分类号 clc_code}', 'required'),
     ],
     outputs: [
       ['clc_prediction', 'object', '中图分类号预测结果'],

@@ -1154,9 +1154,10 @@ class SemanticApplicationService(ISemanticService):
         #   stat_conf（词频/位置/标题命中，_alg_conf 绝对分）仅保留作"fitness 同分时的平局
         #     打破"，不进入置信度。逐词独立送各自上下文（不拼全候选防 term 信号淹没）；
         #     要绝对概率非排名（防机械递减 1.0/0.9/0.8）；不带同任务 few-shot（防泄漏）。
+        _merged_scenes: dict = {}
         if cleaned:
             _sem_ctxs = {c["keyword"]: self._term_context(c["keyword"], searchable_text) for c in cleaned}
-            _sem_scores = self._llm_keyword_semantic_scores(
+            _sem_scores, _merged_scenes = self._llm_keyword_scores_and_scenes(
                 [c["keyword"] for c in cleaned], _sem_ctxs, title, abstract)
             for _item in cleaned:
                 _stat = float(_item.get("weight") or 0)                          # 统计显著性(仅平局打破)
@@ -1338,15 +1339,59 @@ class SemanticApplicationService(ISemanticService):
             from concurrent.futures import ThreadPoolExecutor
             _en_terms = [c["keyword"] for c in cleaned if c["keyword"].casefold() not in _user_map_index]
             _en_ctxs = {c["keyword"]: self._term_context(c["keyword"], searchable_text) for c in cleaned}
-            _en_scenes = self._llm_scene_rewrite_batch(_en_terms, _en_ctxs, title)
-            def _map_one(kw):
+            _en_scenes = {k: v for k, v in _merged_scenes.items() if k in _en_ctxs}
+            _missing = [t for t in _en_terms if t not in _en_scenes]
+            if _missing:
+                _en_scenes.update(self._llm_scene_rewrite_batch(_missing, _en_ctxs, title))
+            from infrastructure.rag.clc_retriever import clc_retriever as _clc_r
+            _en_clc_map: Dict[str, Any] = {}
+            _rerank_jobs: list = []
+            _cand_by_term: Dict[str, list] = {}
+            _en_scenes_having = [_kw for _kw in _en_terms if _en_scenes.get(_kw)]
+            _q_en = list(_en_terms)
+            _q_zh = [_en_scenes[_kw] for _kw in _en_scenes_having]
+            _en_results = _clc_r.retrieve_batch(_q_en, k=8, cross_lingual=True) if _q_en else []
+            _zh_results = _clc_r.retrieve_batch(_q_zh, k=8, cross_lingual=False) if _q_zh else []
+            _zh_by_term = dict(zip(_en_scenes_having, _zh_results))
+            for _ki, _kw in enumerate(_en_terms):
                 try:
-                    return kw, self._keyword_classification_mapping(
-                        kw, _en_ctxs.get(kw, ""), title, _en_scenes.get(kw, ""))
+                    _ctx = _en_ctxs.get(_kw, "")
+                    _scene = _en_scenes.get(_kw, "")
+                    _cands = list(_en_results[_ki] or [])
+                    _cands += list(_zh_by_term.get(_kw) or [])
+                    _best: Dict[str, Any] = {}
+                    for _c in _cands:
+                        _code = str(_c.get("clc_code") or "")
+                        if not _code:
+                            continue
+                        _sc = float(_c.get("score") or 0)
+                        if _code not in _best or _sc > float(_best[_code].get("score") or 0):
+                            _best[_code] = _c
+                    _uniq = sorted(_best.values(), key=lambda x: -float(x.get("score") or 0))[:6]
+                    if not _uniq or float(_uniq[0].get("score") or 0) < 0.40:
+                        continue
+                    _cand_by_term[_kw] = _uniq
+                    _rerank_jobs.append({"term": _kw, "context": _ctx + (" [场景]" + _scene if _scene else ""), "candidates": _uniq})
                 except Exception:  # noqa: BLE001
-                    return kw, None
-            with ThreadPoolExecutor(max_workers=min(6, len(_en_terms) or 1), thread_name_prefix="clc-map") as _ex:
-                _en_clc_map = dict(list(_ex.map(_map_one, _en_terms)))
+                    continue
+            _batch_rerank = self._llm_rerank_clc_batch(_rerank_jobs)
+            for _kw, _uniq in _cand_by_term.items():
+                _chosen, _conf = _batch_rerank.get(_kw, (-1, 0.0))
+                if _chosen < 0 or _conf < 0.45:
+                    continue
+                _c = _uniq[_chosen] if _chosen < len(_uniq) else None
+                if _c is None:
+                    continue
+                _en_clc_map[_kw] = {
+                    "system": "CLC",
+                    "code": _c.get("clc_code"),
+                    "label": _c.get("clc_name"),
+                    "classification_path": _c.get("path_names") or [],
+                    "confidence": round(min(1.0, _conf), 4),
+                    "mapping_engine": "clc_retriever+batch_rerank",
+                    "dense_score": round(float(_c.get("score") or 0), 4),
+                    "scene": _en_scenes.get(_kw, ""),
+                }
             for _uk, _uv in _user_map_index.items():
                 _en_clc_map[_uk] = _uv
             # 大表向量索引:剩余词近邻匹配用户术语(≥0.62 视为同术语)
@@ -1480,6 +1525,47 @@ class SemanticApplicationService(ISemanticService):
             logger.warning("CLC LLM rerank 失败 [%s]: %s", term, exc)
             return -1, 0.0
 
+    def _llm_rerank_clc_batch(self, jobs: list) -> dict:
+        """CLC rerank 批量化：一篇的全部术语候选合成一次 LLM 调用。"""
+        if not jobs:
+            return {}
+        sysp = (
+            "你是科技文献分类专家。下面有多条术语，每条带其上下文与若干中图法候选类目。"
+            "对每条术语独立判断其在此语境下最可能属于的类目。\n"
+            "- 从该条的候选中选最接近的一个（覆盖优先）\n"
+            "- 只有当该条所有候选都与术语学科完全无关时才 chosen=-1\n"
+            "- confidence 反映把握（0.0-1.0）\n"
+            "只输出JSON：{\"items\":[{\"term\":\"原词\",\"chosen\":0,\"confidence\":0.85},...]}"
+        )
+        parts = []
+        for ji, job in enumerate(jobs):
+            cands = job.get("candidates") or []
+            lines = []
+            for i, c in enumerate(cands):
+                path = " > ".join(c.get("path_names") or []) or ""
+                lines.append(f"  [{i}] {c.get('clc_code')} {c.get('clc_name')}" + (f" | {path}" if path else ""))
+            parts.append(f"({ji}) 术语：{job.get('term')}\n  上下文：{str(job.get('context') or '')[:150]}\n  候选:\n" + "\n".join(lines))
+        user = "\n\n".join(parts)
+        out_map = {}
+        try:
+            out = self._glm.chat_json(sysp, user, timeout=90.0, max_tokens=1800)
+            data = out.get("data", out) if isinstance(out, dict) else {}
+            items = data.get("items") or []
+            if isinstance(items, list):
+                for it in items:
+                    if isinstance(it, dict):
+                        t = str(it.get("term") or "").strip()
+                        try:
+                            ch = int(it.get("chosen", -1))
+                            cf = max(0.0, min(1.0, float(it.get("confidence", 0))))
+                        except (TypeError, ValueError):
+                            ch, cf = -1, 0.0
+                        if t:
+                            out_map[t] = (ch, cf)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("CLC rerank 批量失败: %s", exc)
+        return out_map
+
     def _llm_translate_term(self, term: str) -> str:
         """LLM 翻译英文术语→中文标准译名，用于中文 dense 检索补充召回音译专有名词。
 
@@ -1526,14 +1612,50 @@ class SemanticApplicationService(ISemanticService):
             return ""
 
     def _llm_keyword_semantic_scores(self, terms: list, contexts: dict, document_title: str = "", abstract: str = "") -> dict:
-        """批量语义判定：1 次 LLM 对每个候选术语独立判"是否本文献核心主题术语"概率(0-1)。
+        scores, _ = self._llm_keyword_scores_and_scenes(terms, contexts, document_title, abstract)
+        return scores
 
-        统计特征（词频/位置/标题命中）是统计显著性而非主题代表性——低频核心术语被压低、
-        高频功能词虚高。本方法补齐语义维度，让置信度反映主题代表性。
-        防历史坑：逐词只送各自上下文（不拼全候选，防 term 信号被淹没）；要绝对概率非排名
-        （防 LLM 机械递减 1.0/0.9/0.8）；不带同任务 few-shot（防标签泄漏）。返回 {term: prob}，
-        批量失败返回空 dict（调用方用统计分兜底）。
-        """
+    def _llm_keyword_scores_and_scenes(self, terms: list, contexts: dict, document_title: str = "", abstract: str = "") -> tuple:
+        """轮次合并：评分+场景一次调用。"""
+        if not terms:
+            return {}, {}
+        sysp = (
+            "你是科技文献主题分析专家。给定文献标题、摘要、若干候选术语（每个带其原文上下文片段），"
+            "对每个术语同时完成两项独立判定：\n"
+            "1) prob：该术语是否本文献的核心主题术语的 0-1 概率。独立判定，不互相比较、不按输入顺序递减；"
+            "泛化功能词即使频高也给低分；核心术语给高分，即便只出现一次。\n"
+            "2) scene：该术语在此文献中的应用场景中文描述（用于中图法类目锚定学科）。"
+            "必须带应用场景（如\"罗非鱼水产养殖指标\"），不能只重复关键词字面。\n"
+            "只输出JSON：{\"items\":[{\"term\":\"原词\",\"prob\":0.0-1.0,\"scene\":\"中文场景描述\"},...]}"
+        )
+        listing = []
+        for t in terms:
+            ctx = (contexts.get(t) or "")[:150]
+            listing.append(f"- {t} | 上下文：{ctx}")
+        user = f"文献标题：{document_title or '（无标题）'}\n摘要：{(abstract or '')[:500]}\n候选术语列表：\n" + "\n".join(listing)
+        scores: dict = {}
+        scenes: dict = {}
+        try:
+            out = self._glm.chat_json(sysp, user, temperature=0.2, timeout=60.0, max_tokens=1800)
+            data = out.get("data", out) if isinstance(out, dict) else {}
+            items = data.get("items") or data.get("terms") or []
+            if isinstance(items, list):
+                for it in items:
+                    if isinstance(it, dict):
+                        t = it.get("term") or it.get("keyword") or ""
+                        if not t:
+                            continue
+                        p = it.get("prob") if it.get("prob") is not None else it.get("probability")
+                        try:
+                            scores[t] = max(0.0, min(1.0, float(p)))
+                        except (TypeError, ValueError):
+                            scores[t] = 0.5
+                        sc = str(it.get("scene") or "").strip()
+                        if sc:
+                            scenes[t] = sc
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("关键词评分+场景合并调用失败: %s", exc)
+        return scores, scenes
         if not terms:
             return {}
         sysp = (
@@ -2914,6 +3036,7 @@ class SemanticApplicationService(ISemanticService):
         FULL_TEXT_THRESHOLD = 15000  # 字数阈值：以下单次直送，以上切块（切块来源为结构化章节标题，更可靠）
         CHUNK_SIZE = 10000           # 长文档切块大小（字）
 
+
         result = SemanticResult(code=code, name=fp.name)
         full_text = (request.text or "").strip()
         if not full_text:
@@ -3731,14 +3854,20 @@ class SemanticApplicationService(ISemanticService):
                 "（含文献编号标记、作者+年份、或明确提及他人工作的转述）。"
                 "逐字摘录原句，不得改写。只输出JSON："
                 '{"data":{"results":[{"sentence":"引用句原文"}]}}，无引用句输出空数组。')
-        chunks = [text[i:i + 3000] for i in range(0, len(text), 2800)]
-        found: list = []
-        for chunk in chunks[:12]:  # 上限 12 块（约 3.4 万字），防超长全文调用失控
+        chunks = [text[i:i + 3000] for i in range(0, len(text), 2800)][:12]  # 上限 12 块
+        from concurrent.futures import ThreadPoolExecutor
+        def _extract_cite_chunk(chunk):
             try:
-                d = self._glm.chat_json(sysp, f"文本：\n{chunk}", timeout=60.0,
-                                        max_tokens=2000, temperature=0.0)
+                return self._glm.chat_json(sysp, f"文本：\n{chunk}", timeout=60.0,
+                                           max_tokens=2000, temperature=0.0)
             except Exception:  # noqa: BLE001
-                continue  # 单块失败不阻塞其余块
+                return {}
+        # 并发提取（2026-09-08）：原串行 12 块 × 2s = 24s 是引用工具主瓶颈；
+        # 4 路并发 ≈ 6s，功能不变（各块独立提取引用句）
+        with ThreadPoolExecutor(max_workers=min(4, len(chunks))) as _pool:
+            _raw_results = list(_pool.map(_extract_cite_chunk, chunks))
+        found: list = []
+        for d in _raw_results:
             d = d.get("data", d) if isinstance(d, dict) else {}
             for r in (d.get("results") or []):
                 if not isinstance(r, dict):
@@ -4468,10 +4597,29 @@ class SemanticApplicationService(ISemanticService):
         _std_index = self._load_ner_standard_index(_res.get("manually_labeled_data"))
         if _fewshot:
             system_prompt += "\n\n【领域示例（用户上传语料，few-shot 校准实体边界与类型风格）】\n" + _fewshot
+        if code in ('ner_research', 'ner_domain'):
+            system_prompt += (
+                "\n\n【标准词输出（与识别同轮完成）】对识别出的每个实体同时给出：\n"
+                "- std_zh：学术规范的中文标准词\n"
+                "- std_en：学术规范的英文标准词\n"
+                "在原有识别 JSON 的每个实体对象中追加 \"std_zh\", \"std_en\" 两个字段。"
+            )
         user_payload = {"text": eff_text, "meta": request.meta}
         user_prompt = self._render_user_prompt(user_payload, request.params)
-        data = self._glm.chat_json(system_prompt, user_prompt, timeout=120.0, max_tokens=2500)
+        data = self._glm.chat_json(system_prompt, user_prompt, timeout=120.0, max_tokens=3000)
         out = data.get("data", data) if isinstance(data, dict) else data
+
+        if code in ('ner_research', 'ner_domain') and isinstance(out, list):
+            for _ent in out:
+                if not isinstance(_ent, dict):
+                    continue
+                _szh = str(_ent.pop("std_zh", "") or "").strip()
+                _sen = str(_ent.pop("std_en", "") or "").strip()
+                if _szh or _sen:
+                    _ent.setdefault("standard_names", {"zh": _szh, "en": _sen})
+                    _ent.setdefault("mapping_status", "已映射")
+                    _ent.setdefault("mapping_confidence", 0.75)
+                    _ent.setdefault("mapping_source", "llm_inline")
 
         # 位置校验 + 去重（防 GLM 幻觉位置/重复实体）：长文本多实体时 GLM 可能
         # 退化——重复堆同一实体并编造递增 start/end（实测 48 个"氧化膜"）、末尾
@@ -4586,7 +4734,9 @@ class SemanticApplicationService(ISemanticService):
             self._apply_ner_standard_mapping(out, _std_index)
         # 查表未命中的实体仍走 LLM 生成标准词（确定性优先，LLM 兜底管覆盖）
         if code == 'ner_research' and _std_index and isinstance(out, list):
-            _unmapped = [e for e in out if isinstance(e, dict) and e.get('mapping_status') == '未映射']
+            _unmapped = [e for e in out if isinstance(e, dict)
+                         and e.get('mapping_status') == '未映射'
+                         and e.get('mapping_source') != 'llm_inline']
             if _unmapped:
                 _ents_llm = _unmapped  # 仅内置资源时 LLM 兜底；用户上传词表则严格查表
                 # 复用下方 LLM 生成逻辑，对未映射实体生成标准词并覆盖"未映射"状态
@@ -4619,7 +4769,7 @@ class SemanticApplicationService(ISemanticService):
                             e.pop("mapping_source", None)  # LLM 生成的非用户词表
         if code in ('ner_research', 'ner_domain') and isinstance(out, list) and out \
                 and not (code == 'ner_research' and _std_index):
-            _ents = [e for e in out if isinstance(e, dict)]
+            _ents = [e for e in out if isinstance(e, dict) and e.get('mapping_source') != 'llm_inline']
             if _ents:
                 if code == 'ner_domain':
                     _msysp = (

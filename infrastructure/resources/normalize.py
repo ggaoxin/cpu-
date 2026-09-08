@@ -198,6 +198,13 @@ def _normalize_clc_rows(rows: List[Any]) -> List[Dict[str, Any]]:
         name = _first_present(row, ("clc_name", "name", "label", "title", "类目名称", "类目", "名称"))
         if name:
             new.setdefault("clc_name", name)
+        else:
+            # 独立映射表形态（{term/英文术语, clc_code}，en-classify）：无类目名时
+            # 用术语兜底——作用域检索与提示词至少有可读的语义信号
+            term = _first_present(row, ("term", "en_term", "english_term", "keyword", "word",
+                                        "英文术语", "术语", "词条"))
+            if term:
+                new.setdefault("clc_name", f"{term}")
         out.append(new)
     return out
 

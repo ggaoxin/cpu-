@@ -105,15 +105,22 @@ def _display_title(paper: Dict[str, Any]) -> str:
     return title or str(paper.get("document_id") or "")
 
 
-def extract_moves(paper: Dict[str, Any], glm) -> Dict[str, List[str]]:
-    """单篇语步提取：优先全文（切块并发），退回题名+摘要。
+MOVE_EXTRACT_TEXT_LIMIT = 10000  # 语步提取文本上限：有摘要从摘要起，无摘要从正文起，一律前 10k（不假设文档类型）
 
+def extract_moves(paper: Dict[str, Any], glm) -> Dict[str, List[str]]:
+    """单篇语步提取：优先全文前段（切块并发），退回题名+摘要。
+
+    全文截断到 20k 字（2026-09-08）：聚类只需研究方法/背景/目的句——它们集中在
+    摘要和引言/方法节；全文 100k 字×6 篇 = 116 次 GLM 块调用是 97s 的根因，
+    截断后 3-4 块/篇 ≈ 25 次调用，信息不丢（摘要本身已含核心语步句）。
     返回 {研究方法: [...], 研究背景: [...], 研究目的: [...]}（去重截断）。
     """
     full_text = str(paper.get("full_text") or "").strip()
     abstract = str(paper.get("abstract") or "").strip()
     title = str(paper.get("title") or "").strip()
     source = full_text if len(full_text) > len(abstract) else " ".join(x for x in (title, abstract) if x)
+    if len(source) > MOVE_EXTRACT_TEXT_LIMIT:
+        source = source[:MOVE_EXTRACT_TEXT_LIMIT]
     chunks = chunk_text(source)
     if not chunks:
         return {k: [] for k in MOVE_KEYS}
@@ -132,9 +139,15 @@ def extract_moves(paper: Dict[str, Any], glm) -> Dict[str, List[str]]:
 
 
 def extract_moves_batch(papers: List[Dict[str, Any]], glm) -> List[Dict[str, List[str]]]:
-    with ThreadPoolExecutor(max_workers=4) as pool:
-        return list(pool.map(lambda p: extract_moves(p, glm), papers))
+    """逐篇语步提取（并发 6，10k 截断）。
 
+    2024-09-08：截断到前 10k 字（有摘要从摘要起、无摘要从正文起，不假设文档类型）
+    ——每篇 2 块，6 篇 12 次 GLM 并发 6 路 ≈ 15s。批量提取实测 LLM 无法可靠
+    分文档返回（143s 回归），回退到逐篇并发。
+    """
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=min(6, len(papers))) as pool:
+        return list(pool.map(lambda p: extract_moves(p, glm), papers))
 
 def _doc_index_map(papers: List[Dict[str, Any]]) -> Dict[str, int]:
     """LLM 返回 docs 编号时的容错映射：数字串(1-based)、document_id(DOC001)、大写 ID 都认。

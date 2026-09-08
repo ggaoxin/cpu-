@@ -42,6 +42,32 @@ def create_app() -> FastAPI:
                     "mineru-api 不可用(%s)，文件解析将降级 pdfplumber", settings.MINERU_API_URL)
         except Exception:
             logging.getLogger(__name__).warning("mineru-api 健康检查异常，文件解析将降级 pdfplumber", exc_info=True)
+        # GIL 切换间隔：默认 5ms 在 6+ 线程并发时切换开销 3×（实测纯 CPU 3 任务
+        # 串行 1.5s vs 3 线程 5.0s）。增大到 50ms 减少无谓切换，让 IO 等待的线程
+        # 能拿到更长的 CPU 量子。零功能影响。
+        import sys as _sys
+        _sys.setswitchinterval(0.05)
+        # bge-m3 / bge-large-zh 预热：懒加载在首个请求线程触发（CPU ~30s），
+        # 批量并发线程排队等锁——实测 en-keyword 6 篇卡 39s 空转的根因。
+        # 启动后台线程预热，批量首个请求零等待
+        import threading as _threading
+
+        def _warm_encoders():
+            try:
+                from infrastructure.rag.m3_encoder import m3_encoder
+                m3_encoder.encode(["预热"])
+                logging.getLogger(__name__).info("bge-m3 编码器预热完成")
+            except Exception:
+                logging.getLogger(__name__).warning("bge-m3 预热失败（首次使用时再懒加载）", exc_info=True)
+            try:
+                from infrastructure.rag.clc_retriever import clc_retriever
+                clc_retriever._ensure_loaded()
+                clc_retriever._ensure_m3_loaded()
+                logging.getLogger(__name__).info("CLC 检索索引预热完成")
+            except Exception:
+                logging.getLogger(__name__).warning("CLC 索引预热失败", exc_info=True)
+
+        _threading.Thread(target=_warm_encoders, name="encoder-warmup", daemon=True).start()
         yield
 
     app = FastAPI(

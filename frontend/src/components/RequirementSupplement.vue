@@ -27,7 +27,8 @@ const resourceGroups: Record<string, { title: string; description: string; field
     title: '分类标准与映射规则',
     description: '跨语言映射后输出中图分类结果',
     fields: [
-      { key: 'clc_labeled_data', label: '标准中图分类号标注数据', description: '支撑分类号判定、路径展示与校验', placeholder: '请选择标注数据版本', required: true },
+      { key: 'clc_labeled_data', label: '中图分类标准', description: '必填；用户可手动上传', placeholder: '请选择分类标准版本', required: true },
+      { key: 'classification_standard_mapping_table', label: '映射规则', description: '必填；用户可手动上传', placeholder: '请选择映射规则版本', required: true },
     ],
   },
   'domain-classify': {
@@ -395,7 +396,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         <div class="requirement-resource-heading">
           <div><span v-if="field.required" class="required-mark">*</span><b>{{ field.label }}</b></div>
         </div>
-        <p>{{ field.description }}</p>
+        <p v-if="field.description">{{ field.description }}</p>
         <div class="requirement-resource-controls">
           <select v-model="sourceModes[field.key]" class="select resource-source-select">
             <option value="builtin">内置</option>

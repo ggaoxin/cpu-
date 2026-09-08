@@ -286,6 +286,54 @@ class CLCRetriever:
             })
         return cands
 
+    def retrieve_batch(
+        self,
+        queries: List[str],
+        k: int = 10,
+        cross_lingual: bool = False,
+    ) -> List[List[Dict[str, Any]]]:
+        """批量检索：一次 encode 多个 query，分别取 top-K（降时延主路径）。
+
+        逐词 retrieve 每词 1 次 encode（CPU ~0.4s/次，en-keyword 一篇 8词×2路=16 次
+        ≈ 6s，6 篇并发 42s+）；批量 encode 后一篇 2 次调用完成全部召回。
+        返回与 queries 等长的候选列表（每项同 retrieve 返回结构）。
+        """
+        if not queries:
+            return []
+        self._ensure_loaded()
+        if cross_lingual:
+            self._ensure_m3_loaded()
+            vectors, encoder = self._m3_vectors, self._m3_encoder
+            prefix = ""
+        else:
+            vectors, encoder = self._vectors, self._encoder
+            prefix = QUERY_PREFIX
+        qv = encoder.encode(
+            [prefix + q for q in queries], normalize_embeddings=True,
+            show_progress_bar=False,
+        ).astype(np.float32)
+        scores = qv @ vectors.T  # (Q, N)
+        k = min(k, len(self._meta))
+        out: List[List[Dict[str, Any]]] = []
+        for row in scores:
+            idx = np.argpartition(-row, k - 1)[:k]
+            idx = idx[np.argsort(-row[idx])]
+            cands = []
+            for rank, i in enumerate(idx, start=1):
+                e = self._meta[int(i)]
+                cands.append({
+                    "clc_code": e["clc_code"],
+                    "clc_name": e["clc_name"],
+                    "classification_path": e["full_path"],
+                    "path_codes": e["path_codes"],
+                    "path_names": e["path_names"],
+                    "rag_entry_id": e.get("rag_entry_id", ""),
+                    "rank": rank,
+                    "score": float(row[int(i)]),
+                })
+            out.append(cands)
+        return out
+
     @staticmethod
     def _build_query(title: str, keywords: List[str], abstract: str = "") -> str:
         """优先使用标题和关键词；二者都缺失时才用 text/摘要兜底。"""

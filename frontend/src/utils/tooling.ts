@@ -523,10 +523,13 @@ const MODE_PARAM_STATUS: Record<string, Record<string, Record<string, string>>> 
   },
 }
 
-/** 各工具可选上传资源字段（内置模式不提交；示例载荷已剔除空占位，参数表仍需展示可选行） */
-const OPTIONAL_RESOURCE_PARAMS: Record<string, Array<[string, string]>> = {
+/** 各工具上传资源字段（内置模式不提交；示例载荷已剔除空占位，参数表仍需展示） */
+const OPTIONAL_RESOURCE_PARAMS: Record<string, Array<[string, string] | [string, string, string]>> = {
   'zh-classify': [['clc_labeled_data', '中图分类标注数据（.json）']],
-  'en-classify': [['clc_labeled_data', '中图分类标注数据（.json）']],
+  'en-classify': [
+    ['clc_labeled_data', '必填；用户可手动上传。中图分类标准（.json：中图分类号 + 类目名称）', 'required'],
+    ['classification_standard_mapping_table', '必填；用户可手动上传。映射规则（.json：英文术语 + 中图分类号）', 'required'],
+  ],
   'domain-classify': [['domain_classification_rules', '领域分类规则（.json）'], ['manually_labeled_training_data', '人工标注训练数据（.json）']],
   'en-keyword': [['domain_terminology_library', '领域术语库（.json）'], ['classification_standard_mapping_table', '分类标准映射表（.json）']],
   'citation-intent': [['preprocessed_training_set', '引用预处理训练集（.json）']],
@@ -559,10 +562,13 @@ export function requestParameterRowsFor(tool: ToolDefinition, mode: InputMode) {
     const row = rows.find(item => item[0] === field)
     if (row) row[2] = 'required'
   }
-  // 可选上传资源行补回：默认示例按内置模式不带资源字段，但参数表必须让开发者知道可传
-  for (const [field, desc] of (OPTIONAL_RESOURCE_PARAMS[toolId] || [])) {
+  // 上传资源行补回：默认示例按内置模式不带资源字段，但参数表必须让开发者知道可传
+  for (const entry of (OPTIONAL_RESOURCE_PARAMS[toolId] || [])) {
+    const [field, desc, status] = entry as [string, string, string?]
     if (!rows.some(item => item[0] === field)) {
-      rows.push([field, 'file (.json)', 'optional', `可选上传资源：${desc}。内置模式不提交该字段（使用系统预置资源）`])
+      rows.push([field, 'file (.json)', status || 'optional', status === 'required'
+        ? desc
+        : `可选上传资源：${desc}。内置模式不提交该字段（使用系统预置资源）`])
     }
   }
   return rows

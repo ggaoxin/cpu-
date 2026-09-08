@@ -248,6 +248,53 @@ _TASK_EXECUTOR = ThreadPoolExecutor(max_workers=settings.ASYNC_WORKERS, thread_n
 # 进程级 GLM 并发闸口：解决 _TASK_EXECUTOR(4) × group线程池(6) 嵌套导致的线程爆炸。
 # 多个批量任务同时跑时，全进程在途 GLM 调用总数不超过此值，钳制 GLM QPS 不超限。
 # 阻塞在信号量上的线程不占 CPU（OS 级 wait），仅占线程栈内存。
+
+# ---- 批量执行进程池 worker（fork 继承，无需 pickle service）----
+_FORK_SERVICE: Any = None
+
+def _fork_execute_group(args: tuple) -> Dict[str, Any]:
+    """子进程 worker：重新初始化 DB 连接（fork 的连接已失效），执行单篇。
+
+    fork 语义：子进程继承父进程全部内存（含 _FORK_SERVICE=ToolIntegrationService
+    实例，内含 GLM client / semantic_service 等），只需重建 DB 连接。
+    args = (index, group_dicts, params, payload, tool_id, contract_tuple, task_id)
+    """
+    (index, group_dicts, params, payload, tool_id, backend_code, task_id) = args
+    service = _FORK_SERVICE
+    if service is None:
+        return {"index": index, "status": "failed", "error": "fork service 未初始化",
+                "item_id": None, "record_id": None, "input_id": None,
+                "file_name": None, "source": {}, "result": {}}
+    # DB 连接 fork 后失效：重建（SQLAlchemy 连接池不可跨进程）
+    try:
+        from infrastructure.database.connection import database as _db
+        _db.dispose()
+        _db.initialize()
+        service.repository = type(service.repository)()
+    except Exception:  # noqa: BLE001
+        pass
+    # OpenAI SDK httpx 连接池 fork 后 TCP 连接失效（实测 RemoteProtocolError:
+    # Server disconnected）——子进程重建 GLM client
+    try:
+        from infrastructure.llm.glm_client import GLMClient
+        service.semantic_service._glm = GLMClient()
+    except Exception:  # noqa: BLE001
+        pass
+    # 构造 InputItem（dict → NamedTuple）
+    group = [InputItem(**d) if isinstance(d, dict) else d for d in group_dicts]
+    contract = get_contract(tool_id)
+    try:
+        result = service._execute_group_once(
+            task_id=task_id, tool_id=tool_id, contract=contract,
+            index=index, group=group, params=params, payload=payload,
+            cancelled=threading.Event(),  # fork 无跨进程取消，空 Event 即不取消
+        )
+        return result
+    except Exception as exc:  # noqa: BLE001
+        return {"index": index, "status": "failed", "error": f"进程执行异常: {exc}",
+                "item_id": None, "record_id": None, "input_id": None,
+                "file_name": None, "source": {}, "result": {}}
+
 _GLM_SEMAPHORE = threading.BoundedSemaphore(settings.GLM_MAX_CONCURRENCY)
 
 
@@ -660,54 +707,34 @@ class ToolIntegrationService:
         completed = 0
         workers = min(settings.GLM_MAX_CONCURRENCY, total)
 
-        with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="glm-group") as pool:
-            future_to_index = {
-                pool.submit(
-                    self._execute_group_once,
-                    task_id=task_id, tool_id=tool_id, contract=contract,
-                    index=index, group=group, params=params, payload=payload,
-                    cancelled=cancelled,
-                ): index
-                for index, group in enumerate(execution_groups)
-            }
+        # 进程池（2026-09-07 GIL 实测）：线程并发对 CPU+IO 混合负载是负优化
+        # （纯 Python CPU 3 任务串行 1.6s vs 3 线程 5.2s vs 3 进程 0.6s）。
+        # fork context 子进程继承全部内存含 service 实例，DB 连接子进程内重建。
+        import multiprocessing as _mp
+        global _FORK_SERVICE
+        _FORK_SERVICE = self
+        _ctx = _mp.get_context("fork")
+        _fork_args = [
+            (index,
+             [item._asdict() if hasattr(item, "_asdict") else item for item in group],
+             params, payload, tool_id, contract.backend_code, task_id)
+            for index, group in enumerate(execution_groups)
+        ]
+        with _ctx.Pool(min(workers, total)) as _pool:
+            _results = _pool.map(_fork_execute_group, _fork_args)
+        # 按序收集进度（进程池 map 有序返回）
+        success_count = sum(1 for r in _results if r["status"] == "succeeded")
+        failed_count = sum(1 for r in _results if r["status"] == "failed")
+        completed = len(_results)
+        from domain.entity.analysis_task import TaskStatus as _TS
+        self.repository.update_task_status(
+            task_id,
+            _TS.SUCCEEDED if failed_count == 0 else _TS.PARTIAL_FAILED,
+            progress=total, success_count=success_count, failed_count=failed_count)
+        results_out.extend(_results)
+        return success_count, failed_count
 
-            for future in as_completed(future_to_index):
-                index = future_to_index[future]
-                try:
-                    result = future.result()  # _execute_group_once 永不抛
-                except Exception as exc:  # noqa: BLE001  防御性：worker 线程本身崩溃（如 OOM）
-                    result = {
-                        "index": index, "item_id": None, "record_id": None, "status": "failed",
-                        "input_id": None, "file_name": None, "source": {},
-                        "error": f"线程异常: {exc}", "result": {},
-                    }
 
-                with progress_lock:  # 锁只护内存计数 + 快照
-                    bucket[index] = result
-                    if result["status"] == "succeeded":
-                        success_count += 1
-                    elif result["status"] == "failed":
-                        failed_count += 1
-                    completed += 1
-                    snap_success, snap_failed, snap_done = success_count, failed_count, completed
-
-                # 取消传播：发现 CANCELLED 则通知未启动的 worker 跳过
-                if self._task_cancelled(task_id):
-                    cancelled.set()
-                    for fut in future_to_index:
-                        fut.cancel()  # 已 running 返回 False（让它跑完），未启动的取消
-
-                # 渐进进度：锁外写库，写快照三元组自洽不回退
-                self.repository.update_task_status(
-                    task_id,
-                    TaskStatus.RUNNING,
-                    progress=min(95, max(1, int(snap_done / total * 95))),
-                    success_count=snap_success,
-                    failed_count=snap_failed,
-                )
-
-        # 按 index 排序还原输入顺序（as_completed 完成顺序无序）
-        results_out.extend(bucket[i] for i in sorted(bucket))
         return success_count, failed_count
 
     @staticmethod

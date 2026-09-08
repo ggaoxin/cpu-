@@ -768,6 +768,49 @@ def _json_endpoint(tool_id: str, input_type: str):
     return endpoint
 
 
+@router.post("/files/parse")
+async def parse_files(
+    request: Request,
+    tool_id: str = Form(""),
+) -> JSONResponse:
+    """上传即解析（2026-09-07 架构调整）：文件→文本的解析前移到上传动作。
+
+    与各工具 /file 路由的解析链完全同源（摘要语步=四层摘要提取、引用类=
+    mineru 结构化、其余=light/full extract），保证功能结果不变；解析文本
+    落 parse_store 并返回 parse_id，提交时 file/batch 路由带 preparsed=
+    [parse_id,...] 直接取文本——点「在线测试」后的响应时间只剩功能执行。
+    """
+    form = await request.form()
+    uploads = [value for value in form.getlist("files") if isinstance(value, StarletteUploadFile)]
+    if not uploads:
+        return JSONResponse(status_code=422, content={"code": 42201, "message": "未收到待解析文件"})
+    if len(uploads) > settings.MAX_BATCH_FILES:
+        return JSONResponse(status_code=422, content={
+            "code": 42201, "message": f"批量文件数量不能超过 {settings.MAX_BATCH_FILES} 个（错误码 42201），本次共 {len(uploads)} 个"})
+    effective_tool = str(tool_id or "").strip()
+    try:
+        if effective_tool in ABSTRACT_MOVE_TOOLS:
+            # 摘要语步：只送纯摘要（四层融合），与 /file 行为一致
+            parsed_pairs = await _extract_abstract_only(uploads, max_size_mb=settings.MAX_UPLOAD_SIZE_MB)
+        else:
+            parsed_pairs = await extract_uploads(
+                uploads, max_size_mb=settings.MAX_UPLOAD_SIZE_MB,
+                light=settings.should_use_light(effective_tool),
+            )
+    except (ValueError, RuntimeError, OSError) as exc:
+        return JSONResponse(status_code=422, content={"code": 42201, "message": str(exc)})
+    finally:
+        for upload in uploads:
+            await upload.close()
+    from infrastructure.document_parser import parse_store
+    results = []
+    for item in parsed_pairs:
+        text = str(item.get("text") or "")
+        parse_id = parse_store.put(str(item.get("file_name") or "file"), str(item.get("media_type") or ""), text)
+        results.append({"parse_id": parse_id, "file_name": item.get("file_name"), "char_count": len(text)})
+    return {"code": 0, "message": "解析完成", "data": {"tool_id": effective_tool, "results": results}}
+
+
 def _file_endpoint(tool_id: str, multiple: bool):
     async def endpoint(
         request: Request,
@@ -783,9 +826,13 @@ def _file_endpoint(tool_id: str, multiple: bool):
                 value for fallback in fallback_fields for value in form.getlist(fallback)
                 if isinstance(value, StarletteUploadFile)
             ]
-        if not uploads:
+        # 预解析模式（2026-09-07）：preparsed=[parse_id,...]（JSON 数组）——上传阶段
+        # 已通过 /files/parse 完成文件→文本，这里直接取文本构造 extracted，
+        # 跳过文件接收与解析；文件本体不再传输。
+        preparsed_raw = str(form.get("preparsed") or "").strip()
+        if not uploads and not preparsed_raw:
             raise HTTPException(status_code=422, detail=f"缺少上传字段：{field}")
-        if not multiple and len(uploads) != 1:
+        if not multiple and not preparsed_raw and len(uploads) != 1:
             raise HTTPException(status_code=422, detail="单文件接口只能上传一个文件")
         # 批量文件数量上限（边界异常用例预期：提交后返回明确错误提示 code=42201）
         if len(uploads) > settings.MAX_BATCH_FILES:
@@ -821,6 +868,38 @@ def _file_endpoint(tool_id: str, multiple: bool):
         payload.setdefault("input_type", "files" if multiple else "file")
         # 单文件上限统一 50MB（结构化综述不再放宽；需求 2026-09-05：所有功能点单文件 ≤50M、批量 ≤20 篇）
         upload_limit_mb = settings.MAX_UPLOAD_SIZE_MB
+        if preparsed_raw:
+            # 预解析提交：parse_store 取文本（含校验单文件/批量数量），不再解析
+            import json as _json
+            from infrastructure.document_parser import parse_store as _ps
+            try:
+                parse_ids = _json.loads(preparsed_raw)
+                if not isinstance(parse_ids, list) or not all(isinstance(x, str) for x in parse_ids):
+                    raise ValueError("preparsed 必须是 parse_id 字符串数组")
+            except (ValueError, TypeError) as exc:
+                raise HTTPException(status_code=422, detail=f"preparsed 格式不正确：{exc}") from exc
+            if not multiple and len(parse_ids) != 1:
+                raise HTTPException(status_code=422, detail="单文件接口只能提交一个预解析结果")
+            if len(parse_ids) > settings.MAX_BATCH_FILES:
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"批量文件数量不能超过 {settings.MAX_BATCH_FILES} 个（错误码 42201），本次共 {len(parse_ids)} 个",
+                )
+            try:
+                extracted = [{
+                    "file_name": item["file_name"],
+                    "media_type": item["media_type"],
+                    "text": item["text"],
+                } for item in _ps.take_many(parse_ids)]
+            except ValueError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
+            try:
+                result = service.execute(tool_id, payload, file_inputs=extracted)
+            except ValueError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
+            result = _vue_public_response(tool_id, result, payload["input_type"])
+            status_code = 200 if result.get("code") == 0 else (422 if 42200 <= int(result.get("code", 0)) < 42300 else 500)
+            return JSONResponse(status_code=status_code, content=result)
         try:
             if tool_id in ABSTRACT_MOVE_TOOLS:
                 # 摘要语步识别：只送纯摘要（四层融合解析），过滤标题/关键词/全文
