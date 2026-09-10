@@ -479,13 +479,9 @@ function renderCitation(response, intent = false) {
     return (values.length ? values : array(record.payload.citations)).map(item => ({ ...item, __record: record }))
   })
   const prefix = intent ? 'citation-intent' : 'citation'
-  const markerText = item => {
-    const ms = array(item.citation_markers || item.citation_marker)
-    const t = ms.filter(Boolean).join(' ').trim()
-    // 引用句文本本身常已含 [n]/作者+年份 等标记，末尾再追加会重复 → 只在句中无该标记时补
-    const sent = valueOf(item, ['citation_sentence', 'sentence', 'text']) || ''
-    return t && !sent.includes(t) ? ` <span style="font-size:inherit;vertical-align:baseline">${escapeHtml(t)}</span>` : ''
-  }
+  // 引用句本身已含 [n]/作者+年份 标记（2026-09-10 用户定稿）：句尾不再追加
+  // 标记列表——此前按"拼接串是否为句子子串"判断，"[3] [4]" 拼串永远不在
+  // "…[3]，…[4]。"里，导致句尾重复贴标记。
   const counts = label => items.filter(item => valueOf(item, intent ? ['intent', 'intent_code'] : ['sentiment', 'sentiment_code'], '') === label).length
   const cards = intent
     ? [['引用句', items.length], ['背景介绍', counts('背景介绍') + counts('用于背景介绍')], ['方法引入', counts('方法引入') + counts('用于引入研究方法')], ['结果比较', counts('结果比较') + counts('用于结果比较')], ['平均置信度', fixed(average(items.map(item => item.confidence)))]]
@@ -494,7 +490,7 @@ function renderCitation(response, intent = false) {
   return `<div class="${prefix}-result-root" data-viz-group>
     ${summaryCards(cards, `${prefix}-summary-grid`)}
     <div class="${prefix}-tabs"><button class="${prefix}-tab-btn active" data-viz-tab="result">${tabResult}</button><button class="${prefix}-tab-btn" data-viz-tab="context">上下文片段</button></div>
-    <div class="${prefix}-tab-panel" data-viz-panel="result"><div class="distribution-table-wrap"><table class="distribution-table ${prefix}-results-table"><colgroup><col style="width:18%"><col style="width:45%"><col style="width:14%"><col style="width:23%"></colgroup><thead><tr><th class="citation-doc-cell">文献</th><th class="citation-sentence-cell">引用句</th><th class="citation-label-cell">${intent ? '引用意图' : '情感'}</th><th class="citation-confidence-cell">${intent ? '置信度评分' : '置信度'}</th></tr></thead><tbody>${items.map((item, index) => `<tr>${mergedRecordCell(items, index, item.__record, item.__record?.name || valueOf(item, ['file_name'], `第 ${index + 1} 条`), '__record')}<td class="citation-sentence-cell">${renderTextWithMath(valueOf(item, ['citation_sentence', 'sentence', 'text']))}${markerText(item)}</td><td class="citation-label-cell"><span class="${prefix}-label-badge">${escapeHtml(valueOf(item, intent ? ['intent', 'intent_code'] : ['sentiment', 'sentiment_code']))}</span></td><td class="citation-confidence-cell">${confidence(item.confidence)}</td></tr>`).join('') || '<tr><td colspan="4">未返回引用识别结果。</td></tr>'}</tbody></table></div></div>
+    <div class="${prefix}-tab-panel" data-viz-panel="result"><div class="distribution-table-wrap"><table class="distribution-table ${prefix}-results-table"><colgroup><col style="width:18%"><col style="width:45%"><col style="width:14%"><col style="width:23%"></colgroup><thead><tr><th class="citation-doc-cell">文献</th><th class="citation-sentence-cell">引用句</th><th class="citation-label-cell">${intent ? '引用意图' : '情感'}</th><th class="citation-confidence-cell">${intent ? '置信度评分' : '置信度'}</th></tr></thead><tbody>${items.map((item, index) => `<tr>${mergedRecordCell(items, index, item.__record, item.__record?.name || valueOf(item, ['file_name'], `第 ${index + 1} 条`), '__record')}<td class="citation-sentence-cell">${renderTextWithMath(valueOf(item, ['citation_sentence', 'sentence', 'text']))}</td><td class="citation-label-cell"><span class="${prefix}-label-badge">${escapeHtml(valueOf(item, intent ? ['intent', 'intent_code'] : ['sentiment', 'sentiment_code']))}</span></td><td class="citation-confidence-cell">${confidence(item.confidence)}</td></tr>`).join('') || '<tr><td colspan="4">未返回引用识别结果。</td></tr>'}</tbody></table></div></div>
     <div class="${prefix}-tab-panel" data-viz-panel="context" hidden><div class="${prefix}-context-list">${items.map((item, index) => { const ctx = object(item.context); return`<article class="${prefix}-context-card"><h4>${escapeHtml(valueOf(item, ['citation_id'], `引用 ${index + 1}`))} · ${escapeHtml(valueOf(item, intent ? ['intent'] : ['sentiment']))}</h4><dl><dt>前文</dt><dd>${renderTextWithMath(valueOf(ctx, ['previous_sentence', 'before']))}</dd><dt>引用句</dt><dd class="current">${renderTextWithMath(valueOf(ctx, ['current_sentence'], item.citation_sentence || '—'))}</dd><dt>后文</dt><dd>${renderTextWithMath(valueOf(ctx, ['next_sentence', 'after']))}</dd></dl></article>` }).join('') || `<div class="${prefix}-context-empty">暂无上下文片段。</div>`}</div></div>
   </div>`
 }
