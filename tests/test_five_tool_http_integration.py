@@ -186,6 +186,7 @@ class FiveToolHttpIntegrationTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 422, response.text)
                 self.assertEqual(response.json()["code"], 42201)
 
+    @unittest.skip("2026-09-09 候选分类与人工确认已移除（用户拍板：API 调用无人在回路，直接给最高置信度结果）")
     def test_dictionary_version_keyword_hit_mapping_and_classification_confirmation(self):
         from application.service.resource_service import ResourceService
         from application.service.result_governance_service import ResultGovernanceService

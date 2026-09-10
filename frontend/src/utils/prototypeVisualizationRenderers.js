@@ -99,9 +99,8 @@ function renderDomainClassification(response) {
     // 与 zh/en-classify 一致：候选只列置信度 ≥0.8 且非当前首选的替代分类；当前首选已在主表展示、
     // 不再进下拉。无替代候选的文献已是正式结果并入库，不进候选确认区、无需人工确认。
     const primaryPathKey = pathKeyOf(primaryClassification)
-    const confirmableCandidates = candidates.filter(c =>
-      pathKeyOf(c) !== primaryPathKey && number(c.confidence) >= 0.8)
-    return { ...record, classifications, match, candidates, confirmableCandidates, labels: array(payload.domain_labels), confirmation: object(payload.manual_confirmation) }
+    // 候选确认已移除（2026-09-09）
+    return { ...record, classifications, match, candidates: [], confirmableCandidates: [], labels: array(payload.domain_labels), confirmation: {} }
   })
   const successful = records.filter(record => record.status !== 'failed' && record.classifications.length)
   if (!successful.length) return '<div class="domain-classify-empty-v669">当前结果为空、领域匹配失败或缺少有效分类字段，无法生成结构化展示。</div>'
@@ -112,9 +111,7 @@ function renderDomainClassification(response) {
   // 候选的文献已是正式结果并入库，不在候选区出现空占位、无需人工确认。summary 的"待人工确认"
   // 因此只统计这类真正待确认的文献（有替代候选且未确认），没有则显示 0（不再像旧版把所有
   // 非已确认记录都算成"待确认"，那会把只有当前首选、无需确认的文献也计入，数字虚高且误导）。
-  const confirmableRecords = successful.filter(record => record.confirmableCandidates.length > 0)
-  const pendingCount = confirmableRecords.filter(record => record.confirmation.status !== 'confirmed').length
-  const summary = [['文献数量', records.length], ['领域匹配', `${matched}/${successful.length}`], ['二级类目', level2Count], ['待人工确认', pendingCount]]
+  const summary = [['文献数量', records.length], ['领域匹配', `${matched}/${successful.length}`], ['二级类目', level2Count]]
 
   const detailRows = successful.map(record => {
     const item = record.classifications[0]
@@ -134,18 +131,9 @@ function renderDomainClassification(response) {
     ...[...level3.entries()].map(([category, count]) => ({ level: '三级', category, count })),
   ]
 
-  // confirmableRecords 已在上方 summary 处计算（有 ≥0.8 替代候选的文献）。候选确认区只渲染
-  // 这些记录；全无则整块不渲染（与 zh/en 一致）。
-  const confirmationItems = confirmableRecords.map(record => {
-    const primary = record.classifications[0] || {}
-    const primaryLabel = array(primary.classification_path).join(' > ') || primary.label || '当前首选'
-    // 占位 option（当前首选）：不可选、点开列表隐藏，末尾带主分类置信度（与 zh/en 一致）
-    const placeholder = `<option value="" disabled selected hidden>当前首选 · ${escapeHtml(primaryLabel)}｜${confidence(primary.confidence)}</option>`
-    const options = record.confirmableCandidates.map((candidate, index) => `<option value="${escapeHtml(candidate.candidate_id || '')}" data-primary="${escapeHtml(candidate.classification_code || candidate.clc_code || '')}">候选 ${index + 1} · ${escapeHtml(array(candidate.classification_path).join(' > ') || candidate.label || '未提供分类路径')}｜${confidence(candidate.confidence)}</option>`).join('')
-    return `<div class="domain-classify-confirm-item-v669" data-record-index="${record.index}"><div class="domain-classify-confirm-name-v669">${renderTextWithMath(record.name)}</div><select class="domain-classify-confirm-select-v669" data-viz-confirm-select="${record.index}">${placeholder}${options}</select><div class="domain-classify-confirm-actions-v669"><button type="button" class="domain-classify-confirm-btn-v669 primary" data-viz-confirm="${record.index}" data-viz-confirm-record="${escapeHtml(record.record_id || '')}" data-viz-confirm-label="确认所选分类">确认所选分类</button></div></div>`
-  }).join('')
+  // 2026-09-09 候选确认已移除（API 调用无人在回路，直接给最高置信度结果）
 
-  return `<div class="domain-classify-visual-v669" data-viz-confirm-root>${`<div class="domain-classify-summary-grid-v669">${summary.map(([label, value]) => `<div class="domain-classify-summary-item-v669"><div class="domain-classify-summary-value-v669">${escapeHtml(value)}</div><div class="domain-classify-summary-label-v669">${label}</div></div>`).join('')}</div>`}<div class="domain-classify-result-card-v669"><div class="domain-classify-result-title-v669">多层级领域分类结果</div><div class="domain-classify-result-table-wrap-v669"><table class="domain-classify-result-table-v669"><thead><tr><th style="width:18%">文献</th><th style="width:13%">目标领域</th><th style="width:12%">领域匹配</th><th>一级 / 二级 / 三级分类</th><th style="width:11%">分类置信度</th><th style="width:16%">领域标签</th></tr></thead><tbody>${detailRows}</tbody></table></div></div><div class="domain-classify-result-card-v669"><div class="domain-classify-result-title-v669">数据分布报告</div><div class="domain-classify-result-table-wrap-v669"><table class="domain-classify-result-table-v669"><thead><tr><th style="width:14%">分类层级</th><th>专业类目</th><th style="width:18%">文献数量</th></tr></thead><tbody>${distributionRows.map(row => `<tr><td>${row.level}</td><td>${escapeHtml(row.category)}</td><td>${row.count}</td></tr>`).join('')}</tbody></table></div></div>${confirmationItems ? `<div class="domain-classify-result-card-v669"><div class="domain-classify-result-title-v669">候选分类与人工确认</div><div class="domain-classify-confirm-list-v669">${confirmationItems}</div><div class="domain-classify-note-v669">候选仅列置信度高于0.8的替代分类（不含当前首选），按置信度从高到低排列；当前首选已是正式结果并入库，无需确认。确认某候选后由后端同步替换结果并保存审核记录，原首选会作为候选回到下拉、可反复切换。</div></div>` : ''}</div>`
+  return `<div class="domain-classify-visual-v669" data-viz-confirm-root>${`<div class="domain-classify-summary-grid-v669">${summary.map(([label, value]) => `<div class="domain-classify-summary-item-v669"><div class="domain-classify-summary-value-v669">${escapeHtml(value)}</div><div class="domain-classify-summary-label-v669">${label}</div></div>`).join('')}</div>`}<div class="domain-classify-result-card-v669"><div class="domain-classify-result-title-v669">多层级领域分类结果</div><div class="domain-classify-result-table-wrap-v669"><table class="domain-classify-result-table-v669"><thead><tr><th style="width:18%">文献</th><th style="width:13%">目标领域</th><th style="width:12%">领域匹配</th><th>一级 / 二级 / 三级分类</th><th style="width:11%">分类置信度</th><th style="width:16%">领域标签</th></tr></thead><tbody>${detailRows}</tbody></table></div></div><div class="domain-classify-result-card-v669"><div class="domain-classify-result-title-v669">数据分布报告</div><div class="domain-classify-result-table-wrap-v669"><table class="domain-classify-result-table-v669"><thead><tr><th style="width:14%">分类层级</th><th>专业类目</th><th style="width:18%">文献数量</th></tr></thead><tbody>${distributionRows.map(row => `<tr><td>${row.level}</td><td>${escapeHtml(row.category)}</td><td>${row.count}</td></tr>`).join('')}</tbody></table></div></div></div>`
 }
 
 function relationTriples(response) {

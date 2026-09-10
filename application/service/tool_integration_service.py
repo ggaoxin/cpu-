@@ -43,12 +43,94 @@ DOMAIN_CODE_MAP = {
 # 引用句识别文本模式自动派生：文献文本 + 参考文献条目 → 引用句上下文 + 被引元数据
 # ------------------------------------------------------------------ #
 _CITE_MARKER_RE = re.compile(r"\[(\d+(?:\s*[,，\-–~]\s*\d+)*)\]")
+# 短编号标题整行（"0 引 言"/"1 绪论"）：数字+空格+短中文、无标点，
+# PyMuPDF 硬换行下若不识别会粘连进正文句首
+_SHORT_HEADING_RE = re.compile(r"\d{1,2}(?:\.\d{1,2}){0,2}\s+[一-鿿][一-鿿\s]{1,11}")
+# 整行作者署名（全行仅人名[+星号/括号单位]，逗号分隔）："蒲兴梅,熊成艳*,陈秋媛(单位)"
+# fullmatch 防误杀：正文"不断积累,护理实习生的学习…"含谓语余文不匹配
+_AUTHOR_LINE_RE = re.compile(
+    r"[一-鿿]{2,4}[*\s]*(?:[,，、]\s*[一-鿿]{2,4}[*\s]*)+[,，。]?\s*(?:[\(（].*|\*.*)?")
 
 
 def _split_sentences_for_citation(text: str) -> list:
-    """中英混排分句(句末标点或换行),供引用句定位与上下文截取。"""
-    parts = re.split(r"(?<=[。！？!?])\s*|(?<=\.)\s+|\n+", text)
-    return [p.strip() for p in parts if p and p.strip()]
+    """中英混排分句(句末标点)，供引用句定位与上下文截取。
+
+    不按裸换行分句（2026-09-10，BOPPS.pdf 案例）：PyMuPDF 文本硬换行，
+    原 ``|\\n+`` 会把句尾碎片当独立句——"…技能熟\\n练度提出了较高要求[1]”被
+    切成"练度提出了较高要求[1]"，引用句/上下文全成碎片。改为只按句末标点
+    分句；markdown 标题/#编号行/参考文献条目行([n]开头)保留独立成句，
+    其余换行并入上一句续接。与引擎内 _extract_citations 的分句口径一致。
+    """
+    # 缩写句点保护（与引擎 _extract_citations 同款）：et al./Fig./Eq. 等的句点
+    # 不是句边界——35.pdf "Shumailov et al. [2024] that…" 曾在 et al. 处断成
+    # "[2024] that…" 碎片句。先替换占位符，分完句再还原。
+    for _abbr in ("et al.", "et al．", "Fig.", "Eq.", "No.", "Vol.", "pp.", "cf.", "i.e.", "e.g.", "w.r.t."):
+        text = text.replace(_abbr, _abbr.replace(".", "§"))
+    parts = re.split(r"(?<=[。！？!?])\s*|(?<=\.)\s+", text)
+    # 期刊首页元数据行（收稿日期/基金项目/作者简介等）：整行丢弃，不进句流
+    # ——否则无句末标点的元数据块会向前/向后粘连污染引用句（BOPPS.pdf 案例）。
+    # 不能加 re.IGNORECASE：^[a-z]+[A-Z]（驼峰粘连 ofTraditional…）忽略大小写
+    # 后退化成"任意两字母"，会误杀所有英文正文行（35.pdf 踩过）；大小写
+    # 变体（doi/www/Keywords）在模式里显式枚举。
+    _meta_line = re.compile(
+        r"^[\[【（(]?\s*(收稿日期|网络首发|基金项目|作者简介|通信作者|作者单位|单位地址|"
+        r"中图分类号|文献标识码|文章编号|引用格式|[dD][oO][iI]|ISSN|CN\s?\d|https?://|[wW][wW][wW]\.)"
+        r"|^\*?\*?基金|^[Kk]eywords?\s*[:：]|^KEYWORDS\s*[:：]|^关键词\s*[:：]"
+        # 期刊首页非正文行：页脚（—932—/纯数字）、作者署名列表（"名,名,*"）、
+        # 括号单位行（"(xx大学/医院…550000)"）——无句末标点，会向前粘连污染引用句
+        r"|^—\d+—$|^\d{1,4}$"
+        r"|^[—–]+\s*\*?"
+        # 英文脚注/作者/单位行（"* CHEN…" / "Department of…" / "…University"）：
+        # 无句末标点会向后粘进摘要首句
+        r"|^\*+\s*[A-Za-z]"
+        r"|^(Department|College|School|Hospital|Institute|Faculty)\s+(of|in)\b"
+        r"|[A-Za-z]{2,}(University|Hospital|College|Institute)\b"
+        r"|^[a-z]+[A-Z]"
+        r"|^[\(（].{0,60}?(大学|学院|医院|研究所|中心|实验室|附属医院).*\d{4,}"
+        r"|^\*{1,2}通信作者|^〔\(（]通信作者")
+    out: list = []
+    for part in parts:
+        first_line_of_part = True
+        last_line_boundary = False
+        for line in part.split("\n"):
+            line = line.strip()
+            if not line or _meta_line.match(line) or _AUTHOR_LINE_RE.fullmatch(line):
+                continue
+            # 行首边界：markdown #、[n] 参考文献条目、"1.1/1．/1、"编号标题、
+            # 摘要/关键词段标——这些行独立成句，后续正文行不与其粘连
+            starts_new = bool(re.match(
+                r"^#{1,6}\s"
+                # [n] 行首：仅当 ] 后是正常文字（参考文献条目）；] 后紧跟
+                # 逗号/顿号/句号 = PDF 换行恰落在句中标记前，是续行并入上一句
+                r"|^\[\d+(?:[-–,，]\d+)*\]\s*[^，,、。；;]"
+                r"|^\d+(?:[.．、]|\.\d+)"
+                r"|^[【\[]?\s*(?:摘\s*要|Abstract|ABSTRACT)\s*[】\]]?\s*[:：]?", line))
+            # 行首 [n] 且上一行未结句（last_line_boundary=False）= PDF 硬换行
+            # 恰好落在句中标记前（35.pdf "Dey and Donoho\n[2024] provide…"），
+            # 是续行并入上一句，不是参考文献条目；行首 ] 是括号跨行，同理。
+            # 参考文献条目（"[2]杨发奋…"）总在上一句结束后出现——那时它是
+            # 标点切分后新 part 的首行，走 first_line_of_part 分支独立成句。
+            if out and not first_line_of_part and not last_line_boundary and (
+                    re.match(r"^\[\d+(?:[-–,，]\d+)*\]", line)
+                    or line.startswith(("]", "］"))):
+                starts_new = False
+            # 短编号标题整行（"0 引 言"：数字+空格+短中文、无标点）= 句边界
+            if _SHORT_HEADING_RE.fullmatch(line):
+                starts_new = True
+            if out and not first_line_of_part and not starts_new and not last_line_boundary:
+                # 普通硬换行：续接上一句。英文词间补空格防粘连（CJK 不需要）
+                if out[-1] and line and out[-1][-1].isascii() and out[-1][-1].isalnum() \
+                        and line[0].isascii() and line[0].isalnum():
+                    out[-1] += " " + line
+                else:
+                    out[-1] += line
+            else:
+                out.append(line)
+            first_line_of_part = False
+            # 行尾冒号/分号（如"…如公式(3)所示:"）后常跟公式/图表段，
+            # 保守视为句边界，防止跨段粘连成超长句
+            last_line_boundary = starts_new or line.endswith(("：", ":", "；", ";"))
+    return [s.replace("§", ".") for s in out]
 
 
 def _marker_nums_of(marker: str) -> list:
@@ -109,6 +191,12 @@ def _extract_citation_contexts(document_text: str, limit: int = 30) -> list:
     语义片段(意图判定优先采用)。返回 contexts 条目(含 previous_context/
     next_context 与内部 _marker_nums),超出 limit 截断。
     """
+    # 全角标记归一化（与引擎 _extract_citations 同款）：中文期刊 PDF 常用
+    # ［1］/［1-2］/［1，2］，_CITE_MARKER_RE 只认半角（LSTM.pdf 34 处全角
+    # 曾全部漏抽，掉进引擎全文兜底）。仅归一化纯数字/连字符/逗号内容。
+    document_text = re.sub(
+        r"［\s*([0-9\-–,，\s]+?)\s*］",
+        lambda m: "[" + m.group(1).replace("，", ",") + "]", document_text)
     sentences = _split_sentences_for_citation(document_text)
     contexts = []
     for i, sent in enumerate(sentences):
@@ -557,6 +645,21 @@ class ToolIntegrationService:
                 error_summary=error_summary,
             )
             return self._validation_error(contract, request_id, input_type, started, str(error_summary))
+
+        # 全部失败且错误同类（2026-09-10 用户需求）：批量上传整批同类错误（如英文论文
+        # 全部进中文工具的语言不匹配）不逐条重复 6 次，直接返回一条干净的错误提示
+        if status is TaskStatus.FAILED and results:
+            _all_errors = [str(r.get("error") or "") for r in results if r.get("error")]
+            _common_prefixes = ("语言不匹配", "文件解析失败", "预解析结果已过期")
+            for _prefix in _common_prefixes:
+                if _all_errors and all(e.startswith(_prefix) for e in _all_errors):
+                    self.repository.update_task_status(
+                        task_id, TaskStatus.FAILED, progress=100,
+                        success_count=0, failed_count=failed_count,
+                        error_summary=_all_errors[0],
+                    )
+                    return self._validation_error(
+                        contract, request_id, input_type, started, _all_errors[0])
         self.repository.update_task_status(
             task_id, status, progress=100,
             success_count=success_count, failed_count=failed_count,
@@ -710,34 +813,45 @@ class ToolIntegrationService:
         completed = 0
         workers = min(settings.GLM_MAX_CONCURRENCY, total)
 
-        # 进程池（2026-09-07 GIL 实测）：线程并发对 CPU+IO 混合负载是负优化
-        # （纯 Python CPU 3 任务串行 1.6s vs 3 线程 5.2s vs 3 进程 0.6s）。
-        # fork context 子进程继承全部内存含 service 实例，DB 连接子进程内重建。
-        import multiprocessing as _mp
-        global _FORK_SERVICE
-        _FORK_SERVICE = self
-        _ctx = _mp.get_context("fork")
-        _fork_args = [
-            (index,
-             [item._asdict() if hasattr(item, "_asdict") else item for item in group],
-             params, payload, tool_id, contract.backend_code, task_id)
-            for index, group in enumerate(execution_groups)
-        ]
-        global _FORK_ACTIVE
-        with _FORK_LOCK:
-            _FORK_ACTIVE += min(workers, total)
-        _pool = _ctx.Pool(min(workers, total))
-        try:
-            _results = _pool.map(_fork_execute_group, _fork_args)
-        finally:
-            with _FORK_LOCK:
-                _FORK_ACTIVE -= min(workers, total)
-            # 显式 close+join 替代 __exit__ 的 terminate()——fork 子进程可能
-            # 继承 socket fd，terminate() 后变为僵尸不被 init 回收（连续多次
-            # 批量请求后进程数累积 → 后端崩溃的根因）。close() 让 worker 正常
-            # 退出，join() 等待回收完成。
-            _pool.close()
-            _pool.join()
+        # 线程池（2026-09-08 回退自进程池）：fork 进程池继承 uvicorn socket fd，
+        # 连续 4-5 次批量请求后子进程累积→后端崩溃（稳定性致命缺陷）。
+        # GLM IO 是主耗时（释放 GIL），CPU 段已通过轮次合并从 ~3s/篇压到 ~1s/篇，
+        # 线程并发的 GIL 开销可接受；sys.setswitchinterval(0.05) 已减轻切换。
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        _bucket: Dict[int, Dict[str, Any]] = {}
+        with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="glm-group") as pool:
+            _future_to_index = {
+                pool.submit(
+                    self._execute_group_once,
+                    task_id=task_id, tool_id=tool_id, contract=contract,
+                    index=index, group=group, params=params, payload=payload,
+                    cancelled=cancelled,
+                ): index
+                for index, group in enumerate(execution_groups)
+            }
+            for future in as_completed(_future_to_index):
+                index = _future_to_index[future]
+                try:
+                    result = future.result()
+                except Exception as exc:
+                    result = {
+                        "index": index, "item_id": None, "record_id": None, "status": "failed",
+                        "input_id": None, "file_name": None, "source": {},
+                        "error": "线程异常: %s" % exc, "result": {},
+                    }
+                with progress_lock:
+                    _bucket[index] = result
+                    if result["status"] == "succeeded":
+                        success_count += 1
+                    elif result["status"] == "failed":
+                        failed_count += 1
+                    completed += 1
+                    snap_success, snap_failed, snap_done = success_count, failed_count, completed
+                if self._task_cancelled(task_id):
+                    cancelled.set()
+                    for fut in _future_to_index:
+                        fut.cancel()
+        _results = [_bucket[i] for i in range(total)]
         # 按序收集进度（进程池 map 有序返回）
         success_count = sum(1 for r in _results if r["status"] == "succeeded")
         failed_count = sum(1 for r in _results if r["status"] == "failed")
@@ -1756,6 +1870,29 @@ class ToolIntegrationService:
             return f"cluster_count 必须小于输入文献数量（当前 {item_count} 篇，最大 {item_count - 1}）。"
         return None
 
+    @staticmethod
+    def _usable_upstream_text(text: Any) -> str:
+        """上游原文可用性校验：空或纯文件路径（旧路径透传项）返回空串。
+
+        /files/parse 架构下 NER 任务项存的是解析后全文，直接可用；旧架构存的
+        是临时文件路径，relation 阶段多半已失效——路径仍存在则现场重抽文本
+        （PyMuPDF 毫秒级），不存在则返回空，由调用方回落实体组装。
+        """
+        t = str(text or "").strip()
+        if not t:
+            return ""
+        if t.lower().endswith((".pdf", ".docx", ".txt", ".md", ".xlsx")):
+            import os as _os
+            if not _os.path.exists(t):
+                return ""
+            try:
+                from infrastructure.document_parser.upload_reader import extract_bytes as _eb
+                with open(t, "rb") as _f:
+                    return str(_eb(_f.read(), _os.path.basename(t)) or "").strip()
+            except Exception:  # noqa: BLE001  重抽失败（损坏/格式异常）→ 回落实体组装
+                return ""
+        return t
+
     def _text_from_upstream(self, payload: Dict[str, Any]) -> str:
         for key in ("upstream_entity_record_id", "upstream_dependency_record_id"):
             record_id = str(payload.get(key) or "")
@@ -1764,37 +1901,41 @@ class ToolIntegrationService:
             record = self.repository.get_result(record_id)
             if not record:
                 continue
-            # 上游为 NER 记录时，复用已识别实体组装关系抽取输入：NER 的原始全文
-            # 多为 PDF 临时路径，到 relation 阶段常已失效，且 NER 未持久化全文，
-            # 故用实体列表 + 各实体语境句子送 LLM 抽关系（best-effort，跨句关系
-            # 可能漏，宁缺毋滥）。
+            # ① 优先复用上游 NER 的原始全文（契约 2026-09-08：关系抽取须基于所选
+            # 批次成员的原文——实体清单组装会丢跨句关系）。/files/parse 架构下
+            # NER 任务项已持久化解析后全文；旧路径透传项经 _usable_upstream_text
+            # 现场重抽或判失效。
+            item = self.repository.get_task_item(str(record.get("task_item_id") or ""))
+            item_text = self._usable_upstream_text(self._text_from_task_item(item))
+            if not item_text:
+                task = self.repository.get_task(record["task_id"]) if record.get("task_id") else None
+                if task:
+                    source = task.get("request_payload") or {}
+                    item_index = item.get("input_index") if item else None
+                    item_text = self._usable_upstream_text(
+                        self._text_from_task_payload(source, item_index, str(task.get("tool_id") or "")))
+                    if not item_text:
+                        text = source.get("text") or source.get("abstract")
+                        if not text:
+                            public_field = PRIMARY_TEXT_FIELDS.get(str(task.get("tool_id") or ""))
+                            text = source.get(public_field) if public_field else None
+                        item_text = self._usable_upstream_text(text)
+                        if not item_text:
+                            texts = source.get("texts")
+                            if isinstance(texts, list) and texts:
+                                first = texts[0]
+                                item_text = self._usable_upstream_text(
+                                    self._document_text(first) if isinstance(first, dict) else str(first))
+            if item_text:
+                return item_text
+            # ② 原文不可用（旧路径透传且临时文件已失效）→ 复用已识别实体 + 各实体
+            # 语境句子组装关系抽取输入（best-effort，跨句关系可能漏，宁缺毋滥）。
             _res = record.get("result") or {}
             _ents = _res.get("entities") or _res.get("entity_results") or []
             if isinstance(_ents, list) and _ents:
                 _composed = self._compose_entity_context(_ents)
                 if _composed:
                     return _composed
-            item = self.repository.get_task_item(str(record.get("task_item_id") or ""))
-            item_text = self._text_from_task_item(item)
-            if item_text:
-                return item_text
-            task = self.repository.get_task(record["task_id"])
-            if task:
-                source = task.get("request_payload") or {}
-                item_index = item.get("input_index") if item else None
-                indexed_text = self._text_from_task_payload(source, item_index, str(task.get("tool_id") or ""))
-                if indexed_text:
-                    return indexed_text
-                text = source.get("text") or source.get("abstract")
-                if not text:
-                    public_field = PRIMARY_TEXT_FIELDS.get(str(task.get("tool_id") or ""))
-                    text = source.get(public_field) if public_field else None
-                if text:
-                    return str(text)
-                texts = source.get("texts")
-                if isinstance(texts, list) and texts:
-                    first = texts[0]
-                    return self._document_text(first) if isinstance(first, dict) else str(first)
         raise ValueError("上游历史记录不存在，或未保存可复用的原始文本")
 
     @staticmethod

@@ -1,52 +1,25 @@
-functional_item: 语步识别工具
-name: 中文摘要语步识别
 description: 从中文科技文献摘要中将其划分为研究背景/研究目的/研究方法/研究结果/研究结论五个语步段。
-input_type: text
-system_prompt: '你是中文科技文献摘要语步识别专家。请将输入的中文论文摘要划分为五个语步段，
-
-  每段必须是原文的逐字摘录，不得改写、不得遗漏、不得新增，五段拼接后应能还原原摘要。
-
-  五个语步类别：
-
-  - 研究背景：交代问题来源、现实需求、已有研究不足等铺垫性内容；
-
-  - 研究目的：阐明本文要解决什么问题、达成什么目标；
-
-  - 研究方法：描述采用的数据、模型、方法、实验手段、框架构建；
-
-  - 研究结果：陈述客观发现、数据结果、实验结论性事实；
-
-  - 研究结论：对结果的升华判断、对策建议、理论/实践意义。
-
-  若摘要不含某语步，该语步输出空字符串。'
-principles: '判定时以"语言机制"而非"个别词汇"为依据，关注以下维度：
-
-  1. 研究主体：区分"本文/本研究/所提模型"与"已有研究/相关文献/其他学者"。含"已有研究表明"的句子通常属背景，即使出现"表明"也不判为本文结果。
-
-  2. 事实状态：区分"已完成"（结果表明、实验发现、提高了、获得了）与"计划/目的"（拟采用、旨在、计划、有望、预期）及"能力描述"（能够提高、可以增强、用于改善）。"能够提高"未必是结果，可能只是方法功能描述。
-
-  3. 方法功能 vs 真实结果：仅描述方法能够产生的效果或预期效果时，不判为本文结果；需有实验、数据、与基线比较或统计显著性等完成性事实支撑，才判为研究结果。
-
-  4. 结果与结论边界：结果是客观发现的事实陈述；结论是对结果的升华判断、对策建议或意义展望。结论通常排在结果之后；若"提出对策/建议"出现在结果之前，归研究目的而非结论。
-  复合句同时含客观数据与总结性意义陈述时，看句子落点（末尾主句）：落点为总体性
-  评价（"……能力得到显著提升""证明了方法的有效性""显著优于现有方法"）判研究结论；
-  落点止于数据本身（"……分别降低76%、82%、51%"）判研究结果。
-
-  5. 目的与方法边界：当"针对…问题"与"本文提出…方法/模型/框架"同时出现时，应识别复合句的语步边界——"针对…问题"为目的性从句，"本文提出…"为方法主句；不要因含"针对"就把整句判为目的。
-
-  6. 篇章顺序：通常遵循"背景→目的→方法→结果→结论"；位置仅作辅助证据，不能单独决定标签。
-
-  7. 输出须为原文逐字摘录，五段拼接还原原摘要。'
 dictionaries:
-  研究背景:
-  - 近年来
-  - 随着
-  - 目前
-  - 现有方法
-  - 然而
-  - 仍存在
-  - 已有研究
-  - 相关文献
+  研究方法:
+  - 采用
+  - 使用
+  - 利用
+  - 引入
+  - 借助
+  - 训练
+  - 构建了
+  - 设计了
+  - 建立了
+  - 聚类分析
+  - 主成分分析
+  - 关联规则
+  - 文献资料法
+  - 逻辑分析法
+  - 问卷调查
+  - 实验设计
+  - 数据融合
+  - 建模方法
+  - 算法
   研究目的:
   - 旨在
   - 为了
@@ -54,15 +27,15 @@ dictionaries:
   - 目的是
   - 致力于
   - 以期
-  研究方法:
-  - 提出
-  - 构建
-  - 设计
-  - 采用
-  - 引入
-  - 利用
-  - 构建
-  - 建立
+  - 提出一种
+  - 本文提出
+  - 构建基于
+  - 旨在探究
+  - 旨在推动
+  - 旨在解决
+  - 以期实现
+  - 提出优化策略
+  - 旨在提升
   研究结果:
   - 实验结果表明
   - 结果显示
@@ -85,79 +58,141 @@ dictionaries:
   - 能力得到
   - 证明了
   - 有效性
+  研究背景:
+  - 近年来
+  - 随着
+  - 目前
+  - 现有方法
+  - 然而
+  - 仍存在
+  - 已有研究
+  - 相关文献
+examples:
+- abstract: '进行亚跨声速风洞试验时，模型迎角快速变化导致马赫数剧烈振荡，传统PID控制策略难以使马赫数快速稳定。基于长短时记忆神经网络（LSTM），提出一种适用于某暂冲式风洞的马赫数建模与智能控制一体化方法。建模方法使用同一试验模型的历史试验数据对LSTM网络进行训练，建模精度达R2>0.98。基于LSTM模型，提出小扰动最优化智能控制方法，该方法在每个时间步对阀门开度进行局部扰动寻优。结果表明：在理想情况下，目标马赫数1.2、0.95、0.8时马赫数均方根误差分别降低76%、82%、51%；即使在引入LSTM模型预测误差后，RMS仍分别降低61%、56%、42%，系统抗扰动能力得到显著提升。
+
+    '
+  spans:
+    研究方法: 基于长短时记忆神经网络（LSTM），提出一种适用于某暂冲式风洞的马赫数建模与智能控制一体化方法。建模方法使用同一试验模型的历史试验数据对LSTM网络进行训练，建模精度达R2>0.98。基于LSTM模型，提出小扰动最优化智能控制方法，该方法在每个时间步对阀门开度进行局部扰动寻优。
+    研究目的: ''
+    研究结果: ''
+    研究结论: 结果表明：在理想情况下，目标马赫数1.2、0.95、0.8时马赫数均方根误差分别降低76%、82%、51%；即使在引入LSTM模型预测误差后，RMS仍分别降低61%、56%、42%，系统抗扰动能力得到显著提升。
+    研究背景: 进行亚跨声速风洞试验时，模型迎角快速变化导致马赫数剧烈振荡，传统PID控制策略难以使马赫数快速稳定。
+- abstract: '高校体育场馆管理正由经验管理向数据驱动的智慧治理转变，但仍面临数据孤岛与决策滞后等现实困境。本研究探究大数据赋能高校体育场馆智慧化建设的作用机理、现实困境与实现路径。采用文献资料法和逻辑分析法，围绕数据治理与运营协同开展归纳分析。研究发现，数据要素汇聚能够重塑管理决策并优化资源配置，但数据治理体系与协同机制仍需完善。由此提出应构建数据治理体系并创新运营管理机制，以促进高校体育场馆可持续发展。
+
+    '
+  spans:
+    研究方法: 采用文献资料法和逻辑分析法，围绕数据治理与运营协同开展归纳分析。
+    研究目的: 本研究探究大数据赋能高校体育场馆智慧化建设的作用机理、现实困境与实现路径。
+    研究结果: 研究发现，数据要素汇聚能够重塑管理决策并优化资源配置，但数据治理体系与协同机制仍需完善。
+    研究结论: 由此提出应构建数据治理体系并创新运营管理机制，以促进高校体育场馆可持续发展。
+    研究背景: 高校体育场馆管理正由经验管理向数据驱动的智慧治理转变，但仍面临数据孤岛与决策滞后等现实困境。
+functional_item: 语步识别工具
+input_type: text
+name: 中文摘要语步识别
+output_schema:
+  properties:
+    研究方法:
+      type: string
+    研究目的:
+      type: string
+    研究结果:
+      type: string
+    研究结论:
+      type: string
+    研究背景:
+      type: string
+  required:
+  - 研究背景
+  - 研究目的
+  - 研究方法
+  - 研究结果
+  - 研究结论
+  type: object
 pattern_rules:
-- id: MR-ZH-111
-  layer: universal
-  scope: global
-  target_move: 研究结论
-  action: +score
-  level: strong
-  weight: 0.25
+- action: +score
   description: 总结性意义尾句（"……能力得到显著提升""性能得到明显改善"）是总体性评价，判研究结论；纯数据陈述子句不受影响（分号复合句常被分句器切开，总结尾句独立成句时仍须触发）
-  necessary_conditions:
-  - kind: keyword
-    any_of:
-    - 显著提升
-    - 明显改善
-    - 大幅提升
-    - 大幅提高
-    - 显著增强
-    - 能力得到
-  - kind: regex
-    pattern: (能力|性能|效果|精度|鲁棒性|抗扰|泛化)(能力)?(得到|获得)?(显著|明显|大幅|有效)?(提升|改善|提高|增强)
   exclusion_conditions:
-  - kind: keyword
-    any_of:
+  - any_of:
     - 已有研究
     - 相关文献
     - 其他学者
-  - kind: keyword
-    any_of:
+    kind: keyword
+  - any_of:
     - 能够提高
     - 可以增强
     - 有望
     - 预期
-- id: MR-ZH-112
+    kind: keyword
+  id: MR-ZH-111
   layer: universal
-  scope: global
-  target_move: 研究结果
-  action: -score
   level: strong
-  weight: 0.25
-  description: 总结性意义尾句削弱"研究结果"判定（与MR-ZH-111联动触发冲突审核，改判研究结论）
   necessary_conditions:
-  - kind: keyword
-    any_of:
+  - any_of:
     - 显著提升
     - 明显改善
     - 大幅提升
     - 大幅提高
     - 显著增强
     - 能力得到
+    kind: keyword
   - kind: regex
     pattern: (能力|性能|效果|精度|鲁棒性|抗扰|泛化)(能力)?(得到|获得)?(显著|明显|大幅|有效)?(提升|改善|提高|增强)
+  scope: global
+  target_move: 研究结论
+  weight: 0.25
+- action: -score
+  description: 总结性意义尾句削弱"研究结果"判定（与MR-ZH-111联动触发冲突审核，改判研究结论）
   exclusion_conditions:
-  - kind: keyword
-    any_of:
+  - any_of:
     - 已有研究
     - 相关文献
-  - kind: keyword
-    any_of:
+    kind: keyword
+  - any_of:
     - 能够提高
     - 可以增强
     - 有望
     - 预期
-- id: MR-ZH-001
+    kind: keyword
+  id: MR-ZH-112
   layer: universal
+  level: strong
+  necessary_conditions:
+  - any_of:
+    - 显著提升
+    - 明显改善
+    - 大幅提升
+    - 大幅提高
+    - 显著增强
+    - 能力得到
+    kind: keyword
+  - kind: regex
+    pattern: (能力|性能|效果|精度|鲁棒性|抗扰|泛化)(能力)?(得到|获得)?(显著|明显|大幅|有效)?(提升|改善|提高|增强)
   scope: global
   target_move: 研究结果
-  action: +score
-  level: soft
-  weight: 0.5
+  weight: 0.25
+- action: +score
   description: 判"研究结果"需结果谓词 + 实验数据/数值证据，排除已有研究与预测性表达
+  exclusion_conditions:
+  - any_of:
+    - 已有研究
+    - 相关文献
+    - 其他学者
+    - 先前研究
+    - 以往研究
+    kind: keyword
+  - any_of:
+    - 有望
+    - 预期
+    - 预计
+    - 能够提高
+    - 可以增强
+    kind: keyword
+  fold_count: 5
+  id: MR-ZH-001
+  layer: universal
+  level: soft
   necessary_conditions:
-  - kind: keyword
-    any_of:
+  - any_of:
     - 结果表明
     - 结果显示
     - 实验结果
@@ -166,76 +201,67 @@ pattern_rules:
     - 降低
     - 优于
     - 呈现
+    kind: keyword
   - kind: regex
     pattern: \\d+(\\.\\d+)?\\s*[%％]|提高了|降低了|优于|显著
-  exclusion_conditions:
-  - kind: keyword
-    any_of:
-    - 已有研究
-    - 相关文献
-    - 其他学者
-    - 先前研究
-    - 以往研究
-  - kind: keyword
-    any_of:
-    - 有望
-    - 预期
-    - 预计
-    - 能够提高
-    - 可以增强
+  scope: global
   stats:
-    matched: 5
     correct: 1
-    incorrect: 0
-    reinforce: 4
     estimated_reliability: 0.667
     evidence_strength: medium
-    net_gain: 1
+    incorrect: 0
+    matched: 5
     measured_on: 验证集(校准)
-  fold_count: 5
-- id: MR-ZH-002
-  layer: universal
-  scope: global
-  target_move: 研究背景
-  action: +score
-  level: soft
+    net_gain: 1
+    reinforce: 4
+  target_move: 研究结果
   weight: 0.5
+- action: +score
   description: 含第三方研究主体（已有研究/相关文献）的发现句属背景，不属本文结果
+  fold_count: 5
+  id: MR-ZH-002
+  layer: universal
+  level: soft
   necessary_conditions:
-  - kind: keyword
-    any_of:
+  - any_of:
     - 已有研究
     - 相关文献
     - 其他学者
     - 先前研究
     - 前人
     - 以往研究
+    kind: keyword
   - kind: position
-    rel_min: 0.0
     rel_max: 0.4
+    rel_min: 0.0
+  scope: global
   stats:
-    matched: 0
     correct: 0
-    incorrect: 0
-    reinforce: 0
     estimated_reliability: 0.5
     evidence_strength: low
-    net_gain: 0
+    incorrect: 0
+    matched: 0
     measured_on: 验证集(校准)
-  fold_count: 5
-- id: MR-ZH-003
-  layer: universal
-  scope: global
-  target_move: 研究结论
-  action: +score
-  level: soft
+    net_gain: 0
+    reinforce: 0
+  target_move: 研究背景
   weight: 0.5
+- action: +score
   description: 结论须排在结果之后，含对策/建议/意义升华表达
+  exclusion_conditions:
+  - any_of:
+    - 提出方法
+    - 提出模型
+    - 提出框架
+    kind: keyword
+  fold_count: 5
+  id: MR-ZH-003
+  layer: universal
+  level: soft
   necessary_conditions:
-  - kind: position
-    after_move: 研究结果
-  - kind: keyword
-    any_of:
+  - after_move: 研究结果
+    kind: position
+  - any_of:
     - 据此
     - 综上
     - 建议
@@ -244,159 +270,129 @@ pattern_rules:
     - 具有重要意义
     - 具有应用价值
     - 可为
-  exclusion_conditions:
-  - kind: keyword
-    any_of:
-    - 提出方法
-    - 提出模型
-    - 提出框架
+    kind: keyword
+  scope: global
   stats:
-    matched: 0
     correct: 0
-    incorrect: 0
-    reinforce: 0
     estimated_reliability: 0.5
     evidence_strength: low
-    net_gain: 0
+    incorrect: 0
+    matched: 0
     measured_on: 验证集(校准)
-  fold_count: 5
-- id: MR-ZH-004
-  layer: universal
-  scope: global
-  target_move: 研究方法
-  action: +score
-  level: soft
+    net_gain: 0
+    reinforce: 0
+  target_move: 研究结论
   weight: 0.5
-  description: '"本文提出/构建/设计…方法/模型/框架"为方法主句，整句判方法'
-  necessary_conditions:
-  - kind: keyword
-    any_of:
-    - 本文提出
-    - 提出一种
-    - 构建了
-    - 设计了
-    - 建立了
-    - 采用
-    - 引入
-  - kind: regex
-    pattern: (方法|模型|框架|算法|体系|网络)
+- action: +score
+  description: '"本文提出/构建一种…方法"宣言句判研究目的（宣布做什么），后续方法细节另判方法（原错判方法 matched:19 correct:1，2026-09-09 修复）'
   exclusion_conditions:
-  - kind: keyword
-    any_of:
+  - any_of:
     - 已有研究
     - 相关文献
+    kind: keyword
+  fold_count: 5
+  id: MR-ZH-004
+  layer: universal
+  level: soft
+  necessary_conditions:
+  - any_of:
+    - 本文提出
+    - 提出一种
+    - 构建基于
+    - 设计一种
+    kind: keyword
+  - kind: regex
+    pattern: (方法|模型|框架|算法|体系|网络)
+  scope: global
   stats:
-    matched: 19
     correct: 1
-    incorrect: 4
-    reinforce: 14
     estimated_reliability: 0.286
     evidence_strength: high
-    net_gain: -3
+    incorrect: 4
+    matched: 19
     measured_on: 验证集(校准)
-  fold_count: 5
-- id: MR-ZH-005
-  layer: universal
-  scope: global
-  target_move: 研究结果
-  action: -score
-  level: soft
+    net_gain: -3
+    reinforce: 14
+  target_move: 研究目的
   weight: 0.5
+- action: -score
   description: 仅方法功能描述（能够/可以+效果）且无实验数据证据时，削弱"结果"判定
+  exclusion_conditions:
+  - kind: regex
+    pattern: \\d+(\\.\\d+)?\\s*[%％]|提高了|降低了|优于
+  fold_count: 5
+  id: MR-ZH-005
+  layer: universal
+  level: soft
   necessary_conditions:
-  - kind: keyword
-    any_of:
+  - any_of:
     - 能够提高
     - 可以增强
     - 用于改善
     - 能够有效
     - 可满足
+    kind: keyword
   - kind: regex
     pattern: (有利于|有助于|能够|可以)
-  exclusion_conditions:
-  - kind: regex
-    pattern: \\d+(\\.\\d+)?\\s*[%％]|提高了|降低了|优于
+  scope: global
   stats:
-    matched: 1
     correct: 0
-    incorrect: 0
-    reinforce: 1
     estimated_reliability: 0.5
     evidence_strength: low
-    net_gain: 0
+    incorrect: 0
+    matched: 1
     measured_on: 验证集(校准)
-  fold_count: 5
-- id: MR-ZH-101
-  layer: universal
-  scope: global
+    net_gain: 0
+    reinforce: 1
   target_move: 研究结果
-  action: +score
-  level: advisory
   weight: 0.5
+- action: +score
   description: 见到「所提方法/机制/策略…可满足/有利于/兼顾…」→判为研究结果，理由：主语是已提出的方法，谓语描述其效果与优势，属于对方法的表现评价而非方法本身的定义说明或全局性结论总结。
+  exclusion_conditions:
+  - any_of:
+    - 通过
+    - 采用
+    - 步骤
+    - 流程
+    - 具体如下
+    kind: keyword
+  - any_of:
+    - 综上所述
+    - 总之
+    - 总结
+    - 总体而言
+    kind: keyword
+  fold_count: 1
+  id: MR-ZH-101
+  layer: universal
+  level: advisory
   necessary_conditions:
   - kind: regex
     pattern: 所提(方法|机制|策略|方案|激励)
-  - kind: keyword
-    any_of:
+  - any_of:
     - 可满足
     - 有利于
     - 能有效
     - 兼顾
     - 能够
     - 可实现
-  exclusion_conditions:
-  - kind: keyword
-    any_of:
-    - 通过
-    - 采用
-    - 步骤
-    - 流程
-    - 具体如下
-  - kind: keyword
-    any_of:
-    - 综上所述
-    - 总之
-    - 总结
-    - 总体而言
+    kind: keyword
+  scope: global
   stats:
-    matched: 2
     correct: 2
-    incorrect: 0
-    reinforce: 0
     estimated_reliability: 0.75
     evidence_strength: low
-    net_gain: 2
+    incorrect: 0
+    matched: 2
     measured_on: 验证集(校准)
-  fold_count: 1
-- id: MR-ZH-103
-  layer: universal
-  scope: global
-  target_move: 研究目的
-  action: +score
-  level: advisory
+    net_gain: 2
+    reinforce: 0
+  target_move: 研究结果
   weight: 0.5
+- action: +score
   description: 见到'文章/本文'+研究范围动词'分析了/讨论了/探讨了'+在方法语步出现之前→判为研究目的，理由：此结构是论文开篇对研究范围和目标的总体陈述，'分析了/讨论了'此处表示将要分析的研究内容而非具体方法操作
-  necessary_conditions:
-  - kind: keyword
-    any_of:
-    - 文章
-    - 本文
-    - 本研究
-    - 本论文
-  - kind: keyword
-    any_of:
-    - 分析了
-    - 讨论了
-    - 探讨了
-    - 研究了
-    - 阐述了
-    - 考察了
-  - kind: position
-    before_move: 研究方法
   exclusion_conditions:
-  - kind: keyword
-    any_of:
+  - any_of:
     - 采用
     - 步骤
     - 算法
@@ -404,90 +400,170 @@ pattern_rules:
     - 框架
     - 代码
     - 伪代码
-  - kind: keyword
-    any_of:
+    kind: keyword
+  - any_of:
     - 实验结果
     - 仿真结果
     - 测试结果
+    kind: keyword
+  fold_count: 1
+  id: MR-ZH-103
+  layer: universal
+  level: advisory
+  necessary_conditions:
+  - any_of:
+    - 文章
+    - 本文
+    - 本研究
+    - 本论文
+    kind: keyword
+  - any_of:
+    - 分析了
+    - 讨论了
+    - 探讨了
+    - 研究了
+    - 阐述了
+    - 考察了
+    kind: keyword
+  - before_move: 研究方法
+    kind: position
+  scope: global
   stats:
-    matched: 6
     correct: 3
-    incorrect: 0
-    reinforce: 3
     estimated_reliability: 0.8
     evidence_strength: medium
-    net_gain: 3
+    incorrect: 0
+    matched: 6
     measured_on: 验证集(校准)
-  fold_count: 1
-- id: MR-ZH-110
-  layer: universal
-  scope: global
-  target_move: 研究结果
-  action: +score
-  level: advisory
+    net_gain: 3
+    reinforce: 3
+  target_move: 研究目的
   weight: 0.5
+- action: +score
   description: '''最后''+''进行验证''报告已完成验证步骤→判为研究结果，是对验证行为的完成性陈述而非方法设计描述。'
-  necessary_conditions:
-  - kind: keyword
-    any_of:
-    - 最后
-    - 最终
-  - kind: keyword
-    any_of:
-    - 验证
-    - 检验
-    - 确认
   exclusion_conditions:
-  - kind: keyword
-    any_of:
+  - any_of:
     - 提出
     - 设计
     - 采用
     - 将采用
     - 拟
+    kind: keyword
+  fold_count: 1
+  id: MR-ZH-110
+  layer: universal
+  level: advisory
+  necessary_conditions:
+  - any_of:
+    - 最后
+    - 最终
+    kind: keyword
+  - any_of:
+    - 验证
+    - 检验
+    - 确认
+    kind: keyword
+  scope: global
   stats:
-    matched: 6
     correct: 3
-    incorrect: 0
-    reinforce: 3
     estimated_reliability: 0.8
     evidence_strength: medium
-    net_gain: 3
+    incorrect: 0
+    matched: 6
     measured_on: 验证集(校准)
-  fold_count: 1
-output_schema:
-  type: object
-  properties:
-    研究背景:
-      type: string
-    研究目的:
-      type: string
-    研究方法:
-      type: string
-    研究结果:
-      type: string
-    研究结论:
-      type: string
-  required:
-  - 研究背景
-  - 研究目的
-  - 研究方法
-  - 研究结果
-  - 研究结论
-examples:
-  - abstract: |
-      进行亚跨声速风洞试验时，模型迎角快速变化导致马赫数剧烈振荡，传统PID控制策略难以使马赫数快速稳定。基于长短时记忆神经网络（LSTM），提出一种适用于某暂冲式风洞的马赫数建模与智能控制一体化方法。建模方法使用同一试验模型的历史试验数据对LSTM网络进行训练，建模精度达R2>0.98。基于LSTM模型，提出小扰动最优化智能控制方法，该方法在每个时间步对阀门开度进行局部扰动寻优。结果表明：在理想情况下，目标马赫数1.2、0.95、0.8时马赫数均方根误差分别降低76%、82%、51%；即使在引入LSTM模型预测误差后，RMS仍分别降低61%、56%、42%，系统抗扰动能力得到显著提升。
-    spans:
-      研究背景: 进行亚跨声速风洞试验时，模型迎角快速变化导致马赫数剧烈振荡，传统PID控制策略难以使马赫数快速稳定。
-      研究目的: ""
-      研究方法: 基于长短时记忆神经网络（LSTM），提出一种适用于某暂冲式风洞的马赫数建模与智能控制一体化方法。建模方法使用同一试验模型的历史试验数据对LSTM网络进行训练，建模精度达R2>0.98。基于LSTM模型，提出小扰动最优化智能控制方法，该方法在每个时间步对阀门开度进行局部扰动寻优。
-      研究结果: ""
-      研究结论: 结果表明：在理想情况下，目标马赫数1.2、0.95、0.8时马赫数均方根误差分别降低76%、82%、51%；即使在引入LSTM模型预测误差后，RMS仍分别降低61%、56%、42%，系统抗扰动能力得到显著提升。
-  - abstract: |
-      高校体育场馆管理正由经验管理向数据驱动的智慧治理转变，但仍面临数据孤岛与决策滞后等现实困境。本研究探究大数据赋能高校体育场馆智慧化建设的作用机理、现实困境与实现路径。采用文献资料法和逻辑分析法，围绕数据治理与运营协同开展归纳分析。研究发现，数据要素汇聚能够重塑管理决策并优化资源配置，但数据治理体系与协同机制仍需完善。由此提出应构建数据治理体系并创新运营管理机制，以促进高校体育场馆可持续发展。
-    spans:
-      研究背景: 高校体育场馆管理正由经验管理向数据驱动的智慧治理转变，但仍面临数据孤岛与决策滞后等现实困境。
-      研究目的: 本研究探究大数据赋能高校体育场馆智慧化建设的作用机理、现实困境与实现路径。
-      研究方法: 采用文献资料法和逻辑分析法，围绕数据治理与运营协同开展归纳分析。
-      研究结果: 研究发现，数据要素汇聚能够重塑管理决策并优化资源配置，但数据治理体系与协同机制仍需完善。
-      研究结论: 由此提出应构建数据治理体系并创新运营管理机制，以促进高校体育场馆可持续发展。
+    net_gain: 3
+    reinforce: 3
+  target_move: 研究结果
+  weight: 0.5
+- action: +score
+  description: '"结果表明"+具体数值→研究结果（2026-09-09 LSTM案例：含"降低76%"被错判结论）'
+  exclusion_conditions:
+  - any_of:
+    - 已有研究
+    - 相关文献
+    - 能够提高
+    - 可以增强
+    - 有望
+    kind: keyword
+  fold_count: 0
+  id: MR-ZH-130
+  layer: universal
+  level: strong
+  necessary_conditions:
+  - any_of:
+    - 结果表明
+    - 实验表明
+    - 实验结果
+    - 研究结果显示
+    - 结果显示
+    kind: keyword
+  - kind: regex
+    pattern: (\d+(?:\.\d+)?\s*[%％]|\d+(?:\.\d+)?\s*倍|P\s*<|vs|R2?\s*>)
+  scope: global
+  stats: {}
+  target_move: 研究结果
+  weight: 0.35
+- action: +score
+  description: '"实验表明…有效/可以…"实验验证性陈述→研究结果（2026-09-09 Transformer融合段案例）'
+  exclusion_conditions:
+  - any_of:
+    - 已有研究
+    - 能够
+    - 有望
+    - 预期
+    kind: keyword
+  fold_count: 0
+  id: MR-ZH-131
+  layer: universal
+  level: soft
+  necessary_conditions:
+  - any_of:
+    - 实验表明
+    - 实验验证
+    - 实验发现
+    kind: keyword
+  scope: global
+  stats: {}
+  target_move: 研究结果
+  weight: 0.25
+principles: '判定时以"语言机制"而非"个别词汇"为依据，关注以下维度：
+
+  1. 研究主体：区分"本文/本研究/所提模型"与"已有研究/相关文献/其他学者"。含"已有研究表明"的句子通常属背景，即使出现"表明"也不判为本文结果。
+
+  2. 事实状态：区分"已完成"（结果表明、实验发现、提高了、获得了）与"计划/目的"（拟采用、旨在、计划、有望、预期）及"能力描述"（能够提高、可以增强、用于改善）。"能够提高"未必是结果，可能只是方法功能描述。
+
+  3. 方法功能 vs 真实结果：仅描述方法能够产生的效果或预期效果时，不判为本文结果；需有实验、数据、与基线比较或统计显著性等完成性事实支撑，才判为研究结果。
+
+  4. 结果与结论边界：结果是客观发现的事实陈述（"结果表明…降低76%"）；结论是对结果的升华判断（"能力得到显著提升"）。"结果表明"引导的数据子句判结果，仅句末升华子句判结论——两者共存须拆分，不得将含数据整句归结论。结论通常排在结果之后；若"提出对策/建议"出现在结果之前，归研究目的而非结论。 复合句同时含客观数据与总结性意义陈述时，看句子落点（末尾主句）：落点为总体性 评价（"……能力得到显著提升""证明了方法的有效性""显著优于现有方法"）判研究结论；
+  落点止于数据本身（"……分别降低76%、82%、51%"）判研究结果。
+
+  5. 目的与方法边界："本文提出一种…方法"的首次宣言判研究目的（宣布做什么），后续方法细节描述（用了什么技术、怎么训练）判研究方法。"针对…问题"+"本文提出…"同时出现时整句判研究目的。不得将宣言句并入方法段。
+
+  6. 篇章顺序：通常遵循"背景→目的→方法→结果→结论"；位置仅作辅助证据，不能单独决定标签。
+
+  7. 输出须为原文逐字摘录，五段拼接还原原摘要。'
+system_prompt: '你是中文科技文献摘要语步识别专家。请将输入的中文论文摘要划分为五个语步段，
+
+  每段必须是原文的逐字摘录，不得改写、不得遗漏、不得新增，五段拼接后应能还原原摘要。
+
+  五个语步类别：
+
+  - 研究背景：交代问题来源、现实需求、已有研究不足等铺垫性内容；
+
+  - 研究目的：阐明本文要解决什么问题、达成什么目标；
+
+  - 研究方法：描述采用的数据、模型、方法、实验手段、框架构建；
+
+  - 研究结果：陈述客观发现、数据结果、实验结论性事实；
+
+  - 研究结论：对结果的升华判断、对策建议、理论/实践意义。
+
+  判定规则（必须严格遵守）：
+
+  - "本文提出/构建/设计一种…方法/模型"的宣言句（宣布做什么）→ 研究目的；后续具体方法细节（训练过程、技术手段）→ 研究方法。不得将宣言句并入方法段。
+
+  - "结果表明/实验表明"引导的含数据子句（数值、百分比、对比）→ 研究结果；仅句末升华判断子句 → 研究结论。不得将含数据的整句全部归结论。
+
+  - 一句话同时含方法、结果、结论时按分号/句号拆分归入对应语步，不得整句归单一语步导致其他语步空置。
+
+  若摘要不含某语步，该语步输出空字符串。'

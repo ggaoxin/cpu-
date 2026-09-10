@@ -1,0 +1,372 @@
+{
+ "1.pdf": {
+  "len": 2077,
+  "head": "Entities are at the center of how we rep",
+  "tail": "tps://github.com/facebookresearch/GENRE."
+ },
+ "10.pdf": {
+  "len": 1334,
+  "head": "Self-supervised learning for time-series",
+  "tail": "t https://github.com/sfi-norwai/Di- COT."
+ },
+ "11.pdf": {
+  "len": 1252,
+  "head": "Recent progress in reasoning models has ",
+  "tail": " domains beyond mathematics and physics."
+ },
+ "12.pdf": {
+  "len": 1532,
+  "head": "We present the surprising finding that a",
+  "tail": "dicator of a faithful reasoning process."
+ },
+ "13.pdf": {
+  "len": 1293,
+  "head": "The field of computer vision has experie",
+  "tail": "t and expressive vision-language models."
+ },
+ "14.pdf": {
+  "len": 1519,
+  "head": "Recent Large Vision-Language Models (LVL",
+  "tail": "ms. Code is available at https://github."
+ },
+ "15.pdf": {
+  "len": 1948,
+  "head": "Large language models are powerful gener",
+  "tail": " τ -Bench with superior cost efficiency."
+ },
+ "16.pdf": {
+  "len": 1268,
+  "head": "The shift toward interacting with frozen",
+  "tail": "rformance with higher sample efficiency."
+ },
+ "17.pdf": {
+  "len": 1384,
+  "head": "Google Translate Research Team We presen",
+  "tail": "adaptable tools for machine translation."
+ },
+ "18.pdf": {
+  "len": 1143,
+  "head": "Recent studies have demonstrated that Re",
+  "tail": "effectiveness on established benchmarks."
+ },
+ "19.pdf": {
+  "len": 1589,
+  "head": "Offline black-box optimization (BBO) aim",
+  "tail": "ts in few-shot settings on design-bench."
+ },
+ "2.pdf": {
+  "len": 1347,
+  "head": "Test-time reinforcement learning (TTRL) ",
+  "tail": "erscoring its stability and reliability."
+ },
+ "21.pdf": {
+  "len": 1583,
+  "head": "Previous studies on visual customization",
+  "tail": "precisely manipulating such information."
+ },
+ "22.pdf": {
+  "len": 962,
+  "head": "社交媒体机器人通过散布虚假信息和操控舆论,严重威胁社交平台的信息真实性和 舆论环",
+  "tail": "实用性,能够为社交媒体平台的管理人员及相关研究人员提供高效可靠的辅助检测工 具。"
+ },
+ "23.pdf": {
+  "len": 1207,
+  "head": "Discriminative approaches to classificat",
+  "tail": "m/alexlioralexli/generative-classifiers."
+ },
+ "24.pdf": {
+  "len": 1351,
+  "head": "Diffusion Probabilistic Models (DPMs) ha",
+  "tail": "tive quality. Our code will be released."
+ },
+ "25.pdf": {
+  "len": 1465,
+  "head": "Large Vision-Language Models (LVLMs) hav",
+  "tail": "ble at: https://github.com/huaiyi66/PTI."
+ },
+ "26.pdf": {
+  "len": 1594,
+  "head": "Time series forecasting (TSF) traditiona",
+  "tail": "ions of slow-thinking paradigms for TSF."
+ },
+ "27.pdf": {
+  "len": 1350,
+  "head": "Probabilistic mental simulation is thoug",
+  "tail": "ng Supports Human Planning and Reasoning"
+ },
+ "28.pdf": {
+  "len": 997,
+  "head": "Vision-Language Models (VLMs) face signi",
+  "tail": "s on various video reasoning benchmarks."
+ },
+ "29.pdf": {
+  "len": 1090,
+  "head": "Vision-language models (VLMs) are increa",
+  "tail": "nerability in multimodal safety systems."
+ },
+ "3.pdf": {
+  "len": 1408,
+  "head": "Test-time Training enables model adaptat",
+  "tail": "nual reasoning improvement at test time."
+ },
+ "30.pdf": {
+  "len": 1092,
+  "head": "CLIP-based prompt tuning enables pretrai",
+  "tail": "le at: https://github.com/JREion/FVG-PT."
+ },
+ "31.pdf": {
+  "len": 1680,
+  "head": "Despite significant progress in Unified ",
+  "tail": "ility and effectiveness of our approach."
+ },
+ "32.pdf": {
+  "len": 1127,
+  "head": "Vision-Language Models (VLMs) have been ",
+  "tail": "d improving performance across framings."
+ },
+ "33.pdf": {
+  "len": 972,
+  "head": "The success of deep learning in computer",
+  "tail": "native to architectural depth in vision."
+ },
+ "34.pdf": {
+  "len": 1492,
+  "head": "Vision language models (VLMs) have achie",
+  "tail": " focus on and reason about rare objects."
+ },
+ "35.pdf": {
+  "len": 1156,
+  "head": "The prevalence and low cost of LLMs have",
+  "tail": " and arbitrary amounts of contamination."
+ },
+ "36.pdf": {
+  "len": 464,
+  "head": "Heads Heads → Tails → Heads Heads → Tail",
+  "tail": " model outputs from our RL environments."
+ },
+ "37.pdf": {
+  "len": 1543,
+  "head": "In democracies, major policy decisions t",
+  "tail": "ne.ink. All remaining errors are my own."
+ },
+ "38.pdf": {
+  "len": 1301,
+  "head": "Pass@k is a widely used performance metr",
+  "tail": "verifiable mathematical reasoning tasks."
+ },
+ "39.pdf": {
+  "len": 1258,
+  "head": "Memory is critical for AI agents, yet th",
+  "tail": "enarios against existing memory systems."
+ },
+ "4.pdf": {
+  "len": 1754,
+  "head": "Large language model (LLM) agents are fu",
+  "tail": "a significantly smaller working context."
+ },
+ "40.pdf": {
+  "len": 1750,
+  "head": "Outcome-reward reinforcement learning (R",
+  "tail": " open-source models such as gpt-oss-20b."
+ },
+ "41.pdf": {
+  "len": 1497,
+  "head": "Progress on training and architecture st",
+  "tail": "ies like producing more thinking tokens."
+ },
+ "42.pdf": {
+  "len": 832,
+  "head": "Masked Image Modeling (MIM) has become a",
+  "tail": "ble at: https://github.com/dsb-ifi/soap."
+ },
+ "43.pdf": {
+  "len": 1170,
+  "head": "Latent reasoning represents a new develo",
+  "tail": "ub.com/apning/adaptive-latent-reasoning."
+ },
+ "44.pdf": {
+  "len": 1043,
+  "head": "We introduce HorusEye, Language as Dynam",
+  "tail": " it unsuitable for emergency deployment."
+ },
+ "45.pdf": {
+  "len": 1697,
+  "head": "We formulate long-context language model",
+  "tail": "ength 8K 16K 32K 64K 128K Context length"
+ },
+ "46.pdf": {
+  "len": 1412,
+  "head": "Knowledge distillation improves large la",
+  "tail": "ce over off-policy distillation methods."
+ },
+ "47.pdf": {
+  "len": 1466,
+  "head": "Knowledge Distillation (KD) is increasin",
+  "tail": " risks compared to standard fine-tuning."
+ },
+ "48.pdf": {
+  "len": 3229,
+  "head": "Self-training systems often degenerate d",
+  "tail": "red, the criteria for retention must be:"
+ },
+ "49.pdf": {
+  "len": 1172,
+  "head": "Diffusion-based language models (DLLMs) ",
+  "tail": " benefits low-resource coding languages."
+ },
+ "5.pdf": {
+  "len": 751,
+  "head": "Accelerating the discovery of advanced m",
+  "tail": "effective, data-driven materials design."
+ },
+ "50.pdf": {
+  "len": 1332,
+  "head": "As Vision-Language Models are increasing",
+  "tail": "anbilgic/Orthogonal- Semantic-Projection"
+ },
+ "6.pdf": {
+  "len": 1792,
+  "head": "Large language models (LLMs) are increas",
+  "tail": "r codes and datasets in this repository."
+ },
+ "7.pdf": {
+  "len": 1156,
+  "head": "The prevalence and low cost of LLMs have",
+  "tail": " and arbitrary amounts of contamination."
+ },
+ "8.pdf": {
+  "len": 1157,
+  "head": "With the rise of modern search and recom",
+  "tail": " buyers +1.57%, and order volume +2.17%."
+ },
+ "9.pdf": {
+  "len": 1560,
+  "head": "Chain-of-thought (CoT) traces are increa",
+  "tail": "le report of when the answer was formed."
+ },
+ "HYDRA.pdf": {
+  "len": 2082,
+  "head": "Time-series anomaly detection is critica",
+  "tail": "org/HYDRA to facilitate reproducibility."
+ },
+ "Learntesttime.pdf": {
+  "len": 1736,
+  "head": "How can we use AI to discover a new stat",
+  "tail": ") Heuristic Contest 39 (↑) Denoising (↑)"
+ },
+ "RL.pdf": {
+  "len": 1642,
+  "head": "Typical reinforcement learning (RL) meth",
+  "tail": "g its flexibility in practical settings."
+ },
+ "s41467-021-23774-w.pdf": {
+  "len": 4369,
+  "head": "With the continuous advancement of deep ",
+  "tail": "in biomedical data classification tasks."
+ },
+ "socialbot.pdf": {
+  "len": 413,
+  "head": "社交媒体机器人的快速增长虽然促进了信息传播,但也带来了隐私泄露和虚假信息传播等问",
+  "tail": "该模型在应对多样化和复杂化的社交媒体机器人 检测任务中具有较高的竞争力和优越性。"
+ },
+ "大数据赋能高校体育场馆智慧化建设的现实困境与路径研究_余洪涛.pdf": {
+  "len": 281,
+  "head": "本研究运用文献资料法、逻辑分析法等研究方法,旨在探究大数据赋能高校体育场馆智慧化",
+  "tail": "运营管理机制两大路径,以期为促进高校体育场馆的可持续发展提供理论依据与实践参考。"
+ },
+ "大数据算法驱动下BOPPPS模型在肾内科血净护理实习教学中的应用研究_蒲兴梅.pdf": {
+  "len": 322,
+  "head": "文章对多源数据信息(如操作时长、错误类型及知识测试成绩等)进行融合,结合聚类分析",
+  "tail": "的教 学效能,为临床护理实习教学质量提供智能化调控,有效促进教学水平的整体提升。"
+ },
+ "大数据与AI画像_高校思想政治教育个性化实践探索_侯晓洁.pdf": {
+  "len": 298,
+  "head": "在教育数字化战略推进背景下,大数据与 AI 画像已从理论探索进入高校辅导员思政教",
+  "tail": " 技术与思政教育深度融合,落实立德树人根本任务,提升思政教育 的精准性与实效性。"
+ },
+ "地震动记录选取的新视角：大数据与机器学习_刘亭亭.pdf": {
+  "len": 520,
+  "head": "合理选取地震动记录已成为基于性能抗震设计的关键。由于地震动在时间和空间均具有随机",
+  "tail": "排序的地震动记录推荐,为考虑不同结构需求参数的工程结构时程分析提 供输入地震动。"
+ },
+ "基于大数据的城轨突发客流协同调度策略_闫伟伟.pdf": {
+  "len": 315,
+  "head": "针对城市轨道交通突发客流场景下运力响应滞后与运能运量时空失配问题,提出一种基于多",
+  "tail": "应急响应时间,有效平抑站台客流积压峰值,实现运力资源对突发需求的精准动态 匹配。"
+ },
+ "基于机器学习的铝铜合金硬度与导热性能预测及联合优化_步彤彤.pdf": {
+  "len": 162,
+  "head": "3) (中电泰日升马鞍山科技有限公司, 马鞍山 243000) 针对铝铜合金性能",
+  "tail": "的 24 组铝铜合金为研究对象,结合元素理化特性构建物理衍生特征空间,通过层次聚"
+ },
+ "基于LSTM的暂冲式风洞马赫数建模与控制方法_张之豪.pdf": {
+  "len": 215,
+  "head": "化方法。建模方法使用同一试验模型的历史试验数据对 LSTM 网络进行训练,以过去",
+  "tail": "值。结果表明:在理想情况下,目标马赫数 1.2、0.95、0.8 时马赫数均方根"
+ },
+ "基于ResNet的混凝土搅拌均匀性智能检测模型参数优化研究_卓祖汀.pdf": {
+  "len": 416,
+  "head": "针对传统混凝土搅拌均匀性检测方法存在滞后性强、主观性大等问题,基于 ResNet",
+  "tail": "检测模型具有较好的跨批次识别能力,但其泛化性能仍受批次差异和数据分布偏移的影响。"
+ },
+ "基于Transformer模型的重庆某大型三甲医院门诊量预测_吴启帆.pdf": {
+  "len": 211,
+  "head": "大型三甲医院门诊量因受季节、节假日等多重因素影响而呈现明显的波动特征,传统预测方",
+  "tail": "关联,显著提升预测精度,对医疗行业时序数据预测及运营管理优化具有重要的参考价值。"
+ },
+ "基于WGCNA和113种机器学习算法鉴定糖尿病肾病关键基因_蔡乐盈.pdf": {
+  "len": 646,
+  "head": "系统鉴定糖尿病肾病(DN)中衰老相关分泌蛋白(SASP)关键基因,并探索其分子机",
+  "tail": "EGs,其中 VWF 展现出最佳靶向治疗潜力,为 DN 的精准诊疗提供了新思路。"
+ },
+ "基于时空行为大数据的行为地理过程追踪与因果推断研究_张文佳.pdf": {
+  "len": 301,
+  "head": "随着时空行为大数据的日益丰富及长时序数据的可获得性,实证行为地理学正从“空间–行",
+  "tail": "来方向,为深化微观人地关系研究、支撑精细化城市规划与韧性治理提供理论与方法参考。"
+ },
+ "基于深度学习的转向架焊缝质量管控及决策系统_李锡伟.pdf": {
+  "len": 390,
+  "head": "针对转向架构架传统焊缝检测存在人工操作劳动强度高、主观性强、漏检等问 题,基于多",
+  "tail": "格性并提出整改 意见,有效提升工艺管理效率,为轨道交通装备质量管控提供技术支撑。"
+ },
+ "基于深度学习的天然气管道泄漏模式识别与分类研究_宋冬寒.pdf": {
+  "len": 230,
+  "head": "为解决天然气管道泄漏难识别问题,本文基于深度学习,针对泄漏声学信号,采用自主设计",
+  "tail": ",评估指标优于一维CNN 模型,在 燃气管道泄智能漏监测方面具有较好的应用潜力。"
+ },
+ "基于特征引导互联的海面溢油检测实验设计_葛延良.pdf": {
+  "len": 194,
+  "head": "针对合成孔径雷达(SAR)图像中海面溢油区域背景复杂、尺度变化大且边界模糊等问题",
+  "tail": " 种具有代表性的算法作为对比实验对象,在两个公开溢油数据集上开展定量与定性分析。"
+ },
+ "基于特征增强与频域解耦的斜拉索病害语义分割方法_张洪.pdf": {
+  "len": 588,
+  "head": "斜拉索作为斜拉桥的关键受力构件,其表面病害的精确分割对于桥 梁结构安全评估具有重",
+  "tail": "连通性方面均表现更优,验证了其在复杂背景下对微弱病害的提取 能力及工程应用潜力。"
+ },
+ "可解释性机器学习驱动的煤和污泥超临界水共气化产物预测研究_肖峰.pdf": {
+  "len": 406,
+  "head": "针对传统方法难以刻画小样本煤与污泥超临界水共气化实验数据中复杂非线性关系与多因素",
+  "tail": "水气化实验数据,可为煤与污泥共气 化过程参数优化及产物调控提供数据驱动方法参考。"
+ },
+ "慢性肾脏病患者骨质疏松危险因素与多机器学习临床预测列线图构建_杨柳.pdf": {
+  "len": 1085,
+  "head": "目的 基于多种机器学习算法构建慢性肾脏病( CKD) 患者继发骨质疏松的临床预测",
+  "tail": "存在偏差,模型 输出的绝对概率需谨慎解读,未来需开展多中心前瞻性研究进一步验证。"
+ },
+ "面向深度学习侧信道分析的多属性决策模型评估方法研究_顾泽鹏.pdf": {
+  "len": 359,
+  "head": "针对深度学习侧信道分析(DL-SCA)模型评估中存在的维度单一、公平性不足以及与",
+  "tail": "下CNN-LSTM表现最优(0.863),显著提升了模型选型的科学性与可解释性。"
+ },
+ "融合大数据分析与机器学习的光伏电站运维管理系统设计_高晓凡.pdf": {
+  "len": 534,
+  "head": ", : 一 套 融 合 大   。 通过琛入 分 析 光 伏 电 站 运 维",
+  "tail": "魏遂 维 管 理 穠式 且 达 到 衧 业 标 准 要 求   光我 电 站"
+ },
+ "物联网大数据驱动的数控机床节能减碳监测系统设计与应用_赵会宾.pdf": {
+  "len": 471,
+  "head": "为了解决数控机床能耗高、碳核算不准确的问题,基于“端- 边- 云”架构设计了集成",
+  "tail": "7% 以上,为离散制造企业提供 了“监测- 优化- 核算”一体化的技术解决方案。"
+ }
+}

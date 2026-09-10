@@ -10,7 +10,7 @@ system_prompt: |
   - 用于背景介绍：铺垫领域现状、综述前人工作，如"Smith等(2020)首次提出X，为后续研究奠定基础"
   - 用于引入研究方法：借用方法/工具/模型，如"本文采用Smith等(2020)提出的X方法"
   - 用于结果比较：与本文结果对比，如"与Wang等(2022)的结果相比，本文方法提升了5%"
-  只输出JSON：{"data":{"results":[{"sentence":"引用句原文","intent":"用于背景介绍|用于引入研究方法|用于结果比较","confidence":0.9}]}}
+  只输出JSON：{"data":{"results":[{"index":0,"intent":"用于背景介绍|用于引入研究方法|用于结果比较","confidence":0.9}]}}（index=输入条目编号，不要复述原句）
 
 principles: |
   - 引用句抽取用规则（引用标记模式匹配），规则没覆盖的找LLM判定。
@@ -30,7 +30,7 @@ citation_patterns:
   - "文献\\[\\s*[A-Z]\\d+\\s*\\]"
   - "\\w+等人?于\\d{4}年提出"
 
-citation_cues: "所述|报道|提出|发现|研究表明|先前研究|已有研究|根据.*?研究|参考.*?文献|引用|借鉴|沿用|基于.*?工作"
+citation_cues: "所述|报道|提出|发现|研究表明|先前研究|已有研究|根据.*?研究|参考.*?文献|引用|借鉴|沿用|基于.*?工作|according to|as (?:reported|shown|proposed|demonstrated|suggested) by|prior work|previous (?:work|studies|research)|existing (?:work|studies|approaches|methods)|earlier (?:work|studies)|building on|extend\\w* the (?:work|approach|idea)|follow\\w* (?:the|this|their) (?:approach|work|idea)|borrow\\w* from|inspired by|adapted from"
 
 exclude_patterns:
   - "^(文章编号|中图分类号|文献标识码|doi|DOI|收稿日期|基金项目|作者简介|通信作者|关键词|Keywords|Abstract|摘要|作者|单位|地址|邮编)"
@@ -55,10 +55,15 @@ pattern_rules:
     description: "含方法/工具借用词→用于引入研究方法"
     necessary_conditions:
       - kind: keyword
-        any_of: ["采用", "基于", "使用", "借鉴", "沿用", "引入.*方法", "引入.*模型", "利用", "借助"]
+        any_of: ["采用", "基于", "使用", "借鉴", "沿用", "引入.*方法", "引入.*模型", "利用", "借助",
+                 "\\busing\\b", "\\buse[sd]?\\b", "\\bbased on\\b", "\\badopt\\w*\\b", "\\bemploy\\w*\\b",
+                 "\\bleverag\\w+\\b", "\\bby means of\\b", "\\bmake(?:s)? use of\\b", "\\bdraw(?:n)? on\\b",
+                 "\\bborrow\\w* from\\b", "\\bfollow\\w* (?:the|their|his|her) (?:approach|method|framework|work)\\b",
+                 "\\badapted from\\b", "\\binspired by\\b"]
     exclusion_conditions:
       - kind: keyword
-        any_of: ["相比", "优于", "提升.*%", "与.*相比"]
+        any_of: ["相比", "优于", "提升.*%", "与.*相比",
+                 "\\bthan\\b", "\\bcompared\\b", "\\bin contrast\\b", "\\boutperform\\w*\\b", "\\bsurpass\\w*\\b"]
     stats: {}
     fold_count: 0
 
@@ -73,7 +78,10 @@ pattern_rules:
     description: "含对比/提升词→用于结果比较"
     necessary_conditions:
       - kind: keyword
-        any_of: ["相比", "与.*相比", "对比", "优于", "提升.*%", "高于", "低于", "超过", "而.*提升", "相对于"]
+        any_of: ["相比", "与.*相比", "对比", "优于", "提升.*%", "高于", "低于", "超过", "而.*提升", "相对于",
+                 "\\bthan\\b", "\\bcompared\\b", "\\bin contrast\\b", "\\bin comparison\\b",
+                 "\\boutperform\\w*\\b", "\\bsurpass\\w*\\b", "\\bfaster\\b", "\\bslower\\b",
+                 "\\bhigher\\b", "\\blower\\b", "\\bimprovement of\\b", "\\breduce[sd]? by\\b"]
     stats: {}
     fold_count: 0
 
@@ -88,10 +96,16 @@ pattern_rules:
     description: "含背景/前人工作词→用于背景介绍"
     necessary_conditions:
       - kind: keyword
-        any_of: ["近年来", "首次", "提出", "奠定", "发展", "综述", "背景", "现状", "前期", "以往", "先前", "已有", "过去"]
+        any_of: ["近年来", "首次", "提出", "奠定", "发展", "综述", "背景", "现状", "前期", "以往", "先前", "已有", "过去",
+                 "\\bin recent (?:years|decades)\\b", "\\bfirst (?:proposed|introduced|presented)\\b",
+                 "\\bpropos(?:e|es|ed)\\b", "\\bintroduc\\w+\\b", "\\bpioneer\\w*\\b", "\\bsurvey\\b", "\\breview\\b",
+                 "\\bearlier (?:work|studies|methods)\\b", "\\bprevious\\w* (?:work|studies|research|efforts)\\b",
+                 "\\bprior (?:work|studies|art)\\b", "\\bexisting\\b", "\\bhas (?:attracted|received)\\b"]
     exclusion_conditions:
       - kind: keyword
-        any_of: ["采用", "基于", "使用", "借鉴", "相比", "优于", "提升.*%"]
+        any_of: ["采用", "基于", "使用", "借鉴", "相比", "优于", "提升.*%",
+                 "\\busing\\b", "\\bbased on\\b", "\\badopt\\w*\\b", "\\bemploy\\w*\\b",
+                 "\\bthan\\b", "\\bcompared\\b", "\\boutperform\\w*\\b"]
     stats: {}
     fold_count: 0
 
@@ -106,10 +120,15 @@ pattern_rules:
     description: "LLM标方法引入但无方法借用词→惩罚"
     necessary_conditions:
       - kind: keyword
-        any_of: ["提出", "发展", "奠定", "首次", "综述", "现状", "背景"]
+        any_of: ["提出", "发展", "奠定", "首次", "综述", "现状", "背景",
+                 "\\bpropos\\w+\\b", "\\bintroduc\\w+\\b", "\\bfirst (?:proposed|introduced)\\b",
+                 "\\bsurvey\\b", "\\breview\\b", "\\bearlier\\b", "\\bprevious\\w*\\b", "\\bprior\\b",
+                 "\\bexisting\\b", "\\brecently\\b"]
     exclusion_conditions:
       - kind: keyword
-        any_of: ["采用", "基于", "使用", "借鉴", "沿用", "利用", "借助"]
+        any_of: ["采用", "基于", "使用", "借鉴", "沿用", "利用", "借助",
+                 "\\busing\\b", "\\bused\\b", "\\bbased on\\b", "\\badopt\\w*\\b", "\\bemploy\\w*\\b",
+                 "\\bleverag\\w+\\b", "\\bfollow\\w*\\b", "\\bborrow\\w*\\b"]
     stats: {}
     fold_count: 0
 
@@ -124,10 +143,15 @@ pattern_rules:
     description: "LLM标结果比较但无对比词→惩罚"
     necessary_conditions:
       - kind: keyword
-        any_of: ["提出", "发展", "奠定", "首次", "综述", "现状", "背景", "采用", "基于", "使用"]
+        any_of: ["提出", "发展", "奠定", "首次", "综述", "现状", "背景", "采用", "基于", "使用",
+                 "\\bpropos\\w+\\b", "\\bintroduc\\w+\\b", "\\busing\\b", "\\bused\\b", "\\bbased on\\b",
+                 "\\badopt\\w*\\b", "\\bemploy\\w*\\b", "\\bpresent\\w*\\b", "\\bdescrib\\w+\\b",
+                 "\\bsurvey\\b", "\\breview\\b"]
     exclusion_conditions:
       - kind: keyword
-        any_of: ["相比", "与.*相比", "对比", "优于", "提升.*%", "高于", "低于", "超过"]
+        any_of: ["相比", "与.*相比", "对比", "优于", "提升.*%", "高于", "低于", "超过",
+                 "\\bthan\\b", "\\bcompared\\b", "\\bin contrast\\b", "\\boutperform\\w*\\b",
+                 "\\bsurpass\\w*\\b", "\\bfaster\\b", "\\bslower\\b", "\\bhigher\\b", "\\blower\\b"]
     stats: {}
     fold_count: 0
 

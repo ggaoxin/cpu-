@@ -162,6 +162,19 @@ class DatabaseTaskRepository(ITaskRepository):
         value["source"] = _load(value.pop("source_json", None), {})
         return value
 
+    def list_items(self, task_id: str) -> List[Dict[str, Any]]:
+        """按输入顺序列出任务全部条目（进度轮询用：status/file_name/时间戳）。"""
+        with self.db.session() as session:
+            rows = session.fetchall(
+                "SELECT * FROM task_items WHERE task_id=? ORDER BY input_index", (task_id,)
+            )
+        items = []
+        for row in rows or []:
+            value = dict(row)
+            value["source"] = _load(value.pop("source_json", None), {})
+            items.append(value)
+        return items
+
     def list_results(self, task_id: str) -> List[Dict[str, Any]]:
         with self.db.session() as session:
             rows = session.fetchall(

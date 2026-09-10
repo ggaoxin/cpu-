@@ -39,6 +39,109 @@ def _number_or_default(value: Any, default: float) -> float:
         return default
 
 
+# 分中英文场景的功能点（2026-09-08 需求）：严格语言预检，跨语言输入逐篇报错，
+# 不再静默退化（如 zh 档收英文 → 中文分句器整篇坍缩成 1 句、中文规则关键词永不
+# 命中，逐句证据/句序号输出全废；en 档收中文同理）。值为 (预期语言, 对侧功能点名称)。
+LANGUAGE_BY_CODE = {
+    "mr_zh_abstract": ("zh", "英文摘要语步识别"),
+    "mr_en_abstract": ("en", "中文摘要语步识别"),
+    "ac_zh": ("zh", "英文科技文献分类"),
+    "ac_en": ("en", "中文科技文献分类"),
+    "kw_zh": ("zh", "英文科技文献关键词识别"),
+    "kw_en": ("en", "中文科技文献关键词识别"),
+    # 基金语步为纯中文场景（NSFC 申请书/结题报告，无英文变体）：英文基金文档
+    # 过去会静默通过入口中文结构词闸门，返回五类语步全空的"非基金类文本"，
+    # 预检后改为明确报语言不匹配（counterpart=None → 文案不引导切换功能点）。
+    "mr_zh_fund": ("zh", None),
+}
+
+
+# 英文功能词防线（2026-09-09，"he/At/ti" 垃圾关键词案例）：kw_en.yaml 的停用词
+# 全是学术泛词（study/method/results…），不含基础虚词；LLM 低温下偶发输出虚词时
+# 后置清洗拦截不住。此表为英文闭类词（冠词/代词/介词/连词/助动词等），与 yaml
+# 学术停用词互补，_clean_keywords 的 en 分支强制套用。
+
+# 公认缩写白名单（2026-09-09）：2~3 字母全大写 token 仅此表放行为关键词，
+# 其余按标题/正文大写残片拦截（"MA" 案例）
+
+# ── 关键词过滤词表（数据驱动，2026-09-09）──────────────────────────────
+# 词表外置为 rules/keyword_recognition/lexicon_{en,zh}.json（改文件即生效，mtime
+# 热加载），取代此前硬编码在源码里的 frozenset——补充停用词/泛意词/碎片/缩写
+# 不再需要改代码重启。垃圾词沉淀闭环（runtime/keyword_drops.jsonl）+
+# scripts/tools/keyword_lexicon_mine.py 聚类晋升，构成可持续扩充体系。
+_LEXICON_CACHE: dict = {}
+
+
+def _keyword_lexicon(lang: str) -> dict:
+    """加载关键词过滤词表（mtime 缓存热加载）。返回 {"block": 拦截词集, "acronyms": 缩写白名单}。"""
+    import json as _json
+    from pathlib import Path as _P
+    from config.settings import settings as _st
+    path = _P(_st.RULES_DIR) / "keyword_recognition" / f"lexicon_{'en' if lang == 'en' else 'zh'}.json"
+    try:
+        mtime = path.stat().st_mtime_ns
+    except OSError:
+        return {"block": frozenset(), "acronyms": frozenset()}
+    cached = _LEXICON_CACHE.get(str(path))
+    if cached and cached[0] == mtime:
+        return cached[1]
+    data = _json.loads(path.read_text(encoding="utf-8"))
+    words = {str(w).strip().casefold() for w in data.get("function_words") or [] if str(w).strip()}
+    words |= {str(w).strip().casefold() for w in data.get("auto_learned") or [] if str(w).strip()}
+    value = {
+        "block": frozenset(words),
+        "acronyms": frozenset(str(a).strip().upper() for a in data.get("acronym_whitelist") or []),
+    }
+    _LEXICON_CACHE[str(path)] = (mtime, value)
+    return value
+
+
+# 沉淀闭环可晋升的丢弃原因（词质量问题；长度越界/重复等结构性丢弃不进闭环）
+_LEXICON_DROP_REASONS = {"英文虚词", "短碎片", "短大写碎片", "原文无此独立词", "中文虚词"}
+
+
+def _log_keyword_drop(lang: str, word: str, reason: str) -> None:
+    """垃圾词丢弃落盘（runtime/keyword_drops.jsonl，词表挖掘脚本的数据源）。"""
+    if reason not in _LEXICON_DROP_REASONS:
+        return
+    try:
+        from pathlib import Path as _P
+        from config.settings import settings as _st
+        p = _P(_st.RULES_DIR).parent / "runtime" / "keyword_drops.jsonl"
+        p.parent.mkdir(parents=True, exist_ok=True)
+        import datetime as _dt
+        with p.open("a", encoding="utf-8") as f:
+            f.write(json.dumps({"ts": _dt.datetime.now().isoformat(timespec="seconds"),
+                                "lang": lang, "word": word[:60], "reason": reason},
+                               ensure_ascii=False) + "\n")
+    except Exception:  # noqa: BLE001  落盘失败不影响主流程
+        pass
+
+
+# 中文虚词/自指词防线（2026-09-09，与英文防线同批）：kw_zh.yaml 停用词同为学术
+# 泛词，不含基础虚词。单字虚词本被 2 字下限挡住，但双字词（本文/我们/以及…）
+# 可过长度关，且补齐路径无最小长度——统一在此拦截。表内词不可能作为主题关键词。
+
+
+def _language_mismatch_error(expected: str, text: str, counterpart: str) -> Optional[str]:
+    """语言预检：跨语言输入返回可读错误消息（None=通过）。
+
+    用户规则（2026-09-10 定）：中文 >500 字即判中文文献——中英双语=中文论文；
+    ≤500 字（如英文论文引用中文参考文献）不算。不做比例计算。
+    - 有效字符（CJK+拉丁字母）<30 不判，避免标题类短输入误伤。
+    """
+    cjk = sum(1 for ch in text if "一" <= ch <= "鿿")
+    latin = sum(1 for ch in text if ch.isascii() and ch.isalpha())
+    if cjk + latin < 30:
+        return None
+    is_chinese = cjk > 500
+    if expected == "zh" and not is_chinese:
+        return "语言不匹配：该功能点面向中文文献，但输入疑似英文文本。"
+    if expected == "en" and is_chinese:
+        return "语言不匹配：该功能点面向英文文献，但输入疑似中文文本。"
+    return None
+
+
 class SemanticApplicationService(ISemanticService):
     """语义计算应用服务（单例，由控制器共享）。"""
 
@@ -267,6 +370,18 @@ class SemanticApplicationService(ISemanticService):
             # 1. 加载该功能点的独立规则库
             rule = self._rule_loader.load(code)
 
+            # 1.5 分中英文功能点语言预检（2026-09-08）：跨语言输入逐篇报错（进响应
+            # results 的 error 字段与 error_summary），批量场景只错该篇不影响其余篇。
+            # 逐篇工具每次 execute 只带一篇（request.text）；texts 为批量多篇形态。
+            _lang_pair = LANGUAGE_BY_CODE.get(code)
+            if _lang_pair:
+                _expected, _counterpart = _lang_pair
+                _texts = list(request.texts or []) if request.texts else ([request.text] if request.text else [])
+                for _i, _t in enumerate(_texts):
+                    _lang_err = _language_mismatch_error(_expected, str(_t or ""), _counterpart)
+                    if _lang_err:
+                        raise ValueError(f"第 {_i + 1} 篇输入{_lang_err}" if len(_texts) > 1 else _lang_err)
+
             # 引擎型规则库走分层式混合管线：
             # - auto_classification（ac_zh）：RAG 检索 → LLM 选/提议 → 后置校验防幻觉
             # - 其它（语步识别）：GLM 主调用（prompt 只含抽象原则）→ 后置规则引擎校验/调分 → 冲突二次审核
@@ -335,10 +450,12 @@ class SemanticApplicationService(ISemanticService):
         abstract = user_payload.get("text", "")
         if not abstract:
             raise ValueError("语步识别需提供 text 字段（单篇摘要）")
-        # 清洗代码仓库地址（"Code is at URL" / GitHub 链接等），避免污染结论语步
-        import re as _re
-        abstract = _re.sub(r'(?i)\s*(?:code|project\s+page|source\s+code)\s*(?:is\s+)?(?:at|available(?:\s+(?:at|online))?|on\s+github)?\s*[:]?\s*https?://\S+\.?', '', abstract)
-        abstract = _re.sub(r'(?i)\s*https?://(?:www\.)?(?:github|gitlab|bitbucket|huggingface)\.co(?:m|\.io)/\S+\.?', '', abstract)
+        # 清洗代码仓库地址/URL/邮箱（2026-09-09 需求：不属于任何语步）。
+        # 与 result_normalizer 的句子对齐共用同一口径（strip_non_move_artifacts），
+        # 避免"service 已清、normalizer 按原文重对齐又拼回"。
+        from application.service.result_normalizer import strip_non_move_artifacts
+        abstract = strip_non_move_artifacts(abstract)
+        import re as _re  # 下方脏输入归一/LaTeX 清理仍用局部 _re
         # 脏输入归一（测试缺陷用例：制表符/多余换行/LaTeX 公式导致分句器碎片化、语步漏检）：
         # ① $...$、$$...$$、\begin{equation}...\end{equation} 公式块内部换行压成单空格
         # ② 制表符/全角空格/连续空格压成单空格 ③ 多余空行合并为单个换行
@@ -933,6 +1050,57 @@ class SemanticApplicationService(ISemanticService):
             raise RuntimeError("GLM-5.2 未返回层级细化分类号")
         return picked
 
+    def _llm_title_abstract(self, src_text: str) -> tuple:
+        """LLM 标题+摘要提取（2026-09-09 用户需求：英文关键词识别参考摘要语步识别的
+        LLM 主路径提取标题和摘要）。
+
+        正则路径对未见版式不稳：标题误抓作者名（3.pdf）、摘要段误命中或缺失，
+        污染关键词的挖掘信号源与展示标题。输出逐字校验（abstract 去空白 find +
+        相似度 0.93 兜底；title 宽松 casefold 包含——标题常被版面拆行打散），
+        校验不过返回空串由调用方回退正则结果。
+        """
+        import re as _re
+        from difflib import SequenceMatcher
+        src = str(src_text or "").strip()
+        if len(src) < 60:
+            return "", ""
+        system = (
+            "你是科技文献解析器。从给定文献前几页文本中提取论文标题和摘要。规则："
+            "1) 标题是论文题目本身，不得返回作者名、单位、期刊名或日期行；"
+            "2) 摘要逐字摘录（摘要/Abstract 段全文），不得改写增删；中文论文若中英摘要并存取中文摘要；"
+            "3) 无标题或无摘要时对应字段输出空串。"
+            "只输出 JSON：{\"title\": \"...\", \"abstract\": \"...\"}"
+        )
+        try:
+            data = self._glm.chat_json(system, f"文献文本：\n{src[:5000]}", timeout=60.0,
+                                       max_tokens=3000, temperature=0.0)
+        except Exception:  # noqa: BLE001  GLM 不可用 → 回退正则
+            return "", ""
+        d = data.get("data") if isinstance(data, dict) and isinstance(data.get("data"), dict) else data
+        if not isinstance(d, dict):
+            return "", ""
+        title = str(d.get("title") or "").strip().lstrip("#").strip()[:200]
+        abstract = str(d.get("abstract") or "").strip()
+        norm = lambda s: _re.sub(r"\s+", "", s)
+        if abstract and len(abstract) >= 50:
+            n_a, n_s = norm(abstract), norm(src)
+            # 逐句核验（双栏 sort 文本按 y 坐标行列交错，整段连续匹配必失败）：
+            # ≥40 字的句子逐句在源文中找，命中率 ≥70% 即通过
+            probes = [norm(s) for s in _re.split(r"(?<=[.!?])\s+", abstract) if len(norm(s)) >= 40]
+            if probes:
+                hit = sum(1 for p in probes if p in n_s)
+                if hit / len(probes) < 0.7:
+                    abstract = ""
+            elif n_a not in n_s and n_a[:300] not in n_s:
+                if SequenceMatcher(None, n_a[:1500], n_s).find_longest_match(
+                        0, len(n_a[:1500]), 0, len(n_s)).size / max(1, min(len(n_a), 1500)) < 0.93:
+                    abstract = ""
+        else:
+            abstract = ""
+        if title and norm(title).casefold() not in norm(src).casefold():
+            title = ""
+        return title, abstract
+
     def _execute_keyword(self, code: str, request: SemanticRequest, fp, rule) -> SemanticResult:
         """关键词识别管线：确定性短语候选（高召回）→ 特征打分 → LLM 选/精炼 → 后置清洗。
 
@@ -1011,6 +1179,21 @@ class SemanticApplicationService(ISemanticService):
                 title, abstract = self._split_title_abstract(text)
                 abstract = self._strip_author_keywords(abstract)
                 mine_source = (title or "") + (abstract or "")
+        # 英文信号源 LLM 升级（2026-09-09 用户需求，参考摘要语步识别的 LLM 主路径；
+        # 统一收口在分支级联之后——full_text/纯文本两路的正则标题摘要都可能误抓：
+        # 3.pdf 标题成了作者名 "Lan Yang1, Honggang Zhang1"、6.pdf 成了摘要首句）。
+        # LLM 逐字校验后覆盖（摘要逐句核验双栏交错友好，标题 casefold 包含独立生效），
+        # 失败回退正则结果。中文关键词实测良好，保持原路径不动。
+        if is_en:
+            _ta_src = (full_text or paste_full_text or text or "")[:5000]
+            _llm_title, _llm_abstract = self._llm_title_abstract(_ta_src)
+            if _llm_abstract and len(_llm_abstract) >= 50:
+                abstract = _llm_abstract
+                if _llm_title:
+                    title = _llm_title
+                mine_source = ((title or "") + "\n" + abstract).strip()
+            elif _llm_title:
+                title = _llm_title
         title = (title or "").lstrip('#').strip()
         # 原词校验/排序定位面向全文（不限定摘要段；关键词可出自全文任意位置）——
         # 摘要优先只收窄"挖掘与 LLM 的信号源"，不收窄字面校验范围
@@ -1044,7 +1227,30 @@ class SemanticApplicationService(ISemanticService):
         # （如 ch4 反应谱全文 23 次、前 8000 仅 2-4 次）。挖掘器内置垃圾过滤+子串去膨胀。
         cands = mine_candidates(mine_source) if is_en else mine_candidates(title, mine_source)
         cands = score_candidates(cands, model.get("feature_weights", {}))
-        top_cands = [c["phrase"] for c in cands[:30]]
+        # 候选池扩容（2026-09-09 miss 归因：燃气泄漏/遗传模拟退火/深度学习等
+        # 正文领域复合词从未进池，占中文 miss 约一半）：标题+摘要挖掘 ∪ 全文挖掘
+        # top20（特征分排序）。2026-09-02 全文挖掘召回 0.3 的教训是"全文高频泛化
+        # 词挤掉摘要词"——现有 fitness 轮 + 词表防线双兜底，泛意词进池也会被拦。
+        if searchable_text and len(searchable_text) > len(mine_source) + 200:
+            try:
+                _full_c = (mine_candidates(searchable_text) if is_en
+                           else mine_candidates(title, searchable_text))
+                _full_c = score_candidates(_full_c, model.get("feature_weights", {}))
+                _lx_en, _lx_zh = _keyword_lexicon("en"), _keyword_lexicon("zh")
+                _seen = {c["phrase"] for c in cands}
+                _extra = []
+                for _c in _full_c:
+                    _ph = str(_c.get("phrase") or "")
+                    if (not _ph or _ph in _seen or len(_ph) > 30
+                            or _ph.casefold() in _lx_en["block"] or _ph in _lx_zh["block"]):
+                        continue
+                    _extra.append(_c)
+                    if len(_extra) >= 20:
+                        break
+                cands = list(cands) + _extra
+            except Exception:  # noqa: BLE001  全文挖掘失败不影响主池
+                pass
+        top_cands = [c["phrase"] for c in cands[:40]]
         # 归一索引：domain_terms 簇内 variant(cf) -> {canonical, variants_cf}，
         # 供 preserve_original_form 归一匹配 + normalized_term 填 canonical
         # （仅英文；domain_terms 空时降级原逻辑，中文 is_en=False 不构建）
@@ -1096,14 +1302,54 @@ class SemanticApplicationService(ISemanticService):
         system_prompt = self._system_prompt(rule, request)
         _min_kw = max(1, min(50, int(params.get("min_keywords", 5) or 5)))
         _max_kw = max(_min_kw, min(50, int((request.params or {}).get("max_keywords", 8) or 8)))
+        # 正文语境实验（2026-09-09 用户提议，A/B 开关）：KEYWORD_BODY_CONTEXT=1 时
+        # 选词 LLM 额外读全文前 5000 字——正文含研究对象/方法/结论/创新点（规范亦要求
+        # "从正文核心内容提炼"），C 类 gold（需通读全文拟词）召回 0.583 为三层最低。
+        # 频率挖掘仍面向标题+摘要不动（2026-09-02 全文挖掘召回 0.3 的教训只适用于
+        # 词频统计，LLM 有语义判断力可按指令以标题摘要为主）。
+        _body_ctx = os.getenv("KEYWORD_BODY_CONTEXT", "") == "1"
+        _body_excerpt = (full_text or paste_full_text or text or "")[:5000] if _body_ctx else ""
         user_prompt = self._render_keyword_user_prompt(
             title, abstract, top_cands, model.get("few_shot", []), lang=getattr(rule, "lang", ""),
-            preserve_original_form=preserve_original_form, count_min=_min_kw, count_max=_max_kw)
+            preserve_original_form=preserve_original_form, count_min=_min_kw, count_max=_max_kw,
+            body_excerpt=_body_excerpt)
         # 低温采样：关键词选词要稳定可复现（高温导致同文档跑次间 0.8↔0.2 波动），与 fitness 评分轮一致
-        data = self._glm.chat_json(system_prompt, user_prompt, timeout=60.0, temperature=0.1)
+        # A/B 开关（2026-09-09）：KEYWORD_MERGED_SELECT=1 时选词调用同时输出每词的
+        # prob(内容适配度)+scene(应用场景)，跳过独立的 fitness/scenes 轮（省 ~4s/篇）。
+        # 合并输出缺 prob（LLM 未按 schema）则回退独立轮，保证质量不降级。
+        _merge_select = os.getenv("KEYWORD_MERGED_SELECT", "") == "1"
+        if _merge_select:
+            user_prompt += (
+                "\nAdditionally, for EACH selected keyword also output two fields:\n"
+                "- prob: 0-1 probability that it is a core topic term of THIS document. "
+                "Judge each keyword independently (no mutual comparison, no mechanical "
+                "decrement by order); generic function words get low scores even if frequent; "
+                "core terms get high scores even if they appear only once.\n"
+                "- scene: 该术语在此文献中的应用场景中文描述（用于中图法类目锚定学科，"
+                "必须带具体应用场景，不能只重复关键词字面）。\n"
+                "Return JSON {data:[{keyword,weight,type,prob,scene}]}"
+            )
+        data = self._glm.chat_json(system_prompt, user_prompt, timeout=60.0,
+                                   max_tokens=2400 if _merge_select else None,
+                                   temperature=0.1)
         raw_kw = data.get("data", data) if isinstance(data, dict) else []
         if not isinstance(raw_kw, list):
             raise RuntimeError("GLM-5.2 未返回有效关键词列表")
+        _merged_prob: dict = {}
+        _merged_scene: dict = {}
+        if _merge_select:
+            for _it in raw_kw:
+                if isinstance(_it, dict):
+                    _k = str(_it.get("keyword") or "").strip()
+                    if not _k:
+                        continue
+                    try:
+                        _merged_prob[_k] = max(0.0, min(1.0, float(_it.get("prob"))))
+                    except (TypeError, ValueError):
+                        pass
+                    _s = str(_it.get("scene") or "").strip()
+                    if _s:
+                        _merged_scene[_k] = _s
 
         # 3. 后置清洗（强制字面原词 + 包含去重 + 停用词）
         stopwords = set(rule.dictionaries.get("stopwords", []))
@@ -1156,9 +1402,17 @@ class SemanticApplicationService(ISemanticService):
         #     要绝对概率非排名（防机械递减 1.0/0.9/0.8）；不带同任务 few-shot（防泄漏）。
         _merged_scenes: dict = {}
         if cleaned:
-            _sem_ctxs = {c["keyword"]: self._term_context(c["keyword"], searchable_text) for c in cleaned}
-            _sem_scores, _merged_scenes = self._llm_keyword_scores_and_scenes(
-                [c["keyword"] for c in cleaned], _sem_ctxs, title, abstract)
+            # 合并模式（A/B）：选词轮已带出 prob/scene 且覆盖全部入选词 → 跳过独立评分轮；
+            # 覆盖不全（LLM 未按 schema 输出）→ 回退原两轮路径，质量不降级
+            _use_merged = _merge_select and all(c["keyword"] in _merged_prob for c in cleaned)
+            if _use_merged:
+                _sem_scores = {c["keyword"]: _merged_prob.get(c["keyword"], 0.5) for c in cleaned}
+                _merged_scenes = {c["keyword"]: _merged_scene[c["keyword"]]
+                                  for c in cleaned if c["keyword"] in _merged_scene}
+            else:
+                _sem_ctxs = {c["keyword"]: self._term_context(c["keyword"], searchable_text) for c in cleaned}
+                _sem_scores, _merged_scenes = self._llm_keyword_scores_and_scenes(
+                    [c["keyword"] for c in cleaned], _sem_ctxs, title, abstract)
             for _item in cleaned:
                 _stat = float(_item.get("weight") or 0)                          # 统计显著性(仅平局打破)
                 _sem = _sem_scores.get(_item["keyword"])
@@ -1232,6 +1486,8 @@ class SemanticApplicationService(ISemanticService):
                         _kept.append(_fit[1])                                      # 次优贴近最优才留(动态1或2)
                 _kept.extend(_dict_hits)                                           # 词典命中词全保留
             cleaned = _kept
+        _lex_en = _keyword_lexicon("en")
+        _lex_zh = _keyword_lexicon("zh")
         # 数量下限补齐（min_keywords 接线）：LLM 输出不足下限时（如只给 4 个），
         # 从未入选的高分候选按特征分补齐——字面须在原文（不引入幻觉词）、非停用词
         minimum_keywords = max(1, min(50, int((request.params or {}).get("min_keywords", 5) or 5)))
@@ -1244,6 +1500,17 @@ class SemanticApplicationService(ISemanticService):
                 if not _ph or len(_ph) > 30 or _ph.casefold() in _have:
                     continue
                 if _ph in stopwords:
+                    continue
+                # 虚词/短碎片防线（与 _clean_keywords 同口径，2026-09-09 "th" 案例：
+                # 补齐路径此前只查 yaml 停用词，闭类词与 1~2 字母小写碎片可漏入）
+                if _ph.casefold() in _lex_en["block"]:
+                    continue
+                if _ph in _lex_zh["block"]:
+                    continue
+                if is_en:
+                    if len(_ph) <= 2 and not _ph.isupper():
+                        continue
+                elif len(_ph) < 2:
                     continue
                 if self._ws_substr_find(searchable_text.casefold(), _ph.casefold()) < 0:
                     continue
@@ -1417,6 +1684,63 @@ class SemanticApplicationService(ISemanticService):
                                 "scene": "用户映射表向量索引近邻",
                             }
         keyword_rows = []
+        # 置信度下限 + 3~5 个收口（2026-09-09 用户需求）：低置信度关键词（<0.5，
+        # 如 0.4 的泛化词）无参考价值；关键词规范通常 3-5 个。低于 0.5 丢弃；
+        # 不足 3 个时按置信度保留前 3（避免输出过少），超过 8 个截断（2026-09-09 用户试 8+0.5）。
+        # 用户词典命中词有 0.75 置信度下限，不受下限影响。
+        cleaned.sort(key=lambda x: float(x.get("weight") or 0), reverse=True)
+        _ranked_all = list(cleaned)  # 全量排序（场景保座救援池，含 <0.5 候选）
+        _conf_keep = [c for c in cleaned if float(c.get("weight") or 0) >= 0.6]
+        cleaned = _conf_keep if len(_conf_keep) >= 3 else cleaned[:3]
+        # 终局包含去重（2026-09-09，大小写不敏感）：补齐路径只查精确重复会绕过
+        # 包含去重（"REINFORCEMENT LEARNING" 与 rank1 "Test-time reinforcement
+        # learning" 并存案例）——高置信优先保留，与已保留词互为包含的丢弃
+        _kept_final: list = []
+        for _c in cleaned:
+            _k = _c["keyword"].casefold()
+            if any(_k != _k2 and (_k in _k2 or _k2 in _k)
+                   for _k2 in (x["keyword"].casefold() for x in _kept_final)):
+                continue
+            _kept_final.append(_c)
+        cleaned = _kept_final
+        # 场景词保座（2026-09-09 miss 归因：标题里的研究对象/应用场景词——风洞试验/
+        # 桥梁工程/高校辅导员——在名额内被技术词挤掉，占 miss 约一半）：终局若没有
+        # application_scenario/research_object 类型的词，从被门裁掉的高分候选里
+        # 取"场景类型标注 或 字面出现在标题"的最优者换入末位。
+        _SCENARIO_TYPES = {"application_scenario", "research_object"}
+        _pre_pool = [c for c in _ranked_all if c not in cleaned]
+        if cleaned and not any(str(c.get("type") or "") in _SCENARIO_TYPES for c in cleaned):
+            _title_cf = (title or "").casefold()
+            # 救援池补充：挖掘候选里字面命中标题的（LLM 未输出过的标题词也能救回，
+            # 特征分作权重代理）
+            if _title_cf:
+                _have_kws = {c["keyword"].casefold() for c in cleaned} | \
+                            {c["keyword"].casefold() for c in _pre_pool}
+                for _c in cands[:40]:
+                    _ph = str(_c.get("phrase") or "")
+                    if (not _ph or _ph.casefold() in _have_kws or len(_ph) > 30
+                            or _ph.casefold() not in _title_cf):
+                        continue
+                    _pre_pool.append({"keyword": _ph,
+                                      "weight": round(float(_c.get("score") or 0), 3),
+                                      "type": "application_scenario"})
+            _rescue_pool = [c for c in _pre_pool
+                            if float(c.get("weight") or 0) >= 0.4
+                            and (str(c.get("type") or "") in _SCENARIO_TYPES
+                                 or (_title_cf and c["keyword"].casefold() in _title_cf))]
+            _rescue_pool.sort(key=lambda x: (str(x.get("type") or "") in _SCENARIO_TYPES,
+                                             x["keyword"].casefold() in _title_cf,
+                                             float(x.get("weight") or 0)), reverse=True)
+            if _rescue_pool:
+                _resc = _rescue_pool[0]
+                _rk = _resc["keyword"].casefold()
+                if not any(_rk != k2 and (_rk in k2 or k2 in _rk)
+                           for k2 in (x["keyword"].casefold() for x in cleaned)):
+                    if len(cleaned) >= 8:
+                        cleaned = cleaned[:-1]
+                    cleaned.append(_resc)
+        if len(cleaned) > 8:
+            cleaned = cleaned[:8]
         searchable = searchable_text.casefold()
         for rank, item in enumerate(cleaned, start=1):
             keyword = item["keyword"]
@@ -1967,7 +2291,7 @@ class SemanticApplicationService(ISemanticService):
                 "few_shot": [], "domain_terms": []}
 
     @staticmethod
-    def _render_keyword_user_prompt(title, abstract, candidates, few_shot, lang="", preserve_original_form=True, count_min=3, count_max=8) -> str:
+    def _render_keyword_user_prompt(title, abstract, candidates, few_shot, lang="", preserve_original_form=True, count_min=3, count_max=8, body_excerpt: str = "") -> str:
         import json as _json
         is_en = lang == "en"
         parts = []
@@ -2018,6 +2342,14 @@ class SemanticApplicationService(ISemanticService):
                 "candidate_phrases (high-recall noun phrases; pick from them or extract your own from the document)": candidates,
                 "note": note,
             }
+            if body_excerpt:
+                obj["body_excerpt (opening of the full text)"] = body_excerpt
+                obj["body_excerpt_rule"] = (
+                    "Keywords must PRIMARILY come from the title and document (abstract) above. "
+                    "Use body_excerpt ONLY to supplement a few SPECIFIC terms for the research "
+                    "object, method, conclusion, or innovation that the abstract does not cover "
+                    "(e.g. a named technique appearing only in the method section). Do NOT pick "
+                    "generic high-frequency words from the body text.")
             parts.append("Extract keywords for the following document:\n" + _json.dumps(obj, ensure_ascii=False, indent=2))
         else:
             if preserve_original_form:
@@ -2059,6 +2391,12 @@ class SemanticApplicationService(ISemanticService):
                 "候选短语（仅供参考，可从中选，也可自行从原文摘取原词）": candidates,
                 "说明": desc,
             }
+            if body_excerpt:
+                obj["正文节选（全文开头部分）"] = body_excerpt
+                obj["正文节选使用规则"] = (
+                    "关键词主要从标题和摘要中提取；正文节选仅用于补充摘要未覆盖的"
+                    "研究对象/研究方法/主要结论/创新点的特有术语（如只在方法章节出现的"
+                    "具体技术名），不得从正文选取高频泛化词。")
             parts.append("请为以下文献抽取关键词：\n" + _json.dumps(obj, ensure_ascii=False, indent=2))
         return "\n".join(parts)
 
@@ -2067,6 +2405,8 @@ class SemanticApplicationService(ISemanticService):
         """后置清洗：字面原词校验 + 包含去重(保留简洁基础词) + 停用词 + 长度 + 排序。"""
         import re as _re
         is_en = lang == "en"
+        _lex_en = _keyword_lexicon("en")
+        _lex_zh = _keyword_lexicon("zh")
         seen = set()
         cleaned, dropped = [], []
         for item in raw_kw:
@@ -2090,8 +2430,28 @@ class SemanticApplicationService(ISemanticService):
                 wc = len(kw.split())
                 if not (1 <= wc <= 8 and 2 <= len(kw) <= 60):
                     dropped.append({"keyword": kw, "reason": "长度越界(英文)"}); continue
-            elif not (2 <= len(kw) <= 24):
-                dropped.append({"keyword": kw, "reason": "长度越界"}); continue
+                # 虚词/短碎片防线（词表外置 lexicon_en.json，热加载）：he/at/ti 类
+                # 闭类词与 1~2 字母小写碎片不可能是主题词；全大写缩写白名单放行
+                if key in _lex_en["block"]:
+                    dropped.append({"keyword": kw, "reason": "英文虚词"}); _log_keyword_drop("en", kw, "英文虚词"); continue
+                if len(kw) <= 2 and not kw.isupper():
+                    dropped.append({"keyword": kw, "reason": "短碎片"}); _log_keyword_drop("en", kw, "短碎片"); continue
+                # 2~3 字母全大写：仅公认缩写白名单放行（"MA" 类标题残片拦截）
+                if kw.isupper() and len(kw) <= 3 and kw not in _lex_en["acronyms"]:
+                    dropped.append({"keyword": kw, "reason": "短大写碎片"}); _log_keyword_drop("en", kw, "短大写碎片"); continue
+                # 单词短 token 合法性（2026-09-09 "tion" 碎片案例）：单词形态且
+                # ≤5 字母的关键词必须以独立词形态字面出现在原文——LLM 偶发产出的
+                # 词缀碎片在原文中并不独立存在（多词概念仍走软偏好不强制字面）
+                if len(kw.split()) == 1 and len(kw) <= 5 and full_text:
+                    if not _re.search(rf"(?:^|[^A-Za-z]){_re.escape(kw)}(?:[^A-Za-z]|$)",
+                                      full_text, _re.IGNORECASE):
+                        dropped.append({"keyword": kw, "reason": "原文无此独立词"}); _log_keyword_drop("en", kw, "原文无此独立词"); continue
+            else:
+                if not (2 <= len(kw) <= 24):
+                    dropped.append({"keyword": kw, "reason": "长度越界"}); continue
+                # 中文虚词/自指词防线（词表外置 lexicon_zh.json，热加载）
+                if kw in _lex_zh["block"]:
+                    dropped.append({"keyword": kw, "reason": "中文虚词"}); _log_keyword_drop("zh", kw, "中文虚词"); continue
             if kw in stopwords or key in {s.lower() for s in stopwords}:
                 dropped.append({"keyword": kw, "reason": "停用词"}); continue
             if len(kw) <= 1:
@@ -2855,6 +3215,83 @@ class SemanticApplicationService(ISemanticService):
         "只输出JSON：{\"data\":{\"moves\":[{\"move_type\":\"立项依据\",\"source_sections\":[\"1. 研究背景 > 1.1 ...\", ...]},...]}}"
     )
 
+    @staticmethod
+    def _format_sources_local(out_moves: list, all_headings: list) -> None:
+        """代码版来源章节整理（2026-09-09 提速 + 层级截断 + 图注过滤）。
+
+        LaTeX 清理 + 同章节去重归并 + 按全文章节序排序 + 层级截断（最多三级，
+        去掉"第N步"/"(N)"叶子级）+ 图表注解过滤（"图N"/"表N"不作为来源）。
+        """
+        import re as _re
+
+        # 图表注解模式：图3.6 / 表1 / Figure 1 / Table 2 等（不作为来源章节）
+        _fig_pat = _re.compile(r'^(图|表|Figure|Fig\.?|Table)\s*\d+', _re.IGNORECASE)
+        # 叶子级标题模式：第N步 / 第N章 / (N) / （N）等（截断保留上级）
+        _leaf_pat = _re.compile(
+            r'^第[一二三四五六七八九十\d]+[步步章阶段]'
+            r'|^\(?\d+\)'
+            r'|^（[一二三四五六七八九十]+）'
+            r'|^Step\s+\d+', _re.IGNORECASE)
+
+        def _clean_heading(h: str) -> str:
+            h = _re.sub(r'\$[^$]+\$', '', h)
+            h = _re.sub(r'\\mathrm\{([^}]*)\}', r'\1', h)
+            h = _re.sub(r'\\[a-zA-Z]+', '', h)
+            h = _re.sub(r'\{|\}', '', h)
+            h = _re.sub(r'\s+', ' ', h)
+            h = _re.sub(r'(?<=[\u4e00-\u9fff])\s+(?=[\u4e00-\u9fff])', '', h)
+            h = h.strip().rstrip('：:').strip()
+            return h
+
+        def _trim_and_filter(h: str) -> str:
+            """截断到三级 + 移除路径中的图表注解部分。
+
+            "父章节 / 图3.6xxx" → "父章节"（图注部分删除，保留上级）
+            "图3.6xxx" → ""（纯图注，整条丢弃）
+            "（二）内容 / 4.1 构建 / (1) 表征 / 第一步：编码" → "（二）内容 / 4.1 构建 / (1) 表征"
+            """
+            parts = [p.strip() for p in h.split(" / ") if p.strip()]
+            # 移除图表注解部分
+            parts = [p for p in parts if not _fig_pat.match(p)]
+            if not parts:
+                return ""
+            # 截断到最多三级
+            if len(parts) > 3:
+                parts = parts[:3]
+            return " / ".join(parts)
+
+        def _norm_key(h: str) -> str:
+            h = _clean_heading(h)
+            h = _re.sub(r'[（）()：:、，,。。\s\d\.\-–—/\\]+', '', h)
+            return h.casefold()
+
+        # 全文章节顺序索引（用截断后的 key）
+        heading_order = {}
+        for i, h in enumerate(all_headings):
+            cleaned = _trim_and_filter(_clean_heading(h))
+            k = _norm_key(cleaned)
+            if k and k not in heading_order:
+                heading_order[k] = i
+
+        for m in out_moves:
+            sources = m.get("source_sections") or []
+            if not sources:
+                continue
+            # 1. 清理 LaTeX + 过滤图表注解
+            cleaned = [r for r in (_trim_and_filter(_clean_heading(s)) for s in sources) if r]
+            # 2. 去重归并（截断后可能有新重复，如四级去掉后与三级相同）
+            seen = {}
+            for s in cleaned:
+                if len(s) < 3:
+                    continue
+                k = _norm_key(s)
+                if k not in seen:
+                    seen[k] = s
+            # 3. 按全文章节序排序
+            result = sorted(seen.values(), key=lambda s: heading_order.get(_norm_key(s), 9999))
+            m["source_sections"] = result[:8]
+            m["sources"] = m["source_sections"]
+
     def _summarize_sources_via_llm(self, out_moves: list, all_headings: list) -> None:
         """LLM 汇总整理各语步来源章节：清理 LaTeX 公式拘留、归并同一章节不同写法、
         按全文章节先后顺序排列、保留完整层级路径。只整理格式，不增删来源、不改语步归属。"""
@@ -3034,7 +3471,7 @@ class SemanticApplicationService(ISemanticService):
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
         FULL_TEXT_THRESHOLD = 15000  # 字数阈值：以下单次直送，以上切块（切块来源为结构化章节标题，更可靠）
-        CHUNK_SIZE = 10000           # 长文档切块大小（字）
+        CHUNK_SIZE = 10000           # 长文档切块大小（字）（2026-09-09 试 20000 反而更慢：块少但单次 LLM 更慢，净效果负，已回退）
 
 
         result = SemanticResult(code=code, name=fp.name)
@@ -3130,6 +3567,10 @@ class SemanticApplicationService(ISemanticService):
                 src_label = "；".join(headings)
                 if len(chunk["text"]) < 20:
                     return {"idx": idx, "moves": [], "headings": headings}
+                # 跳过纯结构性章节块（参考文献/致谢/附录——与任何语步无关，不发 LLM 省调用）
+                _content_heads = [h for h in headings if h != "全文" and not self._is_non_content_source(h)]
+                if headings and not _content_heads:
+                    return {"idx": idx, "moves": [], "headings": headings}
                 # 把本块包含的章节路径列给 LLM，要求每语步按章节分段输出 fragments，
                 # 每片段 section 从中选最具体叶子——使返回的叶子能与块内路径 endswith 匹配、
                 # 来源可溯源且不错指。片段级绑定取代旧"语步级笼统 source_section"，从源头解决串语步/错指。
@@ -3147,7 +3588,8 @@ class SemanticApplicationService(ISemanticService):
                 return {"idx": idx, "moves": d.get("moves", []), "headings": headings}
 
             chunk_results = []
-            with ThreadPoolExecutor(max_workers=5) as executor:
+            from config.settings import settings as _settings
+            with ThreadPoolExecutor(max_workers=max(1, _settings.GLM_MAX_CONCURRENCY)) as executor:
                 futures = {executor.submit(process_chunk, i, c): i for i, c in enumerate(chunks)}
                 for future in as_completed(futures):
                     chunk_results.append(future.result())
@@ -3280,7 +3722,8 @@ class SemanticApplicationService(ISemanticService):
 
         # 来源汇总整理：LLM 清理 LaTeX 拘留、归并同章节不同写法、按全文章节先后顺序排列，
         # 只整理格式不增删来源——前端正则清不干净 LaTeX/混合编号，交 LLM 汇总更稳更规范。
-        self._summarize_sources_via_llm(out_moves, all_headings)
+        # 来源整理（2026-09-09 提速：代码版替代 LLM 调用，省一轮串行 3~5s/篇）
+        self._format_sources_local(out_moves, all_headings)
 
         result.success = True
         # 整体置信度 = 有内容语步的置信度均值。原「片段总数/(块数×5)」是片段覆盖率而非
@@ -3527,6 +3970,12 @@ class SemanticApplicationService(ISemanticService):
         """
         import re as _re
         result = SemanticResult(code=code, name=fp.name)
+        # 模型边界守卫（2026-09-08，契约：GLM 不可用时必须失败，禁止本地编造结果）：
+        # 引用句提取的并发分块为瞬时 API 错误设计了逐块 try/except，None 客户端的
+        # AttributeError 会被吞成"0 块命中"→ 空结果 success=True —— 无模型却产出
+        # "无引用句"业务结论。此处显式拦截，fail closed。
+        if self._glm is None:
+            raise RuntimeError("GLM 客户端未初始化，引用句识别不可用（须连接大模型判定，禁止本地编造结果）")
         text = (request.text or "").strip()
         if not text:
             raise ValueError("引用句识别需提供 text 字段（文献全文）")
@@ -3619,34 +4068,36 @@ class SemanticApplicationService(ISemanticService):
         rule_lib = RuleLib.load(rule_lib_path)
         engine_result = verify_and_adjust_citations(labeled, rule_lib)
 
-        # ④b 冲突二次审核（GLM裁定）
+        # ④b 冲突二次审核（GLM裁定，并发执行：多冲突时串行逐条曾占 ~17s，
+        # ThreadPoolExecutor 5 路并发后与单次审核同量级；strict=True 的
+        # 失败语义不变——ex.map 迭代时异常照常抛出）
         conflicts = engine_result["conflicts"]
         if conflicts:
             from training.conflict_review import review as conflict_review
+            from concurrent.futures import ThreadPoolExecutor
             p = get_citation_profile()
-            for ci in conflicts:
+            lf = "sentiment" if is_sentiment else "intent"
+
+            def _review_one(ci: int):
                 item = engine_result["adjusted"][ci]
-                sent = item.get("sentence", "")
-                llm_label = item.get(label_field if 'label_field' in dir() else
-                                    ("sentiment" if is_sentiment else "intent"), "")
-                rule_suggestion = item.get("rule_suggestion", "")
-                # 收集证据描述
-                evidence_desc = "; ".join([e.get("description", "") for e in item.get("evidence", [])[:3]])
-                review_result = conflict_review(
-                    sentence=sent,
-                    llm_label=llm_label,
-                    rule_suggestion=rule_suggestion,
+                return ci, conflict_review(
+                    sentence=item.get("sentence", ""),
+                    llm_label=item.get(lf, ""),
+                    rule_suggestion=item.get("rule_suggestion", ""),
                     evidence=item.get("evidence", []),
                     client=self._glm,
                     strict=True,
                     review_system=p.review_system,
                     valid_labels=p.labels,
                 )
-                final_label = review_result["final_label"]
-                lf = "sentiment" if is_sentiment else "intent"
-                item[lf] = final_label
-                item["confidence"] = max(item.get("confidence", 0.5), 0.7)
-                item["reviewed"] = True
+
+            from config.settings import settings as _settings
+            with ThreadPoolExecutor(max_workers=max(1, _settings.GLM_MAX_CONCURRENCY)) as _ex:
+                for ci, review_result in _ex.map(_review_one, conflicts):
+                    item = engine_result["adjusted"][ci]
+                    item[lf] = review_result["final_label"]
+                    item["confidence"] = max(item.get("confidence", 0.5), 0.7)
+                    item["reviewed"] = True
 
         labeled = engine_result["adjusted"]
 
@@ -3655,22 +4106,55 @@ class SemanticApplicationService(ISemanticService):
                         else {"用于背景介绍", "用于引入研究方法", "用于结果比较"})
         label_field = "sentiment" if is_sentiment else "intent"
 
-        out = []
-        seen = set()
+        # 同句同标签合并（2026-09-10 用户要求去重）：句内多引用按编号拆分的
+        # 多条记录（"[2-3]"→[2]+[3] 各一条"中立"）在响应里是纯重复行。按
+        # (原句, 标签) 分组合并为一行，标记取组内全部标记——组的编号恰好
+        # 覆盖句中全部标记时恢复原句原始形态（"[2-3]"）。同句不同标签保留
+        # 多条（意图工具中同句 [1]背景/[2]结果比较 是真实差异，不合并）。
+        _mk_group_re = _re.compile(r"[\[［]\s*\d+(?:\s*[-–,，]\s*\d+)*\s*[\]］]")
+        _groups: dict = {}
+        _order: list = []
         for item in labeled:
             sent = item.get("sentence", "").strip()
             if not sent:
                 continue
-            # 句内多引用拆分后多条记录共享同一原句：按 原句+引用标记 去重，
-            # 避免同句 [1][2][3] 三条记录被句子级去重吞掉两条
-            marker = str(item.get("citation_marker") or "").strip()
-            dedupe_key = (sent, marker)
-            if dedupe_key in seen:
-                continue
             label = item.get(label_field, "").strip()
             if label not in valid_labels:
                 raise RuntimeError(f"GLM-5.2 返回非法引文标签: {label!r}")
-            seen.add(dedupe_key)
+            key = (sent, label)
+            if key not in _groups:
+                _groups[key] = []
+                _order.append(key)
+            _groups[key].append(item)
+
+        def _nums_of(mk: str) -> set:
+            out_n = set()
+            for part in _re.split(r"[,，]", mk.strip().lstrip("[［").rstrip("]］")):
+                part = part.strip()
+                m = _re.fullmatch(r"(\d+)\s*[-–~]\s*(\d+)", part)
+                if m:
+                    out_n.update(range(int(m.group(1)), int(m.group(2)) + 1))
+                elif part.isdigit():
+                    out_n.add(int(part))
+            return out_n
+
+        out = []
+        for (sent, label) in _order:
+            items = _groups[(sent, label)]
+            marker = str(items[0].get("citation_marker") or "").strip()
+            group_markers = []
+            for it in items:
+                for mk in [str(it.get("citation_marker") or "").strip()] + list(it.get("citation_markers") or []):
+                    if mk and mk not in group_markers:
+                        group_markers.append(mk)
+            # 组编号覆盖句中全部标记 → 恢复原句原始标记形态（"[2-3]"）
+            _sent_mks = _mk_group_re.findall(sent)
+            if _sent_mks:
+                _group_nums = set().union(*[_nums_of(m) for m in group_markers]) if group_markers else set()
+                _sent_nums = set().union(*[_nums_of(m) for m in _sent_mks])
+                if _group_nums == _sent_nums:
+                    group_markers = _sent_mks
+                    marker = _sent_mks[0]
             # 找回上下文：优先按引用标记匹配（同句多条各自对齐），退回句子匹配
             ctx = next((c for c in citations
                         if marker and c.get("citation_marker") == marker
@@ -3682,7 +4166,7 @@ class SemanticApplicationService(ISemanticService):
                 "citation_id": f"CIT{len(out) + 1}",
                 "sentence": sent,
                 "citation_marker": marker or ctx.get("citation_marker", ""),
-                "citation_markers": ctx.get("citation_markers") or ([marker] if marker else []),
+                "citation_markers": group_markers or ctx.get("citation_markers") or ([marker] if marker else []),
                 "context_before": ctx.get("context_before", ""),
                 "context_after": ctx.get("context_after", ""),
                 "source_position": {
@@ -3690,10 +4174,19 @@ class SemanticApplicationService(ISemanticService):
                     "end": start + len(sent) if start >= 0 else None,
                 },
                 label_field: label.removeprefix("用于"),
-                "confidence": min(1.0, float(item.get("confidence", 0.5) or 0.5)),
+                "confidence": max(min(1.0, float(it.get("confidence", 0.5) or 0.5))
+                                  for it in items),
             }
-            # 该条引用对应的局部子片段（句内多引用拆分时存在，供核对与下游定位）
-            sub_span = str(ctx.get("sub_span") or item.get("sub_span") or "").strip()
+            # 该条引用对应的局部子片段（句内多引用拆分时存在，供核对与下游定位；
+            # 合并组取首个非空——同标签组的子片段语义一致）
+            sub_span = ""
+            for it in items:
+                _ss = str(it.get("sub_span") or "").strip()
+                if _ss:
+                    sub_span = _ss
+                    break
+            if not sub_span:
+                sub_span = str(ctx.get("sub_span") or "").strip()
             if sub_span:
                 row["sub_span"] = sub_span
             out.append(row)
@@ -3856,16 +4349,24 @@ class SemanticApplicationService(ISemanticService):
                 '{"data":{"results":[{"sentence":"引用句原文"}]}}，无引用句输出空数组。')
         chunks = [text[i:i + 3000] for i in range(0, len(text), 2800)][:12]  # 上限 12 块
         from concurrent.futures import ThreadPoolExecutor
+        _chunk_errors: list = []
         def _extract_cite_chunk(chunk):
             try:
                 return self._glm.chat_json(sysp, f"文本：\n{chunk}", timeout=60.0,
                                            max_tokens=2000, temperature=0.0)
-            except Exception:  # noqa: BLE001
+            except Exception as exc:  # noqa: BLE001  瞬时错误容忍：其余块照常提取
+                _chunk_errors.append(exc)
                 return {}
         # 并发提取（2026-09-08）：原串行 12 块 × 2s = 24s 是引用工具主瓶颈；
-        # 4 路并发 ≈ 6s，功能不变（各块独立提取引用句）
-        with ThreadPoolExecutor(max_workers=min(4, len(chunks))) as _pool:
+        # 并发度 = GLM 配额（换更高配额 LLM 时随环境变量整体放大）
+        from config.settings import settings as _st
+        with ThreadPoolExecutor(max_workers=min(max(1, _st.GLM_MAX_CONCURRENCY), len(chunks))) as _pool:
             _raw_results = list(_pool.map(_extract_cite_chunk, chunks))
+        # 全部块失败 = 模型不可达：fail closed（契约 2026-09-08：GLM 不可用时禁止
+        # 把"提取不到"当成业务结论返回 success）。部分块失败仍降级容忍。
+        if chunks and len(_chunk_errors) == len(chunks):
+            raise RuntimeError(
+                f"GLM 引用句分块提取全部失败（{len(chunks)} 块），模型不可达：{_chunk_errors[0]}")
         found: list = []
         for d in _raw_results:
             d = d.get("data", d) if isinstance(d, dict) else {}
@@ -3945,7 +4446,7 @@ class SemanticApplicationService(ISemanticService):
                    '\n'.join([f'[{i}] ' + c['sentence'][:250] for i, c in enumerate(batch)])
                    for batch in batches]
         batch_ds = self._glm_chat_batch(sysp, prompts, temperature=0.0,
-                                        timeout=90.0, max_tokens=1500, max_workers=5)
+                                        timeout=90.0, max_tokens=1500)
         drop_ids = set()
         for batch, d in zip(batches, batch_ds):
             drop_idx = set()
@@ -3999,12 +4500,14 @@ class SemanticApplicationService(ISemanticService):
             item['confidence'] = conf if conf is not None else 0.5
             return item
 
-        # 第一步：所有批次第一次 chat_json 并发。
+        # 第一步：所有批次第一次 chat_json 并发。输出按 index 对齐（不复述原句，
+        # 输出 token 从 ~100字/条 降到 ~20token/条，实测整批耗时近乎减半）。
         prompts = ['引用句列表：\n' +
-                   '\n'.join([f'[{i}] ' + _judge_text(c)[:250] for i, c in enumerate(batch)])
+                   '\n'.join([f'[{i}] ' + _judge_text(c)[:250] for i, c in enumerate(batch)]) +
+                   '\n按 index 输出每条的判定，不要复述原句。'
                    for batch in batches]
         batch_ds = self._glm_chat_batch(sysp, prompts, temperature=0.0,
-                                        timeout=90.0, max_tokens=1500, max_workers=5)
+                                        timeout=90.0, max_tokens=1500)
         all_results = []
         _pending = []  # 未被覆盖的引用句条目，统一并发补全
         for batch, d in zip(batches, batch_ds):
@@ -4016,6 +4519,17 @@ class SemanticApplicationService(ISemanticService):
             for r in results:
                 if not isinstance(r, dict):
                     continue
+                # index 对齐优先（prompt 已要求输出 index）；LLM 偶发漏 index 或
+                # 仍回显原句时，退回句子子串匹配兜底
+                _idx = r.get('index')
+                if isinstance(_idx, int) and 0 <= _idx < len(batch) and _idx not in covered:
+                    covered[_idx] = r
+                    continue
+                if isinstance(_idx, str) and _idx.strip().isdigit():
+                    _i2 = int(_idx.strip())
+                    if 0 <= _i2 < len(batch) and _i2 not in covered:
+                        covered[_i2] = r
+                        continue
                 _rs = str(r.get('sentence', ''))[:60]
                 for i, c in enumerate(batch):
                     if i in covered:
@@ -4032,9 +4546,10 @@ class SemanticApplicationService(ISemanticService):
 
         # 第二步：所有未覆盖句子逐句并发补全。
         if _pending:
-            _prompts = ['引用句列表：\n[0] ' + _judge_text(c)[:250] for c in _pending]
+            _prompts = ['引用句列表：\n[0] ' + _judge_text(c)[:250] +
+                        '\n按 index 输出判定，不要复述原句。' for c in _pending]
             _comp_ds = self._glm_chat_batch(sysp, _prompts, temperature=0.0,
-                                            timeout=60.0, max_tokens=500, max_workers=3)
+                                            timeout=60.0, max_tokens=500)
             for c, _d2 in zip(_pending, _comp_ds):
                 if _d2 is None:
                     all_results.append(_merge(c, None))
@@ -4064,14 +4579,17 @@ class SemanticApplicationService(ISemanticService):
         return all_results
 
     def _glm_chat_batch(self, system_prompt, user_prompts, *, temperature=None,
-                        timeout=None, max_tokens=None, max_workers=5):
+                        timeout=None, max_tokens=None, max_workers=None):
         """批量并发 GLM chat_json。多次 GLM 调用统一走此方法自动并发，
         无需每处手写 ThreadPoolExecutor。
 
         user_prompts: list[str] -> list[result]（与输入顺序一一对应）。
         单个调用异常返回 None（调用方自行过滤/兜底），不因一句失败拖垮整批。
-        len<=1 串行不建池；max_workers 同时受进程级 _GLM_SEMAPHORE 约束。
+        len<=1 串行不建池；默认 max_workers=GLM_MAX_CONCURRENCY（换更高配额
+        LLM 时调环境变量即可整体放大；瞬时超限由 glm_client 429/1214 退避兜底）。
         """
+        from config.settings import settings as _settings
+        max_workers = max(1, int(max_workers or _settings.GLM_MAX_CONCURRENCY))
         if not user_prompts:
             return []
         if len(user_prompts) == 1:
@@ -4429,19 +4947,31 @@ class SemanticApplicationService(ISemanticService):
         return "\n".join(keep)
 
     def _definition_chunks(self, text: str, chunk_size: int = 5000) -> list:
-        """按句号边界切分，聚合成 ≤chunk_size 的块（供 LLM 批量抽取定义句）。"""
+        r"""按句末边界切分（中英双语），聚合成 ≤chunk_size 的块（供 LLM 批量抽取定义句）。
+
+        英文修复（2026-09-08）：原先只按 。！？ 切分，英文全文无中文句号 → 整篇
+        坍缩成 1 个超大块（失去分块并行，超长文有截断风险）。现补 .!? 边界；
+        `(?!\d)` 防 3.5 小数误切，英文句末要求后跟空白（PDF 常见粘连 "word.Next"
+        无法凭空恢复边界）。句子重组保留原文空白（capture 组拼回）：LLM 抽取句
+        后续用 text.find 在原文定位，丢空白会断链。
+        """
         import re as _re
-        sents = _re.split(r"(?<=[。！？])\s*", text)
+        pieces = _re.split(r"(?<=[。！？])(\s*)|(?<=[.!?])(?!\d)(\s+)", text)
         chunks, cur = [], ""
-        for s in sents:
-            s = s.strip()
-            if not s:
+        # pieces 形如 [句, 空白, 句, 空白, ..., 句?]；交替分支未参与的捕获组返回
+        # None，统一兜底成 ""。句与其后空白原样拼回。
+        i = 0
+        while i < len(pieces):
+            sent = pieces[i] or ""
+            sep = (pieces[i + 1] or "") if i + 1 < len(pieces) else ""
+            i += 2
+            if not sent and not sep:
                 continue
-            if len(cur) + len(s) > chunk_size and cur:
+            if len(cur) + len(sent) > chunk_size and cur:
                 chunks.append(cur)
-                cur = s
+                cur = sent.lstrip()
             else:
-                cur += s
+                cur += sent + sep
         if cur:
             chunks.append(cur)
         return chunks

@@ -5,6 +5,7 @@ import asyncio
 import csv
 import io
 import json
+import re
 import zipfile
 from pathlib import Path
 from typing import Dict, Iterable, List
@@ -188,6 +189,19 @@ def _layout_text_from_bytes(content: bytes, max_pages: int | None = None) -> str
             pass
 
 
+_HYPH_RE = re.compile(r"(?<=[A-Za-zÀ-ɏ])-\s*\n(?:\s*\n)?\s*(?=[a-zß-ɏ])")
+
+
+def _rejoin_hyphenation(text: str) -> str:
+    """行尾断词重连（2026-09-09，英文输入质量根治）：排版两端对齐的行尾连字符
+    把 "con-\\nstraint" 拆成两个 token 喂给挖掘器/LLM（实测 52/54 篇英文论文
+    共 4115 处，"tion/straint" 类碎片词的直接来源）。重连规则与
+    repair_abstract_text 一致：字母后连字符+换行+小写开头 → 去连字符拼接。
+    在 _pymupdf_text 根部统一应用，所有消费方（关键词/NER/RQ/定义/引用）
+    一致受益；位置定位在同一重连文本上进行，口径一致。"""
+    return _HYPH_RE.sub("", text)
+
+
 def _pymupdf_text(content: bytes) -> str:
     """PyMuPDF 直抽 PDF 内嵌文本（不经神经网络，无 ## 标题结构）。
 
@@ -221,10 +235,10 @@ def _pymupdf_text(content: bytes) -> str:
         layout = _layout_text_from_bytes(content)
         if layout:
             logger.info("pymupdf 双栏走版面感知分栏读取（%d/%d 页双栏）", dual_pages, npages)
-            return layout
+            return _rejoin_hyphenation(layout)
         logger.info("pymupdf 双栏分栏读取失败，回退 mineru（%d/%d 页双栏）", dual_pages, npages)
         return ""
-    return full
+    return _rejoin_hyphenation(full)
 
 
 def _pymupdf_abstract(content: bytes, limit: int = 8000) -> str:

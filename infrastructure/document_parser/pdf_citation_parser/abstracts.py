@@ -11,6 +11,7 @@ from pathlib import Path
 from .abstract_patterns import (
     ABSTRACT_END_PATTERNS,
     ABSTRACT_HEADING_PATTERNS,
+    ABSTRACT_NOISE_LINE_PATTERNS,
     BROKEN_ABSTRACT_HEADING_PATTERNS,
     FRONT_MATTER_NOISE_PATTERNS,
     STRUCTURED_ABSTRACT_LABEL_PATTERNS,
@@ -85,6 +86,120 @@ def _find_end_boundary(text: str, start: int, limit: int, min_gap: int) -> tuple
     return min(found, key=lambda item: item[0])
 
 
+def _looks_like_numeric_table(block: TextBlock) -> bool:
+    """Detect table bodies whose caption was emitted in another PDF block.
+
+    The rule requires several row-like lines and repeated numeric cells. It is
+    intentionally stricter than a digit-ratio test so quantitative abstract
+    prose (percentages, p-values, model scores) remains valid content.
+    """
+
+    lines = [line.strip() for line in block.text.splitlines() if line.strip()]
+    if len(lines) < 3:
+        return False
+    numeric = re.compile(r"(?<!\w)[+\-−]?(?:\d+(?:[.,]\d+)?|\.\d+)(?:%|\u00b1\d+(?:\.\d+)?)?(?!\w)")
+    row_counts = [len(numeric.findall(line)) for line in lines]
+    data_rows = sum(count >= 2 for count in row_counts)
+    total_numbers = sum(row_counts)
+    if data_rows < 3 or total_numbers < 8:
+        return False
+    compact = re.sub(r"\s+", "", block.text)
+    numeric_chars = len(re.findall(r"[\d.,%+\-−\u00b1]", compact))
+    letters = len(re.findall(r"[A-Za-z\u3400-\u9fff]", compact))
+    return numeric_chars / max(1, len(compact)) >= 0.24 and letters / max(1, len(compact)) <= 0.48
+
+
+def _find_layout_end_boundary(
+    layout: LayoutDocument,
+    start: int,
+    limit: int,
+    min_gap: int,
+) -> tuple[int, str | None]:
+    for page in layout.pages:
+        for block in page.blocks:
+            if not (start + min_gap <= block.text_start < limit):
+                continue
+            if _looks_like_numeric_table(block):
+                return block.text_start, "numeric_table_block"
+    return limit, None
+
+
+def _removed_noise_names(text: str) -> list[str]:
+    normalized = _width_normalized(text)
+    return [
+        pattern.name
+        for pattern in ABSTRACT_NOISE_LINE_PATTERNS
+        if pattern.regex.search(normalized)
+    ]
+
+
+def _layout_noise_reasons(block: TextBlock) -> list[str]:
+    """Classify an entire PyMuPDF block as removable front-matter noise."""
+
+    names = _removed_noise_names(block.text)
+    normalized = _width_normalized(block.text)
+    acm_markers = (
+        r"permission\s+to\s+make\s+digital\s+or\s+hard\s+copies",
+        r"request\s+permissions\s+from\s+permissions@acm\.org",
+        r"copyright\s+held\s+by\s+the\s+(?:owner|author)",
+        r"publication\s+rights\s+licensed\s+to\s+acm",
+        r"\bacm\s+isbn\b",
+    )
+    if sum(bool(re.search(marker, normalized, re.IGNORECASE)) for marker in acm_markers) >= 2:
+        names.append("acm_permission_block")
+    elif re.search(acm_markers[0], normalized, re.IGNORECASE):
+        names.append("acm_permission_block")
+    return list(dict.fromkeys(names))
+
+
+def _is_removable_noise_block(block: TextBlock) -> bool:
+    names = _layout_noise_reasons(block)
+    if not names:
+        return False
+    if "acm_permission_block" in names:
+        return True
+    cleaned = repair_abstract_text(block.text)
+    useful_before = len(re.findall(r"[A-Za-z\u3400-\u9fff]", block.text))
+    useful_after = len(re.findall(r"[A-Za-z\u3400-\u9fff]", cleaned))
+    return useful_after <= max(5, useful_before * 0.20)
+
+
+def _without_layout_noise(
+    layout: LayoutDocument,
+    start: int,
+    end: int,
+) -> tuple[str, list[str]]:
+    """Remove complete noise blocks while retaining source-order prose."""
+
+    source = layout.text
+    cursor = start
+    parts: list[str] = []
+    removed: list[str] = []
+    blocks = sorted(
+        (
+            block
+            for page in layout.pages
+            for block in page.blocks
+            if block.text_end > start and block.text_start < end
+        ),
+        key=lambda block: block.text_start,
+    )
+    for block in blocks:
+        reasons = _layout_noise_reasons(block)
+        if not reasons or not _is_removable_noise_block(block):
+            continue
+        left = max(start, block.text_start)
+        right = min(end, block.text_end)
+        if left > cursor:
+            parts.append(source[cursor:left])
+        parts.append("\n")
+        cursor = max(cursor, right)
+        removed.extend(reasons)
+    if cursor < end:
+        parts.append(source[cursor:end])
+    return "".join(parts), list(dict.fromkeys(removed))
+
+
 def _language(text: str) -> str:
     cjk = len(re.findall(r"[\u3400-\u9fff]", text))
     latin = len(re.findall(r"[A-Za-z]", text))
@@ -147,6 +262,22 @@ def _headed_candidates(
         if key not in best_by_span or hit[2].confidence > best_by_span[key][2].confidence:
             best_by_span[key] = hit
     hits = sorted(best_by_span.values(), key=lambda hit: (hit[0], hit[1]))
+
+    # Real IJCAI/CV papers sometimes contain the literal word "Abstract" in
+    # a page-one workflow diagram after section 1 has started. If a genuine
+    # heading was already seen before the first main-section boundary, later
+    # heading-shaped diagram labels cannot be the article abstract.
+    main_section_names = {"introduction", "first_main_section", "generic_numbered_first_section"}
+    main_section_starts = [
+        match.start()
+        for end_pattern in ABSTRACT_END_PATTERNS
+        if end_pattern.name in main_section_names
+        for match in end_pattern.regex.finditer(match_text[:limit])
+    ]
+    if hits and main_section_starts:
+        first_main_section = min(main_section_starts)
+        if any(hit[0] < first_main_section for hit in hits):
+            hits = [hit for hit in hits if hit[0] < first_main_section]
     for hit_index, (_, _, pattern, match) in enumerate(hits):
             before = text[max(0, match.start() - 30) : match.start()]
             if re.search(r"(?:graphical|visual)\s*$", before, re.IGNORECASE):
@@ -162,17 +293,33 @@ def _headed_candidates(
                 min(limit, next_heading, start + config.max_chars),
                 max(25, config.min_chars // 2),
             )
+            layout_boundary, layout_boundary_name = _find_layout_end_boundary(
+                layout,
+                start,
+                min(limit, next_heading, start + config.max_chars),
+                max(25, config.min_chars // 2),
+            )
+            if layout_boundary < boundary:
+                boundary, boundary_name = layout_boundary, layout_boundary_name
             start, end, raw = _trim_raw_span(text, start, boundary)
-            clean = repair_abstract_text(raw)
+            filtered_raw, layout_noise = _without_layout_noise(layout, start, end)
+            removed_noise = list(dict.fromkeys(layout_noise + _removed_noise_names(filtered_raw)))
+            clean = repair_abstract_text(filtered_raw)
             if len(clean) < config.min_chars:
                 continue
             if len(clean) > config.max_chars:
                 clean = clean[: config.max_chars].rstrip()
                 end = min(end, start + config.max_chars)
             sentences, prose_ratio = _prose_metrics(clean)
-            labels = _structured_labels(raw + "\n" + clean)
+            labels = _structured_labels(filtered_raw + "\n" + clean)
             page = _page_for_offset(layout, match.start())
             heading = " ".join(match.group("heading").split())
+            # 弱标题词（summary/synopsis 等同义词）只在前两页有效（本地补丁 2026-09-09）：
+            # 正文行首的普通词汇 "Summary"（如 4.pdf 第 3 页贡献列表段）会被误当标题，
+            # 吞掉 search_limit 整段正文（实测 4561 字）。真 Summary 摘要必在首页区；
+            # 强标题（abstract/摘要 0.9+）不受限（CNKI 封面页论文摘要在第 1~2 页）。
+            if pattern.confidence < 0.9 and page > 1:
+                continue
             score = pattern.confidence * 0.56
             score += 0.12 if page == 0 else 0.08 if page == 1 else 0.04 if page < 4 else 0.0
             score += 0.12 if 100 <= len(clean) <= 4500 else 0.05
@@ -198,6 +345,8 @@ def _headed_candidates(
                         "content_chars": len(clean),
                         "sentence_count": sentences,
                         "prose_ratio": round(prose_ratio, 3),
+                        "removed_noise_count": len(removed_noise),
+                        "removed_noise_patterns": ",".join(removed_noise),
                     },
                 )
             )
@@ -310,6 +459,7 @@ def _unheaded_candidates(
         for block in page.blocks
         if block.text_start >= floor and block.text_end <= limit
         and (stop is None or block.text_start < stop)
+        and not _is_removable_noise_block(block)
     ]
     candidates: list[_Candidate] = []
     body_font = _body_font(layout)
@@ -320,16 +470,20 @@ def _unheaded_candidates(
             continue
         for j in range(i, min(len(blocks), i + 4)):
             window = blocks[i : j + 1]
-            if any(_matches_any(block.text, FRONT_MATTER_NOISE_PATTERNS) for block in window[1:]):
-                break
             raw = text[first.text_start : window[-1].text_end]
-            clean = repair_abstract_text(raw)
+            filtered_raw, layout_noise = _without_layout_noise(
+                layout, first.text_start, window[-1].text_end
+            )
+            removed_noise = list(dict.fromkeys(layout_noise + _removed_noise_names(filtered_raw)))
+            clean = repair_abstract_text(filtered_raw)
             if len(clean) < config.min_chars:
                 continue
             if len(clean) > config.max_chars:
                 break
-            score, evidence, labels = _score_unheaded(clean, raw, window, stop, body_font, title)
+            score, evidence, labels = _score_unheaded(clean, filtered_raw, window, stop, body_font, title)
             evidence["end_pattern"] = stop_name or "none"
+            evidence["removed_noise_count"] = len(removed_noise)
+            evidence["removed_noise_patterns"] = ",".join(removed_noise)
             if title:
                 evidence["title_font_size"] = round(title.median_font_size, 2)
             candidates.append(
@@ -405,7 +559,39 @@ class AbstractExtractor:
             candidates.extend(_unheaded_candidates(layout, self.config, limit))
         if not candidates:
             return None
-        winner = max(candidates, key=lambda candidate: (candidate.score, candidate.method == "headed", -candidate.start))
+        headed = [candidate for candidate in candidates if candidate.method == "headed"]
+        rescue_winner = None
+        if headed:
+            best_headed_score = max(candidate.score for candidate in headed)
+            competitive = [candidate for candidate in headed if candidate.score >= best_headed_score - 0.06]
+            preferred = self.config.preferred_language
+            if preferred != "auto":
+                # zh 偏好须接受 mixed（2026-09-09 本地补丁）：中文摘要常含英文术语
+                # （ResNet18/LSTM…），_language 会判 mixed；精确 == "zh" 会让英文候选
+                # 抢走双语论文的中文摘要。
+                acceptable = (preferred, "mixed") if preferred == "zh" else (preferred,)
+                language_matches = [candidate for candidate in competitive if _language(candidate.text) in acceptable]
+                if not language_matches:
+                    # 救援（本地补丁）：CNKI 网络首发等版式会把"摘\n要："标题拆行打散进
+                    # 阅读顺序（"摘"字孤立在句中），中文摘要无 headed 候选而英文
+                    # Abstract 反而成形——从 unheaded 候选补位语言匹配者，保住
+                    # "双语=抽中文"规则。按分数选（按 start 选会抓到作者/单位块）。
+                    rescue = [
+                        candidate for candidate in candidates
+                        if candidate.method == "unheaded" and _language(candidate.text) in acceptable
+                    ]
+                    if rescue:
+                        rescue_winner = max(rescue, key=lambda candidate: (candidate.score, -candidate.start))
+                elif language_matches:
+                    competitive = language_matches
+            if rescue_winner is not None:
+                winner = rescue_winner
+            else:
+                # In a bilingual article the first complete abstract is normally
+                # the publication's primary-language abstract.
+                winner = min(competitive, key=lambda candidate: (candidate.start, -candidate.score))
+        else:
+            winner = max(candidates, key=lambda candidate: (candidate.score, -candidate.start))
         if winner.score < self.config.min_confidence:
             return None
         return AbstractSection(

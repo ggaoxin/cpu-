@@ -216,7 +216,13 @@ class V774HttpContractTests(unittest.TestCase):
         self.assertIsNotNone(self.repository.get_task(task_id))
         with self.repository.db.session() as session:
             self.assertGreater(session.fetchone("SELECT COUNT(*) total FROM result_records")["total"], 0)
-            self.assertEqual(session.fetchone("SELECT COUNT(*) total FROM semantic_resources")["total"], 14)
+            # bundled 种子数与配置一致（2026-09-08 资源模式重构后 14→11，
+            # 硬编码会随种子演进再漂移，改为对配置断言）
+            from config.default_semantic_resources import BUNDLED_SEMANTIC_RESOURCES
+            bundled = session.fetchone(
+                "SELECT COUNT(*) total FROM semantic_resources WHERE source_type='bundled'"
+            )["total"]
+            self.assertEqual(bundled, len(BUNDLED_SEMANTIC_RESOURCES))
 
     def test_independent_deep_cluster_evaluation_uses_real_gold_and_persists_run(self):
         class EvaluationSemanticService:

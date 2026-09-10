@@ -16,6 +16,41 @@ from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Query, 
 from fastapi.responses import FileResponse, JSONResponse
 from starlette.datastructures import UploadFile as StarletteUploadFile
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def _count_body_citation_markers(text: str) -> int:
+    """正文区引用标记计数（引用工具解析门禁探针口径）。
+
+    先截参考文献章节（对齐引擎 ref_re），再数 [n]/［n］方括号组，排除数学噪声：
+    - 含 0 的组（区间 [0,1]）不算
+    - 乱序多值组（数组下标 [2,8,1]）不算——引用编号惯例递增
+    - 单值年份（[2024]）计入——年份引用风格（35.pdf "Shumailov et al. [2024]"）
+    - 多值组内含 >399 的编号不算（非引用编号）
+    """
+    m = re.search(r"(?:^|\n)\s*#{0,3}\s*(参考文献|References|REFERENCES)\s*[：:．.\s]*(?:\n|$)", text)
+    if m:
+        text = text[:m.start()]
+    n = 0
+    for g in re.finditer(r"[［\[]\s*(\d+(?:\s*[-–,，]\s*\d+)*)\s*[\]］]", text):
+        try:
+            nums = [int(x) for x in re.split(r"[-–,，]", g.group(1))]
+        except ValueError:
+            continue
+        if any(v == 0 for v in nums):
+            continue
+        if len(nums) > 1 and nums != sorted(nums):
+            continue
+        if len(nums) == 1 and 1900 <= nums[0] <= 2099:
+            n += 1
+            continue
+        if any(v > 399 for v in nums):
+            continue
+        n += 1
+    return n
+
 from application.service.tool_integration_service import ToolIntegrationService
 from application.service.result_normalizer import public_viz_result
 from application.service.export_service import export_service
@@ -54,6 +89,11 @@ PATH_PASSTHROUGH_TOOLS = {
 # 摘要语步识别工具：上传 PDF 后只送纯摘要文本给引擎，过滤掉标题/关键词/全文。
 # 用四层融合解析（MinerU→pdfplumber→正则→LLM 校验）提取摘要，而非 extract_uploads 的全文。
 ABSTRACT_MOVE_TOOLS = {"zh-abstract-move", "en-abstract-move"}
+# PyMuPDF 专用工具（2026-09-09 用户指定）：基金语步/定义句/深度聚类/结构化综述
+# 走 PyMuPDF light（毫秒级全文，含双栏分栏+断词重连），其余工具全走 MinerU
+# 基金语步改回 MinerU（2026-09-09 用户确认：需要 ## 章节标题锚定研究目标/
+# 技术方案/预期成果，MinerU md 的结构化标题远优于 PyMuPDF 的正则猜测）
+PYMUPDF_TOOLS = {"definition-detect", "deep-cluster", "structured-review"}
 # 摘要语步只需摘要文本（期刊首页、学位论文摘要最迟到第7页），限定 mineru 只解析
 # 前 8 页（0-indexed 闭区间 end_page_id=7），vllm 计算量随页数大降而 abstract 仍完整
 # （含无标题摘要——靠末端 LLM 从前若干页 md 语义提取，实测 38.pdf 限8页=全文1301字）。
@@ -815,11 +855,130 @@ async def _extract_citation_pdf(uploads: List[StarletteUploadFile], *, max_size_
     return out
 
 
-async def _extract_abstract_fast(uploads: List[StarletteUploadFile], *, max_size_mb: int | None = None) -> List[Dict[str, str]]:
-    """摘要语步快速解析（2024-09-08 集成 pymupdf-citation-parser 的 AbstractExtractor）。
+def _llm_extract_abstract(pdf_path: str, feedback: str = "") -> str:
+    """LLM 摘要提取（2026-09-09 混合架构）：PyMuPDF 抽前 5000 字 → GLM 逐字摘录。
 
-    版面感知（双栏/中文/结构式/无标题摘要），实测 0.4s/篇（vs 四层融合 5s/篇），
-    74 篇测试 73 篇成功。失败或摘要 <50 字（扫描件/非论文）→ 回退四层融合。
+    规则版面对疑难版式（标题拆字/无标题正文式/图例表格混排/引用导出页）覆盖不稳，
+    LLM 语义定位天然稳健。输入截前 5000 字（实测 74 篇语料：摘要最晚结束于第 3077 字、P90 1975；
+    密集页一页 4000+ 字，按字符截比按页数截更省 token）。
+    输出强制逐字校验：去空白后在源文本中 find 不到且相似度 <0.93 即判失败
+    （防改写/编造），由调用方回退规则结果/四层融合。
+    feedback 非空 = 质检不合格重试：带上不合格原因让模型修正。
+    """
+    import pymupdf
+    import re as _re
+    from difflib import SequenceMatcher
+    pages_text = []
+    with pymupdf.open(pdf_path) as doc:
+        for page in list(doc)[:5]:
+            pages_text.append(page.get_text(sort=True))
+            if sum(len(p) for p in pages_text) >= 5000:
+                break
+    full = "\n".join(p for p in pages_text if p and p.strip()).strip()[:5000]
+    if len(full) < 60:
+        return ""
+    src = full
+    from infrastructure.llm.glm_client import glm_client
+    system = (
+        "你是科技文献摘要提取器。从给定的文献前几页文本中找到摘要（摘要/Abstract/Summary 段），"
+        "逐字摘录摘要全文，不得改写、增删、翻译或纠正错字。规则："
+        "1) 中文论文常同时有中文摘要和英文 Abstract——此时必须提取【中文摘要】；"
+        "2) 无标题的正文式摘要（arXiv 风格：作者单位行之后直接是摘要段落）也要完整提取；"
+        "3) 只输出摘要正文，不含'摘要'标题词、关键词、作者、单位、收稿信息、版权声明、图表说明；"
+        "4) 找不到摘要时输出空。只输出 JSON：{\"has_abstract\": true, \"abstract\": \"...\"}"
+    )
+    user = f"文献文本：\n{src}"
+    if feedback:
+        user += f"\n\n【重要】上一次提取未通过质检，原因：{feedback}。请严格修正后重新输出。"
+    try:
+        data = glm_client.chat_json(system, user, timeout=60.0,
+                                    max_tokens=3000, temperature=0.0)
+    except Exception:  # noqa: BLE001  GLM 不可用/超时 → 调用方回退
+        return ""
+    d = data.get("data") if isinstance(data, dict) and isinstance(data.get("data"), dict) else data
+    if not isinstance(d, dict) or not d.get("has_abstract", True):
+        return ""
+    abstract = str(d.get("abstract") or "").strip()
+    if len(abstract) < 60:
+        return ""
+    norm = lambda s: _re.sub(r"\s+", "", s)
+    n_abs, n_full = norm(abstract), norm(full)
+    if n_abs in n_full or n_abs[:400] in n_full:
+        return abstract
+    # 逐字校验失败 → 相似度兜底（拆字版式会把个别字符打散进句中，如"摘"插进句内）
+    if SequenceMatcher(None, n_abs[:1500], n_full).find_longest_match(0, len(n_abs[:1500]), 0, len(n_full)).size \
+            / max(1, min(len(n_abs), 1500)) >= 0.93:
+        return abstract
+    return ""
+
+
+def _validate_extracted_abstract(pdf_path: str, abstract: str) -> List[str]:
+    """提取结果硬校验（2026-09-09 工程化需求：正确性不依赖版式规则拟合）。
+
+    版式无关的不变量，程序可判定——未见版式的正确性靠"提取+校验+自愈"闭环
+    保证而非规则覆盖。返回不合格原因列表（空 = 通过）。
+    """
+    import re as _re
+    import pymupdf
+    reasons: List[str] = []
+    if not (100 <= len(abstract) <= 3500):
+        reasons.append(f"摘要长度异常（{len(abstract)} 字，正常 100~3500）")
+    # 句子完整性：前 500 字内必须出现句末标点（从句中截断则整段无断句）
+    if not _re.search(r"(?<!\d)[.。!?](?=\s|$)", abstract[:500]):
+        reasons.append("开头疑似从句中截断（前 500 字无句末标点）")
+    # 干净性：非摘要内容标记
+    noise = [k for k in ("©", "Permission to make", "ACM ISBN", "ISBN",
+                         "Corresponding author", "Correspondence", "⟦SUP",
+                         "arXiv:", "doi.org", "@", "关键词", "Keywords") if k in abstract]
+    if noise:
+        reasons.append(f"含非摘要内容（{ '、'.join(noise[:3]) }）")
+    # 语言正确性：页面存在中文摘要标记时，结果必须中文主导（双语=中文文献规则）
+    cjk = sum(1 for ch in abstract if "一" <= ch <= "鿿")
+    latin = sum(1 for ch in abstract if ch.isascii() and ch.isalpha())
+    if cjk < latin * 0.5 and cjk + latin > 100:
+        try:
+            with pymupdf.open(pdf_path) as doc:
+                head = "".join(doc[i].get_text() for i in range(min(3, doc.page_count)))
+            if _re.search(r"摘\s*要|[关键词]", head):
+                reasons.append("文献含中文摘要，但提取结果为英文")
+        except Exception:  # noqa: BLE001
+            pass
+    return reasons
+
+
+def _llm_extract_abstract_validated(pdf_path: str) -> str:
+    """LLM 主路径闭环（2026-09-09）：提取 → 硬校验 → 带反馈重试一次 → 清洗。
+
+    重试仍不合格时返回该结果（软性问题如末句无句号不阻断）——硬失败
+    （逐字校验不过/空）返回空串由调用方走规则兜底。
+    """
+    from infrastructure.document_parser.pdf_citation_parser.abstract_repair import repair_abstract_text
+    abstract = _llm_extract_abstract(pdf_path)
+    if not abstract:
+        return ""
+    reasons = _validate_extracted_abstract(pdf_path, abstract)
+    if reasons:
+        retried = _llm_extract_abstract(pdf_path, feedback="；".join(reasons))
+        if retried:
+            abstract = retried
+    # 清洗残余噪声/标记（⟦SUP⟧/尾部碎片等，与规则路径同口径）
+    abstract = repair_abstract_text(abstract)
+    return abstract if len(abstract.strip()) >= 50 else ""
+
+
+async def _extract_abstract_fast(
+    uploads: List[StarletteUploadFile], *, max_size_mb: int | None = None,
+    preferred_language: str | None = None,
+) -> List[Dict[str, str]]:
+    """摘要语步快速解析（2026-09-09 LLM 主路径架构，用户拍板）。
+
+    对未见版式的正确性不依赖规则拟合，靠"提取+校验+自愈"闭环：
+    ① LLM 语义提取（主路径，2~4s/篇）：读前 5000 字逐字摘录，硬校验
+    （逐字性/句完整性/干净性/语言正确）不合格带反馈重试一次；
+    ② LLM 硬失败 → 规则版面提取兜底（v0.4.0 + 全部噪声修复，0.3s）；
+    ③ 两者皆无结果 → 四层融合（MinerU→pdfplumber→正则→LLM）。
+    preferred_language 恒 "zh"（双语摘要=中文文献，2026-09-08 用户规则，已写入
+    LLM prompt 与硬校验双重保证）。
     """
     import asyncio
     import tempfile
@@ -827,9 +986,8 @@ async def _extract_abstract_fast(uploads: List[StarletteUploadFile], *, max_size
     limit_mb = max_size_mb or settings.MAX_UPLOAD_SIZE_MB
     maximum = limit_mb * 1024 * 1024
     from infrastructure.document_parser.pdf_citation_parser.abstracts import AbstractExtractor, AbstractConfig
-    extractor = AbstractExtractor(AbstractConfig(search_pages=8))
+    extractor = AbstractExtractor(AbstractConfig(search_pages=8, preferred_language=preferred_language))
 
-    # 快速路径：逐文件跑 AbstractExtractor（IO 释放 GIL，4 路并发）
     texts: Dict[str, str] = {}
     failed: List[StarletteUploadFile] = []
     raw_by_name: Dict[str, bytes] = {}
@@ -844,9 +1002,13 @@ async def _extract_abstract_fast(uploads: List[StarletteUploadFile], *, max_size
                 tmp.write(content)
                 tmp_path = tmp.name
             try:
-                result = await asyncio.to_thread(extractor.extract, tmp_path)
-                if result and result.text and len(result.text.strip()) >= 50:
-                    text = result.text.strip()
+                # ① LLM 主路径（线程池跑阻塞调用，4 路上传天然并发）
+                text = await asyncio.to_thread(_llm_extract_abstract_validated, tmp_path)
+                if not text:
+                    # ② 规则兜底（GLM 不可用/逐字校验失败/无摘要结构）
+                    result = await asyncio.to_thread(extractor.extract, tmp_path)
+                    if result and result.text and len(result.text.strip()) >= 50:
+                        text = result.text.strip()
             finally:
                 _os.unlink(tmp_path)
         except Exception:  # noqa: BLE001
@@ -873,6 +1035,80 @@ async def _extract_abstract_fast(uploads: List[StarletteUploadFile], *, max_size
     return out
 
 
+def _mineru_parse_one(content: bytes, filename: str, end_page: Optional[int]) -> Optional[Dict[str, str]]:
+    """MinerU 单文件解析（2026-09-09 主路径，用户拍板：解析已与响应解离，用结构化
+    markdown 换取全链路文本质量；CPU 后端实测英文 13~28s/20页、限 8 页约减半）。
+
+    断词/双栏交错/噪声块/标题误抓等 PyMuPDF 固有问题在 md 输出中不存在。
+    失败/超时/服务不可用返回 None，由调用方走 PyMuPDF 栈兜底（不删代码）。
+    """
+    import tempfile
+    import os as _os
+    from infrastructure.document_parser.mineru_api_client import MineruApiClient
+    from infrastructure.document_parser.mineru_reader import _clean_md_text
+    suffix = Path(filename or "upload.pdf").suffix or ".pdf"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(content)
+        tmp_path = tmp.name
+    try:
+        result = MineruApiClient().parse_pdf(tmp_path, end_page_id=end_page)
+        if not result:
+            return None
+        md = _clean_md_text(str(result.get("md_content") or ""))
+        if len(md.strip()) < 200 or md.strip().lower() == "nan":
+            return None
+        title = ""
+        for line in md.splitlines():
+            s = line.strip()
+            if s.startswith("# ") and len(s) > 4:
+                title = s[2:].strip()[:200]
+                break
+        return {"file_name": filename, "media_type": "application/pdf",
+                "text": md, "title": title}
+    except Exception:  # noqa: BLE001  mineru 任何异常 → 兜底路径
+        return None
+    finally:
+        try:
+            _os.unlink(tmp_path)
+        except OSError:
+            pass
+
+
+_ABSTRACT_MD_HEADING = re.compile(r"^#{1,3}\s*(?:Abstract|ABSTRACT|摘\s*要)\s*[:：]?\s*$")
+
+
+_FIG_REF = re.compile(r"^!\[.*?\]\(.*?\)$|^Figure\s+\d+|^Fig\.\s*\d+|^Table\s+\d+|^图\s*\d+|^表\s*\d+", re.IGNORECASE)
+
+
+def _abstract_from_md(md: str) -> tuple:
+    """从 MinerU markdown 提取 (摘要, 标题)：摘要标题段直到下一个 # 标题。
+
+    图表注解过滤（2026-09-09，6.pdf 案例）：MinerU md 的摘要段后面紧跟
+    Figure 1: / Table 1: / ![](images/...) 等图表内容，一并捞入会污染摘要
+    文本和语步分类。逐行遇到首个图表标记即截断（图表前通常是摘要末句）。
+    """
+    title = ""
+    lines = md.splitlines()
+    for i, line in enumerate(lines):
+        s = line.strip()
+        if not title and s.startswith("# ") and len(s) > 4:
+            title = s[2:].strip()[:200]
+        if _ABSTRACT_MD_HEADING.match(s):
+            buf = []
+            for j in range(i + 1, min(i + 100, len(lines))):
+                lj = lines[j].strip()
+                if lj.startswith("#") or _FIG_REF.match(lj):
+                    break
+                buf.append(lines[j])
+            abstract = "\n".join(buf).strip()
+            # 附加清洗：去除可能残余的图片引用/图表标题
+            abstract = re.sub(r"\n!\[.*?\]\(.*?\)", "", abstract)
+            abstract = re.sub(r"\n(Figure|Fig\.?|Table|图|表)\s+\d+[^\n]*(?:\n|$)", "", abstract, flags=re.IGNORECASE)
+            if len(abstract) >= 50:
+                return abstract.strip(), title
+    return "", title
+
+
 @router.post("/files/parse")
 async def parse_files(
     request: Request,
@@ -894,20 +1130,107 @@ async def parse_files(
             "code": 42201, "message": f"批量文件数量不能超过 {settings.MAX_BATCH_FILES} 个（错误码 42201），本次共 {len(uploads)} 个"})
     effective_tool = str(tool_id or "").strip()
     CITATION_TOOLS = {"citation-intent", "citation-sentiment"}
+    is_abstract_tool = effective_tool in ABSTRACT_MOVE_TOOLS
+    # 摘要依赖型工具统一限前 8 页（2026-09-09）：摘要语步/分类×3/RQ/关键词×2 的
+    # 核心信号源都是标题+摘要（最迟在第 7 页），限页减半耗时且不损质量——
+    # 全文仅做关键词字面校验（前 8 页覆盖）和分类 LLM 参考（有摘要已足够）
+    _ABSTRACT_DEPENDENT = ABSTRACT_MOVE_TOOLS | {
+        "zh-classify", "en-classify", "domain-classify", "rq-detect",
+        "zh-keyword", "en-keyword",
+    }
+    _end_page = ABSTRACT_MOVE_END_PAGE if effective_tool in _ABSTRACT_DEPENDENT else None
+    _limit_mb = settings.MAX_UPLOAD_SIZE_MB
+    _maximum = _limit_mb * 1024 * 1024
     try:
-        if effective_tool in ABSTRACT_MOVE_TOOLS:
-            # 摘要语步：PyMuPDF AbstractExtractor 优先（0.4s/篇，版面感知），
-            # 失败或过短时回退四层融合（MinerU→pdfplumber→正则→LLM，5s/篇）
-            parsed_pairs = await _extract_abstract_fast(uploads, max_size_mb=settings.MAX_UPLOAD_SIZE_MB)
-        elif effective_tool in CITATION_TOOLS:
-            # 引用工具：pymupdf citation parser（版面感知+断裂修复，0.5s/篇），
-            # 替代强制 mineru（5.3s/篇，10x 加速）；parser 失败或引用句为 0 时回退 mineru
-            parsed_pairs = await _extract_citation_pdf(uploads, max_size_mb=settings.MAX_UPLOAD_SIZE_MB)
-        else:
-            parsed_pairs = await extract_uploads(
-                uploads, max_size_mb=settings.MAX_UPLOAD_SIZE_MB,
-                light=settings.should_use_light(effective_tool),
-            )
+        # ── MinerU 主路径（2026-09-09 用户拍板）：全部工具走结构化 markdown；
+        # PyMuPDF 栈（v0.4.0 规则库+修复管线+LLM 校验闭环）降级为逐文件兜底。
+        # 摘要工具限前 8 页（ABSTRACT_MOVE_END_PAGE）控耗时；引用工具截参考
+        # 文献章节（引用句召回面向正文）；非 PDF（txt/docx）不走 mineru。
+        parsed_pairs: List[Dict[str, str]] = []
+        failed: List[tuple] = []  # (name, content, content_type, headers)
+        for upload in uploads:
+            content = await upload.read(_maximum + 1)
+            if len(content) > _maximum:
+                raise ValueError(f"文件 {upload.filename} 超过 {_limit_mb}MB 限制")
+            name = upload.filename or "upload.pdf"
+            if not name.lower().endswith(".pdf") or effective_tool in PYMUPDF_TOOLS:
+                # 非 PDF 或 PyMuPDF 专用工具（基金/定义/聚类/综述）：直接走
+                # PyMuPDF light（含双栏分栏+断词重连+扫描件 MinerU 兜底）
+                failed.append((name, content, upload.content_type, upload.headers))
+                continue
+            pair = await asyncio.to_thread(_mineru_parse_one, content, name, _end_page)
+            if pair is None:
+                failed.append((name, content, upload.content_type, upload.headers))
+                continue
+            if is_abstract_tool:
+                # 摘要提取：md 正则（## Abstract/摘要 段）→ LLM（干净结构文本上
+                # 校验通过率高）→ 仍无 → 兜底路径。双语=中文文献规则由 LLM 兜底
+                # 承担（prompt 已含）；md 正则命中的天然是文档主摘要。
+                abstract, title = await asyncio.to_thread(_abstract_from_md, pair["text"])
+                if len(abstract) < 50:
+                    try:
+                        _svc = get_semantic_service()
+                        _t2, _a2 = await asyncio.to_thread(
+                            _svc._llm_title_abstract, pair["text"][:5000])
+                        if _a2 and len(_a2) >= 50:
+                            abstract, title = _a2, (_t2 or title)
+                    except Exception:  # noqa: BLE001
+                        pass
+                if len(abstract) >= 50:
+                    parsed_pairs.append({"file_name": name, "media_type": pair["media_type"],
+                                         "text": abstract, "title": title})
+                else:
+                    failed.append((name, content, upload.content_type, upload.headers))
+            elif effective_tool in CITATION_TOOLS:
+                # 截参考文献章节：引用句抽取面向正文（LLM 全文兜底不受影响）
+                body = re.split(r"(?m)^#{1,3}\s*(?:References|REFERENCES|参考文献)\s*$",
+                                pair["text"])[0]
+                # 质量门禁（2026-09-10，BOPPS/35.pdf 两代案例）：MinerU 对个别
+                # PDF 会静默丢引用标记（嵌入字体丢字形 BOPPS 全丢；35.pdf 正文
+                # 26 个年份引用只剩 4 个），不报错只是残缺 → 正则召回锐减/全空。
+                # 每篇都跑 PyMuPDF 探针（~0.3s）按同口径数正文区引用标记，
+                # MinerU 丢过半即整篇换 PyMuPDF light 文本。计数口径（防数学
+                # 噪声误报，11.pdf [2,8,1] 数组/RL.pdf [0,1] 区间教训）：
+                # 截参考文献区后数 [n]/［n］，排除含 0 区间与乱序数组（引用
+                # 编号惯例递增），单值年份 [2024] 计入（年份引用风格），
+                # 编号>399 排除。扫描件探针 0 标记不触发，MinerU 结果照用。
+                _md_n = _count_body_citation_markers(pair["text"])
+                from infrastructure.document_parser.upload_reader import extract_bytes as _eb
+                try:
+                    _probe = await asyncio.to_thread(_eb, content, name, light=True)
+                except Exception:  # noqa: BLE001
+                    _probe = ""
+                _py_n = _count_body_citation_markers(_probe or "")
+                if _py_n >= 3 and _md_n < _py_n * 0.5:
+                    logger.warning(
+                        "MinerU 丢引用标记（%s：MinerU %d 个 vs PyMuPDF %d 个），换用 PyMuPDF 文本",
+                        name, _md_n, _py_n)
+                    body = _probe
+                parsed_pairs.append({"file_name": name, "media_type": pair["media_type"],
+                                     "text": body, "title": pair.get("title", "")})
+            else:
+                parsed_pairs.append(pair)
+        if failed:
+            async def _rebuild(fb_name, fb_data, fb_headers):
+                from starlette.datastructures import UploadFile as _UF
+                import io as _io
+                return _UF(file=_io.BytesIO(fb_data), filename=fb_name, headers=fb_headers)
+            _pdf_failed = [f for f in failed if f[0].lower().endswith(".pdf")]
+            _other = [f for f in failed if not f[0].lower().endswith(".pdf")]
+            if _pdf_failed:
+                rebuilt = [await _rebuild(f[0], f[1], f[3]) for f in _pdf_failed]
+                if is_abstract_tool:
+                    parsed_pairs.extend(await _extract_abstract_fast(
+                        rebuilt, max_size_mb=_limit_mb, preferred_language="zh"))
+                elif effective_tool in CITATION_TOOLS:
+                    parsed_pairs.extend(await _extract_citation_pdf(rebuilt, max_size_mb=_limit_mb))
+                else:
+                    parsed_pairs.extend(await extract_uploads(
+                        rebuilt, max_size_mb=_limit_mb, light=settings.should_use_light(effective_tool)))
+            if _other:
+                rebuilt2 = [await _rebuild(f[0], f[1], f[3]) for f in _other]
+                parsed_pairs.extend(await extract_uploads(
+                    rebuilt2, max_size_mb=_limit_mb, light=settings.should_use_light(effective_tool)))
     except (ValueError, RuntimeError, OSError) as exc:
         return JSONResponse(status_code=422, content={"code": 42201, "message": str(exc)})
     finally:
@@ -1004,6 +1327,15 @@ def _file_endpoint(tool_id: str, multiple: bool):
                 } for item in _ps.take_many(parse_ids)]
             except ValueError as exc:
                 raise HTTPException(status_code=422, detail=str(exc)) from exc
+            # 批量预解析提交支持异步（2026-09-09 实时进度需求）：Prefer: respond-async
+            # → submit 立即返回 task_id，前端轮询 /tasks/{id}/progress，终态取
+            # /tasks/{id}/vue-result（与同步响应同构）。此前 preparsed 分支提前
+            # 同步返回，异步分支永远不可达——而前端文件批量恰全走 preparsed。
+            async_mode = _wants_async(request, payload)
+            if async_mode:
+                result = service.submit(tool_id, payload, file_inputs=extracted)
+                status_code = 202 if result.get("code") == 0 else (422 if 42200 <= int(result.get("code", 0)) < 42300 else 500)
+                return JSONResponse(status_code=status_code, content=result)
             try:
                 result = service.execute(tool_id, payload, file_inputs=extracted)
             except ValueError as exc:
@@ -1061,6 +1393,42 @@ for route_path, (route_tool_id, route_input_type) in JSON_ROUTES.items():
 
 for route_path, (route_tool_id, route_multiple) in FILE_ROUTES.items():
     router.add_api_route(route_path, _file_endpoint(route_tool_id, route_multiple), methods=["POST"], summary=route_tool_id)
+
+
+@router.post("/cluster/deep/evaluate")
+async def evaluate_deep_cluster(
+    request: Request,
+    service: ToolIntegrationService = Depends(get_integration_service),
+) -> Dict[str, Any]:
+    """独立金标聚类评估（不改动、不阻塞用户的常规聚类任务）。
+
+    2026-09-08 恢复：v3 语步对齐重构（956c214）时路由被误删，服务层
+    DeepClusterEvaluationService 一直存活（仍写 model_evaluation_runs）。
+    """
+    if "multipart/form-data" in request.headers.get("content-type", ""):
+        form = await request.form()
+        payload: Dict[str, Any] = {}
+        uploaded_resources: Dict[str, Dict[str, Any]] = {}
+        for key, value in form.multi_items():
+            if isinstance(value, StarletteUploadFile):
+                base_key = key.split("__", 1)[0]
+                uploaded_resources[base_key] = await _store_uploaded_resource(base_key, value, service)
+                await value.close()
+            else:
+                payload[key] = _parse_form_value(value)
+        for key, descriptor in uploaded_resources.items():
+            current = payload.get(key)
+            payload[key] = {**(current if isinstance(current, dict) else {}), **descriptor}
+    else:
+        payload = await request.json()
+        if not isinstance(payload, dict):
+            raise HTTPException(status_code=422, detail="JSON 请求体必须是对象")
+    try:
+        from application.service.deep_cluster_evaluation_service import DeepClusterEvaluationService
+        value = DeepClusterEvaluationService(service).evaluate(payload)
+    except (ValueError, RuntimeError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"code": 0, "message": "success", "data": value}
 
 
 @router.post("/citation-metadata/parse")
@@ -1196,6 +1564,90 @@ def get_task(task_id: str) -> Dict[str, Any]:
     if not task:
         raise HTTPException(status_code=404, detail="任务不存在")
     return {"code": 0, "data": task}
+
+
+@router.get("/tasks/{task_id}/progress")
+def get_task_progress(task_id: str) -> Dict[str, Any]:
+    """批量任务逐篇进度（2026-09-09 需求：等待响应期间显示哪些文件已出结果+耗时）。
+
+    前端批量提交带 Prefer: respond-async 后轮询本端点：items 按输入序返回
+    {index, file_name, status, elapsed_ms}——耗时取条目时间戳（运行中=now-created，
+    完成=updated-created）。"""
+    from datetime import datetime
+    task = task_repository.get_task(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="任务不存在")
+    now = datetime.now(ZoneInfo("Asia/Shanghai"))
+    items_out = []
+    for item in task_repository.list_items(task_id):
+        source = item.get("source") or {}
+        try:
+            created = datetime.fromisoformat(str(item.get("created_at")))
+            updated = datetime.fromisoformat(str(item.get("updated_at")))
+        except (TypeError, ValueError):
+            created = updated = now
+        finished = str(item.get("status")) in {"succeeded", "failed", "skipped"}
+        end_at = updated if finished else now
+        items_out.append({
+            "index": item.get("input_index"),
+            "file_name": source.get("file_name") or f"第{(item.get('input_index') or 0) + 1}篇",
+            "status": item.get("status"),
+            "elapsed_ms": max(0, int((end_at - created).total_seconds() * 1000)),
+        })
+    return {"code": 0, "data": {
+        "task_id": task_id,
+        "status": task.get("status"),
+        "progress": task.get("progress"),
+        "total": task.get("total") or len(items_out),
+        "success_count": task.get("success_count", 0),
+        "failed_count": task.get("failed_count", 0),
+        "items": items_out,
+    }}
+
+
+@router.get("/tasks/{task_id}/vue-result")
+def get_task_vue_result(task_id: str, tool_id: str = Query(...), input_type: str = Query("files")) -> Dict[str, Any]:
+    """异步任务终态 → 与同步响应完全同构的 Vue 信封（复用 _vue_public_response）。
+
+    前端轮询到终态后取本端点渲染，弹窗/导出/复制与同步路径零差异。
+    全部失败且错误同类（2026-09-10 用户需求）：批量上传整批同类错误（如英文论文
+    全部进中文工具的语言不匹配）不逐条重复 N 次，返回一条干净的错误提示。"""
+    task = task_repository.get_task(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="任务不存在")
+    items = task_repository.list_items(task_id)
+    records_by_item = {}
+    for record in task_repository.list_results(task_id):
+        records_by_item[record.get("task_item_id")] = record
+    results = []
+    for item in items:
+        record = records_by_item.get(item.get("id")) or {}
+        results.append({
+            "index": item.get("input_index"),
+            "file_name": (item.get("source") or {}).get("file_name"),
+            "status": item.get("status"),
+            "record_id": record.get("id"),
+            "error": item.get("error_message"),
+            "result": record.get("result") or {},
+        })
+    internal = {"code": 0, "message": task.get("status"), "data": {
+        "task_id": task_id,
+        "tool_id": tool_id,
+        "input_type": input_type,
+        "status": task.get("status"),
+        "total": len(items),
+        "success_count": task.get("success_count", 0),
+        "failed_count": task.get("failed_count", 0),
+        "results": results,
+    }}
+    # 全部失败且错误同类：返回一条干净错误（不逐条重复 N 次）
+    _failed_errors = [str(r.get("error") or "") for r in results if r.get("status") == "failed" and r.get("error")]
+    _common_prefixes = ("语言不匹配", "文件解析失败", "预解析结果已过期")
+    if results and _failed_errors and len(_failed_errors) == len(results):
+        for _prefix in _common_prefixes:
+            if all(e.startswith(_prefix) for e in _failed_errors):
+                raise HTTPException(status_code=422, detail=_failed_errors[0])
+    return _vue_public_response(tool_id, internal, input_type)
 
 
 @router.get("/tasks/{task_id}/results")

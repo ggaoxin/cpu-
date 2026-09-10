@@ -11,7 +11,7 @@ system_prompt: |
   - 中立：客观陈述他人工作，无明确褒贬（如"Smith等(2020)提出了X""被广泛应用"——陈述事实非评价）
   - 有局限性：指出不足或反驳（如"但成本较高""存在不足""难以处理""局限于"）
   注意：仅陈述事实（如"被广泛应用""早期便应用于"）应标为"中立"，不要因为句子正面就标"支持"，必须有作者明确的价值评价才标"支持"。
-  只输出JSON：{"data":{"results":[{"sentence":"引用句原文","sentiment":"支持|中立|有局限性","confidence":0.9}]}}
+  只输出JSON：{"data":{"results":[{"index":0,"sentiment":"支持|中立|有局限性","confidence":0.9}]}}（index=输入条目编号，不要复述原句）
 
 principles: |
   - 引用句抽取用规则（引用标记模式匹配），规则没覆盖的找LLM判定。
@@ -31,7 +31,7 @@ citation_patterns:
   - "文献\\[\\s*[A-Z]\\d+\\s*\\]"
   - "\\w+等人?于\\d{4}年提出"
 
-citation_cues: "所述|报道|提出|发现|研究表明|先前研究|已有研究|根据.*?研究|参考.*?文献|引用|借鉴|沿用|基于.*?工作"
+citation_cues: "所述|报道|提出|发现|研究表明|先前研究|已有研究|根据.*?研究|参考.*?文献|引用|借鉴|沿用|基于.*?工作|according to|as (?:reported|shown|proposed|demonstrated|suggested) by|prior work|previous (?:work|studies|research)|existing (?:work|studies|approaches|methods)|earlier (?:work|studies)|building on|extend\\w* the (?:work|approach|idea)|follow\\w* (?:the|this|their) (?:approach|work|idea)|borrow\\w* from|inspired by|adapted from"
 
 exclude_patterns:
   - "^(文章编号|中图分类号|文献标识码|doi|DOI|收稿日期|基金项目|作者简介|通信作者|关键词|Keywords|Abstract|摘要|作者|单位|地址|邮编)"
@@ -56,10 +56,17 @@ pattern_rules:
     description: "含明确褒义评价词→支持"
     necessary_conditions:
       - kind: keyword
-        any_of: ["提升", "提高", "增强", "有效", "奠定", "优于", "突破", "显著", "成功", "优异", "卓越", "杰出", "开创", "首创"]
+        any_of: ["提升", "提高", "增强", "有效", "奠定", "优于", "突破", "显著", "成功", "优异", "卓越", "杰出", "开创", "首创",
+                 "\\boutperform\\w*\\b", "\\bsuperior\\b", "\\beffective(?:ly)?\\b", "\\befficient(?:ly)?\\b",
+                 "\\bsubstantial(?:ly)?\\b", "\\bremarkabl\\w+\\b", "\\bbreakthrough\\b", "\\bsuccessful(?:ly)?\\b",
+                 "\\bimprov\\w+\\b", "\\benhanc\\w+\\b", "\\bfoundational\\b", "\\bstate-of-the-art\\b",
+                 "\\bpioneer(?:ing|ed|s)?\\b", "\\bexcellent\\b"]
     exclusion_conditions:
       - kind: keyword
-        any_of: ["但", "然而", "不过", "虽然", "存在", "局限", "缺陷", "未能", "难以"]
+        any_of: ["但", "然而", "不过", "虽然", "存在", "局限", "缺陷", "未能", "难以",
+                 "\\bhowever\\b", "\\bbut\\b", "\\balthough\\b", "\\bthough\\b", "\\bnevertheless\\b",
+                 "\\blimitation\\w*\\b", "\\blimited\\b", "\\bfail(?:s|ed|ing)?\\b", "\\bcannot\\b", "\\bunable\\b",
+                 "\\bdrawback\\w*\\b", "\\bshortcoming\\w*\\b", "\\bworse\\b", "\\bslower\\b", "\\binferior\\b"]
     stats: {}
     fold_count: 0
 
@@ -74,10 +81,16 @@ pattern_rules:
     description: "含明确贬义/转折词→有局限性"
     necessary_conditions:
       - kind: keyword
-        any_of: ["但", "然而", "不过", "存在.*不足", "局限", "缺陷", "缺点", "未能", "难以", "无法", "不能", "偏低", "较差", "受限于", "仅能", "局限于"]
+        any_of: ["但", "然而", "不过", "存在.*不足", "局限", "缺陷", "缺点", "未能", "难以", "无法", "不能", "偏低", "较差", "受限于", "仅能", "局限于",
+                 "\\bhowever\\b", "\\bbut\\b", "\\balthough\\b", "\\bnevertheless\\b", "\\blimitation\\w*\\b", "\\blimited\\b",
+                 "\\bdrawback\\w*\\b", "\\bshortcoming\\w*\\b", "\\bfail(?:s|ed|ing)?\\b", "\\bcannot\\b", "\\bunable to\\b",
+                 "\\bsuffer(?:s|ing)? from\\b", "\\bworse\\b", "\\bslower\\b", "\\binferior\\b", "\\bcan only\\b",
+                 "\\bstruggl\\w+\\b", "\\bdegrad\\w+\\b"]
     exclusion_conditions:
       - kind: keyword
-        any_of: ["提升", "有效", "奠定", "优于", "突破", "显著", "成功"]
+        any_of: ["提升", "有效", "奠定", "优于", "突破", "显著", "成功",
+                 "\\bimprov\\w+\\b", "\\beffective\\b", "\\bfoundational\\b", "\\boutperform\\w*\\b",
+                 "\\bbreakthrough\\b", "\\bsuccessful\\b", "\\bsuperior\\b"]
     stats: {}
     fold_count: 0
 
@@ -92,10 +105,16 @@ pattern_rules:
     description: "客观陈述无褒贬→中立"
     necessary_conditions:
       - kind: keyword
-        any_of: ["提出", "采用", "应用", "基于", "根据", "描述", "介绍", "发展", "报道", "研究表明"]
+        any_of: ["提出", "采用", "应用", "基于", "根据", "描述", "介绍", "发展", "报道", "研究表明",
+                 "\\bpropos(?:e|es|ed)\\b", "\\bintroduc(?:e|es|ed)\\b", "\\bpresent(?:s|ed)?\\b",
+                 "\\bdescrib(?:e|es|ed)\\b", "\\bappl(?:y|ies|ied)\\b", "\\bused\\b", "\\badopt(?:s|ed)?\\b",
+                 "\\bbased on\\b", "\\breport(?:s|ed)?\\b", "\\bdevelop(?:s|ed)?\\b", "\\bemploy(?:s|ed)?\\b",
+                 "\\binvestigat\\w+\\b"]
     exclusion_conditions:
       - kind: keyword
-        any_of: ["提升", "有效", "奠定", "优于", "突破", "但", "局限", "不足", "难以", "缺陷", "显著", "成功"]
+        any_of: ["提升", "有效", "奠定", "优于", "突破", "但", "局限", "不足", "难以", "缺陷", "显著", "成功",
+                 "\\bimprov\\w+\\b", "\\beffective\\b", "\\boutperform\\w*\\b", "\\bbreakthrough\\b",
+                 "\\bsuccessful\\b", "\\bhowever\\b", "\\bbut\\b", "\\blimitation\\w*\\b", "\\bfail(?:s|ed)?\\b"]
     stats: {}
     fold_count: 0
 
@@ -110,10 +129,16 @@ pattern_rules:
     description: "LLM标支持但仅含'被广泛应用'等客观陈述，无明确褒义评价→惩罚支持"
     necessary_conditions:
       - kind: keyword
-        any_of: ["被.*应用", "应用于", "广泛.*使用", "早期.*应用", "大量.*使用"]
+        any_of: ["被.*应用", "应用于", "广泛.*使用", "早期.*应用", "大量.*使用",
+                 "\\b(?:widely|commonly|extensively|broadly|frequently)\\s+(?:used|adopted|applied|employed)\\b",
+                 "\\bhas been (?:widely )?(?:used|applied|adopted)\\b",
+                 "\\bpreviously (?:used|applied|proposed)\\b",
+                 "\\bearly (?:work|studies|efforts)\\b", "\\bin earlier (?:work|studies)\\b"]
     exclusion_conditions:
       - kind: keyword
-        any_of: ["提升", "有效", "奠定", "优于", "突破", "显著", "成功", "优异"]
+        any_of: ["提升", "有效", "奠定", "优于", "突破", "显著", "成功", "优异",
+                 "\\bimprov\\w+\\b", "\\beffective\\b", "\\boutperform\\w*\\b", "\\bbreakthrough\\b",
+                 "\\bsuccessful\\b", "\\bsuperior\\b", "\\bfoundational\\b"]
     stats: {}
     fold_count: 0
 
@@ -128,10 +153,16 @@ pattern_rules:
     description: "LLM标有局限性但句子无明确贬义/转折词→惩罚有局限性"
     necessary_conditions:
       - kind: keyword
-        any_of: ["提出", "采用", "应用", "基于", "根据", "描述"]
+        any_of: ["提出", "采用", "应用", "基于", "根据", "描述",
+                 "\\bpropos(?:e|es|ed)\\b", "\\bintroduc\\w+\\b", "\\bpresent(?:s|ed)?\\b",
+                 "\\bdescrib\\w+\\b", "\\bused\\b", "\\badopt\\w*\\b", "\\bbased on\\b",
+                 "\\breport\\w*\\b", "\\bemploy\\w*\\b"]
     exclusion_conditions:
       - kind: keyword
-        any_of: ["但", "局限", "不足", "难以", "缺陷", "未能", "无法", "不能", "受限"]
+        any_of: ["但", "局限", "不足", "难以", "缺陷", "未能", "无法", "不能", "受限",
+                 "\\bhowever\\b", "\\bbut\\b", "\\blimitation\\w*\\b", "\\blimited\\b",
+                 "\\bfail(?:s|ed)?\\b", "\\bcannot\\b", "\\bunable\\b", "\\bdrawback\\w*\\b",
+                 "\\bworse\\b", "\\binferior\\b"]
     stats: {}
     fold_count: 0
 

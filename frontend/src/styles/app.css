@@ -47,6 +47,21 @@ button:disabled { cursor: not-allowed !important; opacity: .48; transform: none 
 .response-card .test-card-header .response-card-actions-v645 > #previewVisualizationBtnReview { display: inline-flex !important; min-height: 31px; align-items: center; color: #8a5700; background: #fff8e8; border: 1px solid #efd59d; border-radius: 8px; cursor: pointer; }
 .preview-visual-btn:hover { color: #704600; background: #fff1cd; border-color: #dfbe73; }
 .request-error { color: #9a5b16 !important; background: #fff9ed !important; }
+/* 批量等待期实时进度面板（2026-09-09）：逐篇完成状态 + 耗时 */
+.live-progress { display: flex; min-height: 120px; flex-direction: column; gap: 10px; padding: 14px 16px !important; text-align: left; }
+.lp-summary { display: flex; align-items: baseline; gap: 12px; font-size: 12px; color: #34405e; }
+.lp-summary b { font-size: 12.5px; }
+.lp-summary span { color: #7c8ba0; font-size: 11px; }
+.lp-rows { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 300px; }
+.lp-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) 18px 52px; align-items: center; gap: 8px; font-size: 11.5px; color: #43536e; }
+.lp-row > i { display: grid; width: 18px; height: 18px; place-items: center; background: #f1f4f8; border-radius: 50%; font-size: 9.5px; font-style: normal; color: #66778e; }
+.lp-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lp-time { color: #8a98aa; font-size: 10.5px; text-align: right; font-variant-numeric: tabular-nums; }
+.lp-ok { color: #1f9d61; font-weight: 700; }
+.lp-err { color: #d54949; font-weight: 700; }
+.lp-run { color: #b8860b; font-weight: 700; animation: lp-pulse 1.2s ease-in-out infinite; }
+.lp-row[data-st="failed"] .lp-name { color: #b46262; }
+@keyframes lp-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
 .form-grid { display: flex; min-height: 0; flex-direction: column; gap: 18px; }
 .field { min-width: 0; }
 .field > label, .cluster-label-field-v705 > label { display: flex; min-height: 28px; align-items: baseline; justify-content: space-between; gap: 14px; margin-bottom: 8px; color: #334155; font-weight: 700; line-height: 1.45; }
@@ -195,14 +210,15 @@ body.v690-general-ner-active .ner-results-table td,
 .batch-file-queue-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 13px; color: #40516c; background: #f7f9fc; border-bottom: 1px solid #e7ecf3; font-size: 12px; }
 .batch-file-queue-head span { color: #8090a5; font-size: 11px; }
 .batch-file-empty { padding: 26px 16px; color: #8a98aa; text-align: center; font-size: 11px; line-height: 1.7; }
-.selected-file-row { display: grid; grid-template-columns: auto auto minmax(0,1fr) auto; align-items: center; gap: 10px; padding: 11px 13px; }
+.selected-file-row { display: grid; grid-template-columns: auto minmax(0,1fr) auto auto auto; align-items: center; gap: 10px; padding: 11px 13px; }
 .selected-file-row + .selected-file-row { border-top: 1px solid #edf1f6; }
-.selected-file-row > i { display: grid; width: 24px; height: 24px; place-items: center; color: #66778e; background: #f1f4f8; border-radius: 50%; font-size: 10px; font-style: normal; }
-.single-file-list .selected-file-row { grid-template-columns: auto minmax(0,1fr) auto; }
+.selected-file-row > i { display: grid; width: 24px; height: 24px; place-items: center; color: #66778e; background: #f1f4f8; border-radius: 50%; font-size: 10px; font-style: normal; flex: none; }
 .selected-file-type { display: inline-flex; min-width: 42px; min-height: 28px; align-items: center; justify-content: center; padding: 4px 7px; color: #315efb; background: #edf3ff; border-radius: 6px; font-size: 9px; font-weight: 800; }
-.selected-file-row > div { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
-.selected-file-row > div b { overflow: hidden; color: #3e5069; font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; }
-.selected-file-row > div small { color: #8a98aa; font-size: 10px; }
+/* 文件行单行布局（2026-09-08 顺序调整：序号→文件名→解析环→字数→移除）：
+   文件名与大小同行内联，长名截断省略 */
+.file-name-cell { display: flex; min-width: 0; align-items: baseline; gap: 6px; }
+.file-name-cell b { overflow: hidden; color: #3e5069; font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; }
+.file-name-cell small { color: #8a98aa; font-size: 10px; flex: none; }
 .entity-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; }
 .entity-option { display: flex; min-height: 76px; align-items: center; justify-content: center; gap: 9px; background: #fff; border: 1px solid #d9e4f5; border-radius: 10px; cursor: pointer; }
 .entity-option span { display: flex; flex-direction: column; color: #344054; font-weight: 700; text-align: center; }

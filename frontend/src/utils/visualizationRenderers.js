@@ -263,46 +263,9 @@ function classificationRows(response, english = false) {
     const isInterdisciplinary = payload.is_interdisciplinary === true
     const classifications = isInterdisciplinary ? [main, secondary].filter(Boolean) : [main].filter(Boolean)
     const mainConfidence = number(main?.confidence)
-    const responseCandidates = array(payload.candidate_classifications)
-    const fallbackCandidates = isInterdisciplinary ? [] : sourceClassifications.slice(1)
-    // 原始主组合置信度（candidate_classifications 中 rank=1 的组合）作为候选过滤基准；
-    // 确认替换主分类后 candidate_classifications 不变，基准保持稳定，候选列表随之稳定、可反复切换
-    const rank1Candidate = responseCandidates.find(c => number(c.rank) === 1)
-    const originalPrimaryConf = rank1Candidate ? number(rank1Candidate.confidence ?? rank1Candidate.combination_confidence) : mainConfidence
-    const candidates = (responseCandidates.length ? responseCandidates : fallbackCandidates).filter(candidate => {
-      // rank=1 的主组合始终保留为可选项：确认其他候选后可切回原主分类
-      if (number(candidate.rank) === 1) return true
-      // 候选规则：置信度严格低于原始主结果且 ≥0.8（低于0.8的候选不进候选区）
-      const candConf = number(candidate?.confidence ?? candidate?.combination_confidence)
-      if (candConf < 0.8) return false
-      if (originalPrimaryConf && candConf >= originalPrimaryConf) return false
-      return true
-    })
-    // 下拉只列候选，不列"当前首选"——当前主/次已在主表展示，下拉重复列无意义且会误导用户确认当前主
-    const optionKey = candidate => {
-      const candidateMain = object(candidate?.main_classification)
-      const candidateSecondary = object(candidate?.secondary_classification)
-      if (Object.keys(candidateMain).length && Object.keys(candidateSecondary).length) {
-        return `${valueOf(candidateMain, ['clc_code', 'code'], '')}>${valueOf(candidateSecondary, ['clc_code', 'code'], '')}`
-      }
-      // combo 类候选（candidate_classifications 里的组合）：用 main_code/aux_code 组合 key
-      const mainCode = valueOf(candidate, ['main_code'], '')
-      const auxCode = valueOf(candidate, ['aux_code'], '')
-      if (mainCode && auxCode) return `${mainCode}>${auxCode}`
-      return valueOf(candidate, ['clc_code', 'code', 'classification_code'], candidate?.candidate_id || '')
-    }
-    const currentMainCode = valueOf(main, ['clc_code', 'code'], '')
-    const currentSecondaryCode = secondary ? valueOf(secondary, ['clc_code', 'code'], '') : ''
-    const currentKey = currentMainCode && currentSecondaryCode ? `${currentMainCode}>${currentSecondaryCode}` : currentMainCode
-    const seenOptions = new Set()
-    const confirmationOptions = candidates
-      .filter(candidate => {
-        const key = optionKey(candidate)
-        if (!key || key === currentKey || seenOptions.has(key)) return false
-        seenOptions.add(key)
-        return true
-      })
-      .sort((left, right) => number(classificationCandidateConfidence(right)) - number(classificationCandidateConfidence(left)))
+    // 候选确认已移除（2026-09-09）
+    const candidates = []
+    const confirmationOptions = []
     return {
       ...record,
       classifications,
@@ -408,48 +371,12 @@ function renderClassification(response, english = false) {
   const actualDomainLabelCount = new Set(records.flatMap(record => record.labels.map(label => typeof label === 'object' ? valueOf(label, ['label', 'name'], '') : String(label || '')).filter(Boolean))).size
   const domainLabelCount = actualDomainLabelCount || number(distributionReport.domain_label_count, domainDistributions.length)
   const colSpan = english ? 7 : 6
-  // 只把"有可确认候选"的文献放进候选区：只有一个>0.6分类（无候选可替换）的文献已在主表展示并入库，不在候选区出现空占位
-  const confirmableRecords = records.filter(record => record.confirmationOptions.length > 0)
-  const confirmationItems = confirmableRecords.map(record => {
-    const hasOptions = record.confirmationOptions.length > 0
-    const emptyText = record.isInterdisciplinary ? '暂无可确认的跨学科组合' : '暂无可确认的分类'
-    const confirmText = record.isInterdisciplinary ? '确认所选组合' : '确认所选分类'
-    let candidateIndex = 0
-    const optionHtml = record.confirmationOptions.map((candidate, index) => {
-      // 下拉只列候选，当前主分类已在主表展示、不再作为选项出现（is_current_primary 分支已废弃）
-      const optionTitle = `${record.isInterdisciplinary ? '候选跨学科组合' : '候选分类'} ${++candidateIndex}`
-      const candPrimary = valueOf(candidate, ['main_code', 'clc_code', 'code'], '') || (candidate.main_classification ? valueOf(candidate.main_classification, ['clc_code', 'code'], '') : '')
-      const candSecondary = valueOf(candidate, ['aux_code'], '') || (candidate.secondary_classification ? valueOf(candidate.secondary_classification, ['clc_code', 'code'], '') : '')
-      return `<option value="${escapeHtml(candidate.candidate_id || index)}" data-primary="${escapeHtml(candPrimary)}" data-secondary="${escapeHtml(candSecondary)}">${optionTitle} · ${escapeHtml(classificationCandidateLabel(candidate))}｜${confidence(classificationCandidateConfidence(candidate))}</option>`
-    }).join('')
-    // 下拉框默认显示"当前首选"（当前主/次分类）作为标识：该 option 不可选（disabled）且在下拉列表中隐藏（hidden），
-    // 点开下拉只看到其他候选、不含当前首选——当前首选已是正式结果、无需再选它；确认别的候选后它会自动更新为新首选
-    const recordClasses = array(record.classifications)
-    const pickMain = recordClasses.find(c => ['main', 'primary'].includes(String(c?.role || '').toLowerCase())) || recordClasses[0] || {}
-    const pickSecondary = recordClasses.find(c => String(c?.role || '').toLowerCase() === 'secondary') || recordClasses[1]
-    const pickMainText = `${valueOf(pickMain, ['clc_code', 'code'], '')} ${valueOf(pickMain, ['label', 'category_name'], '')}`.trim()
-    const pickSecondaryText = pickSecondary ? `${valueOf(pickSecondary, ['clc_code', 'code'], '')} ${valueOf(pickSecondary, ['label', 'category_name'], '')}`.trim() : ''
-    const pickMainConf = number(pickMain?.confidence)
-    const currentPickText = pickSecondaryText ? `当前首选 · 主：${pickMainText} ／ 次：${pickSecondaryText}｜${confidence(pickMainConf)}` : `当前首选 · ${pickMainText}｜${confidence(pickMainConf)}`
-    const placeholderOption = `<option value="" disabled selected hidden>${escapeHtml(currentPickText)}</option>`
-    const isConfirmed = record.confirmation.status === 'confirmed'
-    const actionsHtml = isConfirmed
-      ? `<span class="${prefix}-status-badge-${version}">已确认</span><button type="button" class="${prefix}-confirm-btn-${version}" data-viz-reselect="${record.index}">重新选择</button>`
-      : `<button type="button" class="${prefix}-confirm-btn-${version} primary" data-viz-confirm="${record.index}" data-viz-confirm-record="${record.record_id || ''}" data-viz-confirm-label="${confirmText}" ${hasOptions ? '' : 'disabled'}>${confirmText}</button>`
-    return `<div class="${prefix}-confirm-item-${version}"><div class="${prefix}-confirm-name-${version}">${renderTextWithMath(record.name)}</div><select class="${prefix}-confirm-select-${version}" data-viz-confirm-select="${record.index}" ${hasOptions ? '' : 'disabled'}>${hasOptions ? (placeholderOption + optionHtml) : `<option>${emptyText}</option>`}</select><div class="${prefix}-confirm-actions-${version}">${actionsHtml}</div></div>`
-  }).join('')
-  const hasInterdisciplinaryRecord = confirmableRecords.some(record => record.isInterdisciplinary)
-  const hasSingleDisciplineRecord = confirmableRecords.some(record => !record.isInterdisciplinary)
-  const confirmationNote = [
-    hasInterdisciplinaryRecord ? '跨学科文献的下拉只列候选的“主分类＋次分类”组合，当前主/次已在结果明细展示、不再重复列入。' : '',
-    hasSingleDisciplineRecord ? '非跨学科文献的下拉只列候选分类，当前主分类已在结果明细展示、不再重复列入。' : '',
-    '候选仅列置信度低于原始主结果且高于0.8的分类，按置信度从高到低排列；确认某个候选后由后端同步替换结果并保存审核记录，原主分类会作为候选回到下拉、可反复切换或重新选择。',
-  ].filter(Boolean).join(' ')
+  // 候选确认已移除（2026-09-09）
   return `<div class="${prefix}-visual-${version}" data-viz-confirm-root>
     ${summaryCards([['文献数量', records.length], ['成功分类', successful], ['中图类别', categories], ['跨学科文献', records.filter(item => item.isInterdisciplinary).length]], `${prefix}-summary-grid-${version}`, `${prefix}-summary-item-${version}`, `${prefix}-summary-value-${version}`, `${prefix}-summary-label-${version}`)}
     <div class="${prefix}-result-card-${version}"><div class="${prefix}-result-title-${version}">中图分类号预测结果</div><div class="${prefix}-result-table-wrap-${version}"><table class="${prefix}-result-table-${version}"><colgroup>${english ? '<col style="width:13%"><col style="width:8%"><col style="width:10%"><col style="width:30%"><col style="width:10%"><col style="width:16%"><col style="width:13%">' : '<col style="width:14%"><col style="width:9%"><col style="width:11%"><col style="width:36%"><col style="width:11%"><col style="width:19%">'}</colgroup><thead><tr><th>${english ? '英文文献' : '文献'}</th><th>角色</th><th>分类号</th><th>分类名称与路径</th>${english ? '<th>置信度</th><th>跨语言类目映射表</th>' : '<th>分类置信度</th>'}<th>领域标签</th></tr></thead><tbody>${rows.map((item, index) => `<tr>${mergedRecordCell(rows, index, item.record, item.record.name)}<td><span class="${prefix}-role-badge-${version}">${item.role === 'secondary' || item.resultIndex > 0 ? '次分类' : '主分类'}</span></td><td><span class="${prefix}-code-${version}">${escapeHtml(valueOf(item, ['clc_code', 'code']))}</span></td><td><b>${escapeHtml(valueOf(item, ['category_name', 'label']))}</b><br><span>${escapeHtml(classificationPath(item))}</span></td><td>${confidence(item.confidence)}</td>${english ? enMappingCell(item.record.mapping, prefix, version) : ''}<td>${item.resultIndex > 0 ? '—' : (item.record.labels.map(label => `<span class="${prefix}-domain-tag-${version}">${escapeHtml(valueOf(label, ['label', 'name'], label))}</span>`).join(' ') || '未提供领域标签')}</td></tr>`).join('') || `<tr><td colspan="${colSpan}">当前响应未包含可展示的分类结果。</td></tr>`}</tbody></table></div></div>
     <div class="${prefix}-result-card-${version}"><div class="${prefix}-result-title-${version}">${english ? '文献分布分析报告' : '归类统计表'}</div>${english ? `<div class="review-report-summary-strip"><span>文献总数 <b>${distributionReport.document_count ?? records.length}</b></span><span>已分类 <b>${distributionReport.classified_document_count ?? successful}</b></span><span>中图类别 <b>${distributionReport.clc_category_count ?? categories}</b></span><span>领域标签 <b>${domainLabelCount}</b></span></div>` : ''}<div class="${prefix}-result-table-wrap-${version}"><table class="${prefix}-result-table-${version}"><colgroup><col style="width:12%"><col style="width:18%"><col style="width:38%"><col style="width:10%"><col style="width:10%"><col style="width:12%"></colgroup><thead><tr><th>中图分类号</th><th>分类名称</th><th>分类路径</th><th>文献数量</th><th>文献占比</th><th>平均置信度</th></tr></thead><tbody>${distributions.map(item => `<tr><td>${escapeHtml(valueOf(item, ['clc_code', 'code', 'category']))}</td><td>${escapeHtml(valueOf(item, ['category_name', 'label']))}</td><td>${escapeHtml(Array.isArray(item.classification_path) ? item.classification_path.join(' > ') : item.classification_path || '—')}</td><td>${escapeHtml(valueOf(item, ['document_count', 'count'], 0))}</td><td>${item.document_percentage != null ? fixed(item.document_percentage, 1) : fixed(number(item.document_ratio) * 100, 1)}%</td><td>${confidence(item.average_confidence)}</td></tr>`).join('') || '<tr><td colspan="6">暂无批量分类分布数据。</td></tr>'}</tbody></table></div>${english && domainDistributions.length ? `<div class="distribution-subsection-title">领域标签分布</div><div class="${prefix}-result-table-wrap-${version}"><table class="${prefix}-result-table-${version}"><thead><tr><th>领域标签</th><th>文献数量</th><th>文献占比</th><th>平均置信度</th></tr></thead><tbody>${domainDistributions.map(item => `<tr><td>${escapeHtml(item.label || '—')}</td><td>${number(item.document_count)}</td><td>${fixed(item.document_percentage, 1)}%</td><td>${confidence(item.average_confidence)}</td></tr>`).join('')}</tbody></table></div>` : ''}</div>
-    ${confirmationItems ? `<div class="${prefix}-result-card-${version}"><div class="${prefix}-result-title-${version}">候选分类与人工确认</div><div class="${prefix}-confirm-list-${version}">${confirmationItems}</div><div class="${prefix}-note-${version}">${confirmationNote}</div></div>` : ''}
+    
   </div>`
 }
 

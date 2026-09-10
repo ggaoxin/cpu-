@@ -73,7 +73,18 @@ async function parseResponse(response: Response) {
     ? await response.json()
     : { message: await response.text() }
   if (!response.ok || Number(body?.code || 0) !== 0) {
-    const detail = body?.detail || body?.message || `请求失败（HTTP ${response.status}）`
+    // 失败原因优先级：detail（FastAPI 422）> error_summary（业务失败的真实原因，
+    // 如语言不匹配/解析失败——message 只是状态字符串 "failed"，对用户无信息量）
+    // > 逐条 results 里首个带 error 的记录（无汇总时的兜底）> message > HTTP 状态
+    const data = body?.data
+    const firstItemError = Array.isArray(data?.results)
+      ? (data.results as Array<Record<string, unknown>>).find(item => item && item.error)?.error
+      : null
+    const detail = body?.detail
+      || data?.error_summary
+      || firstItemError
+      || body?.message
+      || `请求失败（HTTP ${response.status}）`
     throw new ApiRequestError(typeof detail === 'string' ? detail : JSON.stringify(detail), response.status, body)
   }
   return body
@@ -83,9 +94,13 @@ export async function executeToolRequest(
   endpoint: string,
   mode: InputMode,
   payload: Record<string, unknown>,
+  opts?: { headers?: Record<string, string> },
 ) {
   const fileMode = mode === 'file' || mode === 'batch' || containsFile(payload)
-  const init: RequestInit = { method: 'POST', headers: { Accept: 'application/json' } }
+  const init: RequestInit = {
+    method: 'POST',
+    headers: { Accept: 'application/json', ...(opts?.headers || {}) },
+  }
   if (fileMode) {
     const form = new FormData()
     Object.entries(payload).forEach(([key, value]) => appendFormValue(form, key, value))

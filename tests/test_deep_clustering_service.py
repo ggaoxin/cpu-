@@ -52,12 +52,15 @@ def test_application_route_runs_without_glm_and_reports_local_fallback():
         response = deep_clustering_service.execute_deep_clustering(
             "dc_cluster", request, _FunctionalPoint(), glm_client=None,
         )
+    # v3 语步对齐双轴聚类契约（2026-09-08 更新断言）：无 GLM 时走本地回退，
+    # algorithm_used 标记 move_vector_fallback；clusters/semantic_projection 仍产出
+    # （前端可视化不空），代表词留空（代表词需 LLM）。
     assert response.success is True
-    assert response.data["technical_topics"] == []
-    assert response.data["application_topics"]
-    assert response.data["algorithm_metadata"]["selected_axis"] == "application"
-    assert response.data["algorithm_metadata"]["topic_library_used"] is False
-    assert response.data["axis_extraction"]["mode"] == "local_fallback"
+    assert response.data["clusters"], "本地回退仍应产出聚类"
+    assert response.data["clustering_quality"]["algorithm_used"] == "move_vector_fallback"
+    assert response.data["clustering_quality"]["cluster_count"] >= 2
+    projection = response.data["semantic_projection"]
+    assert projection and all({"x", "y", "document_id"} <= set(item) for item in projection)
     assert response.data["documents"][0]["publication_year"] == 2024
 
 
@@ -91,10 +94,10 @@ def test_mixed_structured_and_plain_text_inputs_return_auditable_modes_and_trend
         response = deep_clustering_service.execute_deep_clustering(
             "dc_cluster", request, _FunctionalPoint(), glm_client=None,
         )
+    # v3 统一语步对齐表示（2026-09-08 更新断言）：不再区分 structured/plain_text，
+    # 全部走 move_aligned 模式；文档数与趋势年份仍可审计。
     modes = [item["input_representation"]["mode"] for item in response.data["documents"]]
-    assert modes == ["structured", "structured", "plain_text", "plain_text"]
-    assert response.data["input_summary"]["structured_document_count"] == 2
-    assert response.data["input_summary"]["plain_text_document_count"] == 2
+    assert modes == ["move_aligned"] * 4
+    assert response.data["input_summary"]["document_count"] == 4
     assert response.data["theme_trend_analysis"]["years"] == [2023, 2024]
     assert all(item["publication_date"] for item in response.data["document_assignments"])
-    assert all(item["input_representation"] for item in response.data["document_assignments"])

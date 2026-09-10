@@ -784,7 +784,8 @@ function processSelectedFiles(files: File[], multiple: boolean, reset?: () => vo
     // 必须取 reactive 代理引用（uploadedFiles 内的元素），持原始对象改属性不触发视图更新
     queueParse(uploadedFiles[uploadedFiles.length - 1])
   })
-  input.value = ''
+  // 清空原生 file input，否则重选同一文件不触发 change（作用域无 input——
+  // 历史遗留游离语句在此抛 ReferenceError，由调用方的 reset 回调负责清空）
 }
 
 // 上传即解析：XHR 以获取真实上传进度（fetch 无法跟踪上传字节），上传完进入
@@ -804,14 +805,39 @@ function pumpParses() {
   while (activeParses < PARSE_CONCURRENCY && parseQueue.length) {
     const item = parseQueue.shift()!
     activeParses += 1
-    uploadAndParse(item, () => { activeParses -= 1; pumpParses() })
+    uploadAndParse(item, () => {
+      activeParses -= 1
+      if (activeParses === 0 && parseQueue.length === 0) resetScanHint()
+      pumpParses()
+    })
   }
+}
+
+// 扫描件慢解析提示（2026-09-08 需求）：PyMuPDF 快路径毫秒级出结果；扫描件/
+// 图片型 PDF 会回退 mineru OCR，一篇需数十秒。解析超 5s 仍无结果时提示一次
+// （正常文件 95% 在 1.5s 内完成，超时即 mineru 路径高概率），避免用户以为卡死。
+let scanHintTimer: ReturnType<typeof setTimeout> | undefined
+let scanHintShown = false
+function armScanHint() {
+  if (scanHintShown || scanHintTimer) return
+  scanHintTimer = setTimeout(() => {
+    scanHintTimer = undefined
+    if (uploadedFiles.some(item => item.parseState === 'uploading' || item.parseState === 'parsing')) {
+      scanHintShown = true
+      showToast('文档正在结构化解析（多页文档约 10~30 秒/篇，扫描件更久），请耐心等待！')
+    }
+  }, 5000)
+}
+function resetScanHint() {
+  if (scanHintTimer) { clearTimeout(scanHintTimer); scanHintTimer = undefined }
+  scanHintShown = false
 }
 
 function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
   item.parseState = 'uploading'
   item.parseProgress = 0
   item.parseError = ''
+  armScanHint()
   const xhr = new XMLHttpRequest()
   const form = new FormData()
   form.append('tool_id', props.toolId)
@@ -1037,6 +1063,61 @@ function validateRequiredInputs(): string {
   return requiredResourceError()
 }
 
+// 批量等待期实时进度（2026-09-09 需求）：respond-async 提交 + 轮询逐篇完成状态/耗时
+interface RunProgressItem { index: number; file_name: string; status: string; elapsed_ms: number }
+const runProgress = ref<null | {
+  total: number; success_count: number; failed_count: number; elapsed: string; items: RunProgressItem[]
+}>(null)
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+async function runBatchWithProgress(endpoint: string, payload: Record<string, unknown>) {
+  const inputType = mode.value === 'batch' ? 'files' : 'texts'
+  // Prefer: respond-async → 后端 202 立即返回 task_id，逐篇执行状态落库可轮询
+  const accepted = await executeToolRequest(endpoint, mode.value, payload, {
+    headers: { Prefer: 'respond-async' },
+  })
+  const taskId = (accepted as Record<string, unknown> | null)?.data
+    ? ((accepted as { data: { task_id?: string } }).data.task_id)
+    : undefined
+  if (!taskId) return accepted // 某些路径同步完成（如立即失败），直接用返回体
+  const startedAt = Date.now()
+  let terminal = false
+  let pollingFailures = 0
+  while (!terminal) {
+    await sleep(1500)
+    try {
+      const res = await fetch(apiUrl(`/api/v1/tasks/${taskId}/progress`), { headers: { Accept: 'application/json' } })
+      const body = await res.json()
+      const data = body?.data
+      if (data) {
+        runProgress.value = {
+          total: data.total ?? 0,
+          success_count: data.success_count ?? 0,
+          failed_count: data.failed_count ?? 0,
+          elapsed: ((Date.now() - startedAt) / 1000).toFixed(0),
+          items: Array.isArray(data.items) ? data.items : [],
+        }
+        if (['succeeded', 'partial_failed', 'failed', 'cancelled'].includes(String(data.status))) terminal = true
+      }
+      pollingFailures = 0
+    } catch {
+      pollingFailures += 1 // 轮询瞬时网络错误容忍，连续 10 次才放弃
+      if (pollingFailures >= 10) throw new Error('进度查询连续失败，请检查后端服务')
+    }
+    if (Date.now() - startedAt > 15 * 60 * 1000) throw new Error('任务超时（15 分钟）未完成')
+  }
+  const finalRes = await fetch(
+    apiUrl(`/api/v1/tasks/${taskId}/vue-result?tool_id=${encodeURIComponent(props.toolId)}&input_type=${inputType}`),
+    { headers: { Accept: 'application/json' } },
+  )
+  const finalBody = await finalRes.json()
+  if (!finalRes.ok || Number(finalBody?.code || 0) !== 0) {
+    const detail = finalBody?.detail || finalBody?.message || `HTTP ${finalRes.status}`
+    throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
+  }
+  return finalBody
+}
+
 async function run() {
   const validationError = validateRequiredInputs()
   if (validationError) {
@@ -1048,6 +1129,7 @@ async function run() {
   running.value = true
   result.value = null
   requestError.value = ''
+  runProgress.value = null
   try {
     // 预解析提交：文件模式全部解析完成时，剥离文件本体、只带 parse_id——
     // 点测试后的耗时只剩功能执行（解析已在上传动作完成）
@@ -1061,11 +1143,12 @@ async function run() {
         }
       }
     }
-    result.value = await executeToolRequest(
-      endpointFor(props.tool, mode.value),
-      mode.value,
-      payload,
-    )
+    // 批量（文件≥2 / 批量文本≥2）走异步任务+实时进度；单篇保持同步直返
+    const batchCount = mode.value === 'batch' ? uploadedFiles.length : mode.value === 'batch-text' ? docs.length : 1
+    const useAsyncProgress = batchCount >= 2 && !['deep-cluster', 'cluster-label', 'structured-review'].includes(props.toolId)
+    result.value = useAsyncProgress
+      ? await runBatchWithProgress(endpointFor(props.tool, mode.value), payload)
+      : await executeToolRequest(endpointFor(props.tool, mode.value), mode.value, payload)
     // 引用工具文件模式：PDF 解析成功但未检测到引用标记时引擎返回空结果，
     // 给出业务提示（后端不报参数错误），避免用户只看到空列表
     if (props.toolId.startsWith('citation-') && (mode.value === 'file' || mode.value === 'batch')) {
@@ -1082,6 +1165,7 @@ async function run() {
     requestError.value = `在线测试失败：${message}`
   } finally {
     running.value = false
+    runProgress.value = null
   }
 }
 function clearResult() { result.value = null; requestError.value = '' }
@@ -1342,7 +1426,7 @@ function downloadResult() {
             </div>
           </template>
           <template v-else-if="mode === 'file' && toolId !== 'relation-extract'">
-            <div class="field single-file-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}文件</span><small>本次只处理一个文件</small></label><label class="upload-zone single-file-upload-zone" @dragover.prevent @drop.prevent="handleFileDrop($event, false)"><input type="file" accept=".pdf,.docx,.txt" @change="handleFileSelection($event, false)" /><span class="upload-icon">⇧</span><b>选择一个文件或拖拽到此处</b><small>支持 PDF、DOCX、TXT，单文件最大 50 MB</small></label><div v-if="uploadedFiles.length" class="selected-file-list single-file-list"><article v-for="item in uploadedFiles.slice(0,1)" :key="item.id" class="selected-file-row"><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">已解析 {{ item.parsedChars }} 字</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">解析失败，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span><div><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }}</small></div><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article></div></div>
+            <div class="field single-file-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}文件</span><small>本次只处理一个文件</small></label><label class="upload-zone single-file-upload-zone" @dragover.prevent @drop.prevent="handleFileDrop($event, false)"><input type="file" accept=".pdf,.docx,.txt" @change="handleFileSelection($event, false)" /><span class="upload-icon">⇧</span><b>选择一个文件或拖拽到此处</b><small>支持 PDF、DOCX、TXT，单文件最大 50 MB</small></label><div v-if="uploadedFiles.length" class="selected-file-list single-file-list"><article v-for="item in uploadedFiles.slice(0,1)" :key="item.id" class="selected-file-row"><i>1</i><div class="file-name-cell"><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }}</small></div><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">解析失败，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article></div></div>
           </template>
           <template v-else-if="mode === 'batch' && toolId !== 'relation-extract'">
             <div class="special-panel batch-file-panel">
@@ -1354,7 +1438,7 @@ function downloadResult() {
                 <template v-if="toolId === 'deep-cluster'">
                   <article v-for="(item,index) in uploadedFiles" :key="item.id" class="document-card deep-cluster-file-card">
                     <div class="document-card-head"><b>文件 {{ index + 1 }} · {{ item.name }}</b><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></div>
-                    <div class="selected-file-summary"><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">已解析 {{ item.parsedChars }} 字</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">解析失败，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span></div>
+                    <div class="selected-file-summary"><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">解析失败，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span></div>
                     <div class="settings-title deep-cluster-metadata-title"><b>文献元数据</b><span>由用户填写，与当前文件一一关联</span></div>
                     <div class="two-column deep-cluster-metadata-grid">
                       <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="item.documentId" class="input" placeholder="例如：DOC001" /></div>
@@ -1367,7 +1451,7 @@ function downloadResult() {
                   </article>
                 </template>
                 <template v-else>
-                  <article v-for="(item,index) in uploadedFiles" :key="item.id" class="selected-file-row"><i>{{ index + 1 }}</i><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">已解析 {{ item.parsedChars }} 字</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">解析失败，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span><div><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }}</small></div><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article>
+                  <article v-for="(item,index) in uploadedFiles" :key="item.id" class="selected-file-row"><i>{{ index + 1 }}</i><div class="file-name-cell"><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }}</small></div><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">解析失败，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article>
                 </template>
               </div>
               <div v-if="toolId === 'deep-cluster'" class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
@@ -1421,7 +1505,7 @@ function downloadResult() {
       <div class="test-card response-card">
         <div v-if="languageMismatch" class="info-banner warning" style="margin:0 0 10px"><b>语言不匹配提示</b><span>{{ languageMismatch }}</span></div>
         <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="downloadResult">⇩ 下载结果</button><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)">▦ 查看可视化结果</button><button id="clearBtn" class="ghost-btn" @click="clearResult">⌫ 清除结果</button></div></div>
-        <div class="response-result-body hover-copy-box"><pre v-if="hasResult" class="console">{{ pretty(result) }}</pre><div v-else-if="requestError" class="console placeholder request-error">{{ requestError }}</div><div v-else class="console placeholder">等待后端返回真实测试结果…</div><button id="copyResultBtnV732" class="hover-copy-btn result-copy" :disabled="!hasResult" @click="copyResult">{{ resultCopied ? '✔' : '⧉ 复制' }}</button></div>
+        <div class="response-result-body hover-copy-box"><pre v-if="hasResult" class="console">{{ pretty(result) }}</pre><div v-else-if="running && runProgress" class="console live-progress"><div class="lp-summary"><b>正在处理 {{ runProgress.total }} 篇</b><span>已完成 {{ runProgress.success_count + runProgress.failed_count }}/{{ runProgress.total }}（成功 {{ runProgress.success_count }}<template v-if="runProgress.failed_count">，失败 {{ runProgress.failed_count }}</template>）· 累计 {{ runProgress.elapsed }}s</span></div><div class="lp-rows"><div v-for="it in runProgress.items" :key="it.index" class="lp-row" :data-st="it.status"><i>{{ it.index + 1 }}</i><span class="lp-name" :title="it.file_name">{{ it.file_name }}</span><template v-if="it.status === 'succeeded'"><b class="lp-ok">✓</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template><template v-else-if="it.status === 'failed'"><b class="lp-err">✗</b><span class="lp-time">失败</span></template><template v-else><b class="lp-run">…</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template></div></div></div><div v-else-if="requestError" class="console placeholder request-error">{{ requestError }}</div><div v-else class="console placeholder">等待后端返回真实测试结果…</div><button id="copyResultBtnV732" class="hover-copy-btn result-copy" :disabled="!hasResult" @click="copyResult">{{ resultCopied ? '✔' : '⧉ 复制' }}</button></div>
       </div>
     </div>
     <RequirementSupplement v-if="toolId === 'deep-cluster'" :tool-id="toolId" :mode="mode" />

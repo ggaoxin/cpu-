@@ -13,6 +13,38 @@ def _list(value: Any) -> List[Any]:
     return [value]
 
 
+def strip_non_move_artifacts(text: str) -> str:
+    """语步划分前剥离 URL/邮箱（2026-09-09 需求：它们不属于任何语步）。
+
+    抽取层为忠实原文保留合法链接/邮箱（如"Code and pre-trained models at
+    https://…"）；service 语步识别前清洗与 normalizer 句子对齐共用本函数同一
+    口径——否则"service 已清、normalizer 按原文重对齐又拼回"会不一致。
+    """
+    import re as _re
+    t = str(text or "")
+    # "Code/Source code …(填充词)… at/available at URL" 整短语清除（含悬空 at）
+    t = _re.sub(
+        r"(?i)\s*(?:code|project\s+page|source\s+code)\b[^.]{0,120}?\s"
+        r"(?:is\s+)?(?:at|available(?:\s+(?:at|online))?|on\s+github)?\s*[:]?\s*https?://\S+\.?",
+        "", t)
+    t = _re.sub(r"(?i)\s*https?://(?:www\.)?(?:github|gitlab|bitbucket|huggingface)\.co(?:m|\.io)/\S+\.?", "", t)
+    t = _re.sub(r"(?i)(?<=\s)(?:at|via|from|see|available\s+at|in)\s+https?://\S+\.?", " ", t)
+    t = _re.sub(r"https?://\S+|www\.\S+\.\w{2,}", " ", t)
+    t = _re.sub(r"[\w.+-]+@[\w-]+\.[\w.]{2,}", " ", t)
+    t = _re.sub(r"[ \t]{2,}", " ", t)
+    # 末句超短碎片修剪：URL/邮箱句被清除后可能暴露 ≤3 词残句（10.pdf "The COT."），
+    # 不属于任何语步，整句剪掉（要求空格分词+拉丁字母，中文整句不受影响）
+    _terms = [m.end() for m in _re.finditer(r"(?<!\d)[.。!?](?=\s|$)", t)]
+    if _terms:
+        _start = _terms[-2] if len(_terms) >= 2 else 0
+        _last_sent = t[_start:].strip()
+        if (_last_sent and " " in _last_sent and _re.search(r"[A-Za-z]", _last_sent)
+                and len(_last_sent.split()) <= 3):
+            t = t[:_start].rstrip()
+    # 只剥空格/逗号/分号，保留句末句点（原 strip(' ,.;') 会吃掉末句句号）
+    return t.strip(" ,;")
+
+
 def _confidence(item: Dict[str, Any], default: Optional[float] = None) -> Optional[float]:
     value = item.get("confidence", item.get("score", item.get("weight")))
     if value in (None, ""):
@@ -37,7 +69,6 @@ _UNIVERSAL_VIZ_KEEP = frozenset({
     # 前端 recordsOf/结果标识/人工确认流程的通用字段
     "results", "status", "record_id", "file_name", "input",
     "document", "document_title", "project_name", "abstract",
-    "manual_confirmation", "confirmation_status",
 })
 
 _VIZ_KEEP_FIELDS: Dict[str, frozenset] = {
@@ -46,17 +77,17 @@ _VIZ_KEEP_FIELDS: Dict[str, frozenset] = {
     "en-abstract-move": frozenset({"moves", "sentence_count"}),
     "zh-classify": frozenset({
         "classifications", "multilevel_classification_results",
-        "candidate_classifications", "domain_labels", "is_interdisciplinary",
+        "domain_labels", "is_interdisciplinary",
         "classification_statistics_table",
     }),
     "en-classify": frozenset({
         "classifications", "multilevel_classification_results",
-        "candidate_classifications", "domain_labels", "is_interdisciplinary",
+        "domain_labels", "is_interdisciplinary",
         "literature_distribution_analysis_report", "cross_language_mapping",
     }),
     "domain-classify": frozenset({
         "classifications", "multilevel_classification_results",
-        "candidate_classifications", "candidates", "domain_labels",
+        "domain_labels",
         "domain_match_result", "selected_domain", "professional_domain",
         "classification_confidence",
     }),
@@ -595,7 +626,10 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     # 摘要语步句子完整性对齐：一个句子不能被拆给两个语步（LLM 可能从句中截断，
     # 如"…降低 61%、56、"结尾 + "42%，系统…"开头）。对齐到句末标点边界，
     # 重叠句归重叠更多的语步，被让空的语步置空。基金语步是归纳性文本不做对齐。
+    # 对齐源先过 URL/邮箱剥离（与 service 语步清洗同口径），防止清掉的链接
+    # 句子在对齐重组时被拼回语步。
     if tool_id in {"zh-abstract-move", "en-abstract-move"} and document.get("abstract"):
+        document["abstract"] = strip_non_move_artifacts(str(document["abstract"]))
         _align_moves_to_sentences(moves, str(document["abstract"]))
     result = {
         **data,
@@ -793,16 +827,11 @@ def _domain_classification(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
         "multilevel_classification_results": multilevel,
         "classification_confidence": classification_confidence,
         "domain_labels": domain_labels,
-        "candidate_classifications": candidate_classifications,
-        "manual_confirmation": manual_confirmation,
         "data_distribution_report": data_distribution_report,
         "taxonomy_version": data.get("taxonomy_version"),
-        # 向后兼容旧字段
         "classifications": multilevel,
-        "candidates": candidate_classifications,
         "levels": multilevel,
         "primary_classification": multilevel[0] if multilevel else None,
-        "confirmation_status": "pending",
     }
 
 

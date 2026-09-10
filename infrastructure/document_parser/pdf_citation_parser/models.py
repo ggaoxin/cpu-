@@ -30,6 +30,7 @@ class AbstractConfig:
     max_chars: int = 6500
     min_confidence: float = 0.55
     enable_unheaded: bool = True
+    preferred_language: Literal["auto", "zh", "en"] = "auto"
 
 
 @dataclass(slots=True)
