@@ -4106,26 +4106,14 @@ class SemanticApplicationService(ISemanticService):
                         else {"用于背景介绍", "用于引入研究方法", "用于结果比较"})
         label_field = "sentiment" if is_sentiment else "intent"
 
-        # 同句同标签合并（2026-09-10 用户要求去重）：句内多引用按编号拆分的
-        # 多条记录（"[2-3]"→[2]+[3] 各一条"中立"）在响应里是纯重复行。按
-        # (原句, 标签) 分组合并为一行，标记取组内全部标记——组的编号恰好
-        # 覆盖句中全部标记时恢复原句原始形态（"[2-3]"）。同句不同标签保留
-        # 多条（意图工具中同句 [1]背景/[2]结果比较 是真实差异，不合并）。
+        # 去重与保留规则（2026-09-10 用户两轮拍板）：句内多引用按编号拆分出
+        # 的多条记录，按 (原句, 标签, 括号组来源) 分组——
+        # - 同一括号组拆出的（"[2-3]"→[2]+[3] 两条"中立"）合并为一行，
+        #   标记恢复原始形态（"[2-3]"）；
+        # - 句内前后跟的独立标记（"…关键特征[3]，进而…量化[4]。"）是两个
+        #   引用事件，各自引用不同内容（sub_span 不同），即使同标签也不合并；
+        # - 同句不同标签保留多条（意图工具同句 [1]背景/[2]结果比较 是真实差异）。
         _mk_group_re = _re.compile(r"[\[［]\s*\d+(?:\s*[-–,，]\s*\d+)*\s*[\]］]")
-        _groups: dict = {}
-        _order: list = []
-        for item in labeled:
-            sent = item.get("sentence", "").strip()
-            if not sent:
-                continue
-            label = item.get(label_field, "").strip()
-            if label not in valid_labels:
-                raise RuntimeError(f"GLM-5.2 返回非法引文标签: {label!r}")
-            key = (sent, label)
-            if key not in _groups:
-                _groups[key] = []
-                _order.append(key)
-            _groups[key].append(item)
 
         def _nums_of(mk: str) -> set:
             out_n = set()
@@ -4138,23 +4126,46 @@ class SemanticApplicationService(ISemanticService):
                     out_n.add(int(part))
             return out_n
 
+        def _origin_group(marker: str, sent_mks: list) -> str:
+            # 该编号在句中所属的原始括号组（[2]→"[2-3]"）；句中找不到时按
+            # 自身（独立成组，天然不与别人合并）
+            nums = _nums_of(marker)
+            for g in sent_mks:
+                if nums and nums.issubset(_nums_of(g)):
+                    return g
+            return marker
+
+        _groups: dict = {}
+        _order: list = []
+        for item in labeled:
+            sent = item.get("sentence", "").strip()
+            if not sent:
+                continue
+            label = item.get(label_field, "").strip()
+            if label not in valid_labels:
+                raise RuntimeError(f"GLM-5.2 返回非法引文标签: {label!r}")
+            _m = str(item.get("citation_marker") or "").strip()
+            key = (sent, label, _origin_group(_m, _mk_group_re.findall(sent)))
+            if key not in _groups:
+                _groups[key] = []
+                _order.append(key)
+            _groups[key].append(item)
+
         out = []
-        for (sent, label) in _order:
-            items = _groups[(sent, label)]
-            marker = str(items[0].get("citation_marker") or "").strip()
-            group_markers = []
-            for it in items:
-                for mk in [str(it.get("citation_marker") or "").strip()] + list(it.get("citation_markers") or []):
-                    if mk and mk not in group_markers:
-                        group_markers.append(mk)
-            # 组编号覆盖句中全部标记 → 恢复原句原始标记形态（"[2-3]"）
-            _sent_mks = _mk_group_re.findall(sent)
-            if _sent_mks:
-                _group_nums = set().union(*[_nums_of(m) for m in group_markers]) if group_markers else set()
-                _sent_nums = set().union(*[_nums_of(m) for m in _sent_mks])
-                if _group_nums == _sent_nums:
-                    group_markers = _sent_mks
-                    marker = _sent_mks[0]
+        for (sent, label, origin) in _order:
+            items = _groups[(sent, label, origin)]
+            if len(items) > 1 and origin:
+                # 同括号组拆分合并：标记恢复原始形态（"[2-3]"）
+                marker = origin
+                group_markers = [origin]
+            else:
+                # 单条（独立标记/引擎路径一句一条）：保留自身标记全集
+                marker = str(items[0].get("citation_marker") or "").strip()
+                group_markers = []
+                for it in items:
+                    for mk in [str(it.get("citation_marker") or "").strip()] + list(it.get("citation_markers") or []):
+                        if mk and mk not in group_markers:
+                            group_markers.append(mk)
             # 找回上下文：优先按引用标记匹配（同句多条各自对齐），退回句子匹配
             ctx = next((c for c in citations
                         if marker and c.get("citation_marker") == marker
