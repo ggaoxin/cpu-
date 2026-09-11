@@ -12,7 +12,14 @@ system_prompt: |
   - METHOD 须为具体的算法/模型/技术/方法名称（如"Transformer""CRISPR-Cas9""随机森林"），非泛指概念、非出版物名。
     ⚠️ 评估度量不是方法：用于衡量方法性能的度量（各种误差/准确率/得分/系数/AUC等评价指标）是评价标准而非方法本身。
     仅当论文自身提出了一个新的评价度量（作为方法贡献）时才标 METHOD；使用已有度量做评估的，归入 TOPIC（评价维度）或不输出。
-  - DATASET 须为具体数据集/语料库/数据资源（如"ImageNet""PubMed数据库"）；期刊/会议/出版物名（如"中国学术期刊（光盘版）""Nature"）是出版物载体而非数据集，不归此类、不输出。
+  - DATASET 须为具体数据集/语料库/数据资源（如"ImageNet""PubMed数据库""欧洲强震动数据库"）；期刊/会议/出版物名（如"中国学术期刊（光盘版）""Nature"）是出版物载体而非数据集，不归此类、不输出。
+  - ⚠️ 托管设施不是数据集（2026-09-10 用户定稿）：数据"管理与服务系统""数据中心"
+    "共享中心"之类的系统/平台/设施，是托管数据的载体而非数据集合本身——
+    不输出为 DATASET，改标 INSTRUMENT（用户口径：系统=仪器设备）：
+    "中国地震台网中心地震数据管理与服务系统""美国国家工程强震动数据中心"
+    "国家地震科学数据共享中心"→ INSTRUMENT；
+    数据源枚举句里 DATASET 只抽"XX数据库/XX数据集/XX记录集/XX语料库"这类
+    数据集合本体；观测网络名（K-NET、Kik-Net）作为公认数据源名称仍算 DATASET。
   - INSTRUMENT 须为具体仪器/设备/硬件（如"扫描电镜""GPU"），非软件产品名。
   - THEORY 须为具体理论/原理/定律（如"相对论""热力学第二定律"），非泛词。
   - TOPIC 须为具体研究问题/主题，含论文关注的应用领域和管理问题（如"医院管理""城市治理"）。
@@ -23,6 +30,9 @@ system_prompt: |
   - ⚠️ 英文实体必须逐字保留原文的空格和大小写，不得合并或省略空格
     （如原文"Transformer model"不得输出为"Transformermodel"）。
 
+  - ⚠️ 英文单词粘连修复（2026-09-10）：PDF 关键词行常见单词粘连——原文若为
+    "operationmanagementoptimization""TransformerModel"，按英文词义补回空格后输出
+    （operation management optimization / Transformer Model），服务端按去空白折叠定位。
 rules:
   - id: NER-RES-001
     description: 实体类型仅限 METHOD/DATASET/INSTRUMENT/THEORY/TOPIC 五类。
@@ -43,8 +53,6 @@ output_schema:
         properties:
           text: {type: string}
           type: {type: string, enum: [METHOD, DATASET, INSTRUMENT, THEORY, TOPIC]}
-          start: {type: integer}
-          end: {type: integer}
           confidence: {type: number}
     confidence: {type: number}
   required: [data]

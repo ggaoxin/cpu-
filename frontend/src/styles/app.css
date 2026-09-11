@@ -486,6 +486,59 @@ body.v690-general-ner-active .ner-results-table td,
   min-height: 180px;
   max-height: 320px;
 }
+/* 结构化自动综述三层树/溯源抽屉 —— 对齐摘要语步识别的中性风格
+   （2026-09-11 用户定稿：白底细边框，去掉突兀的蓝底色块） */
+.v710-review-question-head {
+  background: #fff !important;
+  color: #334a69 !important;
+  border-bottom: 1px solid #e4e7eb !important;
+}
+.v710-review-method { background: #fff; }
+.v710-review-progress {
+  background: #fff;
+  padding: 8px 10px;
+  border-left: 3px solid #e4e9f2;
+}
+.v710-review-evidence-drawer {
+  background: #fff !important;
+  border: 1px solid #e4e7eb !important;
+}
+.v710-review-evidence-drawer .v710-review-table-wrap { border-color: #e4e7eb; }
+.v710-review-table th,
+.v710-review-table td { border-bottom-color: #e9ebee; }
+.v710-review-chip {
+  color: #2458c6;
+  background: #edf3ff;
+  border: 1px solid #c9d8f4;
+  border-radius: 999px;
+}
+.v710-review-evidence-drawer-head b { color: #334a69; }
+/* 文献chip下方就地展开的证据表（2026-09-11 用户定稿替代底部抽屉） */
+.v710-review-inline-evidence { margin-top: 9px; }
+.v710-review-inline-evidence[hidden] { display: none; }
+.v710-review-inline-evidence .v710-review-table-wrap { border-color: #e4e7eb; }
+
+/* 溯源询证表格边框 —— 中性灰（不偏蓝）：单元格竖向分隔线 + 行底横线 +
+   文献组间粗分界线，末行收底 */
+.v710-review-table { background: #fff !important; }
+.v710-review-table tbody td { background: #fff !important; }
+.v710-review-table tbody td {
+  border-right: 1px solid #e4e7eb;
+  border-bottom: 1px solid #e9ebee;
+}
+.v710-review-table tbody td:last-child { border-right: 0; }
+.v710-review-table tbody tr:last-child td { border-bottom: 0; }
+.v710-review-table tbody tr.v710-review-doc-start td {
+  border-top: 2px solid #c3cad4;
+}
+.v710-review-table td.v710-review-doc-cell {
+  vertical-align: middle !important;
+  color: #334a69;
+  background: #fff !important;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
 body.v663-fund-move-active .fund-move-result-table-v663 td.fund-move-record-index-v663 {
   vertical-align: middle !important;
   text-align: center;
@@ -623,7 +676,7 @@ body.v663-fund-move-active .fund-move-src-sep {
 .relation-readonly-preview .settings-title { margin-bottom: 10px; }
 .relation-sentence-preview { display: grid; grid-template-columns: max-content minmax(0,1fr); align-items: baseline; gap: 14px; padding: 11px 12px; background: #fff; border: 1px solid #e2e8f1; border-radius: 8px; }
 .relation-sentence-preview b { color: #34465f; font-size: 12px; white-space: nowrap; }
-.relation-sentence-preview p { margin: 0; color: #5f6f85; font-size: 12px; line-height: 1.7; text-align: right; }
+.relation-sentence-preview p { margin: 0; color: #5f6f85; font-size: 12px; line-height: 1.7; text-align: left; }
 .relation-entity-preview { margin-top: 10px; padding: 11px 12px; background: #fff; border: 1px solid #e2e8f1; border-radius: 8px; }
 .relation-entity-preview > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .relation-entity-preview > div b { color: #34465f; font-size: 12px; }
@@ -729,7 +782,8 @@ body.v663-fund-move-active .fund-move-src-sep {
 .v710-review-evidence-drawer-head > div { display: flex; min-width: 0; align-items: baseline; gap: 10px; }
 .v710-review-evidence-drawer-head b { color: #2f5689; font-size: 13px; }
 .v710-review-evidence-drawer-head span { color: #7e8da1; font-size: 10.5px; }
-.review-trace-highlight { outline: 2px solid rgba(55,110,247,.38); outline-offset: -2px; background-color: #eef5ff !important; transition: background-color .2s ease, outline-color .2s ease; }
+/* 追踪高亮改中性灰（2026-09-11 用户反馈蓝框突兀）：浅灰底+灰外框 */
+.review-trace-highlight { outline: 2px solid rgba(139,148,161,.45) !important; outline-offset: -2px; background-color: #f6f8fb !important; transition: background-color .2s ease, outline-color .2s ease; }
 
 /* 结构化综述：正式报告版式。 */
 .review-report-paper { position: relative; max-width: 920px; margin: 0 auto; overflow: hidden; color: #283a54; background: #fff; border: 1px solid #dce4ef; border-radius: 12px; box-shadow: 0 12px 32px rgba(39,61,92,.08); }
@@ -787,6 +841,7 @@ body.v663-fund-move-active .fund-move-src-sep {
 .review-trend-fill { display: block; height: 100%; background: linear-gradient(90deg,#7e9ff7 0%,#315efb 100%); border-radius: inherit; box-shadow: 0 4px 11px rgba(49,94,251,.2); }
 .review-trend-dot { position: absolute; top: 50%; width: 16px; height: 16px; background: #fff; border: 4px solid #315efb; border-radius: 50%; box-shadow: 0 2px 7px rgba(32,60,119,.23); transform: translate(-50%,-50%); }
 .review-trend-row > strong { color: #315efb; font-size: 13px; text-align: right; }
+
 .review-trend-tone-1 .review-trend-label > i { color: #7657ce; background: #f3efff; }
 .review-trend-tone-1 .review-trend-fill { background: linear-gradient(90deg,#a894e5,#7657ce); }
 .review-trend-tone-1 .review-trend-dot { border-color: #7657ce; }
@@ -1303,3 +1358,41 @@ mark.fund-move-orig-mark-v663 {
 .parse-text.ok { color: #16835d; }
 .parse-text.err { color: #c0392b; cursor: pointer; border: 0; background: none; padding: 0; }
 .selected-file-row { gap: 10px; }
+
+/* 概念定义统计报告·任务概况三等分填满整行：原型 CSS 按 4 列网格生成
+   （原第 4 格"待人工复核"已按需求删除），3 项时右侧空一格 → 覆盖为 3 列 */
+.definition-report-summary { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+@media (max-width: 900px) {
+  .definition-report-summary { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
+
+/* 标准知识库映射ID 徽章放宽（2026-09-11 用户反馈）：ID 较长不再强制单行挤压 */
+.domain-research-results-table .domain-kb-id {
+  white-space: normal;
+  word-break: break-all;
+  display: inline-block;
+  max-width: 100%;
+  line-height: 1.5;
+}
+
+/* 关系识别上游语境片段逐行展示（2026-09-11）：span 块级化，每条片段独立一行 */
+.relation-context-lines span { display: block; }
+.relation-context-lines { max-height: 220px; overflow-y: auto; text-align: left; }
+
+/* 实体关系识别详情行：CSS 缩进模拟"从第二列开始"（不改表格结构，
+   colspan 整行 + padding-left 缩进，不触发 table-layout:fixed 列宽重算） */
+.relation-results-table .relation-detail-cell {
+  padding-left: 8% !important;
+  border-left: 3px solid #e4e9f2 !important;
+}
+
+/* 实体关系识别表列宽（table-layout:fixed 下 colgroup 可能被覆盖——用 nth-child
+   直接设 th 宽度，确保句子位置列不塌为 0） */
+.relation-results-table thead th:nth-child(5) { width: 16% !important; min-width: 80px !important; }
+
+/* 撤销 prototype 的隐藏规则（原隐藏句子位置列，该列已从 HTML 移除后
+   nth-child(5) 指向了置信度列——恢复显示） */
+.relation-results-table thead th:nth-child(5),
+.relation-results-table tbody > tr.relation-main-row > td:nth-child(5) {
+  display: table-cell !important;
+}

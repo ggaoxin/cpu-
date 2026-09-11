@@ -122,14 +122,25 @@ function handleVisualizationClick(event: MouseEvent) {
   const reviewSourceButton = target.closest<HTMLElement>('[data-review-source]')
   if (reviewSourceButton && reviewRoot) {
     const documentId = reviewSourceButton.dataset.reviewSource || ''
-    const drawer = reviewRoot.querySelector<HTMLElement>('[data-review-evidence-drawer]')
-    drawer?.removeAttribute('hidden')
-    reviewRoot.querySelectorAll<HTMLElement>('[data-review-document]').forEach(row => {
-      row.classList.toggle('review-trace-highlight', row.dataset.reviewDocument === documentId)
-    })
-    const evidenceRow = [...reviewRoot.querySelectorAll<HTMLElement>('[data-review-document]')]
-      .find(row => row.dataset.reviewDocument === documentId)
-    evidenceRow?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    // 2026-09-11 用户定稿：点击文献chip → 该chip正下方就地展开此文献的证据表；
+    // 同一chip再点一次收起。表格从隐藏存储区拷入（无状态，可多处复用）。
+    const slot = reviewSourceButton.closest('.v710-review-progress')
+      ?.querySelector<HTMLElement>('[data-review-inline-evidence]')
+    const storeTable = documentId
+      ? reviewRoot.querySelector<HTMLElement>(`[data-review-doc-table="${CSS.escape(documentId)}"]`)
+      : null
+    if (slot && storeTable) {
+      if (!slot.innerHTML.trim()) slot.innerHTML = storeTable.innerHTML
+      const showing = !slot.hidden && slot.dataset.doc === documentId
+      // 手风琴语义（2026-09-11 用户定稿）：展开一个收起其他——点 FILE003 时
+      // 之前展开的 FILE002 表收起，任何时刻至多一张证据表打开
+      reviewRoot.querySelectorAll<HTMLElement>('[data-review-inline-evidence]').forEach(other => {
+        if (other !== slot) other.hidden = true
+      })
+      slot.dataset.doc = documentId
+      slot.hidden = showing
+      if (!showing) slot.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
     return
   }
 
@@ -183,9 +194,40 @@ function handleVisualizationClick(event: MouseEvent) {
   if (detailButton) {
     const root = detailButton.closest('[data-viz-group]') || visualizationHost.value
     const detail = root?.querySelector<HTMLElement>(`#${detailButton.getAttribute('data-viz-detail')}`)
+    // 首列合并单元格同步（NER 表：文献列 rowspan 按主行数渲染，展开/收起
+    // 详情行会增减一行参与布局，rowspan 不同步会溢出串到下一组——向上找
+    // 本组的合并单元格 ±1；无合并单元格的表（关键词等）自动跳过）
+    const adjustRowspan = (row: HTMLElement, delta: number) => {
+      let r = row.previousElementSibling
+      while (r) {
+        const merged = r.querySelector?.('.viz-merged-source-cell[rowspan]')
+        if (merged) {
+          const span = Number(merged.getAttribute('rowspan')) || 1
+          merged.setAttribute('rowspan', String(Math.max(1, span + delta)))
+          break
+        }
+        r = r.previousElementSibling
+      }
+    }
+    const collapseDetail = (row: HTMLElement, btn: HTMLElement) => {
+      row.hidden = true
+      btn.textContent = '查看详情'
+      adjustRowspan(row, -1)
+    }
     if (detail) {
+      if (detail.hidden) {
+        // 手风琴（2026-09-11 用户需求）：同表内收起其它已展开的详情行
+        const table = detail.closest('table')
+        table?.querySelectorAll<HTMLElement>('[data-viz-detail]').forEach(btn => {
+          if (btn === detailButton) return
+          const other = root?.querySelector<HTMLElement>(`#${btn.getAttribute('data-viz-detail')}`)
+          if (other && !other.hidden) collapseDetail(other, btn)
+        })
+      }
+      const willShow = detail.hidden
       detail.hidden = !detail.hidden
       detailButton.textContent = detail.hidden ? '查看详情' : '收起详情'
+      adjustRowspan(detail, willShow ? 1 : -1)
     }
     return
   }

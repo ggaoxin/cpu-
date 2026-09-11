@@ -13,22 +13,74 @@ system_prompt: |
   - ORGANIZATION 须为"组织行为主体"：有成员与组织结构、能作为主办/承担/隶属/资助/组建等行为主体的组织实体（大学、研究所、公司、政府机构、学会/协会、基金会/委员会等）。判定要点：它本身能决策与行动，而非承载内容的载体。
   - 以下虽似专有名词但不是 ORGANIZATION，按语义角色处理或不予输出：
     · 文献/信息资源载体（期刊、报纸、丛书、数据库、检索系统/平台、索引、文摘、年鉴、百科、手册、标准文献、数据集、语料库、知识库）——内容载体非行为主体，四类均不适用时不输出；
-    · 资助项目/计划名（各类基金、973/863/国家重点研发计划等）——项目非组织，不输出；仅其管理机构（含"委员会/中心/办公室"等组织后缀）归 ORGANIZATION；
+    · 资助项目/计划名（各类基金、973/863/国家重点研发计划等）——**只排除项目名本身**；项目所在的"基金项目：…"行中的机构照常抽取（立项主管单位如"四川省教育厅"、研究基地/中心、括号内依托单位如"（西南交通大学）"都是 ORGANIZATION，勿因行首是"基金项目"而整行跳过）；
     · 会议/学术活动名（ICML、ACL年会等）——归 EVENT，非组织；
     · 产品/软件/平台/系统名（检索平台、数据库产品、工具软件等）——产品非组织，不输出；
     · 地名/区域——归 LOCATION；
     · 标准/法规/规范代号（GB/T、ISO、RFC等）——文献规范，不输出。
   - 实体边界取完整语义单元，含括号/版本/版次等限定（如"XX（光盘版）""XX(第3版)"）应整体判定，不得拆分为多个实体。
 
+  召回要点（勿漏，2026-09-10 语料评测短板补强）：
+  - LOCATION 覆盖一切行政区划与地名：国家（USA、China、France）、省/自治区/直辖市
+    （四川、浙江、黑龙江、新疆）、城市（成都、南京、Harbin）、区县；出现在作者简介、
+    作者单位行、基金项目、致谢、正文中的地名同样抽取（"（…学院，江苏 镇江 212100"
+    → LOCATION：江苏、镇江）。
+  - 中文正文里单独出现的国家名也是 LOCATION（中国、美国、日本、韩国等），即使前面
+    没有其他修饰（"日本、欧洲的强震动记录" → LOCATION：日本、欧洲）；但复合专有名词
+    内部不拆（"中国人民银行"是 ORGANIZATION 不拆出"中国"，"中国学术期刊（网络版）"
+    是文献载体名整体不适用四类时不输出）。
+  - ⚠️ 指代性/泛指性词不是 LOCATION（2026-09-10 用户反馈"我国"误判）：我国、本国、
+    国内、境外、国外、海外、全国、全省、全市、本地——这些是指代或泛指方位，不是
+    地名专名，一律不输出；"中国""四川"这类具体专名才算。
+  - PERSON 覆盖：署名作者（含全大写姓名行 "MINGYI HUANG"、缩写名 J. Smith、
+    致谢中的人名）、正文引用的文献作者（"张慧乐等[6]基于…" → PERSON：张慧乐）；
+    英文名取"名+姓"整体（Mingyi Huang），勿拆成两个实体，勿只抽姓。
+  - ORGANIZATION 取完整机构名（含组合后缀）："贵州中医药大学第二附属医院"
+    "江苏科技大学土木工程与建筑学院""高校思想政治工作队伍培训研修中心"均为一个
+    整体实体；同一机构的中文名与英文名各算一次实体（贵州中医药大学第二附属医院 /
+    The Second Affiliated Hospital of Guizhou University of Traditional Chinese Medicine）。
+  - ⚠️ 英文机构按逗号拆分（2026-09-10 用户定稿）：实体内不得含逗号。英文地址行
+    "College of Civil Engineering, Fuzhou University"是两个机构——
+    "College of Civil Engineering"（学院）与"Fuzhou University"（大学）各自独立输出；
+    中文无逗号的连写机构（"福州大学土木工程学院"）仍为一个整体。
+  - 基金项目/课题注释行里的机构全部抽取：立项主管单位、研究基地/中心、以及括号内的
+    依托单位各自是独立的 ORGANIZATION（"2025年四川省教育厅、高校思想政治工作队伍
+    培训研修中心（西南交通大学）…课题" → 三个机构都抽：四川省教育厅、高校思想
+    政治工作队伍培训研修中心、西南交通大学）。
+
+  标注示例（真实语料，模仿其边界与类型）：
+  - "作者简介：余洪涛（2001—），男，四川巴中人，硕士在读"
+    → PERSON：余洪涛；LOCATION：四川、巴中
+  - "（1. 江苏科技大学土木工程与建筑学院，江苏 镇江 212100；2. 南京工业大学…"
+    → ORGANIZATION：江苏科技大学土木工程与建筑学院、南京工业大学；LOCATION：江苏、镇江
+  - "MINGYI HUANG, The Ohio State University, USA"
+    → PERSON：MINGYI HUANG；ORGANIZATION：The Ohio State University；LOCATION：USA
+  - "张慧乐等[6]基于无人机与深度学习方法，在少样本条件下实现了…"
+    → PERSON：张慧乐（等[6]是引用标记不进实体）
+  - "基金项目：本文系2025年四川省教育厅、高校思想政治工作队伍培训研修中心（西南交通大学）思想政治教育研究课题…"
+    → ORGANIZATION：四川省教育厅、高校思想政治工作队伍培训研修中心、西南交通大学（括号内依托单位同样抽取）
+  - "College of Civil Engineering, Fuzhou University, Fuzhou, Fujian 350108, China."
+    → ORGANIZATION：College of Civil Engineering、Fuzhou University（两个机构）；
+      LOCATION：Fuzhou、Fujian、China
+  - "对比日本、欧洲的强震动观测资料…"
+    → LOCATION：日本、欧洲
+
+  - ⚠️ 英文单词粘连修复（2026-09-10）：PDF 关键词行常见单词粘连——原文若为
+    "TransformerModel"，按英文词义补回空格后输出（Transformer Model）。
+  - ⚠️ 机构边界（"X组织的Y设施"）：机构实体只取组织主体本身——"美国强震动观测
+    合作组织的虚拟数据中心"中机构是"美国强震动观测合作组织"，"的虚拟数据中心"
+    是从属数据设施，不并入机构实体（数据资源归 DATASET 类工具/不输出）。
 rules:
   - id: NER-GEN-001
     description: 实体类型仅限 PERSON/LOCATION/ORGANIZATION/EVENT 四类。
   - id: NER-GEN-002
-    description: 输出实体的原文片段、类型、在文本中的字符起止位置。
+    description: 输出实体的原文片段与类型（字符起止位置由服务端定位，无需输出，2026-09-10 响应提速：位置字段占输出 token 近半）。
   - id: NER-GEN-003
     description: 重叠实体择优保留最具语义完整性者，避免冗余。
   - id: NER-GEN-004
     description: 中英文混合时保持实体边界一致，缩写归并。
+  - id: NER-GEN-005
+    description: text 必须是输入文本的逐字片段（不含换行），否则会被服务端校验丢弃。
 
 output_schema:
   type: object
@@ -40,8 +92,6 @@ output_schema:
         properties:
           text: {type: string}
           type: {type: string, enum: [PERSON, LOCATION, ORGANIZATION, EVENT]}
-          start: {type: integer}
-          end: {type: integer}
           confidence: {type: number}
     confidence: {type: number}
   required: [data]

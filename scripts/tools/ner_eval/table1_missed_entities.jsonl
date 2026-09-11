@@ -1,0 +1,201 @@
+{"file": "?????ݸ??ܸ?У?????????ǻۻ?????????ʵ??????·???о?_??????.pdf", "type": "LOCATION", "gold": "石河子", "context": "87 智慧体育 大数据赋能高校体育场馆智慧化建设的现实困境与路径研究  余洪涛  佟志刚  崔芸熙（石河子大学体育学院  新疆  石河子  832000） 引言 在全球数字经济潮流兴起、教育数字化转型不断推"}
+{"file": "???????㷨??????BOPPPSģ???????ڿ?Ѫ??????ʵϰ??ѧ?е?Ӧ???о?_????÷.pdf", "type": "ORGANIZATION", "gold": "选取某医学院", "context": "骤:(1)缺失值填充;(2)异常值剔除;(3)特 征标准化。 2 实验设计与实施 2.1 研究对象 选取某医学院护理学专业60名护理实习生,随机分 为智能BOPPPS组(实验组,n=30)与传统BOPPPS组(对"}
+{"file": "???????㷨??????BOPPPSģ???????ڿ?Ѫ??????ʵϰ??ѧ?е?Ӧ???о?_????÷.pdf", "type": "LOCATION", "gold": "贵州", "context": "收稿日期:2026-01-20 基金项目:贵州中医药大学本科教学内容和课程体系改革项目“贵中医教学工程合字(2024)88号”。 作者简介:蒲兴梅"}
+{"file": "????????AI????_??У˼?????ν??????Ի?ʵ??̽??_??????.pdf", "type": "PERSON", "gold": "成都", "context": "研究成果 大数据与AI 画像:高校思想政治教育个性化实践探索 侯晓洁 (四川传媒学院   表演学院,成都   611745) 摘要:在教育数字化战略推进背景下,大数据与AI 画像已从理论探索进入高校辅导员"}
+{"file": "????????AI????_??У˼?????ν??????Ի?ʵ??̽??_??????.pdf", "type": "PERSON", "gold": "表演学院", "context": "125)的研究成果 大数据与AI 画像:高校思想政治教育个性化实践探索 侯晓洁 (四川传媒学院   表演学院,成都   611745) 摘要:在教育数字化战略推进背景下,大数据与AI 画像已从理论探索进入高校"}
+{"file": "????????AI????_??У˼?????ν??????Ի?ʵ??̽??_??????.pdf", "type": "ORGANIZATION", "gold": "心理中心", "context": "前高校普遍存在的 数据孤岛问题,是制约AI 画像应用的首要瓶颈[2]。 多数高校的学工、教务、后勤、心理中心、图书馆等部 门设有独立管理系统与数据体系,各系统间数据标准 不统一、接口不兼容,导致辅导员可获取的"}
+{"file": "????????AI????_??У˼?????ν??????Ի?ʵ??̽??_??????.pdf", "type": "ORGANIZATION", "gold": "技术公司", "context": "人需求。 (二)工具供给与能力建设错位,应用落地存在双 重鸿沟 现有AI 画像平台与工具大多由第三方技术公司 — 6 2 0 — 2026 年7 月下半月刊(总第263 期) 人工智能与社会生活  开发、高校"}
+{"file": "????????AI????_??У˼?????ν??????Ի?ʵ??̽??_??????.pdf", "type": "ORGANIZATION", "gold": "教育研究中心", "context": ":高校思想政治教育个性化实践与探索”(编号:CJSFZ25-32)、2026 年四川大学生思想政治 教育研究中心项目“‘四全育人’格局下辅导员协同育人枢纽功能建构研究”(编号:CSZ26125)的研究成果 大数据"}
+{"file": "????????AI????_??У˼?????ν??????Ի?ʵ??̽??_??????.pdf", "type": "LOCATION", "gold": "四川", "context": "基金项目:本文系2025 年四川省教育厅、高校思想政治工作队伍培训研修中心(西南交通大学)思想政治教育研究课题(高校辅 导员专项)本"}
+{"file": "????????AI????_??У˼?????ν??????Ի?ʵ??̽??_??????.pdf", "type": "LOCATION", "gold": "浙江", "context": "I 画像模型建设层面,国内头 部高校率先完成学生管理场景AI 画像模型的开发与 试点应用。清华大学、浙江大学、复旦大学等依托自 身技术优势,开发了涵盖学业发展、心理健康、思想动 态、职业发展等多维度的学生"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "ORGANIZATION", "gold": "个聚类中心", "context": "t  如果初始值选择不当，聚类分析结果会收敛到 局部最优解。针对图2 中提到的种群，具体指的是 4 个聚类中心的位置，在此将种群大小设置为10， 代表有10 组随机生成的初始地震动聚类中心候选 方案，通过欧几里"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "ORGANIZATION", "gold": "各聚类中心", "context": "样本空间 T 1 2 { , , , }   n x x x X ，将地震动数 据分为四类，各聚类中心为 1 2 3 4 { , , , } c c c c ，元素 iju 表示第i 个数据点属于第j"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "ORGANIZATION", "gold": "得到各聚类中心", "context": "x c u x c         (3)  根据上式反复修改聚类中心和数据隶属度，当 算法收敛时，得到各聚类中心以及各样本的隶属度， 完成模糊聚类划分，则算法结束，否则进行迭代， 直到达到最大迭代次数算法结束。"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "ORGANIZATION", "gold": "根据上式反复修改聚类中心", "context": "       i j ij j i j x c u x c         (3)  根据上式反复修改聚类中心和数据隶属度，当 算法收敛时，得到各聚类中心以及各样本的隶属度， 完成模糊聚类划分，则算法结束，否则"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "ORGANIZATION", "gold": "由于选取数据集中心", "context": "度，将地 震动记录聚类分成四组。  采用C-均值聚类算法，通过迭代过程把地震动 记录划分到不同类别，由于选取数据集中心点具有 随机性，地震动记录不能严格划分到某类时，具有 非此即彼的性质，在此基础上引入模糊集概念，最"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "ORGANIZATION", "gold": "电子杂志社有限公司", "context": "， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期刊内容一致的网络版，以单篇或整期出版形"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "ORGANIZATION", "gold": "给出聚类中心", "context": "= ( ) ( )      ij i j ik jk k d d x c x c    给出聚类中心和数据隶属度：  3 1 3 1 ( ) =   ( )     n ij i i j n"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "ORGANIZATION", "gold": "聚类中心", "context": "同地震动记录之间 的相互关联规律，根据模糊C-均值聚类算法，将各 个地震动记录震级和震中距的均值作为聚类中心， 通过迭代过程反复修改聚类中心和数据隶属度，给 出初步试算聚类分析结果。然后根据每个给定数据 点的"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "ORGANIZATION", "gold": "通过迭代过程反复修改聚类中心", "context": "之间 的相互关联规律，根据模糊C-均值聚类算法，将各 个地震动记录震级和震中距的均值作为聚类中心， 通过迭代过程反复修改聚类中心和数据隶属度，给 出初步试算聚类分析结果。然后根据每个给定数据 点的隶属度来确定其属于某个聚类分组程"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "LOCATION", "gold": "中国", "context": "作者、机构名称和学术内容， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "LOCATION", "gold": "南京", "context": ",2，吕大刚3，李鸿晶2  （1. 江苏科技大学土木工程与建筑学院，江苏 镇江 212100；2. 南京工业大学土木工程学院，江苏 南京 211816；3. 哈尔 滨工业大学土木工程学院，黑龙江 哈尔滨"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "LOCATION", "gold": "哈尔滨", "context": ". 南京工业大学土木工程学院，江苏 南京 211816；3. 哈尔 滨工业大学土木工程学院，黑龙江 哈尔滨 150090）    摘要：合理选取地震动记录已成为基于性能抗震设计的关键。由于地震动在时间和空间"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "LOCATION", "gold": "江苏", "context": "neering       基金项目：国家自然科学基金项目（52508557, 52578572）、江苏省产学研合作项目（BY20240154）资助  作者简介：刘亭亭（1987—），女，讲师，硕导，博士"}
+{"file": "???𶯼?¼ѡȡ?????ӽǣ?????????????ѧϰ_??ͤͤ.pdf", "type": "LOCATION", "gold": "美国", "context": "输入地震动，本文基于聚类分析和主成分分析 相结合的方法给出不同场地类别的地震动记录推 荐。鉴于此，从美国太平洋地震工程研究中心PEER  NGA-West2 地震动记录数据库中选取较宽的震级 和震中距条带"}
+{"file": "???ڴ????ݵĳǹ?ͻ??????Эͬ???Ȳ???_??ΰΰ.pdf", "type": "LOCATION", "gold": "青岛", "context": "LIC  TRANSPORTATION 基于大数据的城轨突发客流协同调度策略 闫伟伟 张鹏 周文峰 青岛地铁运营有限公司 摘要：针对城市轨道交通突发客流场景下运力响应滞后与运能运量时空失配问题，提出一种基"}
+{"file": "???ڻ???ѧϰ????ͭ?Ͻ?Ӳ???뵼??????Ԥ?⼰?????Ż?_??ͮͮ.pdf", "type": "LOCATION", "gold": "中国", "context": "作者、机构名称和学术内容， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期"}
+{"file": "???ڻ???ѧϰ????ͭ?Ͻ?Ӳ???뵼??????Ԥ?⼰?????Ż?_??ͮͮ.pdf", "type": "LOCATION", "gold": "安徽", "context": "1)# 李霞1)2)# 娄春香1) 任平静1) 丁守军1)2) 邹勇1)2)† 熊纯明3) 1) (安徽工业大学, 微电子与数据科学学院, 马鞍山 243032) 2) (安徽省工业大数据分析与智能决策重"}
+{"file": "????LSTM???ݳ?ʽ?綴????????ģ?????Ʒ???_??֮??.pdf", "type": "ORGANIZATION", "gold": "南京航空航天大学", "context": "10（10）： 2038. ［15］高赫. 基于机器学习的连续式风洞马赫数控制［D］. 南京：  南京航空航天大学， 2020. Gao He. Mach number control of continuous"}
+{"file": "????LSTM???ݳ?ʽ?綴????????ģ?????Ʒ???_??֮??.pdf", "type": "ORGANIZATION", "gold": "哈尔滨工程大学", "context": "） ［17］王凯文. 神经网络PID 控制在FD12 风洞亚跨流场校测中 的应用［D］. 哈尔滨： 哈尔滨工程大学， 2011. Wang Kaiwen. The application of neural net"}
+{"file": "????LSTM???ݳ?ʽ?綴????????ģ?????Ʒ???_??֮??.pdf", "type": "ORGANIZATION", "gold": "电子杂志社有限公司", "context": "， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期刊内容一致的网络版，以单篇或整期出版形"}
+{"file": "????LSTM???ݳ?ʽ?綴????????ģ?????Ʒ???_??֮??.pdf", "type": "ORGANIZATION", "gold": "西北工业大学", "context": "凌忠伟， 田嘉懿， 等. 2 m 高速自由射流风洞流场 前馈—反馈复合控制方法研究与应用［J］. 西北工业大学学 报， 2025， 43（3）： 574-581. Liu Weijie， Ling Zhongw"}
+{"file": "????LSTM???ݳ?ʽ?綴????????ģ?????Ʒ???_??֮??.pdf", "type": "ORGANIZATION", "gold": "辽宁工业大学", "context": "inese） ［11］马靖雯， 张廷丰， 陆明超. 基于数据驱动的跨声速风洞控 制方法研究［J］. 辽宁工业大学学报（自然科学版）， 2024，  44（5）： 298-302， 309. Ma Jingwen，"}
+{"file": "????LSTM???ݳ?ʽ?綴????????ģ?????Ʒ???_??֮??.pdf", "type": "LOCATION", "gold": "中国", "context": "作者、机构名称和学术内容， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期"}
+{"file": "????LSTM???ݳ?ʽ?綴????????ģ?????Ʒ???_??֮??.pdf", "type": "LOCATION", "gold": "南京", "context": "2022， 10（10）： 2038. ［15］高赫. 基于机器学习的连续式风洞马赫数控制［D］. 南京：  南京航空航天大学， 2020. Gao He. Mach number control of"}
+{"file": "????LSTM???ݳ?ʽ?綴????????ģ?????Ʒ???_??֮??.pdf", "type": "LOCATION", "gold": "哈尔滨", "context": "inese） ［17］王凯文. 神经网络PID 控制在FD12 风洞亚跨流场校测中 的应用［D］. 哈尔滨： 哈尔滨工程大学， 2011. Wang Kaiwen. The application of n"}
+{"file": "????LSTM???ݳ?ʽ?綴????????ģ?????Ʒ???_??֮??.pdf", "type": "LOCATION", "gold": "沈阳", "context": "ucation， 2011. ［2］ 王晓军. 基于大数据的风洞马赫数集成建模方法的研究 ［D］. 沈阳： 东北大学， 2016. Wang Xiaojun. The research of ensemb"}
+{"file": "????LSTM???ݳ?ʽ?綴????????ģ?????Ʒ???_??֮??.pdf", "type": "LOCATION", "gold": "辽宁", "context": "inese） ［11］马靖雯， 张廷丰， 陆明超. 基于数据驱动的跨声速风洞控 制方法研究［J］. 辽宁工业大学学报（自然科学版）， 2024，  44（5）： 298-302， 309. Ma Jing"}
+{"file": "????ResNet?Ļ??????????????????ܼ???ģ?Ͳ????Ż??о?_׿??͡.pdf", "type": "ORGANIZATION", "gold": "为最大学", "context": "；s 为衰减周期（设置为30 轮）；𝜂𝑖为第i 个训练轮次的学习率；𝜂min 为最小学习率；𝜂max为最大学习率（设置为初始学习率0.001）；𝑇cur为当前已进行的训练轮次数；𝑇max为 半周期长度（学习率"}
+{"file": "????ResNet?Ļ??????????????????ܼ???ģ?Ͳ????Ż??о?_׿??͡.pdf", "type": "ORGANIZATION", "gold": "传统混凝土均匀性检测方法主要依赖于实验室", "context": "耐久性与使用寿命。在混凝土生产过程中，搅拌是确保各组分充分混合、形成均匀且性能 稳定材料的关键环节。传统混凝土均匀性检测方法主要依赖于实验室抽检和施工人员的经验判断[2]，前者 具有滞后性，无法实现生产过程的实时反馈；后者受主观因素影响大，"}
+{"file": "????ResNet?Ļ??????????????????ܼ???ģ?Ͳ????Ż??о?_׿??͡.pdf", "type": "ORGANIZATION", "gold": "电子杂志社有限公司", "context": "， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期刊内容一致的网络版，以单篇或整期出版形"}
+{"file": "????ResNet?Ļ??????????????????ܼ???ģ?Ͳ????Ż??о?_׿??͡.pdf", "type": "LOCATION", "gold": "中国", "context": "作者、机构名称和学术内容， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期"}
+{"file": "????Transformerģ?͵?????ĳ????????ҽԺ??????Ԥ??_??????.pdf", "type": "ORGANIZATION", "gold": "够帮助医院", "context": "Boost模型相比,平均提升约12%。 5 结 语 门诊量预测是三甲医院智能化管理中的重要环节,能 够帮助医院掌握患者数量动态变化趋势,提高医护资源使 用效率。基于Transformer模型的门诊量预测方法,可"}
+{"file": "????Transformerģ?͵?????ĳ????????ҽԺ??????Ԥ??_??????.pdf", "type": "ORGANIZATION", "gold": "大型三甲医院", "context": ",正高级统计师。研究方向:医疗数据挖掘、医疗数据智能化控制。 基于Transformer模型的重庆某大型三甲医院门诊量预测 吴启帆1,2,3,4,王壮成1,2,3,4,宋 萍1,2,3,4* (1.重庆医科大学附"}
+{"file": "????Transformerģ?͵?????ĳ????????ҽԺ??????Ԥ??_??????.pdf", "type": "ORGANIZATION", "gold": "帮助医院", "context": "调配、耗材储备提供可靠依据[2]。本 文采用Transformer模型对门诊量进行分析与预测,旨在 帮助医院把握门诊量变化趋势、识别季节波动特征、实现 精准短期预测,并据此提出切实可行的资源优化建议,进 而提"}
+{"file": "????Transformerģ?͵?????ĳ????????ҽԺ??????Ԥ??_??????.pdf", "type": "ORGANIZATION", "gold": "研究通过追踪重庆市某大型三甲医院", "context": "的波动特征,传统预测方法难以捕捉长 期变化规律,或需要构建复杂的特征工程,因而在实际应用中难以推广。研究通过追踪重庆市某大型三甲医院连续14 年的日门诊量数据,构建基于Transformer模型的时间序列预测模型并进行门诊量预测。实"}
+{"file": "????Transformerģ?͵?????ĳ????????ҽԺ??????Ԥ??_??????.pdf", "type": "ORGANIZATION", "gold": "而提升医院", "context": "医院把握门诊量变化趋势、识别季节波动特征、实现 精准短期预测,并据此提出切实可行的资源优化建议,进 而提升医院资源管理效率与医疗服务质量。 1 资料来源 本研究以日门诊量数据为研究对象,从该院大数据工 程中心收"}
+{"file": "????Transformerģ?͵?????ĳ????????ҽԺ??????Ԥ??_??????.pdf", "type": "ORGANIZATION", "gold": "门诊量预测是三甲医院", "context": "patientvolumeforecasting hospitalmanagement 0 引 言 门诊量预测是三甲医院运营管理中具有重要意义的 环节,对科学配置医疗资源、提高医疗服务质量、增强公共 卫生应急能力具有重大"}
+{"file": "????Transformerģ?͵?????ĳ????????ҽԺ??????Ԥ??_??????.pdf", "type": "LOCATION", "gold": "重庆", "context": ",硕士,正高级统计师。研究方向:医疗数据挖掘、医疗数据智能化控制。 基于Transformer模型的重庆某大型三甲医院门诊量预测 吴启帆1,2,3,4,王壮成1,2,3,4,宋 萍1,2,3,4* (1."}
+{"file": "????WGCNA??113?ֻ???ѧϰ?㷨???????????????ؼ?????_????ӯ.pdf", "type": "ORGANIZATION", "gold": "国家大学", "context": "为正式出版。     收稿日期：2026-01-27；修回日期：2026-03-11.  基金项目:国家大学生创新创业计划项目（No.202410601059）；自治区大学生创新创业项目（No.2023106"}
+{"file": "????WGCNA??113?ֻ???ѧϰ?㷨???????????????ؼ?????_????ӯ.pdf", "type": "ORGANIZATION", "gold": "断效能需在大规模多中心", "context": "面的依据。  本研究也存在一定局限性。首先，基于公共数据库的回顾性分析样本量有限，八个关键基因的诊 断效能需在大规模多中心前瞻性队列中进一步验证。其次，本研究为生物信息学预测分析，VWF、 IL7R 等基因的具体机制需通过"}
+{"file": "????WGCNA??113?ֻ???ѧϰ?㷨???????????????ؼ?????_????ӯ.pdf", "type": "ORGANIZATION", "gold": "电子杂志社有限公司", "context": "， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期刊内容一致的网络版，以单篇或整期出版形"}
+{"file": "????WGCNA??113?ֻ???ѧϰ?㷨???????????????ؼ?????_????ӯ.pdf", "type": "ORGANIZATION", "gold": "自治区大学", "context": "：2026-03-11.  基金项目:国家大学生创新创业计划项目（No.202410601059）；自治区大学生创新创业项目（No.202310601110）.  *通信作者:吴群英，女，博士，副教授，研究方向"}
+{"file": "????WGCNA??113?ֻ???ѧϰ?㷨???????????????ؼ?????_????ӯ.pdf", "type": "LOCATION", "gold": "中国", "context": "作者、机构名称和学术内容， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期"}
+{"file": "????WGCNA??113?ֻ???ѧϰ?㷨???????????????ؼ?????_????ӯ.pdf", "type": "LOCATION", "gold": "桂林", "context": "键基因  蔡乐盈1，李康慧2，夏一玮3，韦思慧3，黄敬婷3，林军3，李慧3， 吴群英4*  （1. 桂林医科大学 第一临床医学院，桂林 541199；2.桂林医科大学第一附属医院，桂林 541001；"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "PERSON", "gold": "汽车出行", "context": "通供给等 建成环境要素更能鼓励居民可持续行为，包括更短通勤出行、更多户外休闲、更多健康出 行以及更少汽车出行等 [23-26]。②关注不同行为的时空间分布特征，聚焦在个体行为与生活 空间之间的关联性 [18,"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "PERSON", "gold": "环境规划", "context": "为”交互研究成为城市地理学、行为地理学与城市规划等学科交叉的前沿领域，不仅 是城市空间结构优化与建成环境规划的理论基础 [6-9]，也为行为地理学在城市规划与治理 中的有效应用以及城市地理学向微观个体尺度的拓"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "PERSON", "gold": "蔓延社区", "context": "地理空间上的居民行为异同来建立空间与行为之间的 联系，如比较郊区与内城、单位住房与商品房、紧凑社区与蔓延社区等 [18]。近期研究则多 通过测度日常活动周边的建成环境等实体空间指标，建立实体空间与个体行为之间"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "PERSON", "gold": "设计", "context": "实证行为地理学正从“空间–行 为”的互动关系分析转向精细化的交互过程追踪，从相关关系研究走向因果推断设计。本文系统 梳理相关研究进展，聚焦“实体空间–居民行为–生活空间”三者的动态交互关系，指出现有研究在"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "PERSON", "gold": "阈值效应", "context": "的建成环境等实体空间指标，建立实体空间与个体行为之间的多 元关系，包括直接联系、中介效应、调节效应与阈值效应等 [19-22]。大量研究发现，高人口密 度、职住平衡、土地混合利用、步行友好的街道设计、可达性高"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "ORGANIZATION", "gold": "北京大学", "context": "2372.] [67]  蔡迎儿. 香港跨境消费者在深消费行为变化及其影响因素分析[D]. 北京: 北京大学, 2025. [Cai Ying’er. A quasi-exper- imental analy"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "ORGANIZATION", "gold": "电子杂志社有限公司", "context": "， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期刊内容一致的网络版，以单篇或整期出版形"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "LOCATION", "gold": "中国", "context": "作者、机构名称和学术内容， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "LOCATION", "gold": "云浮", "context": "ndation of China (42571246).] 作者简介：张文佳（1985—），男，广东云浮人，教授，博士，主要从事规划大模型与AI 技术开发、时空行为与建成 环境规划等研究。E-mail:"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "LOCATION", "gold": "兰州", "context": "[42]  郭燕, 张志斌, 陈龙, 等. 居住自选择视角下城市建成环境对通勤模式选择的影响——以兰州市主城区为例[J]. 干旱区 地理, 2024, 47(2): 307-318. [Guo Yan,"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "LOCATION", "gold": "北京", "context": "Review, 2019, 43(11): 13-19.] [8]  高晓路, 吴丹贤, 颜秉秋. 北京城市老年贫困人口识别与空间分布[J]. 地理学报, 2020, 75(8): 1557-1571."}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "LOCATION", "gold": "南京", "context": "graphy, 2025, 44(2): 402-413.] [20]  魏玺, 甄峰, 席广亮. 南京都市圈居民非通勤出行特征及其影响因素研究[J]. 地理科学, 2023, 43(10): 1740-"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "LOCATION", "gold": "合肥", "context": "ironment, 2020, 86: 102445. [19]  颜冉, 顾康康, 张纯, 等. 合肥城市职住空间关系及建成环境的交互影响研究[J]. 地理科学进展, 2025, 44(2): 402-"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "LOCATION", "gold": "广东", "context": "oundation of China (42571246).] 作者简介：张文佳（1985—），男，广东云浮人，教授，博士，主要从事规划大模型与AI 技术开发、时空行为与建成 环境规划等研究。E-mail"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "LOCATION", "gold": "广州", "context": "ca, 2015, 70(10): 1664-1674.] [6]  周素红, 宋江宇, 宋广文. 广州市居民工作日小汽车出行个体与社区双层影响机制[J]. 地理学报, 2017, 72(8): 1444"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "LOCATION", "gold": "杭州", "context": "ca, 2023, 43(10): 1740-1750.] [21]  许婧雪, 张文忠, 谌丽. 杭州城市人口密度对人居环境感知的影响[J]. 地理科学, 2022, 42(2): 208-218. ["}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "LOCATION", "gold": "武汉", "context": "ew, 2019, 43(5): 9-16.] [31]  魏伟, 洪梦谣, 谢波. 基于供需匹配的武汉市15 分钟生活圈划定与空间优化[J]. 规划师, 2019, 35(4): 11-17. [Wei"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "LOCATION", "gold": "重庆", "context": "54]  陈晓, 黄宇金, 李佳慧, 等. COVID-19 疫情时空聚集性特征及影响因素分析——以重庆市为例[J]. 地理科学进展, 2020, 39(11): 1798-1808. [Chen Xia"}
+{"file": "????ʱ????Ϊ?????ݵ???Ϊ????????׷?????????ƶ??о?_???ļ?.pdf", "type": "LOCATION", "gold": "香港", "context": "in Shenzhen, China[J]. 2025. [66]  肖映博, 张文佳, 何诗. 香港居民跨境消费的移动性供给研究[J]. 地理研究, 2025, 44(9): 2354-2372. ["}
+{"file": "????????ѧϰ??ת???ܺ????????ܿؼ?????ϵͳ_????ΰ.pdf", "type": "PERSON", "gold": "表面检测", "context": "期：２０２５－１０－２０ 第一作者简介：李锡伟（１９９９—），男，硕士，助理工程师，主要从事焊 接、表面检测等研究。 　　在轨道交通装备领域，转向架作为列车承载与 运行的核心部件，其构架焊缝质量直接关系到装备"}
+{"file": "????????ѧϰ??ת???ܺ????????ܿؼ?????ϵͳ_????ΰ.pdf", "type": "LOCATION", "gold": "株洲", "context": "．２０２６．０４．０１１ 基于深度学习的转向架焊缝质量管控及决策系统 李锡伟，苏郭亮，杨　坤 （中车株洲电力机车有限公司，湖南株洲４１２００１） 摘　要：针对转向架构架传统焊缝检测存在人工操作劳动强度高、"}
+{"file": "????????ѧϰ????Ȼ???ܵ?й©ģʽʶ?????????о?_?ζ???.pdf", "type": "LOCATION", "gold": "中国", "context": "Transportation Safety -160- 2026 年 08 月          中国化工贸易 天然气开采与管网输送依赖长输管道，管道泄漏 监测工作尤为关键。高压气体泄漏会引发声波、温度"}
+{"file": "????????ѧϰ????Ȼ???ܵ?й©ģʽʶ?????????о?_?ζ???.pdf", "type": "LOCATION", "gold": "天津", "context": "与分类研究 宋冬寒　刘子寒（重庆燃气集团股份有限公司，重庆  400020） 王　硕 （通讯作者）（天津理工大学环境科学与安全工程学院，天津  300384） 摘　要：为解决天然气管道泄漏难识别问题，本文"}
+{"file": "????????ѧϰ????Ȼ???ܵ?й©ģʽʶ?????????о?_?ζ???.pdf", "type": "LOCATION", "gold": "重庆", "context": "MAX(W T x+b,0)（2） 基于深度学习的天然气管道泄漏模式识别与分类研究 宋冬寒　刘子寒（重庆燃气集团股份有限公司，重庆  400020） 王　硕 （通讯作者）（天津理工大学环境科学与安全工程学"}
+{"file": "?????????????????ĺ??????ͼ???ʵ??????_??????.pdf", "type": "ORGANIZATION", "gold": "电子杂志社有限公司", "context": "， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期刊内容一致的网络版，以单篇或整期出版形"}
+{"file": "?????????????????ĺ??????ͼ???ʵ??????_??????.pdf", "type": "LOCATION", "gold": "吉林", "context": "龙江省高等教育教学改革研究 项目（SJGYB2024478）  作者简介：葛延良（1979—），男，吉林扶余，硕士，副教授，主要研究方向为深度学习、计算机视觉等。   通信作者：毕洪波（1979—），男，"}
+{"file": "??????????ǿ??Ƶ????????б?????????????ָ??_?ź?.pdf", "type": "ORGANIZATION", "gold": "电子杂志社有限公司", "context": "， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期刊内容一致的网络版，以单篇或整期出版形"}
+{"file": "??????????ǿ??Ƶ????????б?????????????ָ??_?ź?.pdf", "type": "ORGANIZATION", "gold": "需进一步考虑从实验室", "context": "割掩码效果图表明该 模型对微小划痕和细微裂纹的分割精度和连续性具有显著优势。  （3）在后续研究中，需进一步考虑从实验室静态图像向爬索机器人动态巡检场景迁移时面 临的工程挑战。实际工程中爬索机器人搭载的视觉系统在动态巡检"}
+{"file": "??????????ǿ??Ƶ????????б?????????????ָ??_?ź?.pdf", "type": "LOCATION", "gold": "中国", "context": "中国公路学报  China Journal of Highway and Transport  ISSN"}
+{"file": "?ɽ????Ի???ѧϰ??????ú?????೬?ٽ?ˮ??????????Ԥ???о?_Ф??.pdf", "type": "ORGANIZATION", "gold": "电子杂志社有限公司", "context": "， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期刊内容一致的网络版，以单篇或整期出版形"}
+{"file": "?ɽ????Ի???ѧϰ??????ú?????೬?ٽ?ˮ??????????Ԥ???о?_Ф??.pdf", "type": "LOCATION", "gold": "中国", "context": "作者、机构名称和学术内容， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期"}
+{"file": "?ɽ????Ի???ѧϰ??????ú?????೬?ٽ?ˮ??????????Ԥ???о?_Ф??.pdf", "type": "LOCATION", "gold": "咸阳", "context": "0223AAG01009）；陕西省自然科学基础研究计划面上项目 （2024JC-YBMS-296）；咸阳市科技创新人才计划项目（L2024-CXNL-KJRCTD-KJRC-0017）。  可解释性机器学"}
+{"file": "?ɽ????Ի???ѧϰ??????ú?????೬?ٽ?ˮ??????????Ԥ???о?_Ф??.pdf", "type": "LOCATION", "gold": "四川", "context": "渝楠1，陈斌1  (1. 西安交通大学绿色氢电全国重点实验室，西安，710049；2. 国家电投集团四川电力有限公司，成都，610213；  3.航空工业陕西航空电气有限责任公司，西安，710065)"}
+{"file": "?ɽ????Ի???ѧϰ??????ú?????೬?ٽ?ˮ??????????Ԥ???о?_Ф??.pdf", "type": "LOCATION", "gold": "江西", "context": "。作者简介：肖峰（2002—），男，硕士生；陈渝楠（通信作者），男，研究员，博士生导师。基金 项目：江西省重大科技研发专项“揭榜挂帅”关键技术类项目（20223AAG01009）；陕西省自然科学基础研究计"}
+{"file": "?ɽ????Ի???ѧϰ??????ú?????೬?ٽ?ˮ??????????Ԥ???о?_Ф??.pdf", "type": "LOCATION", "gold": "西安", "context": "西安交通大学学报  Journal of Xi'an Jiaotong University  ISSN"}
+{"file": "?ɽ????Ի???ѧϰ??????ú?????೬?ٽ?ˮ??????????Ԥ???о?_Ф??.pdf", "type": "LOCATION", "gold": "陕西", "context": "生导师。基金 项目：江西省重大科技研发专项“揭榜挂帅”关键技术类项目（20223AAG01009）；陕西省自然科学基础研究计划面上项目 （2024JC-YBMS-296）；咸阳市科技创新人才计划项目（L2"}
+{"file": "???????ಡ???߹???????Σ??????????????ѧϰ?ٴ?Ԥ??????ͼ????_????.pdf", "type": "ORGANIZATION", "gold": "后续需开展多中心", "context": "骨质疏松患病率，未来研 究可结合骨活检或更先进的影像学方法( 如高分辨 率外周定量CT) 加以验证。后续需开展多中心、前 瞻性研究，并尝试纳入更全面的骨转换标志物。 3．3 总结 低体重、高水平的ALT、ALP 和L"}
+{"file": "???????ಡ???߹???????Σ??????????????ѧϰ?ٴ?Ԥ??????ͼ????_????.pdf", "type": "ORGANIZATION", "gold": "基层医院", "context": "构建的逻辑回归模型及列线图对CKD 患者骨质疏松具有较好的 区分能力，且变量简易、可解释性强，适用于基层医院的风险分层。但由于样本量有限及校准存在偏差，模型 输出的绝对概率需谨慎解读，未来需开展多中心前瞻性研"}
+{"file": "???????ಡ???߹???????Σ??????????????ѧϰ?ٴ?Ԥ??????ͼ????_????.pdf", "type": "ORGANIZATION", "gold": "未来需开展多中心", "context": "解释性强，适用于基层医院的风险分层。但由于样本量有限及校准存在偏差，模型 输出的绝对概率需谨慎解读，未来需开展多中心前瞻性研究进一步验证。 【关键词】慢性肾脏病; 骨质疏松; 机器学习; 预测模型; 神经网络; 列线"}
+{"file": "???????ಡ???߹???????Σ??????????????ѧϰ?ٴ?Ԥ??????ͼ????_????.pdf", "type": "ORGANIZATION", "gold": "本研究通过中国人民解放军南部战区总医院", "context": ") 合并骨关节炎，类风湿性 关节炎、骨肿瘤和新发压缩性骨折; ( 4) 统计数据空 值≥30% 。 本研究通过中国人民解放军南部战区总医院的伦 理委员会批准通过( 伦理批准号NZLLKZ2026121) 。 豁免患者签署知情同意书。 1．"}
+{"file": "???????ಡ???߹???????Σ??????????????ѧϰ?ٴ?Ԥ??????ͼ????_????.pdf", "type": "ORGANIZATION", "gold": "检查在多数基层医院", "context": "评 估。第二，回顾性设计本身存在选择偏倚。第三，未 纳入骨钙素、甲状旁腺激素等骨代谢指标，因为这些 检查在多数基层医院难以开展。第四，本研究的骨质 疏松分组依据DXA，采用的是WHO 推荐的T 值≤ －2. 5 标准，"}
+{"file": "???????ಡ???߹???????Σ??????????????ѧϰ?ٴ?Ԥ??????ͼ????_????.pdf", "type": "ORGANIZATION", "gold": "记录患者临床和实验室", "context": "NZLLKZ2026121) 。 豁免患者签署知情同意书。 1．2 方法 1．2．1 临床资料收集 记录患者临床和实验室检 查相关资料，包括年龄、性别、慢性肾脏病分期、透 析、透析时间、移植、移植时间、肌酐( Cr) 、"}
+{"file": "???????ಡ???߹???????Σ??????????????ѧϰ?ٴ?Ԥ??????ͼ????_????.pdf", "type": "ORGANIZATION", "gold": "适用于基层医院", "context": "DL 构建的逻辑回归模型及列线图对CKD 患者骨质疏松具有较好的 区分能力，且变量简易、可解释性强，适用于基层医院的风险分层。但由于样本量有限及校准存在偏差，模型 输出的绝对概率需谨慎解读，未来需开展多中心前瞻性研"}
+{"file": "???????ಡ???߹???????Σ??????????????ѧϰ?ٴ?Ԥ??????ͼ????_????.pdf", "type": "LOCATION", "gold": "中国", "context": "． 专题报道 慢性肾脏病患者骨质疏松危险因素与多机器 学习临床预测列线图构建 杨柳，朱凯旋，李佳△ 中国人民解放军南部战区总医院内分泌科( 广东广州510010) 【摘要】目的 基于多种机器学习算法构建慢"}
+{"file": "???????ಡ???߹???????Σ??????????????ѧϰ?ٴ?Ԥ??????ͼ????_????.pdf", "type": "LOCATION", "gold": "广州", "context": "与多机器 学习临床预测列线图构建 杨柳，朱凯旋，李佳△ 中国人民解放军南部战区总医院内分泌科( 广东广州510010) 【摘要】目的 基于多种机器学习算法构建慢性肾脏病( CKD) 患者继发骨质疏松的临床"}
+{"file": "???????ಡ???߹???????Σ??????????????ѧϰ?ٴ?Ԥ??????ͼ????_????.pdf", "type": "LOCATION", "gold": "德国", "context": "用于骨 科风险预测。但在CKD 这一特殊人群中，相关研究 仍较少。本研究结果与Tu 等 ［17］基于德国国家健康 数据库构建的慢性疾病患者骨质疏松多机器学习临 床预测模型( 最优AUC 为0. 753)"}
+{"file": "???????ಡ???߹???????Σ??????????????ѧϰ?ٴ?Ԥ??????ͼ????_????.pdf", "type": "LOCATION", "gold": "欧洲", "context": "ALP 水平作为BMD 的弱预测因子，相关性较弱，需结合其他一些具体的 临床生化指标和既往病史。同时欧洲的一份慢性肾 脏病指南 ［15］中也提及骨ALP 对于CKD3 －5 期患者 有较为明确的预测作用，"}
+{"file": "????????ѧϰ???ŵ??????Ķ????Ծ???ģ???????????о?_??????.pdf", "type": "ORGANIZATION", "gold": "电子杂志社有限公司", "context": "， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期刊内容一致的网络版，以单篇或整期出版形"}
+{"file": "????????ѧϰ???ŵ??????Ķ????Ծ???ģ???????????о?_??????.pdf", "type": "LOCATION", "gold": "中国", "context": "作者、机构名称和学术内容， 只可基于编辑规范进行少量文字的修改。  出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国 学术期刊（网络版）》出版传播平台上创办与纸质期"}
+{"file": "?????????????????????ػ??????ܼ?̼????ϵͳ??????Ӧ??_?Ի???.pdf", "type": "ORGANIZATION", "gold": "在三一汽车制造有限公司", "context": "nvent）获取排放因子，实现全生命周期碳足迹核算。 3  应用案例与效益分析 3.1  案例背景 在三一汽车制造有限公司的加工车间部署本系统进行 实地验证，测试对象为立式加工中心（型号为VMC850）， 该设备额定功率为"}
+{"file": "?????????????????????ػ??????ܼ?̼????ϵͳ??????Ӧ??_?Ի???.pdf", "type": "ORGANIZATION", "gold": "测试对象为立式加工中心", "context": "应用案例与效益分析 3.1  案例背景 在三一汽车制造有限公司的加工车间部署本系统进行 实地验证，测试对象为立式加工中心（型号为VMC850）， 该设备额定功率为20kW，主轴最高转速8000r/min，配备 FANUC"}
+{"file": "?????????????????????ػ??????ܼ?̼????ϵͳ??????Ӧ??_?Ի???.pdf", "type": "LOCATION", "gold": "中国", "context": "中国新技术新产品 2026  NO.7（下） - 120 - 生 态 与 环 境 工 程 制造业是国民经"}
+{"file": "?????????????????????ػ??????ܼ?̼????ϵͳ??????Ӧ??_?Ի???.pdf", "type": "LOCATION", "gold": "湖南", "context": "告 物联网大数据驱动的数控机床节能减碳 监测系统设计与应用 赵会宾  聂邦民  宾 立  江 雄 （湖南三一工业职业技术学院，湖南  长沙  410100） 摘    要：为了解决数控机床能耗高、碳核算不"}
+{"file": "1.pdf", "type": "PERSON", "gold": "De", "context": "ICLR 2021 AUTOREGRESSIVE ENTITY RETRIEVAL Nicola De Cao1,2∗, Gautier Izacard2,3,4, Sebastian Riedel2,"}
+{"file": "1.pdf", "type": "PERSON", "gold": "ENS", "context": "1University of Amsterdam, 2Facebook AI Research 3ENS, PSL University, 4Inria, 5University College Lond"}
+{"file": "1.pdf", "type": "LOCATION", "gold": "London", "context": "3ENS, PSL University, 4Inria, 5University College London nicola.decao@gmail.com, {gizacard, sriedel, fabio"}
+{"file": "1.pdf", "type": "LOCATION", "gold": "Netherlands", "context": "anni 3 Palazzo della Farnesina (c) Translation. 1 Netherlands What is the capital of Holland? 2 Capital of the"}
+{"file": "10.pdf", "type": "LOCATION", "gold": "Korea", "context": "onal Conference on Machine Learning, Seoul, South Korea. PMLR 306, 2026. Copyright 2026 by the author(s)."}
+{"file": "10.pdf", "type": "LOCATION", "gold": "Seoul", "context": "rd International Conference on Machine Learning, Seoul, South Korea. PMLR 306, 2026. Copyright 2026 by t"}
+{"file": "10.pdf", "type": "LOCATION", "gold": "States", "context": "Norway 2Department of Computer Sci- ence, United States Naval Academy, USA. Correspondence to: Abdu-Kazee"}
+{"file": "10.pdf", "type": "LOCATION", "gold": "USA", "context": "Computer Sci- ence, United States Naval Academy, USA. Correspondence to: Abdu-Kazeem Shamba <abdul.k.s"}
+{"file": "10.pdf", "type": "LOCATION", "gold": "United", "context": "nology, Norway 2Department of Computer Sci- ence, United States Naval Academy, USA. Correspondence to: Abd"}
+{"file": "11.pdf", "type": "PERSON", "gold": "Li", "context": "iad Reasoning via Simple and Unified Scaling Yafu Li1,2∗B, Runzhe Zhan1∗, Haoran Zhang1,4∗, Shunkai Zh"}
+{"file": "11.pdf", "type": "PERSON", "gold": "Xu", "context": "Li1∗, Zhilin Wang1, Jiacheng Chen2, Futing Wang1, Xuyang Hu1, Yuchen Fan1, Bangjie Xu3, Yucheng Su3, X"}
+{"file": "11.pdf", "type": "PERSON", "gold": "Yu", "context": "Wang1, Jiacheng Chen2, Futing Wang1, Xuyang Hu1, Yuchen Fan1, Bangjie Xu3, Yucheng Su3, Xinmiao Han3,"}
+{"file": "11.pdf", "type": "ORGANIZATION", "gold": "Shanghai Artificial Intelligence Laboratory", "context": "r. Acknowledgments This work was supported by the Shanghai Artificial Intelligence Laboratory. We thank the authors and maintainers of prior op"}
+{"file": "11.pdf", "type": "LOCATION", "gold": "Shanghai", "context": "ao1, Bowen Zhou1,3B, Ning Ding3,1B, Yu Cheng2,1B 1Shanghai AI Laboratory 2The Chinese University of Hong Kon"}
+{"file": "12.pdf", "type": "LOCATION", "gold": "India", "context": "ute, 4Université de Montréal, 5Microsoft Research India, 6Google DeepMind, 7Periodic Labs ABSTRACT We pre"}
+{"file": "14.pdf", "type": "LOCATION", "gold": "Korea", "context": "y Planning & Evaluation(IITP) grant funded by the Korea government(MSIT) (No.RS-2025- 02219277, Al Star F"}
+{"file": "15.pdf", "type": "PERSON", "gold": "NVIDIA", "context": "Tao Yu2 Yejin Choi1 Jan Kautz1 Pavlo Molchanov1 1NVIDIA, 2University of Hong Kong Abstract: Large languag"}
+{"file": "17.pdf", "type": "PERSON", "gold": "German", "context": "rovements for specific languages are • English to German: 1.63 down to 1.19, • English to Spanish: 2.54 do"}
+{"file": "19.pdf", "type": "PERSON", "gold": "Ye", "context": "LARGE LANGUAGE MODELS FOR BLACK- BOX OPTIMIZATION Ye Yuan1, 2∗, Can (Sam) Chen2∗, Zipeng Sun1, 2, Ding"}
+{"file": "19.pdf", "type": "LOCATION", "gold": "New", "context": "usion LLM is used to generate design completions. New child nodes xs,i are then constructed by remaskin"}
+{"file": "2.pdf", "type": "LOCATION", "gold": "Tokyo", "context": "1 Yutaka Matsuo 1 Jiaxian Guo 3 The University of Tokyo 1 RIKEN Center for Advanced Intelligence Project"}
+{"file": "21.pdf", "type": "PERSON", "gold": "Suzhou", "context": "mputer Science and Technology, Soochow University Suzhou, China Xuqian Gu xqgu0825@stu.suda.edu.cn School"}
+{"file": "22.pdf", "type": "PERSON", "gold": "开放程度", "context": "势，但是， 鉴于社交图关系型数据的获取通常依赖平台API 权限，受到访问限制、隐私保护政策以 及数据开放程度等[57]因素的制约，在实际应用中往往难以获得完整、高质量的社交网络 结构。这就导致依赖图结构的检测"}
+{"file": "22.pdf", "type": "PERSON", "gold": "结构信息", "context": "图关系数据建模的方法在社交媒体机器人检测中取得了显著成果，尤 其在捕捉用户间复杂交互模式、建模节点间结构信息等[54-56]方面具有独特优势，但是， 鉴于社交图关系型数据的获取通常依赖平台API 权限，受到访"}
+{"file": "22.pdf", "type": "LOCATION", "gold": "河南", "context": "huwei  Jun,2025        I  关于学位论文独创声明和学术诚信承诺    本人向河南大学提出硕士学位申请。本人郑重声明：所呈交的学位论文是本人在导 师的指导下独立完成的，对所研究的课题"}
+{"file": "22.pdf", "type": "LOCATION", "gold": "美国", "context": "动，甚至影响选举和加剧社会分裂[23-25]，对网络社区和社会稳定构成严重威胁。 在诸如2016 年美国大选、新冠疫情[26]、俄乌冲突[27,28]等重大事件中，社交机器人均被 证实参与其中，并对信息传"}
+{"file": "24.pdf", "type": "PERSON", "gold": "He", "context": "g for Efficient Diffusion Model Inference Haodong He1, Yuan Gao2, Weizhong Zhang3, Gui-Song Xia2† 1Sch"}
+{"file": "25.pdf", "type": "LOCATION", "gold": "China", "context": "Tian1*, 1University of Science and Technology of China 2Shanghai Advanced Research Institute, Chinese Ac"}
+{"file": "25.pdf", "type": "LOCATION", "gold": "Shanghai", "context": ", 1University of Science and Technology of China 2Shanghai Advanced Research Institute, Chinese Academy of S"}
+{"file": "26.pdf", "type": "PERSON", "gold": "Hefei", "context": "ce, University of Science and Technology of China Hefei, Anhui Province, China mycheng@ustc.edu.cn Jiahao"}
+{"file": "26.pdf", "type": "ORGANIZATION", "gold": "Daoyu Wang State Key Laboratory", "context": ""}
+{"file": "26.pdf", "type": "ORGANIZATION", "gold": "Enhong Chen State Key Laboratory", "context": ""}
+{"file": "26.pdf", "type": "ORGANIZATION", "gold": "Jiahao Wang State Key Laboratory", "context": ""}
+{"file": "26.pdf", "type": "ORGANIZATION", "gold": "Time Series Forecasting Mingyue Cheng State Key Laboratory", "context": ""}
+{"file": "26.pdf", "type": "ORGANIZATION", "gold": "Xiaoyu Tao State Key Laboratory", "context": ""}
+{"file": "26.pdf", "type": "LOCATION", "gold": "China", "context": "lligence, University of Science and Technology of China Hefei, Anhui Province, China mycheng@ustc.edu.cn"}
+{"file": "3.pdf", "type": "PERSON", "gold": "He", "context": "tion for Continual Reasoning Improvement∗ Haoyang He1, Zihua Rong1, Liangjie Zhao2, Yunjia Zhao3, Lan"}
+{"file": "30.pdf", "type": "PERSON", "gold": "Li", "context": "Prompt Tuning for Vision-Language Models Haoyang Li1,2 , Liang Wang1,2, Siyu Zhou1, Jiacheng Sun2, Ji"}
+{"file": "30.pdf", "type": "LOCATION", "gold": "New", "context": "nce across multiple prompt tuning backbones. Base-New Trade-off. In prompt tuning, the base-new trade-o"}
+{"file": "30.pdf", "type": "LOCATION", "gold": "Shanghai", "context": "rsity of Technology Sydney, NSW 2007, Australia 2 Shanghai University, Shanghai 200444, China haoyang.li-3@s"}
+{"file": "32.pdf", "type": "LOCATION", "gold": "Canada", "context": "funded, in part, by the Vector Institute for AI, Canada CIFAR AI Chairs, NSERC Canada Research Chair (CRC"}
+{"file": "33.pdf", "type": "LOCATION", "gold": "States", "context": "refinement to the recursive blocks. 3.2 Recurrent States ViTRM maintains two recurrent states, both initia"}
+{"file": "34.pdf", "type": "PERSON", "gold": "Hu", "context": "Remedies for Vision Language Model Blindness Xin Hu1, Haomiao Ni2, Yunbei Zhang1, Jihun Hamm1, Zechen"}
+{"file": "34.pdf", "type": "LOCATION", "gold": "New", "context": "object in- side the red rectangle in the image.” New prompt: “Please describe the object inside the re"}
+{"file": "37.pdf", "type": "LOCATION", "gold": "States", "context": "mass preferences have been blunt, dull, and slow. States and parties have relied on school curricula, publ"}
+{"file": "38.pdf", "type": "PERSON", "gold": "Algebra", "context": "igh school math problems spanning seven subjects (Algebra, Counting & Probability, Geometry, Intermediate A"}
+{"file": "38.pdf", "type": "PERSON", "gold": "Intermediate", "context": "jects (Algebra, Counting & Probability, Geometry, Intermediate Algebra, Number Theory, Precalculus, and Prealgeb"}
+{"file": "39.pdf", "type": "LOCATION", "gold": "Beijing", "context": "Li1, Hongjin Qian1,3, Shuqi Lu1, Zheng Liu1,4∗ 1. Beijing Academy of Artificial Intelligence 2. Renmin Univ"}
+{"file": "39.pdf", "type": "LOCATION", "gold": "China", "context": "f Artificial Intelligence 2. Renmin University of China 3. Peking University 4. Hong Kong Polytechnic Uni"}
+{"file": "4.pdf", "type": "PERSON", "gold": "Anthropic", "context": "r extended periods (OpenAI, 2025; DeepMind, 2025; Anthropic, 2025; Yang et al., 2025; Chen et al., 2025a; Tea"}
+{"file": "41.pdf", "type": "PERSON", "gold": "Meta", "context": "jjwal Bhargava1 Mihir Sanjay Kale1 Samy Jelassi2 1Meta, 2Harvard University, 3Kempner Institute at Harva"}
+{"file": "42.pdf", "type": "LOCATION", "gold": "Korea", "context": "t by the RCN–NRF (National Research Foundation of Korea) joint project AU- RoRA (359216, RS-2025-03522980"}
+{"file": "47.pdf", "type": "PERSON", "gold": "Labs", "context": "Xu1, Diego Garcia-Olano1 1Meta Superintelligence Labs, 2Meta Central Applied Science, 3FAIR at Meta, 4N"}
+{"file": "47.pdf", "type": "PERSON", "gold": "Meta", "context": "David A. Smith4, Zheng Xu1, Diego Garcia-Olano1 1Meta Superintelligence Labs, 2Meta Central Applied Sci"}
+{"file": "47.pdf", "type": "PERSON", "gold": "Superintelligence", "context": "d A. Smith4, Zheng Xu1, Diego Garcia-Olano1 1Meta Superintelligence Labs, 2Meta Central Applied Science, 3FAIR at Met"}
+{"file": "48.pdf", "type": "LOCATION", "gold": "New", "context": "types of strategic evolution: • Basin emergence: New semantic modes appear, representing qualita- tive"}
+{"file": "49.pdf", "type": "PERSON", "gold": "Qu", "context": "Li2, Sichen Liu1, Yuxuan Song2, Jing Su2, Xiaoye Qu1, Kai Shen2, Wei Wei1 1Huazhong University of Sci"}
+{"file": "49.pdf", "type": "LOCATION", "gold": "New", "context": "LLM Mode DLLM Mode Feature 1 Efficiently Compress New Knowledge 2 Adapt to Multi-token Prediction Patte"}
+{"file": "5.pdf", "type": "PERSON", "gold": "Nardelli", "context": ". 12 K. Yang, W. Setyawan, S. Wang, M. Buongiorno Nardelli, and S. Curtarolo, Nature Mater. 11, 614 (2012)."}
+{"file": "5.pdf", "type": "ORGANIZATION", "gold": "Robert Bosch Company", "context": "n of the Materials Project was sup- ported by the Robert Bosch Company, Umicore, and the Department of Energy under Cont"}
+{"file": "5.pdf", "type": "LOCATION", "gold": "New", "context": "he Age of Globalization (John Wiley & Sons, Inc., New York, 2009). 3 Materials Genome Initiative for Gl"}
+{"file": "5.pdf", "type": "LOCATION", "gold": "York", "context": "ge of Globalization (John Wiley & Sons, Inc., New York, 2009). 3 Materials Genome Initiative for Global"}
+{"file": "50.pdf", "type": "PERSON", "gold": "AMIAD", "context": "iversité Sorbonne, Pierre et Marie Curie, Paris 3 AMIAD, Pôle Recherche, Palaiseau Abstract. As Vision-La"}
+{"file": "50.pdf", "type": "PERSON", "gold": "ISIR", "context": "STA, Institut Polytechnique de Paris, Palaiseau 2 ISIR, Université Sorbonne, Pierre et Marie Curie, Pari"}
+{"file": "50.pdf", "type": "PERSON", "gold": "UIS", "context": ""}
+{"file": "50.pdf", "type": "LOCATION", "gold": "Paris", "context": "Franchi3 1 U2IS, ENSTA, Institut Polytechnique de Paris, Palaiseau 2 ISIR, Université Sorbonne, Pierre et"}
+{"file": "6.pdf", "type": "LOCATION", "gold": "England", "context": "on S1  : people graduate  from Cambridge  S3   S2 England A multi-hop problem is a reasoning task where  th"}
+{"file": "6.pdf", "type": "LOCATION", "gold": "London", "context": "condition-satisfaction subproblem.  Alan Turing London born in Cambridge graduate from get PhD Princeton"}
+{"file": "8.pdf", "type": "PERSON", "gold": "Beijing", "context": "iaoyang@kuaishou.com Xian Guo Kuaishou Technology Beijing, China guoxian@kuaishou.com Siyuan Wang Kuaishou"}
+{"file": "8.pdf", "type": "PERSON", "gold": "Hangzhou", "context": "hang Zhao zhaoqh75@mail.ustc.edu.cn Kuaishou Inc. Hangzhou, Zhejiang, China Zhongbo Sun Kuaishou Technology"}
+{"file": "9.pdf", "type": "PERSON", "gold": "Li", "context": "-Thought Is an Imperfect Oversight Channel Wenkai Li1,2, Fan Yang2, Shaunak A. Mehta2, Ananya Hazarika"}
+{"file": "9.pdf", "type": "LOCATION", "gold": "States", "context": "o steps before the trace states it. Contradictory States (CT) denote high-confidence disagreement between"}
+{"file": "HYDRA.pdf", "type": "PERSON", "gold": "HYDRA", "context": "HYDRA: A Multi-Level Hierarchy-Driven Approach for Robu"}
+{"file": "HYDRA.pdf", "type": "PERSON", "gold": "MP", "context": "distance-based approaches such as Matrix Profile (MP) [119], KMeansAD [65, 114], and NormA [13] often"}
+{"file": "HYDRA.pdf", "type": "PERSON", "gold": "PR", "context": "TSB-AD-U (univariate) TSB-AD-M (multivariate) AUC-PR AUC-ROC VUS-PR VUS-ROC F1 AUC-PR AUC-ROC VUS-PR V"}
+{"file": "HYDRA.pdf", "type": "PERSON", "gold": "ROC", "context": "U (univariate) TSB-AD-M (multivariate) AUC-PR AUC-ROC VUS-PR VUS-ROC F1 AUC-PR AUC-ROC VUS-PR VUS-ROC F"}
+{"file": "HYDRA.pdf", "type": "PERSON", "gold": "TSB-AD-U", "context": "enchmark [63]. TSB-AD consists of 870 univariate (TSB-AD-U) and 200 multivariate (TSB-AD-M) time series span"}
+{"file": "Learntesttime.pdf", "type": "LOCATION", "gold": "New", "context": "e-art (AlphaEvolve) 600-piece function c 0.380876 New state-of-the-art (TTT-Discover) Figure 2. We show"}
+{"file": "RL.pdf", "type": "LOCATION", "gold": "New", "context": "urable no-prefix gains. 4.2 PrefixRL can Discover New Strategies Beyond What is Present in the Prefixed"}
+{"file": "s41467-021-23774-w.pdf", "type": "PERSON", "gold": "AD", "context": "erent datasets: ROSMAP for Alz- heimer’s Disease (AD) patients vs. normal control (NC) classiﬁcation,"}
+{"file": "s41467-021-23774-w.pdf", "type": "PERSON", "gold": "COLA", "context": ""}
+{"file": "s41467-021-23774-w.pdf", "type": "PERSON", "gold": "FGFBP", "context": "5) SOX11, AMY1A, SLC6A15, FABP7, SLC6A14, SLC6A2, FGFBP1, DSG1, UGT8, ANKRD45, PI3, SERPINB5, COL11A2, AR"}
+{"file": "s41467-021-23774-w.pdf", "type": "PERSON", "gold": "GPRL", "context": ""}
+{"file": "s41467-021-23774-w.pdf", "type": "PERSON", "gold": "In", "context": "21-23774-w OPEN 1 Department of Computer Science, Indiana University Bloomington, Bloomington, IN, USA"}
+{"file": "s41467-021-23774-w.pdf", "type": "PERSON", "gold": "MOGONET", "context": "ARTICLE MOGONET integrates multi-omics data using graph convoluti"}
+{"file": "s41467-021-23774-w.pdf", "type": "PERSON", "gold": "NPNT", "context": "t. Omics data type Biomarkers mRNA expression (8) NPNT, CDK18, KIF5A, SPACA6, TCEA3, SYTL1, ARRDC2, APLN"}
+{"file": "s41467-021-23774-w.pdf", "type": "PERSON", "gold": "SOX", "context": ". Omics data type Biomarkers mRNA expression (15) SOX11, AMY1A, SLC6A15, FABP7, SLC6A14, SLC6A2, FGFBP1"}
+{"file": "s41467-021-23774-w.pdf", "type": "PERSON", "gold": "TMC", "context": "6, TCEA3, SYTL1, ARRDC2, APLN DNA methylation (5) TMC4, AGA, HYAL2, CCL3, TTC15 miRNA expression (17) h"}
+{"file": "s41467-021-23774-w.pdf", "type": "PERSON", "gold": "TMEM", "context": "R37L1, MIR563, OR1J4, ATP10B, KRTAP3-3, FLJ41941, TMEM207, CDH26, MT1DP miRNA expression (6) hsa-mir-205"}
+{"file": "s41467-021-23774-w.pdf", "type": "PERSON", "gold": "Table", "context": "study. The details of the datasets are listed in Table 1. Since noise redundant features may affect the"}
+{"file": "s41467-021-23774-w.pdf", "type": "PERSON", "gold": "Then", "context": "rrelations between samples for better prediction. Then, initial predictions generated by each omics-spec"}
+{"file": "s41467-021-23774-w.pdf", "type": "LOCATION", "gold": "New", "context": "epartment of Computer Science, Tulane University, New Orleans, LA, USA. 6 Department of Biostatistics a"}
+{"file": "s41467-021-23774-w.pdf", "type": "LOCATION", "gold": "USA", "context": "Indiana University Bloomington, Bloomington, IN, USA. 2 Department of Medicine, Indiana University Sch"}
+{"file": "socialbot.pdf", "type": "LOCATION", "gold": "河南", "context": "法在准确性方面尤为突 强化多视图多模态网络的社交媒体机器人检测 高 鑫，徐树维 +，张敬芸，唐志伟 河南大学软件学院，河南开封475000 + 通信作者E-mail：xsw@henu.edu.cn 摘 要"}

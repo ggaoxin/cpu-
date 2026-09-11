@@ -21,6 +21,66 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# NER 工具集合（头部行补丁适用范围）：头部元数据行是三类 NER 的实体富集区
+NER_TOOLS = {"general-ner", "research-ner", "domain-ner"}
+
+# 头部元数据块标记：基金项目/作者简介/收稿日期等（NER 实体富集区）；
+# 编号单位条目（"2. 南京工业大学，江苏 南京 211816"）无前缀标记，单列一套
+_NER_HEADER_MARK = re.compile(
+    r"(?m)^(?:\*{0,2})(基金项目|基金资助|资助项目|课题来源|作者简介|通信作者|通讯作者|"
+    r"收稿日期|网络首发日期?|作者单位|单位地址|依托单位|项目批准号)\s*[:：]")
+_NER_AFFILIATION_MARK = re.compile(
+    r"(?m)^\s*\(?\d{1,2}[.、）)]\s*[一-鿿A-Za-z][^，。\n]{2,28}"
+    r"(大学|学院|医院|研究所|研究院|实验室|中心|公司|集团)")
+
+
+def _patch_ner_header_lines(md: str, content: bytes, name: str) -> str:
+    """NER 头部行补丁：把 MinerU 丢失的头部元数据块从 PyMuPDF 补进文本。
+
+    MinerU 对个别 PDF 会静默丢基金项目/作者简介等头部行（AI画像案例：md 里
+    "基金项目""西南交通大学" 整体消失，PyMuPDF 完整）。取 PyMuPDF 探针文本中
+    以头部标记开头的块（至下一标记或段标），md 归一化后不含其前 20 字的块
+    追加到 md 末尾。探针失败/无缺失原样返回。
+    """
+    if not md:
+        return md
+    try:
+        from infrastructure.document_parser.upload_reader import extract_bytes as _eb
+        py = _eb(content, name, light=True) or ""
+    except Exception:  # noqa: BLE001
+        return md
+    if not py:
+        return md
+    md_norm = re.sub(r"\s+", "", md)
+    missing = []
+    marks = list(_NER_HEADER_MARK.finditer(py)) + list(_NER_AFFILIATION_MARK.finditer(py))
+    for m in marks:
+        start = m.start()
+        end = min(start + 400, len(py))
+        m2 = _NER_HEADER_MARK.search(py, m.end())
+        if m2 and m2.start() < end:
+            end = m2.start()
+        stop = re.search(r"\n\s{0,6}(摘\s*要|关键词|Abstract|ABSTRACT|中图分类号)", py[start:end])
+        if stop:
+            end = start + stop.start()
+        block = py[start:end].strip()
+        if len(block) < 8:
+            continue
+        key = re.sub(r"\s+", "", block)[:20]
+        if key in md_norm:
+            continue
+        if any(re.sub(r"\s+", "", b)[:20] == key for b in missing):
+            continue
+        missing.append(block)
+    if not missing:
+        return md
+    logger.warning("NER 头部行补丁（%s）：MinerU 丢失 %d 个元数据块，已从 PyMuPDF 补入",
+                   name, len(missing))
+    # 前置到文首：追加在文末时模型当尾部噪声跳过（AI画像实测），头部元数据
+    # 自然位置在开头，模型按首页头语境正常抽取
+    return "\n".join(missing) + "\n\n" + md
+
+
 def _count_body_citation_markers(text: str) -> int:
     """正文区引用标记计数（引用工具解析门禁探针口径）。
 
@@ -1209,6 +1269,15 @@ async def parse_files(
                 parsed_pairs.append({"file_name": name, "media_type": pair["media_type"],
                                      "text": body, "title": pair.get("title", "")})
             else:
+                if effective_tool in NER_TOOLS:
+                    # NER 头部行补丁（2026-09-10 用户方案2）：MinerU 对个别 PDF
+                    # 会丢基金项目/作者简介/收稿日期等头部元数据行（AI画像案例：
+                    # md 无"基金项目"整行，PyMuPDF 有），而这类行是机构/人名/
+                    # 地名富集区，丢了伤 NER 召回最大。PyMuPDF 探针（~0.3s）取
+                    # 头部块中 md 缺失的行块，追加到 md 末尾再送 LLM——不动
+                    # MinerU 主文本，只补丢的块。
+                    pair["text"] = await asyncio.to_thread(
+                        _patch_ner_header_lines, pair["text"], content, name)
                 parsed_pairs.append(pair)
         if failed:
             async def _rebuild(fb_name, fb_data, fb_headers):
@@ -1775,12 +1844,26 @@ def compatible_history(
                 if not _name:
                     # 从结果回填的 document.title
                     _name = str((result.get("document") or {}).get("title") or "")[:60]
-            # NER 记录名加时间后缀(题目/文件名 · 年-月-日 时:分)
+            # NER 记录名格式（2026-09-11 用户定稿）：文件名 · 命名实体识别类型 · 北京时间
+            # created_at 已是 Asia/Shanghai（北京标准时间），截到分钟
+            _NER_TYPE_ZH = {
+                "general-ner": "通用命名实体识别",
+                "research-ner": "科研命名实体识别",
+                "domain-ner": "专业领域命名实体识别",
+                "upstream-entity": "实体识别",
+                "upstream-dependency": "依存句法",
+                "deep-cluster": "深度聚类",
+                "cluster-label": "标签生成",
+            }
+            _type_zh = _NER_TYPE_ZH.get(task["tool_id"], task["tool_id"])
             _time = str(task.get("created_at") or "")[:16].replace("T", " ")
             if not _name:
-                _name = _time
-            elif _time:
-                _name = f"{_name} · {_time}"
+                _name = f"{_type_zh} · {_time}" if _time else _type_zh
+            else:
+                _parts = [_name, _type_zh]
+                if _time:
+                    _parts.append(_time)
+                _name = " · ".join(_parts)
             option = {
                 "task_id": task["id"], "record_id": record["id"], "tool_id": task["tool_id"],
                 "status": task["status"], "created_at": task["created_at"],

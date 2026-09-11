@@ -295,14 +295,25 @@ const canVisualize = computed(() => supportsVisualization(props.toolId))
 const selectedClusterTask = computed(() => clusterTaskOptions.value.find(item => item.id === selectedClusterTaskId.value))
 const selectedCollection = computed(() => documentCollectionOptions.value.find(item => item.id === selectedCollectionId.value))
 const selectedNerRecord = computed(() => nerHistoryOptions.value.find(item => item.id === selectedNerRecordId.value))
-const previewSentence = computed(() => {
+const previewLines = computed<string[]>(() => {
+  // 2026-09-11 用户定稿：关系抽取输入=上游 NER 的语境片段/关联上下文
+  // （通用实体识别的语境片段、科研/专业领域 NER 的关联上下文，即 entities[].context）。
+  // 每条片段独立一行（span 块级化），v-html 外文本插值 \n 不换行的老坑
+  const ctxs = selectedNerRecord.value?.contexts || []
+  if (ctxs.length) {
+    const lines = ctxs.map((c: string, i: number) => `S${i + 1}: ${c}`)
+    if (ctxs.length > 5) {
+      return [...lines.slice(0, 5), `…共 ${ctxs.length} 条语境片段`]
+    }
+    return lines
+  }
+  // 无语境片段的老记录回退 sentence；临时路径不展示
   const s = selectedNerRecord.value?.sentence || ''
-  // 文件上传的 NER 记录 sentence 是临时文件路径,不展示路径本身
   if (s.startsWith('/tmp/') || s.startsWith('/root/') || s.endsWith('.pdf')) {
     const n = selectedNerRecord.value?.entities?.length || 0
-    return `(文件上传的NER记录,含 ${n} 个实体,提交后系统自动读取原文执行依存句法分析与关系抽取)`
+    return [`(文件上传的NER记录,含 ${n} 个实体,提交后系统自动读取原文执行依存句法分析与关系抽取)`]
   }
-  return s.length > 1000 ? s.slice(0, 1000) + '…' : s
+  return s.length > 1000 ? [s.slice(0, 1000) + '…'] : [s]
 })
 
 // 依存句法预览:选择上游记录后调后端 GLM 生成真实依存弧
@@ -543,8 +554,24 @@ const textInputLabel = computed(() => ({
   'en-abstract-move': '英文科技论文摘要',
 } as Record<string, string>)[props.toolId] || '文本')
 // 占位提示与标签分开：标签短、占位可以给更具体的引导
+// （2026-09-11 用户定稿：各工具输入框背景提示改为对应的输入内容说明）
 const textInputPlaceholder = computed(() => ({
-  'zh-abstract-move': '请输入中文科技文献摘要文本',
+  'zh-abstract-move': '中文科技文献摘要文本。',
+  'en-abstract-move': '英文科技论文摘要（SCI/EI期刊论文及国际会议论文文本）。',
+  'fund-move': '中文基金申请书、立项书、科研项目管理文件文本。',
+  'zh-classify': '中文科技文献文本（期刊论文、会议文稿、报告、政策文件）',
+  'en-classify': '英文科技文献文本（期刊论文、会议文稿、科研项目摘要）',
+  'domain-classify': '领域专业科技文献文本',
+  'zh-keyword': '中文科技文献摘要',
+  'en-keyword': '英文科研文献摘要',
+  'rq-detect': '科技文献文本片段',
+  'citation-sentiment': '科技文献全文数据',
+  'citation-intent': '引用句文本',
+  'definition-detect': '待处理科技文献全文片段',
+  'general-ner': '中英文科技文献文本',
+  'research-ner': '中英文学术论文摘要、技术报告文本',
+  'domain-ner': '专业科研文献文本',
+  'deep-cluster': '科技文献文本',
 } as Record<string, string>)[props.toolId] || `请输入${textInputLabel.value}`)
 const inputModeHint = computed(() => {
   if (props.toolId === 'rq-detect') return '支持单文本、批量文本、单文件、批量文件调用'
@@ -617,7 +644,7 @@ async function loadRuntimeDatabaseOptions() {
         id: item.record_id, taskName: item.document_title || item.label,
         nerType: item.tool_id, documentId: item.document_id || '由原记录确定',
         sentenceId: item.sentence_id || '由原记录确定', sentence: item.sentence || '',
-        entities: item.entities || [], completedAt: item.created_at,
+        entities: item.entities || [], contexts: [...new Set((item.entities || []).map((e: any) => (e.context || '').trim()).filter(Boolean))], completedAt: item.created_at,
       }))
     : []
   selectedDictionaryId.value = savedDictionaryOptions.value[0]?.id || ''
@@ -642,6 +669,15 @@ watch(() => props.toolId, () => {
   addBatchText()
   addCitationBatchItem()
   addCitationBatchItem()
+  // 批量文本空白底线（2026-09-11 用户定稿）：与其他批量输入一致，进入即
+  // 预置空白卡——深度聚类下限 4 条、结构化综述下限 2 篇
+  if (props.toolId === 'deep-cluster') {
+    addDoc(); addDoc(); addDoc(); addDoc()
+  }
+  if (props.toolId === 'structured-review') {
+    addDoc()
+    addDoc()
+  }
   form.projectName = ''
   form.documentTitle = ''
   form.text = ''
@@ -663,6 +699,13 @@ watch(mode, (next, previous) => {
   if (next === 'batch-text' && props.toolId.startsWith('citation-') && citationBatchItems.length === 0) {
     addCitationBatchItem()
     addCitationBatchItem()
+  }
+  if (next === 'batch-text' && props.toolId === 'structured-review' && docs.length === 0) {
+    addDoc()
+    addDoc()
+  }
+  if (next === 'batch-text' && props.toolId === 'deep-cluster' && docs.length === 0) {
+    addDoc(); addDoc(); addDoc(); addDoc()
   }
 })
 
@@ -929,7 +972,13 @@ function requiredResourceError(): string {
 }
 
 function validateRequiredInputs(): string {
-  if (props.toolId === 'relation-extract') return selectedNerRecordId.value ? '' : '请选择一条已完成的命名实体识别记录。'
+  if (props.toolId === 'relation-extract') {
+    if (!selectedNerRecordId.value) return '请选择一条已完成的命名实体识别记录。'
+    // 依存句法预览还在加载中 → 阻止提交（2026-09-11 用户需求：加载完才能点在线测试）
+    if (dependencyPreviewLoading.value) return '依存句法分析尚在加载中，请等待完成后提交。'
+    // 预览加载失败（网络/后端异常）→ 也要提示，不能静默提交
+    if (dependencyPreviewError.value) return `依存句法分析预览不可用：${dependencyPreviewError.value}。请重新选择记录或稍后重试。`
+  }
 
   // 批量文件：提交时最少 2 个（深度聚类按后端契约最少 4 个），不足给小弹窗提示
   if (mode.value === 'batch' && props.toolId !== 'relation-extract') {
@@ -1234,7 +1283,7 @@ function downloadResult() {
               </div>
               <div v-if="selectedNerRecord" class="relation-readonly-preview">
                 <div class="settings-title"><b>上游数据只读预览</b><span>数据库自动读取，仅供查看</span></div>
-                <div class="relation-sentence-preview"><b>原始句子文本</b><p>{{ previewSentence }}</p></div>
+                <div class="relation-sentence-preview"><b>原始句子文本（语境片段）</b><p class="relation-context-lines"><template v-for="(line, i) in previewLines" :key="i"><span>{{ line }}</span></template></p></div>
                 <div class="relation-entity-preview"><div><b>已识别实体列表</b><span>{{ selectedNerRecord.entities.length }} 个实体</span></div><ul><li v-for="entity in selectedNerRecord.entities" :key="`${entity.type}-${entity.text}`"><strong>{{ entity.text }}</strong><span>{{ entity.type }}</span></li></ul></div>
               </div>
               <div v-if="dependencyPreviewLoading" class="info-banner"><b>依存句法分析中...</b><span>正在对上游实体文本执行依存句法分析,约需数秒</span></div>
@@ -1300,7 +1349,7 @@ function downloadResult() {
               <div class="special-panel-head"><div><strong>文本与文献元数据</strong><span>逐条填写文本及对应元数据</span></div></div>
               <div v-if="!docs.length" class="empty-input"><b>尚未添加文本</b><span>至少添加 4 条，并为每条文本填写对应的文献元数据。</span><button class="outline-btn" @click="addDoc">＋ 添加第一条文本</button></div>
               <div v-for="(doc,index) in docs" :key="doc.id" class="document-card deep-cluster-document-card">
-                <div class="document-card-head"><b>文本 {{ index + 1 }}</b><button class="ghost-btn danger" @click="docs.splice(index,1)">删除</button></div>
+                <div class="document-card-head"><b>文本 {{ index + 1 }}</b><button class="ghost-btn danger" :disabled="docs.length <= 4" @click="docs.splice(index,1)">删除</button></div>
                 <div class="settings-title deep-cluster-metadata-title"><b>文献元数据</b><span>与文本一并提交</span></div>
                 <div class="two-column deep-cluster-metadata-grid">
                   <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="doc.id" class="input" placeholder="例如：DOC001" /></div>
@@ -1342,7 +1391,7 @@ function downloadResult() {
               <div class="special-panel-head"><div><strong>文献集</strong><span>{{ docs.length }} 篇，至少需要 2 篇</span></div></div>
               <div v-if="!docs.length" class="empty-input"><b>尚未添加文献</b><span>逐篇录入文本及对应元数据。</span><button class="outline-btn" @click="addDoc">＋ 添加第一篇文献</button></div>
               <div v-for="(doc,index) in docs" :key="doc.id" class="document-card review-document-card-v634">
-                <div class="document-card-head"><b>文献 {{ index + 1 }} · {{ doc.id }}</b><button class="ghost-btn danger" @click="docs.splice(index,1)">删除</button></div>
+                <div class="document-card-head"><b>文献 {{ index + 1 }} · {{ doc.id }}</b><button class="ghost-btn danger" :disabled="docs.length <= 2" @click="docs.splice(index,1)">删除</button></div>
                 <div class="settings-title review-metadata-title"><b>文献元数据</b><span>支撑团队分析、趋势计算与溯源</span></div>
                 <div class="two-column review-document-meta-grid-v637">
                   <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="doc.id" class="input" placeholder="例如：DOC001" /></div>

@@ -83,7 +83,7 @@ def _prepare_vue_output(output: dict[str, Any], _ctx_by_cluster: dict | None = N
         item["difference_explanation"] = (
             "推荐标签达到当前类簇间差异阈值。"
             if passed
-            else "推荐标签未达到当前类簇间差异阈值，建议人工复核。"
+            else "差异度低于阈值，需要用户自行复核。"
         )
 
     output["cluster_count"] = int(report.get("cluster_count") or len(labels))
@@ -114,11 +114,10 @@ def _label_term_set(name: str, phrases: list) -> set:
 
 
 def _pairwise_distinctiveness(term_sets: dict) -> dict:
-    """区分度 = 1 - 与最相近簇的术语重叠率（|A∩B| / min(|A|,|B|）。
+    """差异度 = 1 - 与其他簇的最差术语重叠率（|A∩B| / min(|A|,|B|）。
 
-    直采路径此前的区分度恒为 1.0（无信息量，用户无法判断标签是否真的可区分）；
-    这里按簇名+代表短语的实际重叠计算——完全不重叠的簇区分度确为 100%，
-    术语有共享的簇会得到低于 1 的真实值。
+    实现为 1-max：只看最相近的竞争簇。此值仅作为 LLM 评估前的初始占位，
+    最终差异度由 LLM 打分覆盖（见下方标签差异化优化块）。
     """
     out = {}
     for cid, terms in term_sets.items():
@@ -177,7 +176,9 @@ def execute_cluster_labeling(
                 "evidence": {"keywords": phrases[:3],
                              "center_sentence": (sentences[0] if sentences else "")},
                 "language": "zh" if re.search(r"[一-鿿]", name) else "en",
-                "confidence": 0.9,
+                "confidence": (0.95 if distinct.get(cid, 1.0) >= 0.75
+                              else 0.85 if distinct.get(cid, 1.0) >= 0.50
+                              else 0.70),
                 "distinctiveness": distinct.get(cid, 1.0),
                 "coverage": 1.0,
                 "evidence_support": 0.9,
@@ -187,13 +188,105 @@ def execute_cluster_labeling(
                     (ps.get("linked_document_ids") or [] for ps in phrase_sets
                      if isinstance(ps, dict) and str(ps.get("cluster_id")) == cid), []),
             })
+        # ── 标签差异化优化（2026-09-11 终版：LLM 打分单一口径）──
+        # 口径（用户拍板）：
+        # ① 差异度分数完全由 LLM 给出，_d 即优化前分数，不再混用代码预计算值；
+        # ② _d >= 阈值 → 标签原样保留，绝不进优化列表；
+        # ③ _d < 阈值 → LLM 给新标签 + 新标签分数（optimized_distinctiveness），
+        #    新分数必须严格大于阈值才采用；拿不到有效优化则如实标"未通过，需人工复核"。
+        threshold_opt = 0.75
+        _opt_items = []
+        try:
+            _label_list = "\n".join(
+                f"[{i+1}] {lbl['cluster_id']}: {lbl['label']}" for i, lbl in enumerate(labels))
+            _llm_prompt = (
+                "以下是聚类结果的所有类簇标签。请完成两件事：\n"
+                "1. 评估每个标签的差异化程度（distinctiveness，0-1 分）：该标签与其他簇标签的区分度，"
+                "完全可区分=1.0，高度相似=0.0。\n"
+                f"2. distinctiveness 低于 {threshold_opt} 的标签，必须给出优化后的新标签（optimized_label），"
+                "并同时给出新标签的差异度分数（optimized_distinctiveness）。"
+                f"新标签要更具体、只用该簇独有术语，optimized_distinctiveness 必须严格大于 {threshold_opt}。\n"
+                f"distinctiveness 大于等于 {threshold_opt} 的标签不要给 optimized_label。\n\n"
+                f"标签列表：\n{_label_list}\n\n"
+                '只输出JSON：{"results":[{"cluster_id":"C01","distinctiveness":0.8,'
+                '"optimized_label":"","optimized_distinctiveness":0.0,'
+                '"reason":"评估或优化说明"}]}')
+            _llm_out = glm_client.chat_json(
+                "你是类簇标签差异化评估与优化专家。", _llm_prompt,
+                timeout=60.0, max_tokens=2000, temperature=0.0)
+            _rows = _llm_out.get("data", _llm_out).get("results", []) if isinstance(_llm_out, dict) else []
+            for _r in _rows:
+                if not isinstance(_r, dict):
+                    continue
+                _cid = str(_r.get("cluster_id") or "").strip()
+                _lbl = next((l for l in labels if l["cluster_id"] == _cid), None)
+                if not _lbl:
+                    continue
+                try:
+                    _d = float(_r.get("distinctiveness") or 0)
+                except (TypeError, ValueError):
+                    _d = 0
+                _d = max(0.0, min(1.0, _d))
+                _new_label = str(_r.get("optimized_label") or "").strip()
+                _reason = str(_r.get("reason") or "").strip()
+                _before = _lbl["label"]
+
+                if _d >= threshold_opt:
+                    # 达标：标签原样保留，不进优化列表
+                    _lbl["distinctiveness"] = _d
+                    _lbl["confidence"] = 0.95
+                    continue
+
+                # 不达标：采用 LLM 给的新标签 + 新分数（须严格大于阈值）
+                try:
+                    _nd = float(_r.get("optimized_distinctiveness") or 0)
+                except (TypeError, ValueError):
+                    _nd = 0
+                _nd = max(0.0, min(1.0, _nd))
+                if _new_label and _new_label != _before and _nd > threshold_opt:
+                    _lbl["label"] = _new_label
+                    _lbl["candidate_labels"] = [_before, _new_label]
+                    _lbl["distinctiveness"] = _nd
+                    _lbl["confidence"] = 0.95
+                    _opt_items.append({
+                        "cluster_id": _cid,
+                        "before_label": _before,
+                        "after_label": _new_label,
+                        "before_distinctiveness": round(_d, 3),
+                        "after_distinctiveness": round(_nd, 3),
+                        "changed": True,
+                        "reason": _reason or "LLM 优化标签",
+                        "threshold_passed": True,
+                    })
+                else:
+                    # LLM 未给出有效优化 → 如实标注未通过，需人工复核
+                    _lbl["distinctiveness"] = _d
+                    _lbl["confidence"] = 0.85 if _d >= 0.50 else 0.70
+                    _opt_items.append({
+                        "cluster_id": _cid,
+                        "before_label": _before,
+                        "after_label": _before,
+                        "before_distinctiveness": round(_d, 3),
+                        "after_distinctiveness": round(_d, 3),
+                        "changed": False,
+                        "reason": _reason or "LLM 评估差异度不足，需人工复核",
+                        "threshold_passed": False,
+                    })
+        except Exception:
+            # LLM 失败：保持原差异度
+            pass
+
+        # 保险（2026-09-11 用户反复确认）：优化列表只保留 before < threshold 的簇
+        _opt_items = [it for it in _opt_items
+                      if float(it.get("before_distinctiveness", 1.0)) < threshold_opt]
+
         output = {
             "labels": labels,
             "cluster_count": len(labels),
             "generated_label_count": len(labels),
             "parameters": {"label_length_limit": 12, "language_type": "auto",
-                            "mode": "move_aligned_direct"},
-            "statistics": {"average_confidence": 0.9,
+                            "mode": "move_aligned_direct", "distinctiveness_threshold": threshold_opt},
+            "statistics": {"average_confidence": round(sum(l["confidence"] for l in labels) / len(labels), 3) if labels else 0,
                             "average_distinctiveness": round(
                                 sum(l["distinctiveness"] for l in labels) / len(labels), 3) if labels else 1.0,
                             "average_coverage": 1.0, "distinctiveness_pass_count": len(labels)},
@@ -207,19 +300,17 @@ def execute_cluster_labeling(
                 "direct_input_contract": "move_aligned_cluster_names",
             },
             "label_distinctiveness_optimization_result": {
-                "threshold": 0.75, "optimized_count": 0, "passed_count": len(labels),
-                "failed_count": 0,
-                "items": [{"cluster_id": c, "before_label": n, "after_label": n,
-                            "changed": False, "reason": "v3 簇名直采",
-                            "threshold_passed": next(
-                                (l["distinctiveness"] >= 0.75 for l in labels if l["cluster_id"] == c), True)}
-                           for c, n in move_named.items()],
+                "threshold": threshold_opt,
+                "optimized_count": sum(1 for it in _opt_items if it.get("changed")),
+                "passed_count": sum(1 for it in _opt_items if it.get("threshold_passed")),
+                "failed_count": sum(1 for it in _opt_items if not it.get("threshold_passed")),
+                "items": _opt_items,
             },
         }
         result = SemanticResult(code=code, name=functional_point.name)
         result.success = True
         result.data = _prepare_vue_output(output, {})
-        result.confidence = 0.9
+        result.confidence = round(sum(l["confidence"] for l in labels) / len(labels), 3) if labels else 0
         return result
 
     label_length_limit = _integer(params, "label_length_limit", 12)

@@ -128,6 +128,7 @@ _VIZ_KEEP_FIELDS: Dict[str, frozenset] = {
     "structured-review": frozenset({
         "tree", "review_tree", "cluster_induction_results", "problem_clusters",
         "trend_hotspot_distribution", "trends", "structured_report", "meta",
+        "evidence_index", "statistics", "topic", "document_count",
     }),
 }
 
@@ -1591,7 +1592,7 @@ def _clusters(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
             "size": size,
             "ratio": round(size / n, 3) if n else 0,
             "representative_terms": rep_terms,
-            "representative_documents": members[:3],
+            "representative_documents": members,
             "members": members,
             "_in_scores": in_scores,
         })

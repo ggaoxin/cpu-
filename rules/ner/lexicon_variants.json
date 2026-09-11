@@ -1,0 +1,338 @@
+{
+  "_comment": "NER 变体识别词表（2026-09-11 定稿语义：原文输出不变，词表只做认知识别——同组多条归并为一条，保留首次出现的原文形式，其余进 variants，附 normalized_name/canonical_en 供辨识）。通用 NER 与专业领域 NER 共用。mtime 热加载，后期数据滚动扩充 groups。",
+  "groups": [
+    {
+      "canonical": "中国",
+      "canonical_en": "China",
+      "type": "LOCATION",
+      "variants": [
+        "中国",
+        "China",
+        "CHINA",
+        "P.R. China"
+      ]
+    },
+    {
+      "canonical": "美国",
+      "canonical_en": "United States",
+      "type": "LOCATION",
+      "variants": [
+        "美国",
+        "USA",
+        "United States",
+        "U.S.",
+        "US",
+        "America"
+      ]
+    },
+    {
+      "canonical": "英国",
+      "canonical_en": "United Kingdom",
+      "type": "LOCATION",
+      "variants": [
+        "英国",
+        "UK",
+        "United Kingdom",
+        "England",
+        "Britain"
+      ]
+    },
+    {
+      "canonical": "日本",
+      "canonical_en": "Japan",
+      "type": "LOCATION",
+      "variants": [
+        "日本",
+        "Japan"
+      ]
+    },
+    {
+      "canonical": "韩国",
+      "canonical_en": "Korea",
+      "type": "LOCATION",
+      "variants": [
+        "韩国",
+        "Korea",
+        "South Korea"
+      ]
+    },
+    {
+      "canonical": "德国",
+      "canonical_en": "Germany",
+      "type": "LOCATION",
+      "variants": [
+        "德国",
+        "Germany"
+      ]
+    },
+    {
+      "canonical": "法国",
+      "canonical_en": "France",
+      "type": "LOCATION",
+      "variants": [
+        "法国",
+        "France"
+      ]
+    },
+    {
+      "canonical": "荷兰",
+      "canonical_en": "Netherlands",
+      "type": "LOCATION",
+      "variants": [
+        "荷兰",
+        "Netherlands",
+        "the Netherlands"
+      ]
+    },
+    {
+      "canonical": "俄罗斯",
+      "canonical_en": "Russia",
+      "type": "LOCATION",
+      "variants": [
+        "俄罗斯",
+        "Russia",
+        "俄国"
+      ]
+    },
+    {
+      "canonical": "澳大利亚",
+      "canonical_en": "Australia",
+      "type": "LOCATION",
+      "variants": [
+        "澳大利亚",
+        "Australia"
+      ]
+    },
+    {
+      "canonical": "新加坡",
+      "canonical_en": "Singapore",
+      "type": "LOCATION",
+      "variants": [
+        "新加坡",
+        "Singapore"
+      ]
+    },
+    {
+      "canonical": "北京",
+      "canonical_en": "Beijing",
+      "type": "LOCATION",
+      "variants": [
+        "北京",
+        "Beijing"
+      ]
+    },
+    {
+      "canonical": "上海",
+      "canonical_en": "Shanghai",
+      "type": "LOCATION",
+      "variants": [
+        "上海",
+        "Shanghai"
+      ]
+    },
+    {
+      "canonical": "南京",
+      "canonical_en": "Nanjing",
+      "type": "LOCATION",
+      "variants": [
+        "南京",
+        "Nanjing"
+      ]
+    },
+    {
+      "canonical": "广州",
+      "canonical_en": "Guangzhou",
+      "type": "LOCATION",
+      "variants": [
+        "广州",
+        "Guangzhou",
+        "Canton"
+      ]
+    },
+    {
+      "canonical": "深圳",
+      "canonical_en": "Shenzhen",
+      "type": "LOCATION",
+      "variants": [
+        "深圳",
+        "Shenzhen"
+      ]
+    },
+    {
+      "canonical": "杭州",
+      "canonical_en": "Hangzhou",
+      "type": "LOCATION",
+      "variants": [
+        "杭州",
+        "Hangzhou"
+      ]
+    },
+    {
+      "canonical": "合肥",
+      "canonical_en": "Hefei",
+      "type": "LOCATION",
+      "variants": [
+        "合肥",
+        "Hefei"
+      ]
+    },
+    {
+      "canonical": "武汉",
+      "canonical_en": "Wuhan",
+      "type": "LOCATION",
+      "variants": [
+        "武汉",
+        "Wuhan"
+      ]
+    },
+    {
+      "canonical": "重庆",
+      "canonical_en": "Chongqing",
+      "type": "LOCATION",
+      "variants": [
+        "重庆",
+        "Chongqing"
+      ]
+    },
+    {
+      "canonical": "成都",
+      "canonical_en": "Chengdu",
+      "type": "LOCATION",
+      "variants": [
+        "成都",
+        "Chengdu"
+      ]
+    },
+    {
+      "canonical": "西安",
+      "canonical_en": "Xi'an",
+      "type": "LOCATION",
+      "variants": [
+        "西安",
+        "Xi'an",
+        "Xian",
+        "Xi'an"
+      ]
+    },
+    {
+      "canonical": "哈尔滨",
+      "canonical_en": "Harbin",
+      "type": "LOCATION",
+      "variants": [
+        "哈尔滨",
+        "Harbin"
+      ]
+    },
+    {
+      "canonical": "兰州",
+      "canonical_en": "Lanzhou",
+      "type": "LOCATION",
+      "variants": [
+        "兰州",
+        "Lanzhou"
+      ]
+    },
+    {
+      "canonical": "香港",
+      "canonical_en": "Hong Kong",
+      "type": "LOCATION",
+      "variants": [
+        "香港",
+        "Hong Kong",
+        "HongKong"
+      ]
+    },
+    {
+      "canonical": "贵阳",
+      "canonical_en": "Guiyang",
+      "type": "LOCATION",
+      "variants": [
+        "贵阳",
+        "Guiyang",
+        "Guian"
+      ]
+    },
+    {
+      "canonical": "镇江",
+      "canonical_en": "Zhenjiang",
+      "type": "LOCATION",
+      "variants": [
+        "镇江",
+        "Zhenjiang"
+      ]
+    },
+    {
+      "canonical": "欧洲",
+      "canonical_en": "Europe",
+      "type": "LOCATION",
+      "variants": [
+        "欧洲",
+        "Europe"
+      ]
+    },
+    {
+      "canonical": "亚洲",
+      "canonical_en": "Asia",
+      "type": "LOCATION",
+      "variants": [
+        "亚洲",
+        "Asia"
+      ]
+    },
+    {
+      "canonical": "尼古丁",
+      "canonical_en": "Nicotine",
+      "type": "COMPOUND",
+      "variants": [
+        "尼古丁",
+        "Nicotine",
+        "3-（1-甲基吡咯烷-2-基）吡啶",
+        "3-(1-methylpyrrolidin-2-yl) pyridine",
+        "3-(1-甲基吡咯烷-2-基)吡啶"
+      ]
+    },
+    {
+      "canonical": "二甲双胍",
+      "canonical_en": "Metformin",
+      "type": "DRUG",
+      "variants": [
+        "二甲双胍",
+        "Metformin",
+        "metformin"
+      ]
+    },
+    {
+      "canonical": "阿司匹林",
+      "canonical_en": "Aspirin",
+      "type": "DRUG",
+      "variants": [
+        "阿司匹林",
+        "Aspirin",
+        "乙酰水杨酸",
+        "Acetylsalicylic acid"
+      ]
+    },
+    {
+      "canonical": "青霉素",
+      "canonical_en": "Penicillin",
+      "type": "DRUG",
+      "variants": [
+        "青霉素",
+        "Penicillin",
+        "苄青霉素",
+        "Benzylpenicillin"
+      ]
+    },
+    {
+      "canonical": "咖啡因",
+      "canonical_en": "Caffeine",
+      "type": "COMPOUND",
+      "variants": [
+        "咖啡因",
+        "Caffeine",
+        "1,3,7-三甲基黄嘌呤",
+        "1,3,7-trimethylxanthine"
+      ]
+    }
+  ]
+}

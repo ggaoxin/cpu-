@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import threading
 import random
 import re
 from typing import Any, Dict, List, Optional
@@ -121,6 +122,31 @@ def _log_keyword_drop(lang: str, word: str, reason: str) -> None:
 # 中文虚词/自指词防线（2026-09-09，与英文防线同批）：kw_zh.yaml 停用词同为学术
 # 泛词，不含基础虚词。单字虚词本被 2 字下限挡住，但双字词（本文/我们/以及…）
 # 可过长度关，且补齐路径无最小长度——统一在此拦截。表内词不可能作为主题关键词。
+
+
+def _norm_surface(s: str) -> str:
+    """实体表面形式归一（去重/变体匹配用）：NFKC + casefold + 去空白与常见标点。"""
+    import unicodedata as _ud
+    import re as _re
+    return _re.sub(r"[\s\.\-·'’`,，、()（）:：;；!！?？/\\]+", "",
+                   _ud.normalize("NFKC", str(s)).casefold())
+
+
+def _lex_contains(nt: str, h: str) -> bool:
+    """词表词 nt 是否整体出现在已有实体归一文本 h 中（词表补抽去重用）。
+    拉丁词要求整词包含：china ⊂ powerchina 不算（ResNet 篇 China 被
+    PowerChina 吞掉的教训）；CJK 无词边界按普通包含。"""
+    if not nt or not h or nt not in h:
+        return False
+    import re as _re
+    if _re.search(r"[a-z0-9]", nt + h):
+        i = h.find(nt)
+        if i > 0 and h[i - 1].isalnum():
+            return False
+        j = i + len(nt)
+        if j < len(h) and h[j].isalnum():
+            return False
+    return True
 
 
 def _language_mismatch_error(expected: str, text: str, counterpart: str) -> Optional[str]:
@@ -4729,10 +4755,19 @@ class SemanticApplicationService(ISemanticService):
                 "你是科技文献概念定义识别专家。从给定文本中抽取概念定义句。"
                 f"{domain_hint}\n"
                 "定义句：解释某个概念/术语是什么的句子——X是指Y / X指Y / X是一种Y / "
-                "X定义为Y / X即Y / X称为Y / X指的是Y / X属于Y的类别。\n"
+                "X定义为Y（含 界定为/规定为/…的定义是/量化为/操作化为，如\"噪声水平定义为所添加"
+                "噪声标准差与原始信号标准差的比值\"这类操作性定义）/ X即Y（亦即/即是/即为/意指 同此）"
+                "/ X称为Y（统称为/称之为/命名为/定名为/叫作/又称/亦称/也称 同此）/ X指的是Y / "
+                "X属于Y的类别 / 编号定义标签（\"定义1：…\"\"定义 2.1：…\"数学论文形式）/ "
+                "数学条件式定义（若…则称满足…的X为Y）。\n"
                 "非定义句（不抽）：描述重要性/作用/意义（X是...的关键/重要环节/前提/核心）；"
                 "描述方法步骤/流程/操作（将X按...聚类 / 基于...进行）；陈述结果/发现（X是最好的 / "
-                "结果表明）；公式符号说明（式中：l0为初始学习率 / γ为衰减系数）；比较/引述/数据描述。\n"
+                "结果表明）；公式符号说明（式中：l0为初始学习率 / γ为衰减系数）；比较/引述/数据描述；"
+                "方法步骤中的术语缩写展开——括号只是中英/缩写对照，不是在解释概念是什么"
+                "（使用R语言limma包识别差异表达基因（Differentially expressed genes，DEGs）/"
+                "计算曲线下面积（Area Under Curve，AUC）/ 从TRRUST数据库下载转录因子"
+                "（Transcription factors，TFs）-mRNA关系对）；章节标题（1.8 基因集富集分析"
+                "（Gene set enrichment analysis，GSEA））；结果句（主成分分析（PCA）结果表明...）。\n"
                 "只抽真正的概念定义句，宁缺毋滥，没有就返回空列表。\n"
                 "每条输出：sentence（定义句原文，不含章节标题/换行符）、concept（被定义的概念词，"
                 "简洁名词性术语）、pattern（定义句式，如 是一种/是指/即/指/称为）、confidence（0-1）。\n"
@@ -4742,6 +4777,13 @@ class SemanticApplicationService(ISemanticService):
             prompts = ["文本片段（第%d块）：\n%s" % (i + 1, c) for i, c in enumerate(chunks)]
             batch_ds = self._glm_chat_batch(
                 sysp, prompts, temperature=0.0, timeout=90.0, max_tokens=2000, max_workers=5)
+            # 契约（2026-09-10 用户拍板）：调用失败 ≠ 无定义句——任一块 GLM 调用
+            # 失败直接报错，禁止把 None 静默当 0 条返回；空列表只表示"真没有"
+            # （曾出现瞬时失败被吞、有定义句的论文返回 0 条且无法区分的案例）
+            _failed = sum(1 for d in batch_ds if d is None)
+            if _failed:
+                raise RuntimeError(
+                    f"GLM 调用失败（{_failed}/{len(batch_ds)} 块），概念定义识别中止，请重试")
             defs = []
             for d in batch_ds:
                 if d is None:
@@ -4759,6 +4801,11 @@ class SemanticApplicationService(ISemanticService):
                         conf = min(1.0, float(r.get("confidence", 0.7) or 0.7))
                     except (TypeError, ValueError):
                         conf = 0.7
+                    # 置信度地板（2026-09-10 用户拍板"不合适就别要"）：LLM 对
+                    # 方法步骤缩写展开/章节标题类会自觉打 0.4~0.6，真定义句
+                    # 0.85+——<0.7 直接丢弃，宁缺毋滥
+                    if conf < 0.7:
+                        continue
                     defs.append({
                         "sentence": sent, "concept": concept,
                         "pattern": (r.get("pattern") or "").strip(),
@@ -4836,6 +4883,31 @@ class SemanticApplicationService(ISemanticService):
             return len(text)
 
         out, seen = [], set()
+        # 规范化折叠匹配（第三级兜底）：清洗 LLM 在裁剪边界常改标点/空格
+        # （原文"…状态，"→清洗"…状态。"；"G1 和 G2"→"G1和G2"），精确 find 与
+        # 去 \n find 都落空 → 位置返回 null。两侧同口径剥掉空白/数字/标点后
+        # 匹配，经索引映射回原文真实位置（旧实现只剥 sent 不剥 text，必然失配）
+        _strip_cls = r"[\s\d,，。.；;:：、（）()\[\]+\-*/=<>「」『』\"'‘’“”·…～~]"
+        _norm_chars: list = []
+        _norm_map: list = []
+        for _i, _ch in enumerate(text):
+            if not _re2.match(_strip_cls, _ch):
+                _norm_chars.append(_ch)
+                _norm_map.append(_i)
+        _text_norm = "".join(_norm_chars)
+
+        def _locate_norm(s: str):
+            _s_norm = _re2.sub(_strip_cls, "", s)
+            if len(_s_norm) < 6:
+                return None
+            _fi = _text_norm.find(_s_norm)
+            if _fi < 0:  # 尾部仍异（截断长度差）：前半匹配兜底
+                _fi = _text_norm.find(_s_norm[:max(10, len(_s_norm) // 2)])
+            if _fi < 0:
+                return None
+            _end_fi = min(_fi + len(_s_norm) - 1, len(_norm_map) - 1)
+            return _norm_map[_fi], _norm_map[_end_fi] + 1
+
         for item in defs:
             sent = item["sentence"]
             if sent in seen:
@@ -4847,17 +4919,13 @@ class SemanticApplicationService(ISemanticService):
                 # 原文跨 \n，去 \n 后匹配再映射回原文位置
                 flat = _re2.sub(r"[\n\r]", "", text)
                 fs = flat.find(sent)
-                if fs < 0:
-                    # 仍失败：sent 前 12 个连续汉字（去标点/数字/空格）模糊定位
-                    _key = _re2.sub(
-                        r"[\s\d,，。.；;:：、（）()\[\]+\-*/=<>]+", "", sent)[:12]
-                    if _key:
-                        _m = _re2.search(_re2.escape(_key), flat)
-                        if _m:
-                            fs = _m.start()
-                if fs is not None and fs >= 0:
+                if fs >= 0:
                     start = _flat_to_orig(fs)
                     end = _flat_to_orig(fs + len(sent) - 1) + 1
+            if start < 0:
+                _loc = _locate_norm(sent)
+                if _loc:
+                    start, end = _loc
             out.append({
                 "sentence": sent,
                 "concept": item["concept"],
@@ -5108,6 +5176,211 @@ class SemanticApplicationService(ISemanticService):
                 e["mapping_confidence"] = 0.0
                 e["mapping_source"] = "用户标准词表"
 
+    _LOC_LEXICON_CACHE: tuple = (None, None)  # (mtime_ns, lexicon)
+
+    @classmethod
+    def _location_lexicon(cls) -> list:
+        """地名词表热加载（rules/ner/lexicon_locations.json，mtime_ns 缓存）。
+        词表随后期数据扩充改文件即生效，无需重启。"""
+        import json as _json
+        from pathlib import Path as _P
+        p = _P(__file__).resolve().parents[2] / "rules" / "ner" / "lexicon_locations.json"
+        try:
+            mt = p.stat().st_mtime_ns
+        except OSError:
+            return []
+        if cls._LOC_LEXICON_CACHE[0] == mt:
+            return cls._LOC_LEXICON_CACHE[1] or []
+        try:
+            data = _json.loads(p.read_text(encoding="utf-8"))
+            terms = sorted([t for t in (data.get("zh") or []) + (data.get("en") or [])
+                            if isinstance(t, str) and len(t) >= 2], key=len, reverse=True)
+        except Exception:  # noqa: BLE001
+            terms = []
+        cls._LOC_LEXICON_CACHE = (mt, terms)
+        return terms
+
+    def _boost_locations_from_lexicon(self, entities: list, eff_text: str) -> list:
+        """地名词表后验补抽：词表词在文本中出现且未被任何现有实体覆盖、后面
+        不紧跟机构后缀（"中国+人民银行"类复合专名不拆）时补一条 LOCATION。
+        每个词只补首个有效出现，避免同词刷屏。"""
+        import re as _re
+        terms = self._location_lexicon()
+        if not terms:
+            return entities
+        # 现有实体覆盖区间（任意类型——org/person 内部不重复抽地名）
+        spans = []
+        for e in entities:
+            if not isinstance(e, dict):
+                continue
+            try:
+                s, t = int(e.get("start", -1)), int(e.get("end", -1))
+            except (TypeError, ValueError):
+                continue
+            if 0 <= s < t <= len(eff_text):
+                spans.append((s, t))
+        # 已有 LOCATION 实体的归一文本集（词被包含则不重复补）
+        import unicodedata as _ud
+        def _n(x):
+            return _re.sub(r"\s+", "", _ud.normalize("NFKC", str(x)).casefold())
+        have_loc = {_n(e.get("text")) for e in entities
+                    if isinstance(e, dict) and e.get("type") == "LOCATION"}
+        # 复合专名守卫：词后紧接的机构后缀（中国+人民银行 / 中国+科学院…）
+        suffix_guard = _re.compile(
+            r"^(人民银行|银行|科学院|学术期刊|期刊|大学|学院|公司|医院|集团|石化|石油|"
+            r"移动|联通|电信|电网|地震台网|台网|地质|航天|烟草|船舶|航空|铁道|建筑|"
+            r"电建|核电|中铁|中车|中冶|邮政|出版|教育|海油|船舶|广电|人寿|保险|证券|基金)")
+        added = []
+        for term in terms:
+            nt = _n(term)
+            if any(_lex_contains(nt, h) or _lex_contains(h, nt) for h in have_loc if h):
+                continue
+            for m in _re.finditer(_re.escape(term), eff_text):
+                s, t = m.span()
+                if any(s < be and t > bs for bs, be in spans):
+                    continue  # 出现在现有实体内部
+                if term == "中国" and suffix_guard.match(eff_text[t:t + 4]):
+                    continue  # 复合专名前缀（中国人民银行等）不拆
+                added.append({"text": term, "type": "LOCATION",
+                              "start": s, "end": t, "confidence": 0.9})
+                break
+        return entities + added
+
+    _VARIANT_CACHE: tuple = (None, None)  # (mtime_ns, {norm_variant: group})
+
+    @classmethod
+    def _variant_index(cls) -> dict:
+        """变体归一词表热加载（rules/ner/lexicon_variants.json）→ {norm(变体): group}。"""
+        import json as _json
+        from pathlib import Path as _P
+        p = _P(__file__).resolve().parents[2] / "rules" / "ner" / "lexicon_variants.json"
+        try:
+            mt = p.stat().st_mtime_ns
+        except OSError:
+            return {}
+        if cls._VARIANT_CACHE[0] == mt:
+            return cls._VARIANT_CACHE[1] or {}
+        try:
+            data = _json.loads(p.read_text(encoding="utf-8"))
+            idx = {}
+            for grp in data.get("groups") or []:
+                if not isinstance(grp, dict):
+                    continue
+                for v in [grp.get("canonical")] + list(grp.get("variants") or []):
+                    if isinstance(v, str) and v.strip():
+                        idx[_norm_surface(v)] = grp
+        except Exception:  # noqa: BLE001
+            idx = {}
+        cls._VARIANT_CACHE = (mt, idx)
+        return idx
+
+    def _merge_ner_variants(self, entities: list) -> list:
+        """实体去重 + 变体识别（2026-09-11 用户定稿语义）：
+        **原文输出不变**——text 保持文献里的表面形式（"3-（1-甲基吡咯烷-2-基）
+        吡啶"照原样输出）；变体词表只做"认知识别"：
+        ① 同归一文本+同类型去重（保留首个位置）；
+        ② 同变体组（类型一致）的多条归并为一条——保留首次出现的原文形式，
+        其余表面形式进 variants；附 normalized_name（组 canonical，如"尼古丁"）
+        与 canonical_en 供辨识——下次见到变体知道是什么，但不替换原文。"""
+        idx = self._variant_index()
+        out, seen_key = [], {}
+        for e in entities:
+            if not isinstance(e, dict) or not e.get("text"):
+                continue
+            original = str(e["text"])
+            n = _norm_surface(original)
+            grp = idx.get(n)
+            if grp and grp.get("type") == e.get("type"):
+                # 原文不改写；只加标识字段。归并键用组 canonical（同组变体
+                # 尼古丁/Nicotine/学名 → 一条实体，variants 收齐全部形式）。
+                # 词表命中是确定性查表：映射置信 0.95、source=variant_lexicon
+                # ——覆盖 LLM 同轮生成的推测值（0.5/llm_inline）
+                e = dict(e)
+                e["normalized_name"] = grp["canonical"]
+                e["mapping_status"] = "已映射"
+                e["mapping_confidence"] = 0.95
+                e["mapping_source"] = "variant_lexicon"
+                if grp.get("canonical_en"):
+                    e["canonical_en"] = grp["canonical_en"]
+                    e.setdefault("standard_names", {})
+                    if not e["standard_names"].get("en"):
+                        e["standard_names"]["en"] = grp["canonical_en"]
+                    if not e["standard_names"].get("zh"):
+                        e["standard_names"]["zh"] = grp["canonical"]
+                n = _norm_surface(grp["canonical"])
+            key = (n, e.get("type"))
+            if key in seen_key:
+                first = seen_key[key]
+                vs = set(first.get("variants") or [])
+                vs.add(original)
+                first["variants"] = sorted(vs)
+                continue
+            seen_key[key] = e
+            out.append(e)
+        return out
+
+    _RESEARCH_LEX_CACHE: dict = {}  # {rel_path: (mtime_ns, terms)}
+    _NER_INFLIGHT: int = 0  # 当前活跃 NER 执行数（分块自适应：>1 时退回单次调用）
+    _NER_INFLIGHT_LOCK = threading.Lock()
+
+    @classmethod
+    def _terms_lexicon(cls, rel: str) -> list:
+        """terms 型词表热加载（{"terms": [...]}，mtime_ns 缓存）。"""
+        import json as _json
+        from pathlib import Path as _P
+        p = _P(__file__).resolve().parents[2] / rel
+        try:
+            mt = p.stat().st_mtime_ns
+        except OSError:
+            return []
+        cached = cls._RESEARCH_LEX_CACHE.get(rel)
+        if cached and cached[0] == mt:
+            return cached[1] or []
+        try:
+            terms = sorted([t for t in (_json.loads(p.read_text(encoding='utf-8')).get('terms') or [])
+                            if isinstance(t, str) and len(t) >= 2], key=len, reverse=True)
+        except Exception:  # noqa: BLE001
+            terms = []
+        cls._RESEARCH_LEX_CACHE[rel] = (mt, terms)
+        return terms
+
+    def _boost_research_from_lexicons(self, entities: list, text: str) -> list:
+        """科研 NER 词表后验补抽（2026-09-10，与通用 NER 地名词表同模式）：
+        INSTRUMENT（GPU/风洞——LLM 对 prompt 示例执行不稳）与 METHOD（具体
+        算法名——英文长文 >10k 截断段 LLM 看不到）两词表全文扫描补抽；
+        词泛指词（机器学习/深度学习）按规则排除不入表。每词只补首个有效出现，
+        已被现有实体（任意类型）覆盖或归一包含的不重复补。"""
+        import re as _re
+        spans = []
+        for e in entities:
+            if not isinstance(e, dict):
+                continue
+            try:
+                s, t = int(e.get('start', -1)), int(e.get('end', -1))
+            except (TypeError, ValueError):
+                continue
+            if 0 <= s < t <= len(text):
+                spans.append((s, t))
+        have = {_norm_surface(e.get('text')) for e in entities
+                if isinstance(e, dict) and e.get('text')}
+        for rel, typ in (('rules/ner/lexicon_instruments.json', 'INSTRUMENT'),
+                         ('rules/ner/lexicon_methods.json', 'METHOD')):
+            for term in self._terms_lexicon(rel):
+                nt = _norm_surface(term)
+                if any(_lex_contains(nt, h) or _lex_contains(h, nt) for h in have if h):
+                    continue
+                for m in _re.finditer(_re.escape(term), text):
+                    s, t = m.span()
+                    if any(s < be and t > bs for bs, be in spans):
+                        continue
+                    ent = {'text': term, 'type': typ, 'start': s, 'end': t,
+                           'confidence': 0.9}
+                    entities = entities + [ent]
+                    spans.append((s, t))
+                    have.add(nt)
+                    break
+        return entities
+
     def _execute_ner(self, code: str, request: SemanticRequest, fp, rule) -> SemanticResult:
         """命名实体/关系识别：全文直送 LLM（支持文件路径，超长截断）。
 
@@ -5132,6 +5405,15 @@ class SemanticApplicationService(ISemanticService):
         if not text:
             raise ValueError("命名实体识别需提供 text 字段")
 
+        # 参考文献章节截断（2026-09-10 用户反馈）：参考文献条目里的作者/
+        # 机构是著录信息不是正文实体（BOPPS.pdf 一次抽出 20+ 参考文献作者
+        # 人名），通用/科研/领域 NER 均只面向正文。标题独占行判定与引用
+        # 引擎 ref_re 同款。
+        _ref_m = re.search(
+            r'(?:^|\n)\s*#{0,3}\s*(参考文献|References|REFERENCES)\s*[：:．.\s]*(?:\n|$)', text)
+        if _ref_m:
+            text = text[:_ref_m.start()]
+
         truncated = len(text) > NER_TEXT_LIMIT
         eff_text = text[:NER_TEXT_LIMIT] if truncated else text
 
@@ -5152,9 +5434,50 @@ class SemanticApplicationService(ISemanticService):
                 "在原有识别 JSON 的每个实体对象中追加 \"std_zh\", \"std_en\" 两个字段。"
             )
         user_payload = {"text": eff_text, "meta": request.meta}
-        user_prompt = self._render_user_prompt(user_payload, request.params)
-        data = self._glm.chat_json(system_prompt, user_prompt, timeout=120.0, max_tokens=3000)
-        out = data.get("data", data) if isinstance(data, dict) else data
+        # 长文对半分块并发（2026-09-10 响应提速，ResNet 篇 10k 单次 65s → ~30s）：
+        # 按句边界切两块各自送 LLM 并行，第二块实体位置加偏移后合并；分块后
+        # 单块更短，GLM 生成也更快。位置校验循环按 eff_text 全文复核兜底。
+        # 自适应（2026-09-10 批量优化）：仅当自己是当前唯一活跃 NER 执行时才
+        # 分块——批量 6 篇若都分块，在途请求 6×2=12 路挤满 GLM 配额反而墙钟
+        # 翻倍（科研批量 72s 实测）；批量时各篇退回单次调用，配额留给篇间并发。
+        _chunk_ok = False
+        with self.__class__._NER_INFLIGHT_LOCK:
+            _chunk_ok = self.__class__._NER_INFLIGHT <= 1
+            self.__class__._NER_INFLIGHT += 1
+        try:
+            if _chunk_ok and len(eff_text) > 6000:
+                import re as _reC
+                _cut = eff_text.rfind("。", 0, len(eff_text) // 2)
+                if _cut < 3000:
+                    _cut = eff_text.rfind(". ", 0, len(eff_text) // 2)
+                if _cut < 3000:
+                    _cut = len(eff_text) // 2
+                _chunks = [(eff_text[:_cut + 1], 0), (eff_text[_cut + 1:], _cut + 1)]
+                _prompts = [self._render_user_prompt({"text": c, "meta": request.meta}, request.params)
+                            for c, _ in _chunks]
+                _batch = self._glm_chat_batch(system_prompt, _prompts, timeout=120.0,
+                                              max_tokens=3000, max_workers=2)
+                out = []
+                for (_c, _off), _d in zip(_chunks, _batch):
+                    if _d is None:
+                        continue
+                    _rows = _d.get("data", _d) if isinstance(_d, dict) else _d
+                    for _e in (_rows if isinstance(_rows, list) else []):
+                        if isinstance(_e, dict) and _off:
+                            try:
+                                _e["start"] = int(_e.get("start", -1)) + _off
+                                _e["end"] = int(_e.get("end", -1)) + _off
+                            except (TypeError, ValueError):
+                                pass
+                        out.append(_e)
+                data = {"data": out}  # 下游 evidence/raw 组装沿用 data 变量
+            else:
+                user_prompt = self._render_user_prompt(user_payload, request.params)
+                data = self._glm.chat_json(system_prompt, user_prompt, timeout=120.0, max_tokens=3000)
+                out = data.get("data", data) if isinstance(data, dict) else data
+        finally:
+            with self.__class__._NER_INFLIGHT_LOCK:
+                self.__class__._NER_INFLIGHT -= 1
 
         if code in ('ner_research', 'ner_domain') and isinstance(out, list):
             for _ent in out:
@@ -5164,6 +5487,9 @@ class SemanticApplicationService(ISemanticService):
                 _sen = str(_ent.pop("std_en", "") or "").strip()
                 if _szh or _sen:
                     _ent.setdefault("standard_names", {"zh": _szh, "en": _sen})
+                    # LLM 同轮生成的标准词是推测（无独立校验），状态如实标注、
+                    # 置信度压低——区别于变体词表的确定性查表命中（0.95，
+                    # 在 _merge_ner_variants 里覆盖 source=variant_lexicon）
                     _ent.setdefault("mapping_status", "已映射")
                     _ent.setdefault("mapping_confidence", 0.75)
                     _ent.setdefault("mapping_source", "llm_inline")
@@ -5181,6 +5507,14 @@ class SemanticApplicationService(ISemanticService):
                 if not isinstance(_ent, dict):
                     continue
                 _txt = (_ent.get("text") or "").strip()
+                # 英文粘连修复（2026-09-10 用户反馈）：PDF 关键词行常出现单词粘连
+                # （TransformerModel）；CamelCase 边界确定性拆分，全小写粘连
+                # （operationmanagementoptimization）由 prompt 指令让 LLM 补空格。
+                # 拆分后折叠匹配仍能定位（find 忽略空白差异）。
+                if len(_txt) >= 8 and " " not in _txt and _txt.isascii() and _txt.isalpha() \
+                        and any(c.isupper() for c in _txt[1:]):
+                    _txt = _reV.sub(r"(?<=[a-z])(?=[A-Z])", " ", _txt)
+                    _ent["text"] = _txt
                 _typ = (_ent.get("type") or "").strip()
                 _dom = (_ent.get("domain") or "").strip()
                 if not _txt or not _typ:
@@ -5213,6 +5547,85 @@ class SemanticApplicationService(ISemanticService):
                 _deduped.append(_ent)
             out = _deduped
 
+        # 地名词表后验补抽（2026-09-10，仅通用 NER）：LLM 对正文裸国家名/省市        # 召回不稳（74 篇评测 ~45 条真实漏检全是"中国/四川/Tokyo"类行政区划词，
+        # prompt 已加指引仍执行不全）。词表（rules/ner/lexicon_locations.json，
+        # mtime 热加载）命中且不在复合专名内部（前有任一实体覆盖、后不接机构
+        # 后缀如"中国+人民银行"）时确定性补一条 LOCATION，与关键词工具的
+        # 场景词保座同模式；词表随后期数据滚动扩充。
+        # 扫描全文而非 eff_text：eff_text 是全文前缀，位置坐标系一致；长文
+        # （>10k 截断）后半段的城市（时序行为篇 39k 字）LLM 看不到但词表能补。
+        if code == 'ner_general' and isinstance(out, list) and text:
+            try:
+                out = self._boost_locations_from_lexicon(out, text)
+            except Exception:  # noqa: BLE001  词表缺失/损坏不影响主路径
+                pass
+            try:
+                out = self._merge_ner_variants(out)
+            except Exception:  # noqa: BLE001
+                pass
+            # 指代性/泛指词硬排除（2026-09-10 用户反馈"我国"误判地名；LLM 对
+            # prompt 排除项执行不稳，词表级黑名单确定性兜底，对 booster/LLM
+            # 两来源生效）
+            _generic_loc = {'我国', '本国', '国内', '境外', '国外', '海外', '全国',
+                            '全省', '全市', '本地', '我市', '我省', '我国境内'}
+            out = [e for e in out
+                   if not (isinstance(e, dict) and e.get('type') == 'LOCATION'
+                           and str(e.get('text', '')).strip() in _generic_loc)]
+        # 科研 NER 词表补抽（INSTRUMENT/METHOD，与通用 NER 地名词表同模式）
+        if code == 'ner_research' and isinstance(out, list) and text:
+            try:
+                out = self._boost_research_from_lexicons(out, text)
+            except Exception:  # noqa: BLE001
+                pass
+            # 设施名改判 INSTRUMENT（2026-09-10 用户定稿：系统/平台=仪器设备）：
+            # "XX数据中心/共享中心/管理与服务系统"是托管数据的载体非数据集合，
+            # 不算 DATASET；LLM 对 prompt 改判执行不稳，词尾确定性兜底。
+            import re as _reF
+            for _e in out:
+                if isinstance(_e, dict) and _e.get('type') == 'DATASET' \
+                        and _reF.search(r'(管理系统|服务系统|系统|数据中心|共享中心|平台)$',
+                                        str(_e.get('text') or '').strip()):
+                    _e['type'] = 'INSTRUMENT'
+        # 专业领域 NER 防串域（2026-09-11 用户反馈：ResNet 计算机视觉论文全被
+        # 硬塞成 化工/MATERIAL）：AI/CS 方法名（网络/算法/优化器/损失函数/插值/
+        # 退火/均衡化词尾）不是任何领域的专业实体——LLM 对"空数组合法"执行
+        # 不稳，词尾确定性丢弃；科研方法归 research-ner 的 METHOD。
+        if code == 'ner_domain' and isinstance(out, list):
+            import re as _reD
+            _method_tail = _reD.compile(
+                r'(网络|算法|优化器|损失函数|学习率|插值|退火|均衡化|模型|架构|'
+                r'Network|network|[A-Za-z]\d{1,2}$|classifier|Encoder|Decoder)$')
+            out = [e for e in out
+                   if not (isinstance(e, dict)
+                           and e.get('type') in ('MATERIAL', 'COMPOUND', 'REACTION', 'DRUG')
+                           and _method_tail.search(str(e.get('text') or '').strip()))]
+            # ① 类型体系泄漏丢弃（2026-09-11 地震动篇案例）：专业 NER 只允许三领域
+            # 类型，LLM 偶发输出 METHOD/科研 等科研 NER 类型（K-means/主成分分析）——
+            # 科研方法归 research-ner，此处整类丢弃
+            _domain_types = {'DRUG', 'DISEASE', 'TREATMENT', 'COMPOUND', 'REACTION',
+                             'MATERIAL', 'THEORY', 'PHENOMENON', 'LAW', 'SYMPTOM',
+                             'EQUIPMENT', 'TECHNIQUE', 'OTHER'}
+            out = [e for e in out
+                   if not (isinstance(e, dict)
+                           and str(e.get('type') or '') not in _domain_types)]
+            # ② PHENOMENON 泛化丢弃（地震动篇 30+ 条判滥）：数据集/参数/方法/
+            # 试验/分类标签词尾不是物理现象
+            _not_phenomenon = _reD.compile(
+                r'(记录集|数据集|语料库|参数|指标|震级|马赫数|分析方法|分析法|设计|试验|'
+                r'类别|类场地|分析|准则|映射|反应谱|序列)$|^(PGA|PGV|PGA|PGD|SI|[A-Z]{2,5})$')
+            out = [e for e in out
+                   if not (isinstance(e, dict)
+                           and e.get('type') == 'PHENOMENON'
+                           and _not_phenomenon.search(str(e.get('text') or '').strip()))]
+            # ③ 变体归一（2026-09-11 用户需求：化学学名↔通用名）：分子对接句的
+            # "3-（1-甲基吡咯烷-2-基）吡啶"（尼古丁 IUPAC 学名）应归并为通用名
+            # 尼古丁并保留学名进 variants——与通用 NER 共用 lexicon_variants.json
+            # （组 type 须与实体 type 一致才合并），改词表即生效
+            try:
+                out = self._merge_ner_variants(out)
+            except Exception:  # noqa: BLE001
+                pass
+
         # 填充语境片段：用实体 start/end 在送入 LLM 的文本中截取所在句子，供前端
         # "语境片段"/"关联上下文"列展示（GLM output_schema 未含 context 字段）
         if isinstance(out, list) and eff_text:
@@ -5236,6 +5649,33 @@ class SemanticApplicationService(ISemanticService):
                 _m2 = _re.search(r"[。！？\.!\?\n]", eff_text[_en:])
                 _end = _en + (_m2.start() if _m2 else len(eff_text) - _en)
                 _ctx = eff_text[_start:_end].strip().replace("\n", " ")
+                if _ctx:
+                    _ent["context"] = _ctx
+                # 短语境扩展（2026-09-11 用户反馈"没有完整上下文"）：署名区/作者
+                # 简介的实体常独占短行（ctx 仅实体本身），按行截取无信息量——
+                # 前后各扩一行（连续署名/单位/简介行本是一个语义块），直到
+                # ≥40 字或无法再扩
+                _guard = 0
+                while len(_ctx) < 40 and _guard < 5:
+                    _guard += 1
+                    _ns = _start
+                    _prev_nl = eff_text.rfind("\n", 0, max(_start - 1, 0))
+                    if _prev_nl > 0:
+                        _pp = eff_text.rfind("\n", 0, _prev_nl)
+                        _ns = _pp + 1 if _pp >= 0 else 0
+                    _ne = _end
+                    _next_nl = eff_text.find("\n", _end + 1) if _end + 1 < len(eff_text) else -1
+                    if _next_nl < 0 and _end < len(eff_text):
+                        _ne = len(eff_text)
+                    elif _next_nl >= 0:
+                        _nn = eff_text.find("\n", _next_nl + 1)
+                        _ne = _nn if _nn >= 0 else len(eff_text)
+                    if _ns >= _start and _ne <= _end:
+                        break
+                    _nc = eff_text[_ns:_ne].strip().replace("\n", " ")
+                    if _nc == _ctx or not _nc:
+                        break
+                    _start, _end, _ctx = _ns, _ne, _nc
                 if _ctx:
                     _ent["context"] = _ctx
 
@@ -5312,7 +5752,9 @@ class SemanticApplicationService(ISemanticService):
                         if zh or en:
                             e["standard_names"] = {"zh": zh, "en": en}
                             e["mapping_status"] = "已映射"
-                            e["mapping_confidence"] = _mc
+                            # 已映射即成功：LLM 自报置信度设 0.75 地板（用户定稿
+                            # "已映射就不该是 0.5"），自报更高则保留
+                            e["mapping_confidence"] = max(_mc, 0.75)
                             e.pop("mapping_source", None)  # LLM 生成的非用户词表
         if code in ('ner_research', 'ner_domain') and isinstance(out, list) and out \
                 and not (code == 'ner_research' and _std_index):
@@ -5366,7 +5808,8 @@ class SemanticApplicationService(ISemanticService):
                         if zh or en:
                             e["standard_names"] = {"zh": zh, "en": en}
                             e["mapping_status"] = "已映射"
-                            e["mapping_confidence"] = mc
+                            # 同上：已映射 0.75 地板，LLM 自报更高保留
+                            e["mapping_confidence"] = max(mc, 0.75)
                 # LLM 未给出标准词的实体标"未映射"（前端默认 fallback '已映射'
                 # 会误显，故显式标注）；domain 统一标内置知识库（用 LLM 内置映射）
                 for e in _ents:

@@ -5,7 +5,7 @@ import json
 import uuid
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from domain.entity.analysis_task import AnalysisTask, ResultRecord, TaskStatus
 from domain.repository.task_repository import ITaskRepository
@@ -185,6 +185,51 @@ class DatabaseTaskRepository(ITaskRepository):
                 (task_id,),
             )
         return [self._result_row(row) for row in rows]
+
+    def latest_results_batch(self, task_ids: List[str]) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, str]]:
+        """多个任务各自最新的一条结果：({task_id: result}, {task_id: record_id})。
+
+        cluster_set_options 列表页用：29 个任务逐个 list_results 是 29 次
+        往返（~1.9s），批量 IN 一次拉回最新 record 后降至亚百毫秒。
+        """
+        if not task_ids:
+            return {}
+        with self.db.session() as session:
+            rows = session.fetchall(
+                "SELECT * FROM result_records WHERE task_id IN "
+                f"({','.join('?' * len(task_ids))}) "
+                "ORDER BY created_at DESC, id DESC",
+                tuple(task_ids),
+            )
+        latest: Dict[str, Dict[str, Any]] = {}
+        record_ids: Dict[str, str] = {}
+        for row in rows or []:
+            task_id = str(row.get("task_id") or "")
+            if task_id in latest:
+                continue  # 降序首条即最新
+            latest[task_id] = self._result_row(row)
+            record_ids[task_id] = str(row.get("id") or "")
+        return latest, record_ids
+
+    def label_confirmations_batch(self, record_ids: List[str]) -> Dict[str, Dict[str, str]]:
+        """多条结果记录的人工确认标签：{record_id: {cluster_id: label_text}}。"""
+        if not record_ids:
+            return {}
+        with self.db.session() as session:
+            rows = session.fetchall(
+                "SELECT result_record_id, cluster_id, label_text FROM cluster_label_confirmations "
+                "WHERE result_record_id IN "
+                f"({','.join('?' * len(record_ids))}) "
+                "ORDER BY created_at DESC, id DESC",
+                tuple(record_ids),
+            )
+        out: Dict[str, Dict[str, str]] = {rid: {} for rid in record_ids}
+        for row in rows or []:
+            rid = str(row.get("result_record_id") or "")
+            cid = str(row.get("cluster_id") or "")
+            if rid in out and cid and cid not in out[rid]:
+                out[rid][cid] = str(row.get("label_text") or "")
+        return out
 
     def archive_task(self, task_id: str) -> bool:
         with self.db.session() as session:

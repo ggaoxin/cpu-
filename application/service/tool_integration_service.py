@@ -1190,15 +1190,25 @@ class ToolIntegrationService:
             items = []
             # 批量题目逐条映射:document_title 为列表时按下标对应各篇文献
             batch_titles = payload.get("document_title") if isinstance(payload.get("document_title"), list) else None
+            # 预解析文档流（前端先 /files/parse 再提交 JSON，无 file_inputs）也按
+            # 下标合并 document_metadata——发表时间/题名等元数据丢了会让深度聚类
+            # 主题趋势因 publication_year 全空而整块为空（2026-09-11 根因）
+            doc_metadata = payload.get("document_metadata")
             for index, value in enumerate(texts):
+                item_metadata = (doc_metadata[index]
+                                 if isinstance(doc_metadata, list) and index < len(doc_metadata)
+                                 and isinstance(doc_metadata[index], dict) else {})
                 if isinstance(value, dict):
                     text = self._document_text(value)
-                    input_id = str(value.get("document_id") or value.get("id") or value.get("input_id") or f"text{index + 1}")
-                    source = {**value, "input_id": input_id, "title": value.get("title")}
+                    input_id = str(value.get("document_id") or value.get("id") or value.get("input_id")
+                                    or item_metadata.get("document_id") or f"text{index + 1}")
+                    source = {**item_metadata, **value, "input_id": input_id}
+                    if not str(source.get("title") or "").strip():
+                        source["title"] = item_metadata.get("title")
                 else:
                     text = str(value or "").strip()
-                    input_id = f"text{index + 1}"
-                    source = {"input_id": input_id}
+                    input_id = str(item_metadata.get("document_id") or f"text{index + 1}")
+                    source = {**item_metadata, "input_id": input_id}
                 if batch_titles and index < len(batch_titles) and str(batch_titles[index] or "").strip():
                     source["title"] = str(batch_titles[index])
                 if text:
@@ -1262,7 +1272,18 @@ class ToolIntegrationService:
                             "keywords": item.source.get("keywords") or [],
                         }, ensure_ascii=False))
                     else:
-                        texts.append(self._backend_text(contract, item.text, payload))
+                        # 预解析/批量文本：同样走 JSON 结构保留元数据——此前
+                        # _backend_text 拍平成裸文本，发表时间/题名丢失会让
+                        # 深度聚类主题趋势 publication_year 全空而整块为空
+                        texts.append(json.dumps({
+                            "document_id": item.source.get("document_id") or item.input_id,
+                            "text": item.text,
+                            "title": item.source.get("title") or "",
+                            "publication_date": item.source.get("publication_date"),
+                            "authors": item.source.get("authors") or [],
+                            "source": item.source.get("source") or "",
+                            "keywords": item.source.get("keywords") or [],
+                        }, ensure_ascii=False))
             else:
                 texts = [self._backend_text(contract, item.text, payload) for item in group]
             effective_params = dict(params)
@@ -1901,10 +1922,21 @@ class ToolIntegrationService:
             record = self.repository.get_result(record_id)
             if not record:
                 continue
-            # ① 优先复用上游 NER 的原始全文（契约 2026-09-08：关系抽取须基于所选
-            # 批次成员的原文——实体清单组装会丢跨句关系）。/files/parse 架构下
-            # NER 任务项已持久化解析后全文；旧路径透传项经 _usable_upstream_text
-            # 现场重抽或判失效。
+            # ① 优先复用上游 NER 的语境片段（2026-09-11 用户定稿：关系抽取输入=
+            # 上游实体的语境片段/关联上下文——通用实体识别的语境片段、科研/专业
+            # 领域 NER 的关联上下文，均为 entities[].context；组装修见
+            # _compose_entity_context。取代 2026-09-08 的"基于原文"旧契约。
+            # 仅当至少一个实体带 context 时才走组装（无语境片段的裸实体列表
+            # 对关系抽取无语境支撑，回退②原文）
+            _res = record.get("result") or {}
+            _ents = _res.get("entities") or _res.get("entity_results") or []
+            _has_ctx = isinstance(_ents, list) and any(
+                isinstance(_e, dict) and str(_e.get("context") or "").strip() for _e in _ents)
+            if _has_ctx:
+                _composed = self._compose_entity_context(_ents)
+                if _composed:
+                    return _composed
+            # ② 语境片段不可用（老记录无 context/无实体）→ 回退上游原文。
             item = self.repository.get_task_item(str(record.get("task_item_id") or ""))
             item_text = self._usable_upstream_text(self._text_from_task_item(item))
             if not item_text:
@@ -1928,14 +1960,6 @@ class ToolIntegrationService:
                                     self._document_text(first) if isinstance(first, dict) else str(first))
             if item_text:
                 return item_text
-            # ② 原文不可用（旧路径透传且临时文件已失效）→ 复用已识别实体 + 各实体
-            # 语境句子组装关系抽取输入（best-effort，跨句关系可能漏，宁缺毋滥）。
-            _res = record.get("result") or {}
-            _ents = _res.get("entities") or _res.get("entity_results") or []
-            if isinstance(_ents, list) and _ents:
-                _composed = self._compose_entity_context(_ents)
-                if _composed:
-                    return _composed
         raise ValueError("上游历史记录不存在，或未保存可复用的原始文本")
 
     @staticmethod
@@ -2024,27 +2048,20 @@ class ToolIntegrationService:
             task for task in self.repository.list_tasks(workspace, limit=200)
             if task.get("tool_id") == "cluster-label" and task.get("status") == "succeeded"
         ][:limit]
+        # 批量取各任务最新结果与确认状态（替代逐任务 2 次往返 × 29 任务）
+        task_ids = [summary["id"] for summary in tasks]
+        latest_results, record_ids = self.repository.latest_results_batch(task_ids)
+        confirmations_by_record = self.repository.label_confirmations_batch(
+            list(record_ids.values()))
         for summary in tasks:
-            task = self.repository.get_task(summary["id"]) or summary
-            records = self.repository.list_results(summary["id"])
-            result = records[0]["result"] if records else {}
-            # 人工复核状态（2026-09-06 用户定调）：待复核的簇只有在人工确认
-            # （✓ 正确 / 修改标签）后才进入文献集供结构化综述使用；已通过差异
-            # 化检查的直接进入；人工改过的标签优先作为簇名
-            confirmed_labels: Dict[str, str] = (
-                self.repository.label_confirmations_by_record(records[0]["id"]) if records else {})
+            result = (latest_results.get(summary["id"]) or {}).get("result") or {}
+            confirmed_labels: Dict[str, str] = confirmations_by_record.get(
+                record_ids.get(summary["id"], ""), {})
             threshold = float((result.get("parameters") or {}).get("distinctiveness_threshold") or 0.75)
-            # 上游文献题名映射（相似度证据之一）
-            payload = task.get("request_payload") or {}
-            upstream_id = str(payload.get("cluster_task_id") or "")
-            doc_titles: Dict[str, str] = {}
-            if upstream_id:
-                upstream_result = self._result_from_task(upstream_id)
-                doc_titles = {
-                    str(a.get("document_id")): str(a.get("title") or "")
-                    for a in (upstream_result.get("document_assignments") or [])
-                    if isinstance(a, dict)
-                }
+            # 2026-09-11 提速：旧版为每个标签任务拉取上游深度聚类任务的巨型
+            # result_json（含语义投影向量）拼题名相似度文本——相似度过滤已于
+            # 2026-09-06 移除，sim_text 返回前即被 pop，属纯死代码，删除后
+            # 本接口从 3.5s 降至亚秒
             for item in result.get("labels") or []:
                 if not isinstance(item, dict):
                     continue
@@ -2057,18 +2074,13 @@ class ToolIntegrationService:
                     continue  # 待复核且未人工确认：不入文献集
                 docs = item.get("linked_document_ids") or []
                 name = str(confirmed or item.get("recommended_label") or item.get("label") or cluster_id)
-                phrases = [str(p) for p in (item.get("phrases") or item.get("representative_terms") or [])[:6]]
-                titles = [doc_titles.get(str(d), "") for d in docs if doc_titles.get(str(d))]
                 options.append({
                     "id": f"{summary['id']}:{item.get('cluster_id')}",
                     "name": name,
                     "document_count": len(docs),
-                    "created_at": task.get("created_at"),
+                    "created_at": summary.get("created_at"),
                     "source_tool": "聚类标签生成工具",
-                    "sim_text": " ".join([name] + phrases + titles),
                 })
-        for opt in options:
-            opt.pop("sim_text", None)
         return sorted(options, key=lambda o: str(o.get("created_at") or ""), reverse=True)
 
     def _cluster_set_documents(self, set_id: str) -> List[Dict[str, Any]]:
@@ -2109,25 +2121,38 @@ class ToolIntegrationService:
                 if file_id and file_id != meta_id:
                     alias[meta_id] = file_id
         wanted = {alias.get(doc, doc) for doc in wanted}
+        # 编号体系不止两套：簇成员可能是 DOC2（无补零）、元数据 DOC002（补零）、
+        # 载荷 FILE002（FILE 前缀）。字符串别名覆盖不全时按序号兜底——三种形式
+        # 解析出的数字相同即视为同一篇（2026-09-11 综述"没有可处理的输入数据"根因）
+        wanted_seqs = {seq for seq in (self._doc_seq(d) for d in wanted) if seq is not None}
         # 题名/元数据映射：texts 只带 document_id+text；文件模式的发表时间/作者/
         # 关键词都在上游 document_metadata（DOCxxx 编号，过别名映射到 FILExxx）。
         # 综述的趋势分析/热点分布依赖发表年份，缺了整块为空
         meta_by_file_id: Dict[str, Dict[str, Any]] = {}
+        meta_by_seq: Dict[int, Dict[str, Any]] = {}
         for row in (source_payload.get("document_metadata") or []):
             if isinstance(row, dict):
                 meta_id = str(row.get("document_id") or row.get("id") or "")
                 meta_by_file_id[alias.get(meta_id, meta_id)] = dict(row)
+                meta_seq = self._doc_seq(meta_id)
+                if meta_seq is not None:
+                    meta_by_seq.setdefault(meta_seq, dict(row))
         titles = {fid: str(row.get("title") or "") for fid, row in meta_by_file_id.items()}
         # 文献内容恢复（2026-09-06）：文件模式任务载荷的 content 为空（轻量透传），
         # 依次回退 ① 上游聚类结果 documents[].content_summary（新链路存 LLM 单篇
         # 摘要）② document_assignments[].key_evidence（每篇的关键证据句，老任务也有）
         upstream_result = self._result_from_task(upstream_id) if upstream_id else {}
         text_by_id: Dict[str, str] = {}
+        text_by_seq: Dict[int, str] = {}
         for row in upstream_result.get("documents") or []:
             if isinstance(row, dict):
                 body = str(row.get("content_summary") or row.get("text") or row.get("full_text") or "").strip()
                 if body:
-                    text_by_id[str(row.get("document_id") or "")] = body
+                    rid = str(row.get("document_id") or "")
+                    text_by_id[rid] = body
+                    rseq = self._doc_seq(rid)
+                    if rseq is not None:
+                        text_by_seq.setdefault(rseq, body)
         for row in upstream_result.get("document_assignments") or []:
             if isinstance(row, dict):
                 rid = str(row.get("document_id") or "")
@@ -2136,27 +2161,47 @@ class ToolIntegrationService:
                         if isinstance(row.get("key_evidence"), list) else str(row.get("key_evidence") or "")
                     if evidence.strip():
                         text_by_id[rid] = evidence.strip()
+                        rseq = self._doc_seq(rid)
+                        if rseq is not None:
+                            text_by_seq.setdefault(rseq, evidence.strip())
         out: List[Dict[str, Any]] = []
         for index, item in enumerate(documents):
             if not isinstance(item, dict):
                 continue
             doc_id = str(item.get("document_id") or item.get("id") or f"DOC{index + 1}")
-            if doc_id in wanted:
-                # 载荷无文本时用恢复的内容（DOC 编号同样过别名映射）
+            doc_seq = self._doc_seq(doc_id)
+            if doc_id in wanted or (doc_seq is not None and doc_seq in wanted_seqs):
+                # 载荷无文本时用恢复的内容（DOC 编号同样过别名映射 + 序号兜底）
                 recovered = (text_by_id.get(doc_id)
-                             or text_by_id.get(next((m for m, f in alias.items() if f == doc_id), ""), ""))
+                             or text_by_id.get(next((m for m, f in alias.items() if f == doc_id), ""), "")
+                             or (text_by_seq.get(doc_seq) if doc_seq is not None else ""))
                 if not str(item.get("content") or item.get("text") or "").strip() and recovered:
                     item = {**item, "content": recovered}
-                meta_row = meta_by_file_id.get(doc_id) or {}
+                meta_row = (meta_by_file_id.get(doc_id)
+                            or (meta_by_seq.get(doc_seq) if doc_seq is not None else None)
+                            or {})
                 item = {**meta_row, **item} if meta_row else item
                 out.append({
                     "id": doc_id,
                     "title": str(item.get("title") or titles.get(doc_id) or doc_id),
                     "abstract_text": "",
-                    "content_text": self._document_text(item),
+                    # 存原文（非 _document_text 输出）：_inputs 会统一调 _document_text
+                    # 包装 JSON，此处再包一层会变双层 JSON，内层换行转义成字面 \n
+                    # 导致综述的 References 行首截断永久失效（2026-09-11 arXiv 泄漏根因）
+                    "content_text": str(item.get("content") or item.get("text") or "").strip(),
                     "metadata_json": item,
                 })
         return out
+
+    @staticmethod
+    def _doc_seq(doc_id: str) -> Optional[int]:
+        """文献编号的序号部分：DOC2/DOC002/FILE002/text0002 → 2。
+
+        三套编号体系（聚类簇成员无补零、元数据补零、适配层 FILE 前缀）解析出的
+        数字相同时指向同一篇文献；非数字结尾编号返回 None，走精确字符串匹配。
+        """
+        match = re.search(r"(\d+)\s*$", str(doc_id or "").strip())
+        return int(match.group(1)) if match else None
 
     def _inputs_from_task(self, task_id: str) -> List[InputItem]:
         task = self.repository.get_task(task_id)
