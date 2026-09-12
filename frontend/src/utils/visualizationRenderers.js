@@ -44,7 +44,10 @@ const fixed = (value, digits = 2) => number(value).toFixed(digits)
 const confidence = value => value === undefined || value === null || value === '' ? '—' : fixed(value)
 const join = (value, separator = '、') => array(value).map(item => typeof item === 'object' ? valueOf(item, ['label', 'name', 'text', 'term'], '') : item).filter(Boolean).join(separator) || '—'
 const average = values => {
-  const usable = values.map(Number).filter(Number.isFinite)
+  // null/undefined 先剔除再转数值——Number(null)===0 会骗过 isFinite 过滤，
+  // 把空语步的 confidence:null 当 0 计入平均（5槽2空3×0.9 显示 0.54 的根因）
+  const usable = values.filter(value => value !== null && value !== undefined && value !== '')
+    .map(Number).filter(Number.isFinite)
   return usable.length ? usable.reduce((sum, item) => sum + item, 0) / usable.length : 0
 }
 

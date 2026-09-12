@@ -7,7 +7,10 @@ const number = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(
 const fixed = (value, digits = 2) => number(value).toFixed(digits)
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]))
 const average = values => {
-  const usable = values.map(Number).filter(Number.isFinite)
+  // null/undefined 先剔除再转数值——Number(null)===0 会骗过 isFinite 过滤，
+  // 把空语步的 confidence:null 当 0 计入平均（5槽2空3×0.9 显示 0.54 的根因）
+  const usable = values.filter(value => value !== null && value !== undefined && value !== '')
+    .map(Number).filter(Number.isFinite)
   return usable.length ? usable.reduce((sum, value) => sum + value, 0) / usable.length : 0
 }
 const confidence = value => value == null || value === '' ? '—' : `${(number(value) * 100).toFixed(1)}%`
