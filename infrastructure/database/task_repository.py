@@ -193,7 +193,7 @@ class DatabaseTaskRepository(ITaskRepository):
         往返（~1.9s），批量 IN 一次拉回最新 record 后降至亚百毫秒。
         """
         if not task_ids:
-            return {}
+            return {}, {}
         with self.db.session() as session:
             rows = session.fetchall(
                 "SELECT * FROM result_records WHERE task_id IN "

@@ -314,7 +314,11 @@ principles: 'Judge by language mechanism, not isolated vocabulary. Attend to:
 
   7. Discourse order: typically Background→Objective→Methods→Results→Conclusion; position is only auxiliary evidence.
 
-  8. Output must be verbatim excerpts; five spans reconstruct the abstract.'
+  8. Non-move declarations: availability statements (code/model/dataset released or available, with or without a URL),
+  acknowledgements, and contact info do NOT belong to any of the five moves — never force them into Conclusion. Exclude
+  them from every span.
+
+  9. Output must be verbatim excerpts; the five spans reconstruct the abstract minus excluded non-move declarations.'
 system_prompt: 'You are an expert in rhetorical move recognition for English scientific abstracts. Segment the input abstract into five move spans.
 
   Each span must be a verbatim excerpt of the original text (no rewriting, no omission, no addition); concatenating the five spans should reconstruct the original abstract.

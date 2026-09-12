@@ -472,7 +472,7 @@ function nestedParameterRows(
     if (['resource_id', 'file', 'dictionary_name', 'weight_boost', 'terms', 'raw_reference', 'project_name', 'document_title'].includes(key)) childStatus = 'conditional'
     if (['doi', 'title', 'authors', 'institutions', 'venue', 'work_name', 'publication_year', 'keywords'].includes(key)) childStatus = 'optional'
     if (key === 'title' && ['deep-cluster', 'structured-review'].includes(toolId)) childStatus = 'required' // 题名在这两个工具为必填
-    if (key === 'source' && path.includes('document_metadata')) childStatus = 'optional'
+    if (key === 'source') childStatus = 'optional'
     if (key === 'publication_date') childStatus = toolId === 'deep-cluster' ? 'required' : 'optional'
     if (key === 'id') childStatus = ['deep-cluster', 'structured-review'].includes(toolId) ? 'required' : 'optional'
     if (key === 'document_id' || key === 'text' || key === 'citation_sentence' || key === 'previous_context' || key === 'next_context' || key === 'citation_marker') childStatus = 'required'
@@ -488,25 +488,26 @@ function nestedParameterRows(
 
 /** 当前输入方式下，API 示例与在线测试共同使用的完整参数清单。 */
 /**
- * 必填/选填状态以后端 API 实际校验为准（2026-09-06 实测校准）：
- * - document_title/project_name API 层可选（缺省响应回退空串，实测 200）
- * - deep-cluster 批量输入与逐篇元数据必填（缺则 42201）
+ * 必填/选填状态与在线测试请求参数表单对齐（2026-09-11 用户定稿：
+ * API/SDK 示例的必填选填 = 表单的红星校验，不再按后端 API 层宽松度标注）：
+ * - document_title/project_name 表单红星+提交校验 → required
+ * - deep-cluster 批量输入与逐篇元数据必填（文本/文件两模式同）
  * - cluster-label 短语集与任务编号二选一（conditional）
  * - structured-review 文献集必填；批量文本模式元数据逐篇必填
  * - citation 文件/批量模式的上传文件必填
  */
 const PARAM_STATUS_OVERRIDES: Record<string, Record<string, string>> = {
-  'zh-abstract-move': { document_title: 'optional' },
-  'en-abstract-move': { document_title: 'optional' },
-  'fund-move': { project_name: 'optional' },
-  'zh-classify': { document_title: 'optional' },
-  'en-classify': { document_title: 'optional' },
-  'domain-classify': { document_title: 'optional' },
-  'zh-keyword': { document_title: 'optional' },
-  'en-keyword': { document_title: 'optional' },
-  'rq-detect': { document_title: 'optional' },
-  'citation-sentiment': { document_title: 'optional' },
-  'citation-intent': { document_title: 'optional' },
+  'zh-abstract-move': { document_title: 'required' },
+  'en-abstract-move': { document_title: 'required' },
+  'fund-move': { project_name: 'required' },
+  'zh-classify': { document_title: 'required' },
+  'en-classify': { document_title: 'required' },
+  'domain-classify': { document_title: 'required' },
+  'zh-keyword': { document_title: 'required' },
+  'en-keyword': { document_title: 'required' },
+  'rq-detect': { document_title: 'required' },
+  'citation-sentiment': { document_title: 'required' },
+  'citation-intent': { document_title: 'required' },
   'cluster-label': { cluster_task_id: 'conditional' },
 }
 
@@ -514,7 +515,7 @@ const PARAM_STATUS_OVERRIDES: Record<string, Record<string, string>> = {
 const MODE_PARAM_STATUS: Record<string, Record<string, Record<string, string>>> = {
   'deep-cluster': {
     'batch-text': { scientific_document_texts: 'required', document_metadata: 'required' },
-    batch: { scientific_document_texts: 'required', document_metadata: 'optional' },
+    batch: { scientific_document_texts: 'required', document_metadata: 'required' },
   },
   'structured-review': {
     'batch-text': { document_set: 'required', document_metadata: 'required' },

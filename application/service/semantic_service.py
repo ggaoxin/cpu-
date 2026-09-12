@@ -152,15 +152,15 @@ def _lex_contains(nt: str, h: str) -> bool:
 def _language_mismatch_error(expected: str, text: str, counterpart: str) -> Optional[str]:
     """语言预检：跨语言输入返回可读错误消息（None=通过）。
 
-    用户规则（2026-09-10 定）：中文 >500 字即判中文文献——中英双语=中文论文；
-    ≤500 字（如英文论文引用中文参考文献）不算。不做比例计算。
-    - 有效字符（CJK+拉丁字母）<30 不判，避免标题类短输入误伤。
+    用户规则（2026-09-12 定稿）：中文 >50 字即判中文文献——含中文摘要、
+    中英双语论文、带中文参考文献的英文论文（双语=中文）。有效字符
+    （CJK+拉丁字母）<30 不判，避免标题类短输入误伤。
     """
     cjk = sum(1 for ch in text if "一" <= ch <= "鿿")
     latin = sum(1 for ch in text if ch.isascii() and ch.isalpha())
     if cjk + latin < 30:
         return None
-    is_chinese = cjk > 500
+    is_chinese = cjk > 50
     if expected == "zh" and not is_chinese:
         return "语言不匹配：该功能点面向中文文献，但输入疑似英文文本。"
     if expected == "en" and is_chinese:

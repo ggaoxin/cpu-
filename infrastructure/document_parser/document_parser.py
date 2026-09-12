@@ -40,7 +40,7 @@ def extract_abstract_text(text: str, doc_type: str = "zh_paper") -> str:
                       full, re.DOTALL)
         if m:
             return m.group(1).strip()
-    m = re.search(r'##\s*(?:Abstract|ABSTRACT)[^\n]*\n\s*(.+?)(?=\n##\s|\n#\s|$)', full, re.DOTALL)
+    m = re.search(r'##\s*(?:Abstract|ABSTRACT)[^\n]*\n\s*(.+?)(?=\n##\s|\n#\s|[\[【（(]?\s*(?:Key\s*words|Keywords|KEYWORDS|Index\s*Terms)|$)', full, re.DOTALL)
     if m:
         return m.group(1).strip()
     m = re.search(r'(?:^|\n)Abstract\s*[.。:：]?\s*(.+?)(?=Keywords|Index Terms|Introduction|1\.|^##|$)', full, re.DOTALL)

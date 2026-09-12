@@ -664,83 +664,770 @@ function alignNer(response: AnyRecord, variant: 'general' | 'research' | 'domain
   return result
 }
 
+// 深度聚类演示响应 = 真实响应快照的结构同构副本（2026-09-11 对齐：
+// 16 个 data 顶层字段齐全，含 documents/theme_trend_analysis/partition_strategy 等）
 const deepClusterResponse = {
-  code: 200, message: 'clustering_completed',
-  data: {
-    tool: '深度聚类工具', input_type: 'texts', cluster_dimension: 'technology', cluster_dimension_name: '技术路线',
-    input_summary: { document_count: 5, parsed_sentence_count: 286, file_names: ['18.pdf', '24.pdf', '28.pdf', '26.pdf', '30.pdf'], extracted_fields: ['text', 'publication_date'], year_range: [2026, 2026] },
-    clustering_quality: { cluster_count: 3, noise_document_count: 0, silhouette_score: 0.781, average_intra_cluster_similarity: 0.846, average_inter_cluster_separation: 0.802 },
-    clusters: [
-      { cluster_id: 'TECH-01', size: 2, ratio: 0.4, representative_terms: ['推理多样性', '策略优化', '慢思考', '多步推理'], representative_sentences: ['通过策略优化或慢思考机制增强模型的多路径推理能力。'], feature_statistics: { intra_cluster_similarity: 0.84, inter_cluster_separation: 0.81, semantic_density: 0.86, average_sentence_count: 58 }, representative_documents: [{ document_id: 'DOC-EN-018', title: enPapers[0].title, publication_year: 2026 }, { document_id: 'DOC-EN-026', title: 'Can Slow-Thinking LLMs Reason Over Time?', publication_year: 2026 }] },
-      { cluster_id: 'TECH-02', size: 2, ratio: 0.4, representative_terms: ['分层资源分配', '块掩码', '特征复用', '高效推理'], representative_sentences: ['根据时间步、关键帧和视觉令牌重要性动态分配推理计算。'], feature_statistics: { intra_cluster_similarity: 0.87, inter_cluster_separation: 0.82, semantic_density: 0.88, average_sentence_count: 61 }, representative_documents: [{ document_id: 'DOC-EN-024', title: enPapers[1].title, publication_year: 2026 }, { document_id: 'DOC-EN-028', title: enPapers[2].title, publication_year: 2026 }] },
-      { cluster_id: 'TECH-03', size: 1, ratio: 0.2, representative_terms: ['前景引导', '多视图预训练', '自适应表征'], representative_sentences: ['利用前景视图引导预训练过程聚焦目标区域并改善视觉表征。'], feature_statistics: { intra_cluster_similarity: 0.79, inter_cluster_separation: 0.78, semantic_density: 0.81, average_sentence_count: 54 }, representative_documents: [{ document_id: 'DOC-EN-030', title: 'FVG-PT: Adaptive Foreground View-Guided Pre-Training', publication_year: 2026 }] },
+  "code": 0,
+  "message": "success",
+  "data": {
+    "documents": [
+      {
+        "document_id": "DOC001",
+        "title": "1.pdf",
+        "publication_year": 2026,
+        "published_at": "2026-09-03",
+        "content_summary": "本文提出了GENRE，一种通过自回归生成实体唯一名称来进行实体检索的系统。传统实体检索方法将实体视为原子标签并使用密集向量进行分类，存在无法捕捉上下文与实体间细粒度交互、存储密集表…",
+        "input_representation": {
+          "mode": "move_aligned",
+          "selected_axis": "application"
+        },
+        "technical": {},
+        "application": {
+          "index": 0,
+          "topic_id": "C03",
+          "topic_name": "Wikipedia entities"
+        }
+      },
+      {
+        "document_id": "DOC002",
+        "title": "2.pdf",
+        "publication_year": 2024,
+        "published_at": "2024-06-11",
+        "content_summary": "本文提出了Self-Harmony框架，旨在解决测试时强化学习（TTRL）中学习信号不可靠的问题。传统TTRL方法常采用多数投票生成伪标签，但当模型存在系统性推理缺陷时，易陷入错误…",
+        "input_representation": {
+          "mode": "move_aligned",
+          "selected_axis": "application"
+        },
+        "technical": {},
+        "application": {
+          "index": 1,
+          "topic_id": "C01",
+          "topic_name": "TTRL"
+        }
+      },
+      {
+        "document_id": "DOC003",
+        "title": "3.pdf",
+        "publication_year": 2025,
+        "published_at": "2025-12-11",
+        "content_summary": "本文提出了TTSR（Test-Time Self-Reflection），一种用于持续推理改进的自反思测试时自演化训练框架。测试时训练（TTT）面临测试问题难度高导致自生成伪标签不…",
+        "input_representation": {
+          "mode": "move_aligned",
+          "selected_axis": "application"
+        },
+        "technical": {},
+        "application": {
+          "index": 2,
+          "topic_id": "C01",
+          "topic_name": "TTRL"
+        }
+      },
+      {
+        "document_id": "DOC004",
+        "title": "4.pdf",
+        "publication_year": 2025,
+        "published_at": "2025-08-11",
+        "content_summary": "该研究针对大语言模型（LLM）智能体在长程任务中受限于有限上下文窗口的瓶颈，提出了一种名为Memex的索引经验记忆机制。现有方法通常通过截断或摘要来缩短上下文，但这些方法本质上会丢…",
+        "input_representation": {
+          "mode": "move_aligned",
+          "selected_axis": "application"
+        },
+        "technical": {},
+        "application": {
+          "index": 3,
+          "topic_id": "C02",
+          "topic_name": "LLM agents"
+        }
+      },
+      {
+        "document_id": "DOC005",
+        "title": "5.pdf",
+        "publication_year": 2024,
+        "published_at": "2024-02-11",
+        "content_summary": "该文介绍了材料基因组计划的核心项目——Materials Project（www.materialsproject.org），旨在通过高通量计算揭示所有已知无机材料的性质，以加速先…",
+        "input_representation": {
+          "mode": "move_aligned",
+          "selected_axis": "application"
+        },
+        "technical": {},
+        "application": {
+          "index": 4,
+          "topic_id": "C04",
+          "topic_name": "Advanced materials"
+        }
+      },
+      {
+        "document_id": "DOC006",
+        "title": "6.pdf",
+        "publication_year": 2024,
+        "published_at": "2024-07-11",
+        "content_summary": "该研究针对大语言模型（LLM）在深度研究任务中的局限性，提出了一种新的任务形式化方法和数据合成框架。研究将深度研究任务形式化为分层约束满足问题（HCSPs），这与单约束、多跳或扁平…",
+        "input_representation": {
+          "mode": "move_aligned",
+          "selected_axis": "application"
+        },
+        "technical": {},
+        "application": {
+          "index": 5,
+          "topic_id": "C02",
+          "topic_name": "LLM agents"
+        }
+      },
+      {
+        "document_id": "DOC007",
+        "title": "7.pdf",
+        "publication_year": 2024,
+        "published_at": "2024-12-11",
+        "content_summary": "This paper investigates the limitations of Empirical Risk Minimization (ERM) in learning s…",
+        "input_representation": {
+          "mode": "move_aligned",
+          "selected_axis": "application"
+        },
+        "technical": {},
+        "application": {
+          "index": 6,
+          "topic_id": "C05",
+          "topic_name": "Synthetic content"
+        }
+      },
+      {
+        "document_id": "DOC008",
+        "title": "8.pdf",
+        "publication_year": 2025,
+        "published_at": "2025-07-11",
+        "content_summary": "This paper proposes COINS, an item representation enhancement approach based on fused alig…",
+        "input_representation": {
+          "mode": "move_aligned",
+          "selected_axis": "application"
+        },
+        "technical": {},
+        "application": {
+          "index": 7,
+          "topic_id": "C06",
+          "topic_name": "Cold-start items"
+        }
+      },
+      {
+        "document_id": "DOC009",
+        "title": "9.pdf",
+        "publication_year": 2025,
+        "published_at": "2025-07-11",
+        "content_summary": "This paper investigates whether chain-of-thought (CoT) reasoning traces faithfully represe…",
+        "input_representation": {
+          "mode": "move_aligned",
+          "selected_axis": "application"
+        },
+        "technical": {},
+        "application": {
+          "index": 8,
+          "topic_id": "C07",
+          "topic_name": "CoT"
+        }
+      },
+      {
+        "document_id": "DOC010",
+        "title": "10.pdf",
+        "publication_year": 2026,
+        "published_at": "2026-09-01",
+        "content_summary": "该研究提出了一种名为Divide and Contrast (Di-COT)的无监督时间序列表示学习框架，旨在减少对标注数据的依赖同时保持良好的下游任务性能。与传统方法不同，Di-…",
+        "input_representation": {
+          "mode": "move_aligned",
+          "selected_axis": "application"
+        },
+        "technical": {},
+        "application": {
+          "index": 9,
+          "topic_id": "C08",
+          "topic_name": "Time-series representation"
+        }
+      }
     ],
-    document_assignments: [
-      ['DOC-EN-018', enPapers[0].title, 'TECH-01', 0.89, '强化学习、多路径策略与推理多样性特征突出'],
-      ['DOC-EN-026', 'Can Slow-Thinking LLMs Reason Over Time?', 'TECH-01', 0.82, '慢思考与多步时间推理机制相近'],
-      ['DOC-EN-024', enPapers[1].title, 'TECH-02', 0.88, '按时间步实施块级计算裁剪与特征复用'],
-      ['DOC-EN-028', enPapers[2].title, 'TECH-02', 0.86, '按关键帧和令牌层级分配视觉计算预算'],
-      ['DOC-EN-030', 'FVG-PT: Adaptive Foreground View-Guided Pre-Training', 'TECH-03', 0.84, '以前景视图引导自适应预训练'],
-    ].map(([document_id, title, cluster_id, similarity_to_centroid, key_evidence]) => ({ document_id, title, publication_year: 2026, cluster_id, similarity_to_centroid, key_evidence })),
-    semantic_projection: [
-      { document_id: 'DOC-EN-018', cluster_id: 'TECH-01', x: 18, y: 24 }, { document_id: 'DOC-EN-026', cluster_id: 'TECH-01', x: 27, y: 31 },
-      { document_id: 'DOC-EN-024', cluster_id: 'TECH-02', x: 64, y: 22 }, { document_id: 'DOC-EN-028', cluster_id: 'TECH-02', x: 72, y: 30 },
-      { document_id: 'DOC-EN-030', cluster_id: 'TECH-03', x: 48, y: 72 },
+    "input_summary": {
+      "document_count": 10,
+      "parsed_sentence_count": 288
+    },
+    "cluster_dimension_name": "应用场景聚类",
+    "cluster_dimension": "application_scenario",
+    "clustering_quality": {
+      "cluster_count": 8,
+      "intra_cluster_similarity": 0.932,
+      "algorithm_requested": "move_aligned",
+      "algorithm_used": "llm_move_aligned_grouping"
+    },
+    "clusters": [
+      {
+        "cluster_id": "C01",
+        "topic_id": "C01",
+        "topic_name": "TTRL",
+        "size": 2,
+        "doc_indices": [
+          1,
+          2
+        ],
+        "representative_terms": [
+          "Test-time reinforcement learning",
+          "TTRL",
+          "Test-time Training",
+          "pseudo-label method"
+        ],
+        "members": [
+          {
+            "document_id": "DOC002",
+            "title": "2.pdf"
+          },
+          {
+            "document_id": "DOC003",
+            "title": "3.pdf"
+          }
+        ],
+        "feature_statistics": {
+          "intra_cluster_similarity": 0.947,
+          "inter_cluster_separation": 0.294,
+          "semantic_density": 1.0,
+          "semantic_coherence": 0.95
+        },
+        "ratio": 0.2,
+        "representative_documents": [
+          {
+            "document_id": "DOC002",
+            "title": "2.pdf"
+          },
+          {
+            "document_id": "DOC003",
+            "title": "3.pdf"
+          }
+        ]
+      },
+      {
+        "cluster_id": "C02",
+        "topic_id": "C02",
+        "topic_name": "LLM agents",
+        "size": 2,
+        "doc_indices": [
+          3,
+          5
+        ],
+        "representative_terms": [
+          "Large language model",
+          "LLM agents",
+          "Deep Research",
+          "finite context windows"
+        ],
+        "members": [
+          {
+            "document_id": "DOC004",
+            "title": "4.pdf"
+          },
+          {
+            "document_id": "DOC006",
+            "title": "6.pdf"
+          }
+        ],
+        "feature_statistics": {
+          "intra_cluster_similarity": 0.918,
+          "inter_cluster_separation": 0.245,
+          "semantic_density": 1.0,
+          "semantic_coherence": 0.95
+        },
+        "ratio": 0.2,
+        "representative_documents": [
+          {
+            "document_id": "DOC004",
+            "title": "4.pdf"
+          },
+          {
+            "document_id": "DOC006",
+            "title": "6.pdf"
+          }
+        ]
+      },
+      {
+        "cluster_id": "C03",
+        "topic_id": "C03",
+        "topic_name": "Wikipedia entities",
+        "size": 1,
+        "doc_indices": [
+          0
+        ],
+        "representative_terms": [
+          "Wikipedia",
+          "entities"
+        ],
+        "members": [
+          {
+            "document_id": "DOC001",
+            "title": "1.pdf"
+          }
+        ],
+        "feature_statistics": {
+          "intra_cluster_similarity": 1.0,
+          "inter_cluster_separation": 0.326,
+          "semantic_density": 1.0,
+          "semantic_coherence": 1.0
+        },
+        "ratio": 0.1,
+        "representative_documents": [
+          {
+            "document_id": "DOC001",
+            "title": "1.pdf"
+          }
+        ]
+      },
+      {
+        "cluster_id": "C04",
+        "topic_id": "C04",
+        "topic_name": "Advanced materials",
+        "size": 1,
+        "doc_indices": [
+          4
+        ],
+        "representative_terms": [
+          "advanced materials",
+          "DFT"
+        ],
+        "members": [
+          {
+            "document_id": "DOC005",
+            "title": "5.pdf"
+          }
+        ],
+        "feature_statistics": {
+          "intra_cluster_similarity": 1.0,
+          "inter_cluster_separation": 0.366,
+          "semantic_density": 1.0,
+          "semantic_coherence": 1.0
+        },
+        "ratio": 0.1,
+        "representative_documents": [
+          {
+            "document_id": "DOC005",
+            "title": "5.pdf"
+          }
+        ]
+      },
+      {
+        "cluster_id": "C05",
+        "topic_id": "C05",
+        "topic_name": "Synthetic content",
+        "size": 1,
+        "doc_indices": [
+          6
+        ],
+        "representative_terms": [
+          "synthetic content",
+          "LLMs"
+        ],
+        "members": [
+          {
+            "document_id": "DOC007",
+            "title": "7.pdf"
+          }
+        ],
+        "feature_statistics": {
+          "intra_cluster_similarity": 1.0,
+          "inter_cluster_separation": 0.346,
+          "semantic_density": 1.0,
+          "semantic_coherence": 1.0
+        },
+        "ratio": 0.1,
+        "representative_documents": [
+          {
+            "document_id": "DOC007",
+            "title": "7.pdf"
+          }
+        ]
+      },
+      {
+        "cluster_id": "C06",
+        "topic_id": "C06",
+        "topic_name": "Cold-start items",
+        "size": 1,
+        "doc_indices": [
+          7
+        ],
+        "representative_terms": [
+          "collaborative information",
+          "cold-start items"
+        ],
+        "members": [
+          {
+            "document_id": "DOC008",
+            "title": "8.pdf"
+          }
+        ],
+        "feature_statistics": {
+          "intra_cluster_similarity": 1.0,
+          "inter_cluster_separation": 0.338,
+          "semantic_density": 1.0,
+          "semantic_coherence": 1.0
+        },
+        "ratio": 0.1,
+        "representative_documents": [
+          {
+            "document_id": "DOC008",
+            "title": "8.pdf"
+          }
+        ]
+      },
+      {
+        "cluster_id": "C07",
+        "topic_id": "C07",
+        "topic_name": "CoT",
+        "size": 1,
+        "doc_indices": [
+          8
+        ],
+        "representative_terms": [
+          "Chain-of-thought",
+          "CoT"
+        ],
+        "members": [
+          {
+            "document_id": "DOC009",
+            "title": "9.pdf"
+          }
+        ],
+        "feature_statistics": {
+          "intra_cluster_similarity": 1.0,
+          "inter_cluster_separation": 0.338,
+          "semantic_density": 1.0,
+          "semantic_coherence": 1.0
+        },
+        "ratio": 0.1,
+        "representative_documents": [
+          {
+            "document_id": "DOC009",
+            "title": "9.pdf"
+          }
+        ]
+      },
+      {
+        "cluster_id": "C08",
+        "topic_id": "C08",
+        "topic_name": "Time-series representation",
+        "size": 1,
+        "doc_indices": [
+          9
+        ],
+        "representative_terms": [
+          "Self-supervised learning",
+          "time-series representation"
+        ],
+        "members": [
+          {
+            "document_id": "DOC010",
+            "title": "10.pdf"
+          }
+        ],
+        "feature_statistics": {
+          "intra_cluster_similarity": 1.0,
+          "inter_cluster_separation": 0.366,
+          "semantic_density": 1.0,
+          "semantic_coherence": 1.0
+        },
+        "ratio": 0.1,
+        "representative_documents": [
+          {
+            "document_id": "DOC010",
+            "title": "10.pdf"
+          }
+        ]
+      }
     ],
-    theme_trend_analysis: { years: [2026], series: [{ cluster_id: 'TECH-01', representative_terms: ['推理多样性', '慢思考'], yearly_counts: [2], trend_score: 0.86 }, { cluster_id: 'TECH-02', representative_terms: ['高效推理', '资源分配'], yearly_counts: [2], trend_score: 0.9 }, { cluster_id: 'TECH-03', representative_terms: ['前景引导预训练'], yearly_counts: [1], trend_score: 0.77 }], rising_cluster_id: 'TECH-02', emerging_cluster_id: 'TECH-03', stable_cluster_id: 'TECH-01', summary: '2026年样本文献集中关注推理多样性与计算效率，前景引导预训练构成独立的新兴技术路线。' },
-  },
+    "document_assignments": [
+      {
+        "document_id": "DOC001",
+        "title": "1.pdf",
+        "publication_date": "2026-09-03",
+        "publication_year": 2026,
+        "cluster_id": "C03",
+        "similarity_to_centroid": 1.0,
+        "key_evidence": "Entities are at the center of how we represent and aggregate knowledge. For instance, Encyclopedias such as Wikipedia ar…"
+      },
+      {
+        "document_id": "DOC002",
+        "title": "2.pdf",
+        "publication_date": "2024-06-11",
+        "publication_year": 2024,
+        "cluster_id": "C01",
+        "similarity_to_centroid": 0.947,
+        "key_evidence": "Test-time reinforcement learning (TTRL) offers a label-free paradigm for adapting models using only synthetic signals at…"
+      },
+      {
+        "document_id": "DOC003",
+        "title": "3.pdf",
+        "publication_date": "2025-12-11",
+        "publication_year": 2025,
+        "cluster_id": "C01",
+        "similarity_to_centroid": 0.947,
+        "key_evidence": "Test-time Training enables model adaptation using only test questions and offers a promising paradigm for improving the …"
+      },
+      {
+        "document_id": "DOC004",
+        "title": "4.pdf",
+        "publication_date": "2025-08-11",
+        "publication_year": 2025,
+        "cluster_id": "C02",
+        "similarity_to_centroid": 0.918,
+        "key_evidence": "Large language model (LLM) agents are fundamentally bottlenecked by finite context windows on longhorizon tasks. As traj…"
+      },
+      {
+        "document_id": "DOC005",
+        "title": "5.pdf",
+        "publication_date": "2024-02-11",
+        "publication_year": 2024,
+        "cluster_id": "C04",
+        "similarity_to_centroid": 1.0,
+        "key_evidence": "Accelerating the discovery of advanced materials is essential for human welfare and sustainable, clean energy. Major tec…"
+      },
+      {
+        "document_id": "DOC006",
+        "title": "6.pdf",
+        "publication_date": "2024-07-11",
+        "publication_year": 2024,
+        "cluster_id": "C02",
+        "similarity_to_centroid": 0.918,
+        "key_evidence": "Large language models (LLMs) are increasingly expected to go beyond simple factual queries toward Deep Research—tasks th…"
+      },
+      {
+        "document_id": "DOC007",
+        "title": "7.pdf",
+        "publication_date": "2024-12-11",
+        "publication_year": 2024,
+        "cluster_id": "C05",
+        "similarity_to_centroid": 1.0,
+        "key_evidence": "The prevalence and low cost of LLMs have led to a rise of synthetic content. From review sites to court documents, “natu…"
+      },
+      {
+        "document_id": "DOC008",
+        "title": "8.pdf",
+        "publication_date": "2025-07-11",
+        "publication_year": 2025,
+        "cluster_id": "C06",
+        "similarity_to_centroid": 1.0,
+        "key_evidence": "With the rise of modern search and recommendation platforms, insufficient collaborative information of cold-start items …"
+      },
+      {
+        "document_id": "DOC009",
+        "title": "9.pdf",
+        "publication_date": "2025-07-11",
+        "publication_year": 2025,
+        "cluster_id": "C07",
+        "similarity_to_centroid": 1.0,
+        "key_evidence": "Chain-of-thought (CoT) traces are increasingly used both to improve language-model capability and to audit model behavio…"
+      },
+      {
+        "document_id": "DOC010",
+        "title": "10.pdf",
+        "publication_date": "2026-09-01",
+        "publication_year": 2026,
+        "cluster_id": "C08",
+        "similarity_to_centroid": 1.0,
+        "key_evidence": "Self-supervised learning for time-series representation aims to reduce reliance on labeled data while maintaining strong…"
+      }
+    ],
+    "semantic_projection": [
+      {
+        "document_id": "DOC001",
+        "title": "1.pdf",
+        "cluster_id": "C03",
+        "x": 63.366,
+        "y": 47.455
+      },
+      {
+        "document_id": "DOC002",
+        "title": "2.pdf",
+        "cluster_id": "C01",
+        "x": 19.5,
+        "y": 49.262
+      },
+      {
+        "document_id": "DOC003",
+        "title": "3.pdf",
+        "cluster_id": "C01",
+        "x": 5.0,
+        "y": 52.47
+      },
+      {
+        "document_id": "DOC004",
+        "title": "4.pdf",
+        "cluster_id": "C02",
+        "x": 64.481,
+        "y": 5.0
+      },
+      {
+        "document_id": "DOC005",
+        "title": "5.pdf",
+        "cluster_id": "C04",
+        "x": 95.0,
+        "y": 41.384
+      },
+      {
+        "document_id": "DOC006",
+        "title": "6.pdf",
+        "cluster_id": "C02",
+        "x": 62.705,
+        "y": 45.225
+      },
+      {
+        "document_id": "DOC007",
+        "title": "7.pdf",
+        "cluster_id": "C05",
+        "x": 34.822,
+        "y": 58.686
+      },
+      {
+        "document_id": "DOC008",
+        "title": "8.pdf",
+        "cluster_id": "C06",
+        "x": 89.777,
+        "y": 75.641
+      },
+      {
+        "document_id": "DOC009",
+        "title": "9.pdf",
+        "cluster_id": "C07",
+        "x": 51.428,
+        "y": 95.0
+      },
+      {
+        "document_id": "DOC010",
+        "title": "10.pdf",
+        "cluster_id": "C08",
+        "x": 67.63,
+        "y": 80.872
+      }
+    ],
+    "theme_trend_analysis": {
+      "years": [
+        2024,
+        2025,
+        2026
+      ],
+      "series": [
+        {
+          "cluster_id": "C01",
+          "yearly_counts": [
+            1,
+            1,
+            0
+          ]
+        },
+        {
+          "cluster_id": "C02",
+          "yearly_counts": [
+            1,
+            1,
+            0
+          ]
+        },
+        {
+          "cluster_id": "C03",
+          "yearly_counts": [
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "cluster_id": "C04",
+          "yearly_counts": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "cluster_id": "C05",
+          "yearly_counts": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "cluster_id": "C06",
+          "yearly_counts": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "cluster_id": "C07",
+          "yearly_counts": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "cluster_id": "C08",
+          "yearly_counts": [
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "rising_cluster_id": "C06",
+      "emerging_cluster_id": "C03",
+      "stable_cluster_id": "C01",
+      "summary": "2024–2026 年间趋势：上升类簇 C06（近年增长最快，1 篇）；新兴类簇 C03（新出现的主题方向，1 篇）；稳定类簇 C01（各年份持续产出，2 篇）。"
+    },
+    "partition_strategy": "move_aligned",
+    "input_type": "files",
+    "dimension": "application_scenario",
+    "quality_metrics": null,
+    "correction_status": "unreviewed",
+    "algorithm_metadata": null,
+    "cluster_task_id": "tsk_d99072886c5d424681b49ec963854094"
+  }
 }
 
 const clusterLabelResponse = {
   code: 200, message: 'success', data: {
-    cluster_count: 3, generated_label_count: 3, generation_strategy: 'multi_strategy_fusion', parameters: { label_length_limit: 12, language_type: 'zh', distinctiveness_threshold: 0.75 },
+    cluster_count: 3, generated_label_count: 3, generation_strategy: 'adaptive_label_generation', source_cluster_task_id: 'tsk_demo_cluster_20260911',
+    parameters: { label_length_limit: 12, language_type: 'auto', distinctiveness_threshold: 0.75 },
     labels: [
-      { cluster_id: 'TECH-01', recommended_label: '多路径推理优化', confidence: 0.94, distinctiveness: 0.9, difference_explanation: '突出策略优化、慢思考和推理多样性，与计算裁剪路线区分明显。', linked_document_ids: ['DOC-EN-018', 'DOC-EN-026'], candidate_labels: [{ rank: 1, label: '多路径推理优化', confidence: 0.94 }, { rank: 2, label: '推理多样性增强', confidence: 0.91 }], evidence: { keywords: ['推理多样性', '策略优化', '慢思考'], named_entities: ['MUPO', 'TimeReasoner'], center_sentence: '通过策略优化和慢思考机制扩展模型的多步推理路径。', text_count: 2 } },
-      { cluster_id: 'TECH-02', recommended_label: '分层计算预算', confidence: 0.95, distinctiveness: 0.92, difference_explanation: '概括时间步块掩码、关键帧选择和令牌预算的共同资源分配机制。', linked_document_ids: ['DOC-EN-024', 'DOC-EN-028'], candidate_labels: [{ rank: 1, label: '分层计算预算', confidence: 0.95 }, { rank: 2, label: '高效视觉推理', confidence: 0.9 }], evidence: { keywords: ['块掩码', '视觉预算', '特征复用'], named_entities: ['TRIAGE', 'DPM'], center_sentence: '按时间步、帧和令牌重要性动态分配推理计算。', text_count: 2 } },
-      { cluster_id: 'TECH-03', recommended_label: '前景引导预训练', confidence: 0.93, distinctiveness: 0.94, difference_explanation: '聚焦前景视图引导的自适应预训练，不与推理阶段优化混淆。', linked_document_ids: ['DOC-EN-030'], candidate_labels: [{ rank: 1, label: '前景引导预训练', confidence: 0.93 }, { rank: 2, label: '自适应视觉表征', confidence: 0.86 }], evidence: { keywords: ['前景视图', '自适应预训练'], named_entities: ['FVG-PT'], center_sentence: '前景视图用于引导预训练模型学习目标区域表征。', text_count: 1 } },
+      { cluster_id: 'C01', label: '多路径推理优化', candidate_labels: ['多路径推理优化'], evidence_terms: ['多路径推理', '策略优化', '推理多样性'], evidence: { keywords: ['多路径推理', '策略优化', '推理多样性'], center_sentence: '策略优化使模型在多路径探索与收敛之间取得平衡，多组奖励显式差异化推理路径。', named_entities: [] }, language: 'zh', confidence: 0.95, distinctiveness: 0.9, coverage: 1, evidence_support: 0.9, generation_method: 'move_aligned_cluster_name', phrase_count: 3, linked_document_ids: ['DOC-EN-018'], alternatives: ['多路径推理优化'], recommended_label: '多路径推理优化', status: 'generated', representativeness: 1, difference_explanation: '推荐标签达到当前类簇间差异阈值。' },
+      { cluster_id: 'C02', label: '分层视觉计算预算', candidate_labels: ['视觉计算预算', '分层视觉计算预算'], evidence_terms: ['视觉计算预算', '帧令牌分配', '推理成本'], evidence: { keywords: ['视觉计算预算', '帧令牌分配', '推理成本'], center_sentence: '按帧与令牌重要性分层分配计算预算，可同时降低时间与空间冗余。', named_entities: [] }, language: 'zh', confidence: 0.95, distinctiveness: 0.88, coverage: 1, evidence_support: 0.9, generation_method: 'move_aligned_cluster_name', phrase_count: 4, linked_document_ids: ['DOC-EN-024', 'DOC-EN-028'], alternatives: ['视觉计算预算'], recommended_label: '分层视觉计算预算', status: 'generated', representativeness: 1, difference_explanation: '推荐标签达到当前类簇间差异阈值。' },
+      { cluster_id: 'C03', label: '时间序列慢思考', candidate_labels: ['慢思考', '时间序列慢思考'], evidence_terms: ['慢思考', '时间序列推理', 'TimeReasoner'], evidence: { keywords: ['慢思考', '时间序列推理', 'TimeReasoner'], center_sentence: '慢思考模型在无任务训练条件下，通过混合指令与推理时展开进行时间序列推理。', named_entities: [] }, language: 'zh', confidence: 0.95, distinctiveness: 0.86, coverage: 1, evidence_support: 0.9, generation_method: 'move_aligned_cluster_name', phrase_count: 2, linked_document_ids: ['DOC-EN-026'], alternatives: ['慢思考'], recommended_label: '时间序列慢思考', status: 'generated', representativeness: 1, difference_explanation: '推荐标签达到当前类簇间差异阈值。' },
     ],
-    statistics: { average_confidence: 0.94, average_distinctiveness: 0.92, duplicate_candidate_count: 0, filtered_candidate_count: 2 },
-    label_generation_process_report: {
-      strategy: 'multi_strategy_fusion',
-      stages: [
-        { order: 1, name: '读取类簇结果', status: 'completed', output: '3个类簇' },
-        { order: 2, name: '汇总代表特征', status: 'completed', output: '代表短语、中心句与命名实体' },
-        { order: 3, name: '生成候选标签', status: 'completed', output: '6个候选标签' },
-        { order: 4, name: '差异化筛选', status: 'completed', output: '保留3个区分度达标标签' },
-        { order: 5, name: '输出推荐标签', status: 'completed', output: '3个推荐标签' },
-      ],
-      parameters: { label_length_limit: 12, language_type: 'zh', distinctiveness_threshold: 0.75 },
-    },
-    label_distinctiveness_optimization_result: {
-      threshold: 0.75,
-      duplicate_candidate_count: 0,
-      filtered_candidate_count: 2,
-      clusters: [
-        { cluster_id: 'TECH-01', recommended_label: '多路径推理优化', distinctiveness: 0.9, optimization_status: 'passed', optimization_explanation: '突出策略优化、慢思考和推理多样性，并过滤与计算裁剪路线语义重叠的候选标签。' },
-        { cluster_id: 'TECH-02', recommended_label: '分层计算预算', distinctiveness: 0.92, optimization_status: 'passed', optimization_explanation: '合并时间步块掩码、关键帧选择和令牌预算等共同特征，保留能够体现资源分配机制的标签。' },
-        { cluster_id: 'TECH-03', recommended_label: '前景引导预训练', distinctiveness: 0.94, optimization_status: 'passed', optimization_explanation: '保留前景视图引导与预训练两个核心特征，排除过于宽泛的视觉表征类候选标签。' },
-      ],
-    },
+    statistics: { average_confidence: 0.95, average_distinctiveness: 0.88, average_coverage: 1.0, distinctiveness_pass_count: 3, soft_fallback_triggered_count: 0, soft_fallback_changed_count: 0 },
+    label_generation_process_report: { engine_version: 'move-aligned-direct-v1', cluster_count: 3, generated_label_count: 3, stages: [{ order: 1, name: 'v3 簇名直采', status: 'completed', output: '语步对齐聚类的综述粒度簇名直接作为推荐标签' }], llm_used: true, llm_failures: [], topic_library_used: false, requested_generation_mode: 'hybrid', effective_generation_mode: 'hybrid', direct_input_contract: 'move_aligned_cluster_names' },
+    label_distinctiveness_optimization_result: { threshold: 0.75, optimized_count: 1, passed_count: 1, failed_count: 0, items: [
+      { cluster_id: 'C03', before_label: '慢思考', after_label: '时间序列慢思考', before_distinctiveness: 0.5, after_distinctiveness: 0.86, changed: true, reason: '原标签"慢思考"与其他簇的推理优化标签语义重叠，优化为体现时间序列场景的具体标签。', threshold_passed: true },
+    ] },
   },
 }
 
 const reviewResponse = {
   code: 200, message: 'success', data: {
-    tool: '结构化自动综述工具', review_id: 'REVIEW-DEMO-VLM-20260817', input_type: 'texts', topic: '视觉与语言模型的推理多样性、高效推理与时间推理', document_count: 4, language: 'auto', traceability: true,
-    statistics: { research_question_count: 3, method_count: 4, progress_item_count: 4, evidence_sentence_count: 8, time_range: '2026' },
+    tool: '结构化自动综述工具', input_type: 'texts', topic: '视觉与语言模型的推理多样性、高效推理与时间推理', document_count: 4,
+    statistics: { research_question_count: 3, method_count: 4, progress_item_count: 4, evidence_sentence_count: 8, trend_hotspot_status: 'computed' },
     tree: [
-      { question_id: 'RQ-01', research_question: '如何避免强化学习视觉语言模型的推理多样性坍缩？', document_count: 1, methods: [{ method_id: 'M-01', method: '多组策略优化', progress: [{ summary: '研究从单组相对策略优化发展到跨多组解答显式奖励差异化推理路径。', conclusion: '多组策略优化能够改善准确率与多样性的平衡。', source_ids: ['DOC-EN-018'] }] }] },
-      { question_id: 'RQ-02', research_question: '如何在保持任务性能的同时降低视觉生成与视频推理成本？', document_count: 2, methods: [{ method_id: 'M-02', method: '时间步感知块掩码与特征复用', progress: [{ summary: '扩散模型可按时间步学习块级掩码并复用相邻阶段特征。', conclusion: '按时间步优化计算路径可降低扩散推理延迟。', source_ids: ['DOC-EN-024'] }] }, { method_id: 'M-03', method: '帧—令牌分层视觉预算', progress: [{ summary: '视频推理由关键帧筛选进一步发展到核心令牌和上下文令牌的协同分配。', conclusion: '分层视觉预算可同时减少时间与空间冗余。', source_ids: ['DOC-EN-028'] }] }] },
-      { question_id: 'RQ-03', research_question: '慢思考大语言模型能否在无任务训练条件下进行时间序列推理？', document_count: 1, methods: [{ method_id: 'M-04', method: '混合指令与推理时多步展开', progress: [{ summary: 'TimeReasoner将时间戳、序列值和上下文特征组织为混合指令，在推理阶段诱导多步时间推理。', conclusion: '慢思考模型具备训练外时间推理潜力，但稳定性和效率仍需验证。', source_ids: ['DOC-EN-026'] }] }] },
+      { question_id: 'RQ-01', research_question: '如何避免强化学习视觉语言模型的推理多样性坍缩？', question_summary: '策略优化导致推理路径收敛，需要显式奖励多样化解答。', document_count: 1, document_ids: ['DOC-EN-018'], evidence_ids: ['EV-001-Q01'], methods: [{ method_id: 'M-01', method: '多组策略优化（MUPO）：跨多组解答显式奖励差异化推理路径', source_ids: ['DOC-EN-018'], evidence_ids: ['EV-001-M01'], progress: [{ progress_id: 'M-01-P1', summary: '在五个推理基准上评估，跨组奖励差异化使准确率与多样性的平衡持续改善。', conclusion: '多组策略优化能够改善准确率与多样性的平衡。', source_ids: ['DOC-EN-018'], source_evidence: [{ evidence_id: 'M-01-EV01', document_id: 'DOC-EN-018', title: enPapers[0].title, source_section: 'text', evidence_excerpt: 'MUPO incentivizes divergent reasoning across multiple solutions and improves the balance between accuracy and scalability.', start: 612, end: 731 }] }] }] },
+      { question_id: 'RQ-02', research_question: '如何在保持任务性能的同时降低视觉生成与视频推理成本？', question_summary: '按时间步与令牌重要性分配计算，降低扩散与视频推理冗余。', document_count: 2, document_ids: ['DOC-EN-024', 'DOC-EN-028'], evidence_ids: ['EV-002-Q01', 'EV-003-Q01'], methods: [{ method_id: 'M-02', method: '时间步感知块掩码与特征复用', source_ids: ['DOC-EN-024'], evidence_ids: ['EV-002-M01'], progress: [{ progress_id: 'M-02-P1', summary: '扩散模型可按时间步学习块级掩码并复用相邻阶段特征。', conclusion: '按时间步优化计算路径可降低扩散推理延迟。', source_ids: ['DOC-EN-024'], source_evidence: [{ evidence_id: 'M-02-EV01', document_id: 'DOC-EN-024', title: enPapers[1].title, source_section: 'text', evidence_excerpt: 'Timestep-specific masks determine which diffusion blocks execute or reuse cached features.', start: 430, end: 522 }] }] }, { method_id: 'M-03', method: '帧—令牌分层视觉预算（TRIAGE）', source_ids: ['DOC-EN-028'], evidence_ids: ['EV-003-M01'], progress: [{ progress_id: 'M-03-P1', summary: '视频推理由关键帧筛选发展到核心令牌与上下文令牌的协同分配。', conclusion: '分层视觉预算可同时减少时间与空间冗余。', source_ids: ['DOC-EN-028'], source_evidence: [{ evidence_id: 'M-03-EV01', document_id: 'DOC-EN-028', title: enPapers[2].title, source_section: 'text', evidence_excerpt: 'Frame-level and token-level budgeting allocate computation to the most relevant visual information.', start: 505, end: 598 }] }] }] },
+      { question_id: 'RQ-03', research_question: '慢思考大语言模型能否在无任务训练条件下进行时间序列推理？', question_summary: '评估慢思考模型的训练外时间推理能力与稳定性。', document_count: 1, document_ids: ['DOC-EN-026'], evidence_ids: ['EV-004-Q01'], methods: [{ method_id: 'M-04', method: '混合指令与推理时多步展开（TimeReasoner）', source_ids: ['DOC-EN-026'], evidence_ids: ['EV-004-M01'], progress: [{ progress_id: 'M-04-P1', summary: 'TimeReasoner 将时间戳、序列值和上下文特征组织为混合指令，在推理阶段诱导多步时间推理。', conclusion: '慢思考模型具备训练外时间推理潜力，但稳定性和效率仍需验证。', source_ids: ['DOC-EN-026'], source_evidence: [{ evidence_id: 'M-04-EV01', document_id: 'DOC-EN-026', title: 'Can Slow-Thinking LLMs Reason Over Time?', source_section: 'text', evidence_excerpt: 'Hybrid instructions and rollout-based reasoning induce multi-step temporal reasoning at inference time.', start: 388, end: 481 }] }] }] },
     ],
-    cluster_induction_results: { cluster_count: 3, induction_basis: '研究问题语义相似度、方法机制与来源证据一致性', clusters: [{ cluster_id: 'PC-01', label: '推理多样性优化', document_count: 1 }, { cluster_id: 'PC-02', label: '高效视觉推理', document_count: 2 }, { cluster_id: 'PC-03', label: '时间序列慢思考', document_count: 1 }] },
-    structured_report: { overview: '本综述基于4篇2026年英文文献，围绕模型推理的多样性、视觉计算效率与时间推理能力，归纳出策略优化、分层计算预算和推理时慢思考三条主要路线。', sections: [{ title: '一、研究问题', content: '现有研究重点解决强化学习导致的策略收敛、视觉输入冗余造成的计算开销，以及时间序列任务中显式多步推理不足。' }, { title: '二、研究方法', content: '代表方法包括MUPO多组策略优化、时间步感知块掩码、TRIAGE帧—令牌分层预算和TimeReasoner推理时多步展开。' }, { title: '三、研究进展', content: '研究正从单一路径和均匀计算转向多路径探索、按重要性分配计算资源及训练外显式推理。' }, { title: '四、结论与不足', content: '这些方法改善了多样性或效率，但跨模型泛化、统一评测和高风险场景可靠性仍需进一步研究。' }] },
-    trend_hotspot_distribution: { time_range: '2026', hotspots: [{ name: '分层视觉计算预算', score: 0.93, status: '研究热点' }, { name: '推理多样性优化', score: 0.9, status: '快速发展' }, { name: '推理时慢思考', score: 0.84, status: '新兴方向' }] },
+    cluster_induction_results: { cluster_count: 3, induction_basis: '研究问题语义相似度、研究方法共现与来源证据一致性', clusters: [
+      { cluster_id: 'PC-01', label: '推理多样性优化', summary: '以跨组奖励差异化缓解策略收敛。', question_count: 1, document_count: 1, document_ids: ['DOC-EN-018'], research_questions: ['如何避免强化学习视觉语言模型的推理多样性坍缩？'], evidence_ids: ['EV-001-Q01'], cohesion: 1.0 },
+      { cluster_id: 'PC-02', label: '高效视觉推理', summary: '按时间步与令牌重要性分配计算资源。', question_count: 1, document_count: 2, document_ids: ['DOC-EN-024', 'DOC-EN-028'], research_questions: ['如何在保持任务性能的同时降低视觉生成与视频推理成本？'], evidence_ids: ['EV-002-Q01', 'EV-003-Q01'], cohesion: 0.71 },
+      { cluster_id: 'PC-03', label: '时间序列慢思考', summary: '训练外显式多步时间推理。', question_count: 1, document_count: 1, document_ids: ['DOC-EN-026'], research_questions: ['慢思考大语言模型能否在无任务训练条件下进行时间序列推理？'], evidence_ids: ['EV-004-Q01'], cohesion: 1.0 },
+    ] },
+    structured_report: { title: '视觉与语言模型推理结构化综述', overview: '本综述基于4篇2026年英文文献，围绕模型推理的多样性、视觉计算效率与时间推理能力，归纳出策略优化、分层计算预算和推理时慢思考三条主要路线。', sections: [{ section_id: 'SEC-01', title: '一、研究问题', content: '现有研究重点解决强化学习导致的策略收敛、视觉输入冗余造成的计算开销，以及时间序列任务中显式多步推理不足。' }, { section_id: 'SEC-02', title: '二、研究方法', content: '代表方法包括MUPO多组策略优化、时间步感知块掩码、TRIAGE帧—令牌分层预算和TimeReasoner推理时多步展开。' }, { section_id: 'SEC-03', title: '三、研究进展', content: '研究正从单一路径和均匀计算转向多路径探索、按重要性分配计算资源及训练外显式推理。' }] },
+    trend_hotspot_distribution: { time_range: '2024–2026', reliability_note: null, hotspots: [
+      { name: '高效视觉推理', score: 0.82, status: '持续热门', cluster_id: 'PC-02', document_count: 2, supporting_years: [2024, 2025, 2026], year_coverage: 1.0 },
+      { name: '推理多样性优化', score: 0.74, status: '上升趋势', cluster_id: 'PC-01', document_count: 1, supporting_years: [2026], year_coverage: 0.34 },
+      { name: '时间序列慢思考', score: 0.61, status: '新兴热点', cluster_id: 'PC-03', document_count: 1, supporting_years: [2025, 2026], year_coverage: 0.67 },
+    ] },
     evidence_index: [
-      { document_id: 'DOC-EN-018', title: enPapers[0].title, source_section: 'Abstract > Method and Results', evidence_excerpt: 'MUPO incentivizes divergent reasoning across multiple solutions and improves the balance between accuracy and scalability.', supported_nodes: ['RQ-01', 'M-01'] },
-      { document_id: 'DOC-EN-024', title: enPapers[1].title, source_section: 'Abstract > Method', evidence_excerpt: 'Timestep-specific masks determine which diffusion blocks execute or reuse cached features.', supported_nodes: ['RQ-02', 'M-02'] },
-      { document_id: 'DOC-EN-028', title: enPapers[2].title, source_section: 'Abstract > Method', evidence_excerpt: 'Frame-level and token-level budgeting allocate computation to the most relevant visual information.', supported_nodes: ['RQ-02', 'M-03'] },
-      { document_id: 'DOC-EN-026', title: 'Can Slow-Thinking LLMs Reason Over Time?', source_section: 'Abstract > TimeReasoner', evidence_excerpt: 'Hybrid instructions and rollout-based reasoning induce multi-step temporal reasoning at inference time.', supported_nodes: ['RQ-03', 'M-04'] },
+      { evidence_id: 'EV-001-Q01', document_id: 'DOC-EN-018', title: enPapers[0].title, source_section: 'text', evidence_excerpt: 'Policy optimization collapses reasoning diversity across training groups.', quote: 'Policy optimization collapses reasoning diversity across training groups.', start: 120, end: 189, supported_nodes: ['RQ-01'] },
+      { evidence_id: 'M-01-EV01', document_id: 'DOC-EN-018', title: enPapers[0].title, source_section: 'text', evidence_excerpt: 'MUPO incentivizes divergent reasoning across multiple solutions and improves the balance between accuracy and scalability.', quote: 'MUPO incentivizes divergent reasoning across multiple solutions and improves the balance between accuracy and scalability.', start: 612, end: 731, supported_nodes: ['RQ-01', 'M-01'] },
+      { evidence_id: 'M-02-EV01', document_id: 'DOC-EN-024', title: enPapers[1].title, source_section: 'text', evidence_excerpt: 'Timestep-specific masks determine which diffusion blocks execute or reuse cached features.', quote: 'Timestep-specific masks determine which diffusion blocks execute or reuse cached features.', start: 430, end: 522, supported_nodes: ['RQ-02', 'M-02'] },
+      { evidence_id: 'M-03-EV01', document_id: 'DOC-EN-028', title: enPapers[2].title, source_section: 'text', evidence_excerpt: 'Frame-level and token-level budgeting allocate computation to the most relevant visual information.', quote: 'Frame-level and token-level budgeting allocate computation to the most relevant visual information.', start: 505, end: 598, supported_nodes: ['RQ-02', 'M-03'] },
+      { evidence_id: 'M-04-EV01', document_id: 'DOC-EN-026', title: 'Can Slow-Thinking LLMs Reason Over Time?', source_section: 'text', evidence_excerpt: 'Hybrid instructions and rollout-based reasoning induce multi-step temporal reasoning at inference time.', quote: 'Hybrid instructions and rollout-based reasoning induce multi-step temporal reasoning at inference time.', start: 388, end: 481, supported_nodes: ['RQ-03', 'M-04'] },
     ],
   },
 }

@@ -34,11 +34,11 @@ CONTRACTS = [
     ToolContract("domain-ner", "ner_domain", "专业领域科研实体识别"),
     ToolContract("relation-extract", "ner_relation", "实体关系识别", export_formats=("json", "csv", "rdf")),
     # 与 Vue 在线测试一致：至少 4 篇，避免极小样本无法形成有意义的多类簇结果。
-    ToolContract("deep-cluster", "dc_cluster", "科技文献深度聚类", collection_tool=True, min_items=4, max_items=50),
+    ToolContract("deep-cluster", "dc_cluster", "科技文献深度聚类", collection_tool=True, min_items=4, max_items=20),
     # 标签工具处理的是深度聚类输出的类簇短语集合。一个类簇也可以生成标签，
     # 不能沿用深度聚类对文献数量的下限。
-    ToolContract("cluster-label", "cl_label", "类簇标签自动生成", collection_tool=True, min_items=1, max_items=50),
-    ToolContract("structured-review", "sr_review", "结构化自动综述生成", collection_tool=True, export_formats=("json", "csv", "report"), min_items=2, max_items=50),
+    ToolContract("cluster-label", "cl_label", "类簇标签自动生成", collection_tool=True, min_items=1, max_items=20),
+    ToolContract("structured-review", "sr_review", "结构化自动综述生成", collection_tool=True, export_formats=("json", "csv", "report"), min_items=2, max_items=20),
 ]
 
 BY_TOOL_ID: Dict[str, ToolContract] = {item.tool_id: item for item in CONTRACTS}

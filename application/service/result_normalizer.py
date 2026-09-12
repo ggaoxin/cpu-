@@ -31,6 +31,26 @@ def strip_non_move_artifacts(text: str) -> str:
     t = _re.sub(r"(?i)(?<=\s)(?:at|via|from|see|available\s+at|in)\s+https?://\S+\.?", " ", t)
     t = _re.sub(r"https?://\S+|www\.\S+\.\w{2,}", " ", t)
     t = _re.sub(r"[\w.+-]+@[\w-]+\.[\w.]{2,}", " ", t)
+    # 代码开源/可获得性声明句（无 URL 形式）：不属于任何语步——曾被塞进
+    # Conclusion（"Our code will be released."，24.pdf 2026-09-12）。短句
+    # （≤14词/≤90字符）且只声明代码/模型发布，无实验/方法实义内容才删。
+    _CODE_RELEASE = _re.compile(
+        r"(?i)(?:^|(?<=[.!?。！？]\s))"
+        r"(?:[A-Za-z][^.!?。！？]{0,70}?\b(?:our\s+)?(?:code|codes|source\s+code|models?)\b"
+        r"[^.!?。！？]{0,70}?\b(?:will\s+be\s+released?|is\s+(?:now\s+)?(?:publicly\s+)?available|"
+        r"will\s+be\s+(?:made\s+)?public(?:ly\s+available)?|are\s+publicly\s+(?:available|released?)|"
+        r"has\s+been\s+released?)\b[^.!?。！？]*[.。])"
+        r"|(?:^|(?<=[.!?。！？]\s))(?:我们的|我们|本文)?代码(?:和|与)?(?:模型|代码)?(?:将|已|即将)?(?:开源|公开|发布|随文公布|提供)[^.。！？]*[.。]?")
+    def _drop_code_release(_m):
+        _sent = _m.group(0).strip()
+        _words = _sent.split()
+        # 防误杀：含实验/方法实义词的长句不动
+        if _re.search(r"(?i)\b(experiment|result|method|propose|achiev|improv|dataset)\b", _sent):
+            return _sent
+        if len(_sent) > 90 or len(_words) > 14:
+            return _sent
+        return ""
+    t = _CODE_RELEASE.sub(_drop_code_release, t)
     t = _re.sub(r"[ \t]{2,}", " ", t)
     # 末句超短碎片修剪：URL/邮箱句被清除后可能暴露 ≤3 词残句（10.pdf "The COT."），
     # 不属于任何语步，整句剪掉（要求空格分词+拉丁字母，中文整句不受影响）
@@ -565,8 +585,8 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
                 "text": text or "",
                 "start": start,
                 "end": end,
-                "confidence": move_confidence.get(label, overall_confidence) if has_text
-                              else move_confidence.get(label, overall_confidence),
+                # 空语步不虚构置信度（此前空文本也带 0.8/0.9，误导展示）
+                "confidence": move_confidence.get(label, overall_confidence) if has_text else None,
             })
     # fund-move 文本模式：语步内容在原文中的字符位置（与摘要平铺分支同款定位逻辑）
     _fund_src_text = str(payload.get("text") or "").strip() if tool_id == "fund-move" else ""

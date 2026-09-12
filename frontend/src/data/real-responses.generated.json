@@ -3132,195 +3132,191 @@
     },
     "entities": [
      {
-      "text": "美国太平洋地震工程研究中心",
+      "text": "University of Illinois",
       "type": "ORGANIZATION",
-      "start": 13,
-      "end": 26,
       "confidence": 0.95,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
+      "start": 16,
+      "end": 38,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法进行结构健康监测。",
       "entity_id": null,
       "entity_type_name": "机构名称"
      },
      {
-      "text": "刘亭亭",
-      "type": "PERSON",
+      "text": "福州大学土木工程学院",
+      "type": "ORGANIZATION",
+      "confidence": 0.95,
       "start": 0,
-      "end": 3,
-      "confidence": 0.99,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
+      "end": 10,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法（deep learning approach）进行结构健康监测",
       "entity_id": null,
-      "entity_type_name": "人名"
+      "entity_type_name": "机构名称"
      },
      {
-      "text": "吕大刚",
-      "type": "PERSON",
-      "start": 4,
-      "end": 7,
-      "confidence": 0.99,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
+      "text": "中国",
+      "type": "LOCATION",
+      "confidence": 0.95,
+      "start": 85,
+      "end": 87,
+      "normalized_name": "中国",
+      "mapping_status": "已映射",
+      "mapping_confidence": 0.95,
+      "mapping_source": "variant_lexicon",
+      "canonical_en": "China",
+      "standard_names": {
+       "en": "China",
+       "zh": "中国"
+      },
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
-      "entity_type_name": "人名"
-     },
-     {
-      "text": "李鸿晶",
-      "type": "PERSON",
-      "start": 8,
-      "end": 11,
-      "confidence": 0.99,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
-      "entity_id": null,
-      "entity_type_name": "人名"
+      "entity_type_name": "地名"
      }
     ],
     "entity_results": [
      {
-      "text": "美国太平洋地震工程研究中心",
+      "text": "University of Illinois",
       "type": "ORGANIZATION",
-      "start": 13,
-      "end": 26,
       "confidence": 0.95,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
+      "start": 16,
+      "end": 38,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法进行结构健康监测。",
       "entity_id": null,
       "entity_type_name": "机构名称"
      },
      {
-      "text": "刘亭亭",
-      "type": "PERSON",
+      "text": "福州大学土木工程学院",
+      "type": "ORGANIZATION",
+      "confidence": 0.95,
       "start": 0,
-      "end": 3,
-      "confidence": 0.99,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
+      "end": 10,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法（deep learning approach）进行结构健康监测",
       "entity_id": null,
-      "entity_type_name": "人名"
+      "entity_type_name": "机构名称"
      },
      {
-      "text": "吕大刚",
-      "type": "PERSON",
-      "start": 4,
-      "end": 7,
-      "confidence": 0.99,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
+      "text": "中国",
+      "type": "LOCATION",
+      "confidence": 0.95,
+      "start": 85,
+      "end": 87,
+      "normalized_name": "中国",
+      "mapping_status": "已映射",
+      "mapping_confidence": 0.95,
+      "mapping_source": "variant_lexicon",
+      "canonical_en": "China",
+      "standard_names": {
+       "en": "China",
+       "zh": "中国"
+      },
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
-      "entity_type_name": "人名"
-     },
-     {
-      "text": "李鸿晶",
-      "type": "PERSON",
-      "start": 8,
-      "end": 11,
-      "confidence": 0.99,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
-      "entity_id": null,
-      "entity_type_name": "人名"
+      "entity_type_name": "地名"
      }
     ],
     "mappings": [
      {
-      "text": "美国太平洋地震工程研究中心",
+      "text": "University of Illinois",
       "type": "ORGANIZATION",
-      "start": 13,
-      "end": 26,
       "confidence": 0.95,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
+      "start": 16,
+      "end": 38,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法进行结构健康监测。",
       "entity_id": null,
       "entity_type_name": "机构名称"
      },
      {
-      "text": "刘亭亭",
-      "type": "PERSON",
+      "text": "福州大学土木工程学院",
+      "type": "ORGANIZATION",
+      "confidence": 0.95,
       "start": 0,
-      "end": 3,
-      "confidence": 0.99,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
+      "end": 10,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法（deep learning approach）进行结构健康监测",
       "entity_id": null,
-      "entity_type_name": "人名"
+      "entity_type_name": "机构名称"
      },
      {
-      "text": "吕大刚",
-      "type": "PERSON",
-      "start": 4,
-      "end": 7,
-      "confidence": 0.99,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
+      "text": "中国",
+      "type": "LOCATION",
+      "confidence": 0.95,
+      "start": 85,
+      "end": 87,
+      "normalized_name": "中国",
+      "mapping_status": "已映射",
+      "mapping_confidence": 0.95,
+      "mapping_source": "variant_lexicon",
+      "canonical_en": "China",
+      "standard_names": {
+       "en": "China",
+       "zh": "中国"
+      },
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
-      "entity_type_name": "人名"
-     },
-     {
-      "text": "李鸿晶",
-      "type": "PERSON",
-      "start": 8,
-      "end": 11,
-      "confidence": 0.99,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
-      "entity_id": null,
-      "entity_type_name": "人名"
+      "entity_type_name": "地名"
      }
     ],
     "entity_mappings": [
      {
-      "text": "美国太平洋地震工程研究中心",
+      "text": "University of Illinois",
       "type": "ORGANIZATION",
-      "start": 13,
-      "end": 26,
       "confidence": 0.95,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
+      "start": 16,
+      "end": 38,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法进行结构健康监测。",
       "entity_id": null,
       "entity_type_name": "机构名称"
      },
      {
-      "text": "刘亭亭",
-      "type": "PERSON",
+      "text": "福州大学土木工程学院",
+      "type": "ORGANIZATION",
+      "confidence": 0.95,
       "start": 0,
-      "end": 3,
-      "confidence": 0.99,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
+      "end": 10,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法（deep learning approach）进行结构健康监测",
       "entity_id": null,
-      "entity_type_name": "人名"
+      "entity_type_name": "机构名称"
      },
      {
-      "text": "吕大刚",
-      "type": "PERSON",
-      "start": 4,
-      "end": 7,
-      "confidence": 0.99,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
+      "text": "中国",
+      "type": "LOCATION",
+      "confidence": 0.95,
+      "start": 85,
+      "end": 87,
+      "normalized_name": "中国",
+      "mapping_status": "已映射",
+      "mapping_confidence": 0.95,
+      "mapping_source": "variant_lexicon",
+      "canonical_en": "China",
+      "standard_names": {
+       "en": "China",
+       "zh": "中国"
+      },
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
-      "entity_type_name": "人名"
-     },
-     {
-      "text": "李鸿晶",
-      "type": "PERSON",
-      "start": 8,
-      "end": 11,
-      "confidence": 0.99,
-      "context": "刘亭亭、吕大刚和李鸿晶使用美国太平洋地震工程研究中心PEER数据库开展地震动记录研究",
-      "entity_id": null,
-      "entity_type_name": "人名"
+      "entity_type_name": "地名"
      }
     ],
     "summary": {
-     "entity_count": 4,
+     "entity_count": 3,
      "by_type": {
-      "ORGANIZATION": 1,
-      "PERSON": 3
+      "ORGANIZATION": 2,
+      "LOCATION": 1
      }
     }
    },
    "meta": {
-    "request_id": "req_416cb706b6ce4710b86c572cd39b6668",
+    "request_id": "req_db5a4e80e0bb4510a9a805ff954dbf23",
     "schema_version": "1.0",
     "model_version": "semantic-toolkit-2026.08",
     "taxonomy_version": null,
     "ontology_version": null,
-    "elapsed_ms": 11919,
-    "created_at": "2026-09-05T04:30:03.946880+00:00",
+    "elapsed_ms": 4526,
+    "created_at": "2026-09-11T20:42:06.539544+08:00",
     "database_dialect": "mysql",
-    "task_id": "tsk_8bd50965d5544fc69914fcf872cfad02",
+    "task_id": "tsk_deee8363ef084776afaa95eaa267932d",
     "input_type": "text",
     "total": 1,
     "success_count": 1,
     "failed_count": 0,
-    "record_id": "rec_67d073c2f0e742e2a1361e82052d32ad",
+    "record_id": "rec_2ac227c5d3c440e3acd166554cae3aed",
     "file_name": null
    }
   },
@@ -3886,328 +3882,348 @@
     },
     "entities": [
      {
-      "text": "地震动记录自适应选取",
-      "type": "TOPIC",
-      "start": 44,
-      "end": 54,
-      "confidence": 0.9,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
+      "text": "deep learning approach",
+      "type": "METHOD",
+      "confidence": 0.95,
       "standard_names": {
-       "zh": "地震动记录自适应选取",
-       "en": "adaptive selection of ground motion records"
+       "zh": "深度学习方法",
+       "en": "deep learning approach"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.95,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 50,
+      "end": 72,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法（deep learning approach）进行结构健康监测。",
+      "entity_id": null,
+      "entity_type_name": "科研方法"
+     },
+     {
+      "text": "结构健康监测",
+      "type": "TOPIC",
+      "confidence": 0.95,
+      "standard_names": {
+       "zh": "结构健康监测",
+       "en": "structural health monitoring"
+      },
+      "mapping_status": "已映射",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 75,
+      "end": 81,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法（deep learning approach）进行结构健康监测。",
       "entity_id": null,
       "entity_type_name": "研究问题"
      },
      {
-      "text": "PEER数据库",
-      "type": "DATASET",
-      "start": 4,
-      "end": 11,
+      "text": "加速度传感器",
+      "type": "INSTRUMENT",
       "confidence": 0.95,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
       "standard_names": {
-       "zh": "PEER强震数据库",
-       "en": "PEER Strong Motion Database"
+       "zh": "加速度传感器",
+       "en": "acceleration sensor"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.95,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 94,
+      "end": 100,
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
-      "entity_type_name": "数据资料"
+      "entity_type_name": "仪器设备"
      },
      {
-      "text": "主成分分析",
+      "text": "卷积神经网络",
       "type": "METHOD",
-      "start": 30,
-      "end": 35,
       "confidence": 0.95,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
       "standard_names": {
-       "zh": "主成分分析",
-       "en": "Principal Component Analysis"
+       "zh": "卷积神经网络",
+       "en": "convolutional neural network"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 101,
+      "end": 107,
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
       "entity_type_name": "科研方法"
      },
      {
-      "text": "模糊聚类",
-      "type": "METHOD",
-      "start": 25,
-      "end": 29,
-      "confidence": 0.95,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异。",
-      "standard_names": {
-       "zh": "模糊聚类",
-       "en": "Fuzzy Clustering"
-      },
-      "mapping_status": "已映射",
-      "mapping_confidence": 0.95,
-      "entity_id": null,
-      "entity_type_name": "科研方法"
-     },
-     {
-      "text": "频谱差异",
+      "text": "桥梁损伤",
       "type": "TOPIC",
-      "start": 65,
-      "end": 69,
-      "confidence": 0.85,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
+      "confidence": 0.95,
       "standard_names": {
-       "zh": "频谱差异",
-       "en": "spectral difference"
+       "zh": "桥梁损伤",
+       "en": "bridge damage"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.85,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 114,
+      "end": 118,
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
       "entity_type_name": "研究问题"
      }
     ],
     "entity_results": [
      {
-      "text": "地震动记录自适应选取",
-      "type": "TOPIC",
-      "start": 44,
-      "end": 54,
-      "confidence": 0.9,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
+      "text": "deep learning approach",
+      "type": "METHOD",
+      "confidence": 0.95,
       "standard_names": {
-       "zh": "地震动记录自适应选取",
-       "en": "adaptive selection of ground motion records"
+       "zh": "深度学习方法",
+       "en": "deep learning approach"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.95,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 50,
+      "end": 72,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法（deep learning approach）进行结构健康监测。",
+      "entity_id": null,
+      "entity_type_name": "科研方法"
+     },
+     {
+      "text": "结构健康监测",
+      "type": "TOPIC",
+      "confidence": 0.95,
+      "standard_names": {
+       "zh": "结构健康监测",
+       "en": "structural health monitoring"
+      },
+      "mapping_status": "已映射",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 75,
+      "end": 81,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法（deep learning approach）进行结构健康监测。",
       "entity_id": null,
       "entity_type_name": "研究问题"
      },
      {
-      "text": "PEER数据库",
-      "type": "DATASET",
-      "start": 4,
-      "end": 11,
+      "text": "加速度传感器",
+      "type": "INSTRUMENT",
       "confidence": 0.95,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
       "standard_names": {
-       "zh": "PEER强震数据库",
-       "en": "PEER Strong Motion Database"
+       "zh": "加速度传感器",
+       "en": "acceleration sensor"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.95,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 94,
+      "end": 100,
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
-      "entity_type_name": "数据资料"
+      "entity_type_name": "仪器设备"
      },
      {
-      "text": "主成分分析",
+      "text": "卷积神经网络",
       "type": "METHOD",
-      "start": 30,
-      "end": 35,
       "confidence": 0.95,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
       "standard_names": {
-       "zh": "主成分分析",
-       "en": "Principal Component Analysis"
+       "zh": "卷积神经网络",
+       "en": "convolutional neural network"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 101,
+      "end": 107,
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
       "entity_type_name": "科研方法"
      },
      {
-      "text": "模糊聚类",
-      "type": "METHOD",
-      "start": 25,
-      "end": 29,
-      "confidence": 0.95,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异。",
-      "standard_names": {
-       "zh": "模糊聚类",
-       "en": "Fuzzy Clustering"
-      },
-      "mapping_status": "已映射",
-      "mapping_confidence": 0.95,
-      "entity_id": null,
-      "entity_type_name": "科研方法"
-     },
-     {
-      "text": "频谱差异",
+      "text": "桥梁损伤",
       "type": "TOPIC",
-      "start": 65,
-      "end": 69,
-      "confidence": 0.85,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
+      "confidence": 0.95,
       "standard_names": {
-       "zh": "频谱差异",
-       "en": "spectral difference"
+       "zh": "桥梁损伤",
+       "en": "bridge damage"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.85,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 114,
+      "end": 118,
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
       "entity_type_name": "研究问题"
      }
     ],
     "mappings": [
      {
-      "text": "地震动记录自适应选取",
-      "type": "TOPIC",
-      "start": 44,
-      "end": 54,
-      "confidence": 0.9,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
+      "text": "deep learning approach",
+      "type": "METHOD",
+      "confidence": 0.95,
       "standard_names": {
-       "zh": "地震动记录自适应选取",
-       "en": "adaptive selection of ground motion records"
+       "zh": "深度学习方法",
+       "en": "deep learning approach"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.95,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 50,
+      "end": 72,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法（deep learning approach）进行结构健康监测。",
+      "entity_id": null,
+      "entity_type_name": "科研方法"
+     },
+     {
+      "text": "结构健康监测",
+      "type": "TOPIC",
+      "confidence": 0.95,
+      "standard_names": {
+       "zh": "结构健康监测",
+       "en": "structural health monitoring"
+      },
+      "mapping_status": "已映射",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 75,
+      "end": 81,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法（deep learning approach）进行结构健康监测。",
       "entity_id": null,
       "entity_type_name": "研究问题"
      },
      {
-      "text": "PEER数据库",
-      "type": "DATASET",
-      "start": 4,
-      "end": 11,
+      "text": "加速度传感器",
+      "type": "INSTRUMENT",
       "confidence": 0.95,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
       "standard_names": {
-       "zh": "PEER强震数据库",
-       "en": "PEER Strong Motion Database"
+       "zh": "加速度传感器",
+       "en": "acceleration sensor"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.95,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 94,
+      "end": 100,
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
-      "entity_type_name": "数据资料"
+      "entity_type_name": "仪器设备"
      },
      {
-      "text": "主成分分析",
+      "text": "卷积神经网络",
       "type": "METHOD",
-      "start": 30,
-      "end": 35,
       "confidence": 0.95,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
       "standard_names": {
-       "zh": "主成分分析",
-       "en": "Principal Component Analysis"
+       "zh": "卷积神经网络",
+       "en": "convolutional neural network"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 101,
+      "end": 107,
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
       "entity_type_name": "科研方法"
      },
      {
-      "text": "模糊聚类",
-      "type": "METHOD",
-      "start": 25,
-      "end": 29,
-      "confidence": 0.95,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异。",
-      "standard_names": {
-       "zh": "模糊聚类",
-       "en": "Fuzzy Clustering"
-      },
-      "mapping_status": "已映射",
-      "mapping_confidence": 0.95,
-      "entity_id": null,
-      "entity_type_name": "科研方法"
-     },
-     {
-      "text": "频谱差异",
+      "text": "桥梁损伤",
       "type": "TOPIC",
-      "start": 65,
-      "end": 69,
-      "confidence": 0.85,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
+      "confidence": 0.95,
       "standard_names": {
-       "zh": "频谱差异",
-       "en": "spectral difference"
+       "zh": "桥梁损伤",
+       "en": "bridge damage"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.85,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 114,
+      "end": 118,
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
       "entity_type_name": "研究问题"
      }
     ],
     "standard_term_mappings": [
      {
-      "text": "地震动记录自适应选取",
-      "type": "TOPIC",
-      "start": 44,
-      "end": 54,
-      "confidence": 0.9,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
+      "text": "deep learning approach",
+      "type": "METHOD",
+      "confidence": 0.95,
       "standard_names": {
-       "zh": "地震动记录自适应选取",
-       "en": "adaptive selection of ground motion records"
+       "zh": "深度学习方法",
+       "en": "deep learning approach"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.95,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 50,
+      "end": 72,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法（deep learning approach）进行结构健康监测。",
+      "entity_id": null,
+      "entity_type_name": "科研方法"
+     },
+     {
+      "text": "结构健康监测",
+      "type": "TOPIC",
+      "confidence": 0.95,
+      "standard_names": {
+       "zh": "结构健康监测",
+       "en": "structural health monitoring"
+      },
+      "mapping_status": "已映射",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 75,
+      "end": 81,
+      "context": "福州大学土木工程学院的研究团队与University of Illinois合作，采用深度学习方法（deep learning approach）进行结构健康监测。",
       "entity_id": null,
       "entity_type_name": "研究问题"
      },
      {
-      "text": "PEER数据库",
-      "type": "DATASET",
-      "start": 4,
-      "end": 11,
+      "text": "加速度传感器",
+      "type": "INSTRUMENT",
       "confidence": 0.95,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
       "standard_names": {
-       "zh": "PEER强震数据库",
-       "en": "PEER Strong Motion Database"
+       "zh": "加速度传感器",
+       "en": "acceleration sensor"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.95,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 94,
+      "end": 100,
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
-      "entity_type_name": "数据资料"
+      "entity_type_name": "仪器设备"
      },
      {
-      "text": "主成分分析",
+      "text": "卷积神经网络",
       "type": "METHOD",
-      "start": 30,
-      "end": 35,
       "confidence": 0.95,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
       "standard_names": {
-       "zh": "主成分分析",
-       "en": "Principal Component Analysis"
+       "zh": "卷积神经网络",
+       "en": "convolutional neural network"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 101,
+      "end": 107,
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
       "entity_type_name": "科研方法"
      },
      {
-      "text": "模糊聚类",
-      "type": "METHOD",
-      "start": 25,
-      "end": 29,
-      "confidence": 0.95,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异。",
-      "standard_names": {
-       "zh": "模糊聚类",
-       "en": "Fuzzy Clustering"
-      },
-      "mapping_status": "已映射",
-      "mapping_confidence": 0.95,
-      "entity_id": null,
-      "entity_type_name": "科研方法"
-     },
-     {
-      "text": "频谱差异",
+      "text": "桥梁损伤",
       "type": "TOPIC",
-      "start": 65,
-      "end": 69,
-      "confidence": 0.85,
-      "context": "研究使用PEER数据库中的水平双向地震动记录，采用模糊聚类和主成分分析开展特征处理，实现地震动记录自适应选取，并评估不同场地类别的频谱差异",
+      "confidence": 0.95,
       "standard_names": {
-       "zh": "频谱差异",
-       "en": "spectral difference"
+       "zh": "桥梁损伤",
+       "en": "bridge damage"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.85,
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 114,
+      "end": 118,
+      "context": "实验在中国福州开展，使用加速度传感器与卷积神经网络（CNN）识别桥梁损伤，准确率达到95",
       "entity_id": null,
       "entity_type_name": "研究问题"
      }
@@ -4215,27 +4231,27 @@
     "summary": {
      "entity_count": 5,
      "by_type": {
+      "METHOD": 2,
       "TOPIC": 2,
-      "DATASET": 1,
-      "METHOD": 2
+      "INSTRUMENT": 1
      }
     }
    },
    "meta": {
-    "request_id": "req_d26df800126044ada96b4367790d6966",
+    "request_id": "req_a7ae8619b7ba407b9890684de5fd30ea",
     "schema_version": "1.0",
     "model_version": "semantic-toolkit-2026.08",
     "taxonomy_version": null,
     "ontology_version": null,
-    "elapsed_ms": 6472,
-    "created_at": "2026-09-05T04:30:10.447966+00:00",
+    "elapsed_ms": 9401,
+    "created_at": "2026-09-11T20:42:15.953169+08:00",
     "database_dialect": "mysql",
-    "task_id": "tsk_4d6efba765534d62925700ca083fc468",
+    "task_id": "tsk_31d0bc0a6b9d4534b7c3a53e284d6d77",
     "input_type": "text",
     "total": 1,
     "success_count": 1,
     "failed_count": 0,
-    "record_id": "rec_1e14d34eddd046b7a577639886196ffb",
+    "record_id": "rec_bb2ba6a3c34c4e4680e3c6e4a238d4f7",
     "file_name": null
    }
   },
@@ -5322,475 +5338,327 @@
     },
     "entities": [
      {
-      "text": "经皮冠状动脉介入治疗",
-      "type": "TREATMENT",
-      "domain": "医学",
-      "start": 70,
-      "end": 80,
-      "confidence": 0.96,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗。",
-      "standard_names": {
-       "zh": "经皮冠状动脉介入治疗",
-       "en": "Percutaneous Coronary Intervention"
-      },
-      "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
-      "entity_id": null,
-      "entity_type_name": "治疗方法"
-     },
-     {
-      "text": "2型糖尿病",
-      "type": "DISEASE",
-      "domain": "医学",
-      "start": 8,
-      "end": 13,
+      "text": "硫化氢",
+      "type": "COMPOUND",
+      "domain": "化工",
       "confidence": 0.98,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
       "standard_names": {
-       "zh": "2型糖尿病",
-       "en": "Type 2 diabetes mellitus"
+       "zh": "硫化氢",
+       "en": "Hydrogen sulfide"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 36,
+      "end": 39,
+      "context": "在石油化工领域，对原油蒸馏装置的腐蚀现象进行监测：采用缓蚀剂注入工艺抑制硫化氢腐蚀，并通过超声波检测评估管道壁厚减薄情况",
       "entity_id": null,
-      "entity_type_name": "疾病"
+      "entity_type_name": "化合物"
      },
      {
-      "text": "代谢综合征",
-      "type": "DISEASE",
-      "domain": "医学",
-      "start": 45,
-      "end": 50,
-      "confidence": 0.97,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+      "text": "缓蚀剂",
+      "type": "MATERIAL",
+      "domain": "化工",
+      "confidence": 0.9,
       "standard_names": {
-       "zh": "代谢综合征",
-       "en": "Metabolic syndrome"
+       "zh": "缓蚀剂",
+       "en": "Corrosion inhibitor"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 27,
+      "end": 30,
+      "context": "在石油化工领域，对原油蒸馏装置的腐蚀现象进行监测：采用缓蚀剂注入工艺抑制硫化氢腐蚀，并通过超声波检测评估管道壁厚减薄情况",
       "entity_id": null,
-      "entity_type_name": "疾病"
+      "entity_type_name": "材料"
      },
      {
-      "text": "糖尿病肾病",
-      "type": "DISEASE",
-      "domain": "医学",
-      "start": 51,
-      "end": 56,
-      "confidence": 0.97,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+      "text": "催化剂",
+      "type": "MATERIAL",
+      "domain": "化工",
+      "confidence": 0.85,
       "standard_names": {
-       "zh": "糖尿病肾病",
-       "en": "Diabetic Nephropathy"
+       "zh": "催化剂",
+       "en": "Catalyst"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.98,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 61,
+      "end": 64,
+      "context": "催化剂再生过程中需控制再生温度以防止烧结，相关处理方法已在多套炼化装置应用。",
       "entity_id": null,
-      "entity_type_name": "疾病"
+      "entity_type_name": "材料"
      },
      {
-      "text": "二甲双胍",
-      "type": "DRUG",
-      "domain": "医学",
-      "start": 20,
-      "end": 24,
-      "confidence": 0.98,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
-      "standard_names": {
-       "zh": "二甲双胍",
-       "en": "Metformin"
-      },
-      "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
-      "entity_id": null,
-      "entity_type_name": "药物"
-     },
-     {
-      "text": "胰岛素",
-      "type": "DRUG",
-      "domain": "医学",
-      "start": 26,
-      "end": 29,
+      "text": "原油",
+      "type": "MATERIAL",
+      "domain": "化工",
       "confidence": 0.95,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
       "standard_names": {
-       "zh": "胰岛素",
-       "en": "Insulin"
+       "zh": "原油",
+       "en": "Crude oil"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 9,
+      "end": 11,
+      "context": "在石油化工领域，对原油蒸馏装置的腐蚀现象进行监测：采用缓蚀剂注入工艺抑制硫化氢腐蚀，并通过超声波检测评估管道壁厚减薄情况",
       "entity_id": null,
-      "entity_type_name": "药物"
+      "entity_type_name": "材料"
      }
     ],
     "entity_results": [
      {
-      "text": "经皮冠状动脉介入治疗",
-      "type": "TREATMENT",
-      "domain": "医学",
-      "start": 70,
-      "end": 80,
-      "confidence": 0.96,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗。",
-      "standard_names": {
-       "zh": "经皮冠状动脉介入治疗",
-       "en": "Percutaneous Coronary Intervention"
-      },
-      "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
-      "entity_id": null,
-      "entity_type_name": "治疗方法"
-     },
-     {
-      "text": "2型糖尿病",
-      "type": "DISEASE",
-      "domain": "医学",
-      "start": 8,
-      "end": 13,
+      "text": "硫化氢",
+      "type": "COMPOUND",
+      "domain": "化工",
       "confidence": 0.98,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
       "standard_names": {
-       "zh": "2型糖尿病",
-       "en": "Type 2 diabetes mellitus"
+       "zh": "硫化氢",
+       "en": "Hydrogen sulfide"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 36,
+      "end": 39,
+      "context": "在石油化工领域，对原油蒸馏装置的腐蚀现象进行监测：采用缓蚀剂注入工艺抑制硫化氢腐蚀，并通过超声波检测评估管道壁厚减薄情况",
       "entity_id": null,
-      "entity_type_name": "疾病"
+      "entity_type_name": "化合物"
      },
      {
-      "text": "代谢综合征",
-      "type": "DISEASE",
-      "domain": "医学",
-      "start": 45,
-      "end": 50,
-      "confidence": 0.97,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+      "text": "缓蚀剂",
+      "type": "MATERIAL",
+      "domain": "化工",
+      "confidence": 0.9,
       "standard_names": {
-       "zh": "代谢综合征",
-       "en": "Metabolic syndrome"
+       "zh": "缓蚀剂",
+       "en": "Corrosion inhibitor"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 27,
+      "end": 30,
+      "context": "在石油化工领域，对原油蒸馏装置的腐蚀现象进行监测：采用缓蚀剂注入工艺抑制硫化氢腐蚀，并通过超声波检测评估管道壁厚减薄情况",
       "entity_id": null,
-      "entity_type_name": "疾病"
+      "entity_type_name": "材料"
      },
      {
-      "text": "糖尿病肾病",
-      "type": "DISEASE",
-      "domain": "医学",
-      "start": 51,
-      "end": 56,
-      "confidence": 0.97,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+      "text": "催化剂",
+      "type": "MATERIAL",
+      "domain": "化工",
+      "confidence": 0.85,
       "standard_names": {
-       "zh": "糖尿病肾病",
-       "en": "Diabetic Nephropathy"
+       "zh": "催化剂",
+       "en": "Catalyst"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.98,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 61,
+      "end": 64,
+      "context": "催化剂再生过程中需控制再生温度以防止烧结，相关处理方法已在多套炼化装置应用。",
       "entity_id": null,
-      "entity_type_name": "疾病"
+      "entity_type_name": "材料"
      },
      {
-      "text": "二甲双胍",
-      "type": "DRUG",
-      "domain": "医学",
-      "start": 20,
-      "end": 24,
-      "confidence": 0.98,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
-      "standard_names": {
-       "zh": "二甲双胍",
-       "en": "Metformin"
-      },
-      "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
-      "entity_id": null,
-      "entity_type_name": "药物"
-     },
-     {
-      "text": "胰岛素",
-      "type": "DRUG",
-      "domain": "医学",
-      "start": 26,
-      "end": 29,
+      "text": "原油",
+      "type": "MATERIAL",
+      "domain": "化工",
       "confidence": 0.95,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
       "standard_names": {
-       "zh": "胰岛素",
-       "en": "Insulin"
+       "zh": "原油",
+       "en": "Crude oil"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 9,
+      "end": 11,
+      "context": "在石油化工领域，对原油蒸馏装置的腐蚀现象进行监测：采用缓蚀剂注入工艺抑制硫化氢腐蚀，并通过超声波检测评估管道壁厚减薄情况",
       "entity_id": null,
-      "entity_type_name": "药物"
+      "entity_type_name": "材料"
      }
     ],
     "mappings": [
      {
-      "text": "经皮冠状动脉介入治疗",
-      "type": "TREATMENT",
-      "domain": "医学",
-      "start": 70,
-      "end": 80,
-      "confidence": 0.96,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗。",
-      "standard_names": {
-       "zh": "经皮冠状动脉介入治疗",
-       "en": "Percutaneous Coronary Intervention"
-      },
-      "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
-      "entity_id": null,
-      "entity_type_name": "治疗方法"
-     },
-     {
-      "text": "2型糖尿病",
-      "type": "DISEASE",
-      "domain": "医学",
-      "start": 8,
-      "end": 13,
+      "text": "硫化氢",
+      "type": "COMPOUND",
+      "domain": "化工",
       "confidence": 0.98,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
       "standard_names": {
-       "zh": "2型糖尿病",
-       "en": "Type 2 diabetes mellitus"
+       "zh": "硫化氢",
+       "en": "Hydrogen sulfide"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 36,
+      "end": 39,
+      "context": "在石油化工领域，对原油蒸馏装置的腐蚀现象进行监测：采用缓蚀剂注入工艺抑制硫化氢腐蚀，并通过超声波检测评估管道壁厚减薄情况",
       "entity_id": null,
-      "entity_type_name": "疾病"
+      "entity_type_name": "化合物"
      },
      {
-      "text": "代谢综合征",
-      "type": "DISEASE",
-      "domain": "医学",
-      "start": 45,
-      "end": 50,
-      "confidence": 0.97,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+      "text": "缓蚀剂",
+      "type": "MATERIAL",
+      "domain": "化工",
+      "confidence": 0.9,
       "standard_names": {
-       "zh": "代谢综合征",
-       "en": "Metabolic syndrome"
+       "zh": "缓蚀剂",
+       "en": "Corrosion inhibitor"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 27,
+      "end": 30,
+      "context": "在石油化工领域，对原油蒸馏装置的腐蚀现象进行监测：采用缓蚀剂注入工艺抑制硫化氢腐蚀，并通过超声波检测评估管道壁厚减薄情况",
       "entity_id": null,
-      "entity_type_name": "疾病"
+      "entity_type_name": "材料"
      },
      {
-      "text": "糖尿病肾病",
-      "type": "DISEASE",
-      "domain": "医学",
-      "start": 51,
-      "end": 56,
-      "confidence": 0.97,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+      "text": "催化剂",
+      "type": "MATERIAL",
+      "domain": "化工",
+      "confidence": 0.85,
       "standard_names": {
-       "zh": "糖尿病肾病",
-       "en": "Diabetic Nephropathy"
+       "zh": "催化剂",
+       "en": "Catalyst"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.98,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 61,
+      "end": 64,
+      "context": "催化剂再生过程中需控制再生温度以防止烧结，相关处理方法已在多套炼化装置应用。",
       "entity_id": null,
-      "entity_type_name": "疾病"
+      "entity_type_name": "材料"
      },
      {
-      "text": "二甲双胍",
-      "type": "DRUG",
-      "domain": "医学",
-      "start": 20,
-      "end": 24,
-      "confidence": 0.98,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
-      "standard_names": {
-       "zh": "二甲双胍",
-       "en": "Metformin"
-      },
-      "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
-      "entity_id": null,
-      "entity_type_name": "药物"
-     },
-     {
-      "text": "胰岛素",
-      "type": "DRUG",
-      "domain": "医学",
-      "start": 26,
-      "end": 29,
+      "text": "原油",
+      "type": "MATERIAL",
+      "domain": "化工",
       "confidence": 0.95,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
       "standard_names": {
-       "zh": "胰岛素",
-       "en": "Insulin"
+       "zh": "原油",
+       "en": "Crude oil"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 9,
+      "end": 11,
+      "context": "在石油化工领域，对原油蒸馏装置的腐蚀现象进行监测：采用缓蚀剂注入工艺抑制硫化氢腐蚀，并通过超声波检测评估管道壁厚减薄情况",
       "entity_id": null,
-      "entity_type_name": "药物"
+      "entity_type_name": "材料"
      }
     ],
     "ontology_mappings": [
      {
-      "text": "经皮冠状动脉介入治疗",
-      "type": "TREATMENT",
-      "domain": "医学",
-      "start": 70,
-      "end": 80,
-      "confidence": 0.96,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗。",
-      "standard_names": {
-       "zh": "经皮冠状动脉介入治疗",
-       "en": "Percutaneous Coronary Intervention"
-      },
-      "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
-      "entity_id": null,
-      "entity_type_name": "治疗方法"
-     },
-     {
-      "text": "2型糖尿病",
-      "type": "DISEASE",
-      "domain": "医学",
-      "start": 8,
-      "end": 13,
+      "text": "硫化氢",
+      "type": "COMPOUND",
+      "domain": "化工",
       "confidence": 0.98,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
       "standard_names": {
-       "zh": "2型糖尿病",
-       "en": "Type 2 diabetes mellitus"
+       "zh": "硫化氢",
+       "en": "Hydrogen sulfide"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 36,
+      "end": 39,
+      "context": "在石油化工领域，对原油蒸馏装置的腐蚀现象进行监测：采用缓蚀剂注入工艺抑制硫化氢腐蚀，并通过超声波检测评估管道壁厚减薄情况",
       "entity_id": null,
-      "entity_type_name": "疾病"
+      "entity_type_name": "化合物"
      },
      {
-      "text": "代谢综合征",
-      "type": "DISEASE",
-      "domain": "医学",
-      "start": 45,
-      "end": 50,
-      "confidence": 0.97,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+      "text": "缓蚀剂",
+      "type": "MATERIAL",
+      "domain": "化工",
+      "confidence": 0.9,
       "standard_names": {
-       "zh": "代谢综合征",
-       "en": "Metabolic syndrome"
+       "zh": "缓蚀剂",
+       "en": "Corrosion inhibitor"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 27,
+      "end": 30,
+      "context": "在石油化工领域，对原油蒸馏装置的腐蚀现象进行监测：采用缓蚀剂注入工艺抑制硫化氢腐蚀，并通过超声波检测评估管道壁厚减薄情况",
       "entity_id": null,
-      "entity_type_name": "疾病"
+      "entity_type_name": "材料"
      },
      {
-      "text": "糖尿病肾病",
-      "type": "DISEASE",
-      "domain": "医学",
-      "start": 51,
-      "end": 56,
-      "confidence": 0.97,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
+      "text": "催化剂",
+      "type": "MATERIAL",
+      "domain": "化工",
+      "confidence": 0.85,
       "standard_names": {
-       "zh": "糖尿病肾病",
-       "en": "Diabetic Nephropathy"
+       "zh": "催化剂",
+       "en": "Catalyst"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 0.98,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 61,
+      "end": 64,
+      "context": "催化剂再生过程中需控制再生温度以防止烧结，相关处理方法已在多套炼化装置应用。",
       "entity_id": null,
-      "entity_type_name": "疾病"
+      "entity_type_name": "材料"
      },
      {
-      "text": "二甲双胍",
-      "type": "DRUG",
-      "domain": "医学",
-      "start": 20,
-      "end": 24,
-      "confidence": 0.98,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
-      "standard_names": {
-       "zh": "二甲双胍",
-       "en": "Metformin"
-      },
-      "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
-      "entity_id": null,
-      "entity_type_name": "药物"
-     },
-     {
-      "text": "胰岛素",
-      "type": "DRUG",
-      "domain": "医学",
-      "start": 26,
-      "end": 29,
+      "text": "原油",
+      "type": "MATERIAL",
+      "domain": "化工",
       "confidence": 0.95,
-      "context": "研究纳入120例2型糖尿病患者，随机分为二甲双胍组和胰岛素组，观察糖化血红蛋白变化，并评估代谢综合征、糖尿病肾病等并发症发生率，部分患者联合经皮冠状动脉介入治疗",
       "standard_names": {
-       "zh": "胰岛素",
-       "en": "Insulin"
+       "zh": "原油",
+       "en": "Crude oil"
       },
       "mapping_status": "已映射",
-      "mapping_confidence": 1,
-      "standard_kb_id": "内置知识库",
+      "mapping_confidence": 0.75,
+      "mapping_source": "llm_inline",
+      "start": 9,
+      "end": 11,
+      "context": "在石油化工领域，对原油蒸馏装置的腐蚀现象进行监测：采用缓蚀剂注入工艺抑制硫化氢腐蚀，并通过超声波检测评估管道壁厚减薄情况",
       "entity_id": null,
-      "entity_type_name": "药物"
+      "entity_type_name": "材料"
      }
     ],
     "summary": {
-     "entity_count": 6,
+     "entity_count": 4,
      "by_type": {
-      "TREATMENT": 1,
-      "DISEASE": 3,
-      "DRUG": 2
+      "COMPOUND": 1,
+      "MATERIAL": 3
      }
     },
     "selected_domain": {
-     "code": "医学",
-     "name": "医学",
-     "entity_domain_distribution": {
-      "医学": 6
-     }
+     "code": "石油化工",
+     "name": "石油化工"
     }
    },
    "meta": {
-    "request_id": "req_defe2f1f6ec34e70b99fdf8eeb940666",
+    "request_id": "req_68316a093a4641d6b9915865f86749a7",
     "schema_version": "1.0",
     "model_version": "semantic-toolkit-2026.08",
     "taxonomy_version": null,
     "ontology_version": null,
-    "elapsed_ms": 11657,
-    "created_at": "2026-09-05T04:30:22.114848+00:00",
+    "elapsed_ms": 6272,
+    "created_at": "2026-09-11T20:43:20.553508+08:00",
     "database_dialect": "mysql",
-    "task_id": "tsk_4e6ea53889db45f4bef89fdc6d296fe5",
+    "task_id": "tsk_f265cc75bff642288426c4e081843894",
     "input_type": "text",
     "total": 1,
     "success_count": 1,
     "failed_count": 0,
-    "record_id": "rec_349c0b7e427d4e70b7434da96c59da05",
+    "record_id": "rec_6be2a7cc885d4d30ae932203b8e1bdee",
     "file_name": null
    }
   },
@@ -7736,55 +7604,302 @@
    "code": 0,
    "message": "success",
    "data": {
+    "documents": [
+     {
+      "document_id": "DOC001",
+      "title": "1.pdf",
+      "publication_year": 2026,
+      "published_at": "2026-09-03",
+      "content_summary": "本文提出了GENRE，一种通过自回归生成实体唯一名称来进行实体检索的系统。传统实体检索方法将实体视为原子标签并使用密集向量进行分类，存在无法捕捉上下文与实体间细粒度交互、存储密集表…",
+      "input_representation": {
+       "mode": "move_aligned",
+       "selected_axis": "application"
+      },
+      "technical": {},
+      "application": {
+       "index": 0,
+       "topic_id": "C03",
+       "topic_name": "Wikipedia entities"
+      }
+     },
+     {
+      "document_id": "DOC002",
+      "title": "2.pdf",
+      "publication_year": 2024,
+      "published_at": "2024-06-11",
+      "content_summary": "本文提出了Self-Harmony框架，旨在解决测试时强化学习（TTRL）中学习信号不可靠的问题。传统TTRL方法常采用多数投票生成伪标签，但当模型存在系统性推理缺陷时，易陷入错误…",
+      "input_representation": {
+       "mode": "move_aligned",
+       "selected_axis": "application"
+      },
+      "technical": {},
+      "application": {
+       "index": 1,
+       "topic_id": "C01",
+       "topic_name": "TTRL"
+      }
+     },
+     {
+      "document_id": "DOC003",
+      "title": "3.pdf",
+      "publication_year": 2025,
+      "published_at": "2025-12-11",
+      "content_summary": "本文提出了TTSR（Test-Time Self-Reflection），一种用于持续推理改进的自反思测试时自演化训练框架。测试时训练（TTT）面临测试问题难度高导致自生成伪标签不…",
+      "input_representation": {
+       "mode": "move_aligned",
+       "selected_axis": "application"
+      },
+      "technical": {},
+      "application": {
+       "index": 2,
+       "topic_id": "C01",
+       "topic_name": "TTRL"
+      }
+     },
+     {
+      "document_id": "DOC004",
+      "title": "4.pdf",
+      "publication_year": 2025,
+      "published_at": "2025-08-11",
+      "content_summary": "该研究针对大语言模型（LLM）智能体在长程任务中受限于有限上下文窗口的瓶颈，提出了一种名为Memex的索引经验记忆机制。现有方法通常通过截断或摘要来缩短上下文，但这些方法本质上会丢…",
+      "input_representation": {
+       "mode": "move_aligned",
+       "selected_axis": "application"
+      },
+      "technical": {},
+      "application": {
+       "index": 3,
+       "topic_id": "C02",
+       "topic_name": "LLM agents"
+      }
+     },
+     {
+      "document_id": "DOC005",
+      "title": "5.pdf",
+      "publication_year": 2024,
+      "published_at": "2024-02-11",
+      "content_summary": "该文介绍了材料基因组计划的核心项目——Materials Project（www.materialsproject.org），旨在通过高通量计算揭示所有已知无机材料的性质，以加速先…",
+      "input_representation": {
+       "mode": "move_aligned",
+       "selected_axis": "application"
+      },
+      "technical": {},
+      "application": {
+       "index": 4,
+       "topic_id": "C04",
+       "topic_name": "Advanced materials"
+      }
+     },
+     {
+      "document_id": "DOC006",
+      "title": "6.pdf",
+      "publication_year": 2024,
+      "published_at": "2024-07-11",
+      "content_summary": "该研究针对大语言模型（LLM）在深度研究任务中的局限性，提出了一种新的任务形式化方法和数据合成框架。研究将深度研究任务形式化为分层约束满足问题（HCSPs），这与单约束、多跳或扁平…",
+      "input_representation": {
+       "mode": "move_aligned",
+       "selected_axis": "application"
+      },
+      "technical": {},
+      "application": {
+       "index": 5,
+       "topic_id": "C02",
+       "topic_name": "LLM agents"
+      }
+     },
+     {
+      "document_id": "DOC007",
+      "title": "7.pdf",
+      "publication_year": 2024,
+      "published_at": "2024-12-11",
+      "content_summary": "This paper investigates the limitations of Empirical Risk Minimization (ERM) in learning s…",
+      "input_representation": {
+       "mode": "move_aligned",
+       "selected_axis": "application"
+      },
+      "technical": {},
+      "application": {
+       "index": 6,
+       "topic_id": "C05",
+       "topic_name": "Synthetic content"
+      }
+     },
+     {
+      "document_id": "DOC008",
+      "title": "8.pdf",
+      "publication_year": 2025,
+      "published_at": "2025-07-11",
+      "content_summary": "This paper proposes COINS, an item representation enhancement approach based on fused alig…",
+      "input_representation": {
+       "mode": "move_aligned",
+       "selected_axis": "application"
+      },
+      "technical": {},
+      "application": {
+       "index": 7,
+       "topic_id": "C06",
+       "topic_name": "Cold-start items"
+      }
+     },
+     {
+      "document_id": "DOC009",
+      "title": "9.pdf",
+      "publication_year": 2025,
+      "published_at": "2025-07-11",
+      "content_summary": "This paper investigates whether chain-of-thought (CoT) reasoning traces faithfully represe…",
+      "input_representation": {
+       "mode": "move_aligned",
+       "selected_axis": "application"
+      },
+      "technical": {},
+      "application": {
+       "index": 8,
+       "topic_id": "C07",
+       "topic_name": "CoT"
+      }
+     },
+     {
+      "document_id": "DOC010",
+      "title": "10.pdf",
+      "publication_year": 2026,
+      "published_at": "2026-09-01",
+      "content_summary": "该研究提出了一种名为Divide and Contrast (Di-COT)的无监督时间序列表示学习框架，旨在减少对标注数据的依赖同时保持良好的下游任务性能。与传统方法不同，Di-…",
+      "input_representation": {
+       "mode": "move_aligned",
+       "selected_axis": "application"
+      },
+      "technical": {},
+      "application": {
+       "index": 9,
+       "topic_id": "C08",
+       "topic_name": "Time-series representation"
+      }
+     }
+    ],
     "input_summary": {
-     "document_count": 5,
-     "parsed_sentence_count": 34
+     "document_count": 10,
+     "parsed_sentence_count": 288
     },
-    "cluster_dimension_name": "技术路线聚类",
+    "cluster_dimension_name": "应用场景聚类",
+    "cluster_dimension": "application_scenario",
     "clustering_quality": {
-     "cluster_count": 3,
-     "intra_cluster_similarity": 0.87,
-     "algorithm_used": "llm_review_granularity_grouping"
+     "cluster_count": 8,
+     "intra_cluster_similarity": 0.932,
+     "algorithm_requested": "move_aligned",
+     "algorithm_used": "llm_move_aligned_grouping"
     },
     "clusters": [
      {
       "cluster_id": "C01",
-      "topic_name": "Reasoning model training",
+      "topic_id": "C01",
+      "topic_name": "TTRL",
       "size": 2,
-      "ratio": 0.4,
-      "representative_terms": [
-       "reverse-perplexity curriculum",
-       "SFT",
-       "synthetic data"
+      "doc_indices": [
+       1,
+       2
       ],
-      "feature_statistics": {
-       "intra_cluster_similarity": 0.89,
-       "semantic_density": 1
-      },
-      "representative_documents": [
+      "representative_terms": [
+       "Test-time reinforcement learning",
+       "TTRL",
+       "Test-time Training",
+       "pseudo-label method"
+      ],
+      "members": [
        {
-        "document_id": "DOC003",
-        "title": "11.pdf"
+        "document_id": "DOC002",
+        "title": "2.pdf"
        },
        {
-        "document_id": "DOC004",
-        "title": "12.pdf"
+        "document_id": "DOC003",
+        "title": "3.pdf"
+       }
+      ],
+      "feature_statistics": {
+       "intra_cluster_similarity": 0.947,
+       "inter_cluster_separation": 0.294,
+       "semantic_density": 1.0,
+       "semantic_coherence": 0.95
+      },
+      "ratio": 0.2,
+      "representative_documents": [
+       {
+        "document_id": "DOC002",
+        "title": "2.pdf"
+       },
+       {
+        "document_id": "DOC003",
+        "title": "3.pdf"
        }
       ]
      },
      {
       "cluster_id": "C02",
-      "topic_name": "Autoregressive entity retrieval",
-      "size": 1,
-      "ratio": 0.2,
+      "topic_id": "C02",
+      "topic_name": "LLM agents",
+      "size": 2,
+      "doc_indices": [
+       3,
+       5
+      ],
       "representative_terms": [
-       "GENRE",
-       "autoregressive formulation"
+       "Large language model",
+       "LLM agents",
+       "Deep Research",
+       "finite context windows"
+      ],
+      "members": [
+       {
+        "document_id": "DOC004",
+        "title": "4.pdf"
+       },
+       {
+        "document_id": "DOC006",
+        "title": "6.pdf"
+       }
       ],
       "feature_statistics": {
-       "intra_cluster_similarity": 1,
-       "semantic_density": 1
+       "intra_cluster_similarity": 0.918,
+       "inter_cluster_separation": 0.245,
+       "semantic_density": 1.0,
+       "semantic_coherence": 0.95
       },
+      "ratio": 0.2,
+      "representative_documents": [
+       {
+        "document_id": "DOC004",
+        "title": "4.pdf"
+       },
+       {
+        "document_id": "DOC006",
+        "title": "6.pdf"
+       }
+      ]
+     },
+     {
+      "cluster_id": "C03",
+      "topic_id": "C03",
+      "topic_name": "Wikipedia entities",
+      "size": 1,
+      "doc_indices": [
+       0
+      ],
+      "representative_terms": [
+       "Wikipedia",
+       "entities"
+      ],
+      "members": [
+       {
+        "document_id": "DOC001",
+        "title": "1.pdf"
+       }
+      ],
+      "feature_statistics": {
+       "intra_cluster_similarity": 1.0,
+       "inter_cluster_separation": 0.326,
+       "semantic_density": 1.0,
+       "semantic_coherence": 1.0
+      },
+      "ratio": 0.1,
       "representative_documents": [
        {
         "document_id": "DOC001",
@@ -7793,126 +7908,349 @@
       ]
      },
      {
-      "cluster_id": "C03",
-      "topic_name": "Unsupervised contrastive learning",
-      "size": 2,
-      "ratio": 0.4,
-      "representative_terms": [
-       "Divide and Contrast",
-       "Di-COT",
-       "unsupervised framework"
+      "cluster_id": "C04",
+      "topic_id": "C04",
+      "topic_name": "Advanced materials",
+      "size": 1,
+      "doc_indices": [
+       4
       ],
-      "feature_statistics": {
-       "intra_cluster_similarity": 0.84,
-       "semantic_density": 0.96
-      },
-      "representative_documents": [
-       {
-        "document_id": "DOC002",
-        "title": "10.pdf"
-       },
+      "representative_terms": [
+       "advanced materials",
+       "DFT"
+      ],
+      "members": [
        {
         "document_id": "DOC005",
-        "title": "15.pdf"
+        "title": "5.pdf"
+       }
+      ],
+      "feature_statistics": {
+       "intra_cluster_similarity": 1.0,
+       "inter_cluster_separation": 0.366,
+       "semantic_density": 1.0,
+       "semantic_coherence": 1.0
+      },
+      "ratio": 0.1,
+      "representative_documents": [
+       {
+        "document_id": "DOC005",
+        "title": "5.pdf"
        }
       ]
-     }
-    ],
-    "semantic_projection": [
-     {
-      "document_id": "DOC001",
-      "title": "1.pdf",
-      "cluster_id": "C02",
-      "x": 0.18,
-      "y": 0.74
      },
      {
-      "document_id": "DOC002",
-      "title": "10.pdf",
-      "cluster_id": "C03",
-      "x": 0.71,
-      "y": 0.22
+      "cluster_id": "C05",
+      "topic_id": "C05",
+      "topic_name": "Synthetic content",
+      "size": 1,
+      "doc_indices": [
+       6
+      ],
+      "representative_terms": [
+       "synthetic content",
+       "LLMs"
+      ],
+      "members": [
+       {
+        "document_id": "DOC007",
+        "title": "7.pdf"
+       }
+      ],
+      "feature_statistics": {
+       "intra_cluster_similarity": 1.0,
+       "inter_cluster_separation": 0.346,
+       "semantic_density": 1.0,
+       "semantic_coherence": 1.0
+      },
+      "ratio": 0.1,
+      "representative_documents": [
+       {
+        "document_id": "DOC007",
+        "title": "7.pdf"
+       }
+      ]
      },
      {
-      "document_id": "DOC003",
-      "title": "11.pdf",
-      "cluster_id": "C01",
-      "x": 0.36,
-      "y": 0.83
+      "cluster_id": "C06",
+      "topic_id": "C06",
+      "topic_name": "Cold-start items",
+      "size": 1,
+      "doc_indices": [
+       7
+      ],
+      "representative_terms": [
+       "collaborative information",
+       "cold-start items"
+      ],
+      "members": [
+       {
+        "document_id": "DOC008",
+        "title": "8.pdf"
+       }
+      ],
+      "feature_statistics": {
+       "intra_cluster_similarity": 1.0,
+       "inter_cluster_separation": 0.338,
+       "semantic_density": 1.0,
+       "semantic_coherence": 1.0
+      },
+      "ratio": 0.1,
+      "representative_documents": [
+       {
+        "document_id": "DOC008",
+        "title": "8.pdf"
+       }
+      ]
      },
      {
-      "document_id": "DOC004",
-      "title": "12.pdf",
-      "cluster_id": "C01",
-      "x": 0.42,
-      "y": 0.79
+      "cluster_id": "C07",
+      "topic_id": "C07",
+      "topic_name": "CoT",
+      "size": 1,
+      "doc_indices": [
+       8
+      ],
+      "representative_terms": [
+       "Chain-of-thought",
+       "CoT"
+      ],
+      "members": [
+       {
+        "document_id": "DOC009",
+        "title": "9.pdf"
+       }
+      ],
+      "feature_statistics": {
+       "intra_cluster_similarity": 1.0,
+       "inter_cluster_separation": 0.338,
+       "semantic_density": 1.0,
+       "semantic_coherence": 1.0
+      },
+      "ratio": 0.1,
+      "representative_documents": [
+       {
+        "document_id": "DOC009",
+        "title": "9.pdf"
+       }
+      ]
      },
      {
-      "document_id": "DOC005",
-      "title": "15.pdf",
-      "cluster_id": "C03",
-      "x": 0.66,
-      "y": 0.18
+      "cluster_id": "C08",
+      "topic_id": "C08",
+      "topic_name": "Time-series representation",
+      "size": 1,
+      "doc_indices": [
+       9
+      ],
+      "representative_terms": [
+       "Self-supervised learning",
+       "time-series representation"
+      ],
+      "members": [
+       {
+        "document_id": "DOC010",
+        "title": "10.pdf"
+       }
+      ],
+      "feature_statistics": {
+       "intra_cluster_similarity": 1.0,
+       "inter_cluster_separation": 0.366,
+       "semantic_density": 1.0,
+       "semantic_coherence": 1.0
+      },
+      "ratio": 0.1,
+      "representative_documents": [
+       {
+        "document_id": "DOC010",
+        "title": "10.pdf"
+       }
+      ]
      }
     ],
     "document_assignments": [
      {
       "document_id": "DOC001",
       "title": "1.pdf",
-      "publication_year": 2024,
-      "cluster_id": "C02",
-      "similarity_to_centroid": 0,
-      "key_evidence": "We formulate entity retrieval as an autoregressive generation problem (GENRE)."
+      "publication_date": "2026-09-03",
+      "publication_year": 2026,
+      "cluster_id": "C03",
+      "similarity_to_centroid": 1.0,
+      "key_evidence": "Entities are at the center of how we represent and aggregate knowledge. For instance, Encyclopedias such as Wikipedia ar…"
      },
      {
       "document_id": "DOC002",
-      "title": "10.pdf",
-      "publication_year": 2025,
-      "cluster_id": "C03",
-      "similarity_to_centroid": 0.91,
-      "key_evidence": "Di-COT divides the corpus and contrasts partitions to learn representations without labels."
+      "title": "2.pdf",
+      "publication_date": "2024-06-11",
+      "publication_year": 2024,
+      "cluster_id": "C01",
+      "similarity_to_centroid": 0.947,
+      "key_evidence": "Test-time reinforcement learning (TTRL) offers a label-free paradigm for adapting models using only synthetic signals at…"
      },
      {
       "document_id": "DOC003",
-      "title": "11.pdf",
+      "title": "3.pdf",
+      "publication_date": "2025-12-11",
       "publication_year": 2025,
       "cluster_id": "C01",
-      "similarity_to_centroid": 0.93,
-      "key_evidence": "We train reasoning models with SFT on reverse-perplexity curated synthetic data."
+      "similarity_to_centroid": 0.947,
+      "key_evidence": "Test-time Training enables model adaptation using only test questions and offers a promising paradigm for improving the …"
      },
      {
       "document_id": "DOC004",
-      "title": "12.pdf",
+      "title": "4.pdf",
+      "publication_date": "2025-08-11",
       "publication_year": 2025,
-      "cluster_id": "C01",
-      "similarity_to_centroid": 0.9,
-      "key_evidence": "A curriculum over synthetic data improves reasoning accuracy of SFT models."
+      "cluster_id": "C02",
+      "similarity_to_centroid": 0.918,
+      "key_evidence": "Large language model (LLM) agents are fundamentally bottlenecked by finite context windows on longhorizon tasks. As traj…"
      },
      {
       "document_id": "DOC005",
-      "title": "15.pdf",
+      "title": "5.pdf",
+      "publication_date": "2024-02-11",
       "publication_year": 2024,
+      "cluster_id": "C04",
+      "similarity_to_centroid": 1.0,
+      "key_evidence": "Accelerating the discovery of advanced materials is essential for human welfare and sustainable, clean energy. Major tec…"
+     },
+     {
+      "document_id": "DOC006",
+      "title": "6.pdf",
+      "publication_date": "2024-07-11",
+      "publication_year": 2024,
+      "cluster_id": "C02",
+      "similarity_to_centroid": 0.918,
+      "key_evidence": "Large language models (LLMs) are increasingly expected to go beyond simple factual queries toward Deep Research—tasks th…"
+     },
+     {
+      "document_id": "DOC007",
+      "title": "7.pdf",
+      "publication_date": "2024-12-11",
+      "publication_year": 2024,
+      "cluster_id": "C05",
+      "similarity_to_centroid": 1.0,
+      "key_evidence": "The prevalence and low cost of LLMs have led to a rise of synthetic content. From review sites to court documents, “natu…"
+     },
+     {
+      "document_id": "DOC008",
+      "title": "8.pdf",
+      "publication_date": "2025-07-11",
+      "publication_year": 2025,
+      "cluster_id": "C06",
+      "similarity_to_centroid": 1.0,
+      "key_evidence": "With the rise of modern search and recommendation platforms, insufficient collaborative information of cold-start items …"
+     },
+     {
+      "document_id": "DOC009",
+      "title": "9.pdf",
+      "publication_date": "2025-07-11",
+      "publication_year": 2025,
+      "cluster_id": "C07",
+      "similarity_to_centroid": 1.0,
+      "key_evidence": "Chain-of-thought (CoT) traces are increasingly used both to improve language-model capability and to audit model behavio…"
+     },
+     {
+      "document_id": "DOC010",
+      "title": "10.pdf",
+      "publication_date": "2026-09-01",
+      "publication_year": 2026,
+      "cluster_id": "C08",
+      "similarity_to_centroid": 1.0,
+      "key_evidence": "Self-supervised learning for time-series representation aims to reduce reliance on labeled data while maintaining strong…"
+     }
+    ],
+    "semantic_projection": [
+     {
+      "document_id": "DOC001",
+      "title": "1.pdf",
       "cluster_id": "C03",
-      "similarity_to_centroid": 0.88,
-      "key_evidence": "The unsupervised contrastive framework learns representations by dividing and contrasting."
+      "x": 63.366,
+      "y": 47.455
+     },
+     {
+      "document_id": "DOC002",
+      "title": "2.pdf",
+      "cluster_id": "C01",
+      "x": 19.5,
+      "y": 49.262
+     },
+     {
+      "document_id": "DOC003",
+      "title": "3.pdf",
+      "cluster_id": "C01",
+      "x": 5.0,
+      "y": 52.47
+     },
+     {
+      "document_id": "DOC004",
+      "title": "4.pdf",
+      "cluster_id": "C02",
+      "x": 64.481,
+      "y": 5.0
+     },
+     {
+      "document_id": "DOC005",
+      "title": "5.pdf",
+      "cluster_id": "C04",
+      "x": 95.0,
+      "y": 41.384
+     },
+     {
+      "document_id": "DOC006",
+      "title": "6.pdf",
+      "cluster_id": "C02",
+      "x": 62.705,
+      "y": 45.225
+     },
+     {
+      "document_id": "DOC007",
+      "title": "7.pdf",
+      "cluster_id": "C05",
+      "x": 34.822,
+      "y": 58.686
+     },
+     {
+      "document_id": "DOC008",
+      "title": "8.pdf",
+      "cluster_id": "C06",
+      "x": 89.777,
+      "y": 75.641
+     },
+     {
+      "document_id": "DOC009",
+      "title": "9.pdf",
+      "cluster_id": "C07",
+      "x": 51.428,
+      "y": 95.0
+     },
+     {
+      "document_id": "DOC010",
+      "title": "10.pdf",
+      "cluster_id": "C08",
+      "x": 67.63,
+      "y": 80.872
      }
     ],
     "theme_trend_analysis": {
      "years": [
       2024,
-      2025
+      2025,
+      2026
      ],
      "series": [
       {
        "cluster_id": "C01",
        "yearly_counts": [
-        0,
-        2
+        1,
+        1,
+        0
        ]
       },
       {
        "cluster_id": "C02",
        "yearly_counts": [
+        1,
         1,
         0
        ]
@@ -7920,16 +8258,64 @@
       {
        "cluster_id": "C03",
        "yearly_counts": [
+        0,
+        0,
+        1
+       ]
+      },
+      {
+       "cluster_id": "C04",
+       "yearly_counts": [
         1,
+        0,
+        0
+       ]
+      },
+      {
+       "cluster_id": "C05",
+       "yearly_counts": [
+        1,
+        0,
+        0
+       ]
+      },
+      {
+       "cluster_id": "C06",
+       "yearly_counts": [
+        0,
+        1,
+        0
+       ]
+      },
+      {
+       "cluster_id": "C07",
+       "yearly_counts": [
+        0,
+        1,
+        0
+       ]
+      },
+      {
+       "cluster_id": "C08",
+       "yearly_counts": [
+        0,
+        0,
         1
        ]
       }
      ],
-     "rising_cluster_id": "C01",
+     "rising_cluster_id": "C06",
      "emerging_cluster_id": "C03",
-     "stable_cluster_id": "C02",
-     "summary": "C01（Reasoning model training）2025 年新增 2 篇，为上升类簇；C03 两年度持续出现，为稳定发展的新兴方向；C02 为 2024 年的稳定工作。"
-    }
+     "stable_cluster_id": "C01",
+     "summary": "2024–2026 年间趋势：上升类簇 C06（近年增长最快，1 篇）；新兴类簇 C03（新出现的主题方向，1 篇）；稳定类簇 C01（各年份持续产出，2 篇）。"
+    },
+    "partition_strategy": "move_aligned",
+    "input_type": "files",
+    "dimension": "application_scenario",
+    "quality_metrics": null,
+    "correction_status": "unreviewed",
+    "algorithm_metadata": null,
+    "cluster_task_id": "tsk_d99072886c5d424681b49ec963854094"
    }
   }
  },
@@ -8100,33 +8486,94 @@
    "code": 0,
    "message": "success",
    "data": {
+    "topic": "Test-time Training",
+    "document_count": 2,
     "tree": [
      {
-      "question_id": "RQ-001",
-      "research_question": "如何提升大模型推理训练数据的质量与课程安排？",
+      "question_id": "RQ-01",
+      "research_question": "TTRL中的错误回音壁与多数投票失效问题",
+      "question_summary": "测试时强化学习（TTRL）中，若模型存在系统性推理缺陷，多数投票机制会放大错误并形成错误“回音壁”，亟需能生成鲁棒奖励信号以逃离该困境的方法。",
+      "document_count": 1,
+      "document_ids": [
+       "FILE002"
+      ],
+      "evidence_ids": [
+       "EV-001-Q01",
+       "EV-001-Q03"
+      ],
       "methods": [
        {
-        "method_id": "M-001-1",
-        "method": "逆困惑度课程数据合成",
+        "method_id": "M-01",
+        "method": "通过Solver与Reframer的协同自博弈，利用调和平均数选择的伪标签进行训练",
+        "source_ids": [
+         "FILE002"
+        ],
+        "evidence_ids": [
+         "EV-001-M01",
+         "EV-001-M03"
+        ],
         "progress": [
          {
-          "progress_id": "M-001-1-P1",
-          "summary": "按逆困惑度对合成数据排序构建课程，训练后推理准确率提升。",
-          "conclusion": "数据课程对推理能力有稳定增益。",
+          "progress_id": "M-01-P1",
+          "summary": "在五个推理基准测试上对1.7B至8B参数的开源模型进行评估，该方法在无标签测试时设置下的30个配置中28个排名第一，且在Math500上准确率始终高于89.5%并对超参数调整不敏感。",
+          "conclusion": "该方法在无需大量超参数调优的情况下，于多样化推理基准上实现了最先进的无标签测试时性能。",
           "source_ids": [
-           "DOC003",
-           "DOC004"
+           "FILE002"
           ],
           "source_evidence": [
            {
-            "document_id": "DOC003",
-            "source_section": "Methods > Data Curriculum",
-            "evidence_excerpt": "We order synthetic samples by reverse perplexity to build the training curriculum."
+            "evidence_id": "M-01-EV01",
+            "document_id": "FILE002",
+            "title": "2.pdf",
+            "source_section": "text",
+            "evidence_excerpt": "This setup guarantees that performance improvements are attributable to methodological effectiveness rather than increased computation. 4.2 Main Results We evaluate Self-Harmony against several baseline reward modeling techniques across five reasoning benchmarks using five base models from the Qwen3 and Llama-3 series",
+            "start": 25933,
+            "end": 26253
            },
            {
-            "document_id": "DOC004",
-            "source_section": "Experiments",
-            "evidence_excerpt": "Curriculum ordering yields consistent accuracy gains over random ordering."
+            "evidence_id": "M-01-EV02",
+            "document_id": "FILE002",
+            "title": "2.pdf",
+            "source_section": "text",
+            "evidence_excerpt": "As shown in the heatmap (Figure 4a), the model’s performance on Math500 remains high and stable across the entire grid, with accuracy scores consistently above 89.5%. This stability is a significant advantage, as it indicates that our method does not require extensive or precise hyperparameter tuning to achieve strong results",
+            "start": 33904,
+            "end": 34232
+           },
+           {
+            "evidence_id": "M-01-EV03",
+            "document_id": "FILE002",
+            "title": "2.pdf",
+            "source_section": "text",
+            "evidence_excerpt": "Across diverse reasoning benchmarks, Self-Harmony achieves state-of-the-art results at the label-free test-time setting, ranking first in 28 of 30 settings across multiple methods",
+            "start": 1409,
+            "end": 1589
+           },
+           {
+            "evidence_id": "M-01-EV04",
+            "document_id": "FILE002",
+            "title": "2.pdf",
+            "source_section": "text",
+            "evidence_excerpt": "We demonstrate the effectiveness of Self-Harmony through extensive experiments on multiple reasoning benchmarks using open-source models ranging from 1.7B to 8B parameters",
+            "start": 4920,
+            "end": 5092
+           }
+          ],
+          "evidence_sentences": [
+           {
+            "document_id": "FILE002",
+            "result": "This setup guarantees that performance improvements are attributable to methodological effectiveness rather than increased computation. 4.2 Main Results We evaluate Self-Harmony against several baseline reward modeling techniques across five reasoning benchmarks using five base models from the Qwen3 and Llama-3 series"
+           },
+           {
+            "document_id": "FILE002",
+            "result": "As shown in the heatmap (Figure 4a), the model’s performance on Math500 remains high and stable across the entire grid, with accuracy scores consistently above 89.5%. This stability is a significant advantage, as it indicates that our method does not require extensive or precise hyperparameter tuning to achieve strong results"
+           },
+           {
+            "document_id": "FILE002",
+            "result": "Across diverse reasoning benchmarks, Self-Harmony achieves state-of-the-art results at the label-free test-time setting, ranking first in 28 of 30 settings across multiple methods"
+           },
+           {
+            "document_id": "FILE002",
+            "result": "We demonstrate the effectiveness of Self-Harmony through extensive experiments on multiple reasoning benchmarks using open-source models ranging from 1.7B to 8B parameters"
            }
           ]
          }
@@ -8135,31 +8582,88 @@
       ]
      },
      {
-      "question_id": "RQ-002",
-      "research_question": "无监督场景下如何学习可迁移的文本表示？",
+      "question_id": "RQ-02",
+      "research_question": "TTSR自反思测试时自演化训练框架",
+      "question_summary": "针对测试时训练中因问题难度高导致伪标签不可靠，且现有方法缺乏适应模型推理弱点机制的问题，提出TTSR自反思测试时自演化训练框架以解决这些挑战。",
+      "document_count": 1,
+      "document_ids": [
+       "FILE003"
+      ],
+      "evidence_ids": [
+       "EV-002-Q01"
+      ],
       "methods": [
        {
-        "method_id": "M-002-1",
-        "method": "分块对比学习（Di-COT）",
+        "method_id": "M-02",
+        "method": "TTSR, a self-reflective test-time self-evolving training framework that uses a single pretrained model alternating",
+        "source_ids": [
+         "FILE003"
+        ],
+        "evidence_ids": [
+         "EV-002-M01"
+        ],
         "progress": [
          {
-          "progress_id": "M-002-1-P1",
-          "summary": "将语料分块后对齐对比，不依赖标注即获得可迁移表示。",
-          "conclusion": "无标注条件下表示质量接近有监督基线。",
+          "progress_id": "M-02-P1",
+          "summary": "在GPQA-Diamond和MMLU-Pro上，TTSR相比最强基线取得3至7分的提升；在Qwen3-4B-Base上平均提升超过10分，且在AIME 2025和Olympiad等高难度任务上提升尤为显著，同时在Qwen3-8B-Base上于所有数学基准均优于R-Zero和TTRL。",
+          "conclusion": "TTSR作为一种通用的测试时自我演化框架，在各模型和设置下均保持一致的提升，消融实验亦证实其各组件对测试时改进均有实质贡献。",
           "source_ids": [
-           "DOC002",
-           "DOC005"
+           "FILE003"
           ],
           "source_evidence": [
            {
-            "document_id": "DOC002",
-            "source_section": "Method",
-            "evidence_excerpt": "Di-COT divides the corpus into partitions and contrasts them to learn representations."
+            "evidence_id": "M-02-EV01",
+            "document_id": "FILE003",
+            "title": "3.pdf",
+            "source_section": "text",
+            "evidence_excerpt": "Across all models, TTSR achieves consistent gains on GPQA-Diamond and MMLU-Pro, with improvements typically ranging from 3 to 7 points over the strongest baseline",
+            "start": 25106,
+            "end": 25269
            },
            {
-            "document_id": "DOC005",
-            "source_section": "Results",
-            "evidence_excerpt": "The unsupervised framework approaches supervised baselines on transfer tasks."
+            "evidence_id": "M-02-EV02",
+            "document_id": "FILE003",
+            "title": "3.pdf",
+            "source_section": "text",
+            "evidence_excerpt": "Across all settings, TTSR maintains consistent gains over baselines, demonstrating its effectiveness as a general test-time self-evolving framework. 5.3 Ablation Study Ablation Study of TTSR Table 2 confirms that each component of TTSR contributes meaningfully to test-time improvements",
+            "start": 26756,
+            "end": 27043
+           },
+           {
+            "evidence_id": "M-02-EV03",
+            "document_id": "FILE003",
+            "title": "3.pdf",
+            "source_section": "text",
+            "evidence_excerpt": "For example, on Qwen3-4B-Base, TTSR improves performance by more than 10 points on average compared to the base model, with especially large gains on high-difficulty tasks such as AIME 2025, and Olympiad",
+            "start": 24457,
+            "end": 24672
+           },
+           {
+            "evidence_id": "M-02-EV04",
+            "document_id": "FILE003",
+            "title": "3.pdf",
+            "source_section": "text",
+            "evidence_excerpt": "Similar trends are observed on Qwen3-8B-Base, where TTSR consistently outperforms both R-Zero and TTRL across all mathematical benchmarks",
+            "start": 24856,
+            "end": 24994
+           }
+          ],
+          "evidence_sentences": [
+           {
+            "document_id": "FILE003",
+            "result": "Across all models, TTSR achieves consistent gains on GPQA-Diamond and MMLU-Pro, with improvements typically ranging from 3 to 7 points over the strongest baseline"
+           },
+           {
+            "document_id": "FILE003",
+            "result": "Across all settings, TTSR maintains consistent gains over baselines, demonstrating its effectiveness as a general test-time self-evolving framework. 5.3 Ablation Study Ablation Study of TTSR Table 2 confirms that each component of TTSR contributes meaningfully to test-time improvements"
+           },
+           {
+            "document_id": "FILE003",
+            "result": "For example, on Qwen3-4B-Base, TTSR improves performance by more than 10 points on average compared to the base model, with especially large gains on high-difficulty tasks such as AIME 2025, and Olympiad"
+           },
+           {
+            "document_id": "FILE003",
+            "result": "Similar trends are observed on Qwen3-8B-Base, where TTSR consistently outperforms both R-Zero and TTRL across all mathematical benchmarks"
            }
           ]
          }
@@ -8173,47 +8677,314 @@
      "clusters": [
       {
        "cluster_id": "PC-001",
-       "label": "推理训练数据课程",
-       "summary": "两条主线工作均围绕合成数据质量与课程安排提升推理能力。",
-       "document_count": 2
+       "label": "TTRL中的错误回音壁与多数投票失效问题",
+       "summary": "测试时强化学习（TTRL）中，若模型存在系统性推理缺陷，多数投票机制会放大错误并形成错误“回音壁”，亟需能生成鲁棒奖励信号以逃离该困境的方法。",
+       "question_count": 2,
+       "document_count": 1,
+       "document_ids": [
+        "FILE002"
+       ],
+       "research_questions": [
+        "如何解决测试时强化学习（TTRL）中多数投票机制容易坍缩到错误答案的问题？",
+        "如何使模型逃离其自身在测试时强化学习（TTRL）中产生的错误“回音壁”？"
+       ],
+       "evidence_ids": [
+        "EV-001-Q01",
+        "EV-001-Q03"
+       ],
+       "cohesion": 0.685434
       },
       {
        "cluster_id": "PC-002",
-       "label": "无监督对比表示",
-       "summary": "以分块对比学习替代标注，实现可迁移文本表示。",
-       "document_count": 2
+       "label": "TTSR自反思测试时自演化训练框架",
+       "summary": "针对测试时训练中因问题难度高导致伪标签不可靠，且现有方法缺乏适应模型推理弱点机制的问题，提出TTSR自反思测试时自演化训练框架以解决这些挑战。",
+       "question_count": 1,
+       "document_count": 1,
+       "document_ids": [
+        "FILE003"
+       ],
+       "research_questions": [
+        "How to address the issues in Test-time Training where self-generated pseudo-labels are unreliable due to high question difficulty and existing methods lack effective mechanisms to adapt to a model's specific reasoning weaknesses?"
+       ],
+       "evidence_ids": [
+        "EV-002-Q01"
+       ],
+       "cohesion": 1.0
       }
      ],
-     "induction_basis": "研究问题语义相似度、研究方法共现与来源证据一致性"
+     "induction_basis": "研究问题语义相似度、研究方法共现与来源证据一致性",
+     "diagnostics": {
+      "selection_mode": "per_document_merge_0.85",
+      "selected_k": 2,
+      "candidates": [],
+      "representation": "bge-m3",
+      "candidate_count": 3
+     }
     },
     "structured_report": {
-     "overview": "围绕大模型推理训练与无监督表示学习两类主题，对 5 篇文献的研究问题、方法与结果进行结构化归纳：推理侧以逆困惑度课程合成数据为主线，表示侧以分块对比学习去除标注依赖，两条主线均报告了稳定的性能收益。",
+     "title": "Test-time Training结构化综述",
+     "overview": "测试时训练（Test-time Training）旨在让模型在推理阶段通过自监督信号进行在线适应，以提升复杂推理任务的性能。然而，该范式面临两大核心挑战：其一，当问题难度较高时，模型自生成的伪标签往往不可靠，且现有方法缺乏针对模型特定推理弱点的自适应机制，导致学习效率低下；其二，在测试时强化学习（TTRL）中，若模型存在系统性推理缺陷，多数投票机制不仅无法纠正错误，反而会放大错误，使模型陷入自身产生的“回音壁”中。针对这些问题，近期研究提出了两种代表性框架：TTSR通过师生角色的自反思机制生成针对性变体问题以纠正推理弱点；Self-Harmony则利用原始与重构输出的调和均值生成鲁棒伪标签，通过协作自博弈逃离错误回音壁。两者均在不依赖外部标签的前提下，于多个推理基准上取得了显著且稳定的性能提升。",
      "sections": [
       {
-       "title": "推理训练数据课程",
-       "content": "DOC003 与 DOC004 均利用合成数据课程训练推理模型：前者按逆困惑度排序构建课程，后者系统比较课程策略；两篇文献一致报告课程化数据相比随机排列带来稳定准确率增益，构成从数据构造到训练策略的递进关系。"
+       "section_id": "SEC-01",
+       "cluster_id": "PC-001",
+       "title": "TTRL中的错误回音壁与多数投票失效问题",
+       "content": "测试时强化学习（TTRL）通常依赖多数投票机制从模型自身的采样输出中筛选伪标签进行在线训练。然而，该机制存在一个关键漏洞：当模型存在系统性推理缺陷时，某一特定错误答案的出现频率可能高于正确答案。此时，多数投票不仅无法纠正错误，反而会主动放大错误，将该缺陷解选为训练目标，导致模型陷入自身产生的“错误回音壁”。为解决这一问题，Self-Harmony方法提出了一种基于原始与重构采样输出答案频率调和均值的伪标签生成策略。该策略通过调和均值平衡不同视角的输出分布，生成更为鲁棒的伪标签。在此基础上，Self-Harmony构建了求解器与重构器两个角色的协作自博弈框架：求解器被训练以对齐鲁棒伪标签，而重构器则学习生成信息丰富的题目重述，以暴露并挑战求解器当前的推理偏差。实验表明，该方法在五个推理基准、五种基模型的测试中表现优异，在30组无标签测试设置中有28组排名第一，且在Math500上准确率稳定高于89.5%，无需精细的超参数调优，证明了其逃离错误回音壁的有效性。",
+       "evidence_ids": [
+        "EV-001-Q01",
+        "EV-001-Q03"
+       ]
       },
       {
-       "title": "无监督对比表示",
-       "content": "DOC002 提出 Di-COT 分块对比框架，DOC005 将其扩展至迁移任务；在无标注条件下表示质量逐步接近有监督基线，体现了方法从提出到验证的研究进展。"
+       "section_id": "SEC-02",
+       "cluster_id": "PC-002",
+       "title": "TTSR自反思测试时自演化训练框架",
+       "content": "测试时训练在面对高难度问题时，模型自生成的伪标签往往不可靠；同时，现有方法缺乏有效机制来适应模型特定的推理弱点，导致学习效率低下。为解决这两大挑战，TTSR（Test-Time Self-Reflection）框架被提出。该框架使用单一预训练模型在学生与教师两个角色间交替运作。学生角色执行标准推理，为每个测试问题采样一组推理轨迹，并基于GRPO算法利用自监督信号在线更新策略。教师角色不直接解题，而是观察学生的轨迹，将其与通过自一致性获得的伪目标进行对比，识别失败案例，并进行轻量级反思以总结失败轨迹中反复出现的推理弱点。随后，教师合成针对性的变体问题，旨在暴露并纠正这些弱点。实验结果显示，TTSR在GPQA-Diamond和MMLU-Pro上取得3至7分的稳定提升；在Qwen3-4B-Base上，相较基模型平均提升超过10分，在AIME等高难度任务上提升尤为显著；在Qwen3-8B-Base上，TTSR在所有数学基准上均优于R-Zero和TTRL基线，消融研究也证实了各组件对性能的独立贡献。",
+       "evidence_ids": [
+        "EV-002-Q01"
+       ]
       }
      ]
     },
     "trend_hotspot_distribution": {
-     "time_range": "2024–2025",
+     "time_range": "2022年",
      "hotspots": [
       {
-       "name": "推理训练数据课程",
-       "score": 0.86,
-       "status": "上升"
+       "name": "TTSR自反思测试时自演化训练框架",
+       "score": 0.587,
+       "status": "持续关注",
+       "cluster_id": "PC-002",
+       "document_count": 1,
+       "supporting_years": [
+        2022
+       ],
+       "year_coverage": 0.5
       },
       {
-       "name": "无监督对比表示",
-       "score": 0.64,
-       "status": "持续关注"
+       "name": "TTRL中的错误回音壁与多数投票失效问题",
+       "score": 0.58,
+       "status": "持续关注",
+       "cluster_id": "PC-001",
+       "document_count": 1,
+       "supporting_years": [
+        2022
+       ],
+       "year_coverage": 0.5
       }
-     ]
+     ],
+     "reliability_note": "样本量小（2篇），强度与趋势仅供参考；文献年份集中，趋势方向参考价值有限"
+    },
+    "evidence_index": [
+     {
+      "evidence_id": "EV-001-Q01",
+      "document_id": "FILE002",
+      "title": "2.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "However, this mechanism suffers from a critical vulnerability: if the model exhibits a systematic reasoning flaw, it may produce a specific incorrect answer more frequently than the correct one. In such cases, majority voting not only fails to correct the error but can actively amplify it by selecting the flawed solution as a training target",
+      "quote": "However, this mechanism suffers from a critical vulnerability: if the model exhibits a systematic reasoning flaw, it may produce a specific incorrect answer more frequently than the correct one. In such cases, majority voting not only fails to correct the error but can actively amplify it by selecting the flawed solution as a training target",
+      "start": 2781,
+      "end": 3124,
+      "supported_nodes": [
+       "RQ-01"
+      ]
+     },
+     {
+      "evidence_id": "EV-001-Q03",
+      "document_id": "FILE002",
+      "title": "2.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "This limitation highlights the need for TTRL methods that can generate robust reward signals and reliably escape the model’s own “echo chamber” of errors.",
+      "quote": "This limitation highlights the need for TTRL methods that can generate robust reward signals and reliably escape the model’s own “echo chamber” of errors.",
+      "start": 3164,
+      "end": 3318,
+      "supported_nodes": [
+       "RQ-01"
+      ]
+     },
+     {
+      "evidence_id": "EV-001-M01",
+      "document_id": "FILE002",
+      "title": "2.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "we propose a pseudo-label generation strategy based on the harmonic mean of answer frequencies across both the original and reframed rollouts.",
+      "quote": "we propose a pseudo-label generation strategy based on the harmonic mean of answer frequencies across both the original and reframed rollouts.",
+      "start": 4219,
+      "end": 4361,
+      "supported_nodes": [
+       "M-01",
+       "RQ-01"
+      ]
+     },
+     {
+      "evidence_id": "EV-001-M03",
+      "document_id": "FILE002",
+      "title": "2.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "With the pseudo-label selected by harmonic mean, the two roles engage in cooperative self-play: the Solver is trained to align with the robust pseudo-label, while the Reframer is trained to generate informative reformulations that expose and challenge the Solver’s current biases.",
+      "quote": "With the pseudo-label selected by harmonic mean, the two roles engage in cooperative self-play: the Solver is trained to align with the robust pseudo-label, while the Reframer is trained to generate informative reformulations that expose and challenge the Solver’s current biases.",
+      "start": 4558,
+      "end": 4838,
+      "supported_nodes": [
+       "M-01",
+       "RQ-01"
+      ]
+     },
+     {
+      "evidence_id": "M-01-EV01",
+      "document_id": "FILE002",
+      "title": "2.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "This setup guarantees that performance improvements are attributable to methodological effectiveness rather than increased computation. 4.2 Main Results We evaluate Self-Harmony against several baseline reward modeling techniques across five reasoning benchmarks using five base models from the Qwen3 and Llama-3 series.",
+      "quote": "This setup guarantees that performance improvements are attributable to methodological effectiveness rather than increased computation. 4.2 Main Results We evaluate Self-Harmony against several baseline reward modeling techniques across five reasoning benchmarks using five base models from the Qwen3 and Llama-3 series.",
+      "start": 25933,
+      "end": 26253,
+      "supported_nodes": [
+       "M-01"
+      ]
+     },
+     {
+      "evidence_id": "M-01-EV02",
+      "document_id": "FILE002",
+      "title": "2.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "As shown in the heatmap (Figure 4a), the model’s performance on Math500 remains high and stable across the entire grid, with accuracy scores consistently above 89.5%. This stability is a significant advantage, as it indicates that our method does not require extensive or precise hyperparameter tuning to achieve strong results.",
+      "quote": "As shown in the heatmap (Figure 4a), the model’s performance on Math500 remains high and stable across the entire grid, with accuracy scores consistently above 89.5%. This stability is a significant advantage, as it indicates that our method does not require extensive or precise hyperparameter tuning to achieve strong results.",
+      "start": 33904,
+      "end": 34232,
+      "supported_nodes": [
+       "M-01"
+      ]
+     },
+     {
+      "evidence_id": "M-01-EV03",
+      "document_id": "FILE002",
+      "title": "2.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "Across diverse reasoning benchmarks, Self-Harmony achieves state-of-the-art results at the label-free test-time setting, ranking first in 28 of 30 settings across multiple methods.",
+      "quote": "Across diverse reasoning benchmarks, Self-Harmony achieves state-of-the-art results at the label-free test-time setting, ranking first in 28 of 30 settings across multiple methods.",
+      "start": 1409,
+      "end": 1589,
+      "supported_nodes": [
+       "M-01"
+      ]
+     },
+     {
+      "evidence_id": "M-01-EV04",
+      "document_id": "FILE002",
+      "title": "2.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "We demonstrate the effectiveness of Self-Harmony through extensive experiments on multiple reasoning benchmarks using open-source models ranging from 1.7B to 8B parameters.",
+      "quote": "We demonstrate the effectiveness of Self-Harmony through extensive experiments on multiple reasoning benchmarks using open-source models ranging from 1.7B to 8B parameters.",
+      "start": 4920,
+      "end": 5092,
+      "supported_nodes": [
+       "M-01"
+      ]
+     },
+     {
+      "evidence_id": "EV-002-Q01",
+      "document_id": "FILE003",
+      "title": "3.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "However, it faces two major challenges: test questions are often highly difficult, making self-generated pseudo-labels unreliable, and existing methods lack effective mechanisms to adapt to a model’s specific reasoning weaknesses, leading to inefficient learning. To address these issues, we propose TTSR, a self-reflective test-time self-evolving training framework.",
+      "quote": "However, it faces two major challenges: test questions are often highly difficult, making self-generated pseudo-labels unreliable, and existing methods lack effective mechanisms to adapt to a model’s specific reasoning weaknesses, leading to inefficient learning. To address these issues, we propose TTSR, a self-reflective test-time self-evolving training framework.",
+      "start": 508,
+      "end": 875,
+      "supported_nodes": [
+       "RQ-02"
+      ]
+     },
+     {
+      "evidence_id": "EV-002-M01",
+      "document_id": "FILE003",
+      "title": "3.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "To this end, we introduce TTSR (Test-Time Self-Reflection), a self-reflective test-time self-evolving training framework that uses a single pretrained model alternating between two functional roles: a Student and a Teacher. At a high level, the Student performs standard inference by sampling a group of reasoning trajectories for each test question, and it updates its policy online (built upon GRPO) using self-supervised signals. The Teacher does not solve the test question directly; instead, it observes the Student’s trajectories, identifies failures relative to a pseudo-target obtained via self-consistency, and performs lightweight reflection to summarize recurring weaknesses exhibited in the failed traces. Crucially, the Teacher then synthesizes targeted variant questions designed to expose and correct these weaknesses.",
+      "quote": "To this end, we introduce TTSR (Test-Time Self-Reflection), a self-reflective test-time self-evolving training framework that uses a single pretrained model alternating between two functional roles: a Student and a Teacher. At a high level, the Student performs standard inference by sampling a group of reasoning trajectories for each test question, and it updates its policy online (built upon GRPO) using self-supervised signals. The Teacher does not solve the test question directly; instead, it observes the Student’s trajectories, identifies failures relative to a pseudo-target obtained via self-consistency, and performs lightweight reflection to summarize recurring weaknesses exhibited in the failed traces. Crucially, the Teacher then synthesizes targeted variant questions designed to expose and correct these weaknesses.",
+      "start": 4810,
+      "end": 5643,
+      "supported_nodes": [
+       "M-02",
+       "RQ-02"
+      ]
+     },
+     {
+      "evidence_id": "M-02-EV01",
+      "document_id": "FILE003",
+      "title": "3.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "Across all models, TTSR achieves consistent gains on GPQA-Diamond and MMLU-Pro, with improvements typically ranging from 3 to 7 points over the strongest baseline.",
+      "quote": "Across all models, TTSR achieves consistent gains on GPQA-Diamond and MMLU-Pro, with improvements typically ranging from 3 to 7 points over the strongest baseline.",
+      "start": 25106,
+      "end": 25269,
+      "supported_nodes": [
+       "M-02"
+      ]
+     },
+     {
+      "evidence_id": "M-02-EV02",
+      "document_id": "FILE003",
+      "title": "3.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "Across all settings, TTSR maintains consistent gains over baselines, demonstrating its effectiveness as a general test-time self-evolving framework. 5.3 Ablation Study Ablation Study of TTSR Table 2 confirms that each component of TTSR contributes meaningfully to test-time improvements.",
+      "quote": "Across all settings, TTSR maintains consistent gains over baselines, demonstrating its effectiveness as a general test-time self-evolving framework. 5.3 Ablation Study Ablation Study of TTSR Table 2 confirms that each component of TTSR contributes meaningfully to test-time improvements.",
+      "start": 26756,
+      "end": 27043,
+      "supported_nodes": [
+       "M-02"
+      ]
+     },
+     {
+      "evidence_id": "M-02-EV03",
+      "document_id": "FILE003",
+      "title": "3.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "For example, on Qwen3-4B-Base, TTSR improves performance by more than 10 points on average compared to the base model, with especially large gains on high-difficulty tasks such as AIME 2024, AIME 2025, and Olympiad.",
+      "quote": "For example, on Qwen3-4B-Base, TTSR improves performance by more than 10 points on average compared to the base model, with especially large gains on high-difficulty tasks such as AIME 2024, AIME 2025, and Olympiad.",
+      "start": 24457,
+      "end": 24672,
+      "supported_nodes": [
+       "M-02"
+      ]
+     },
+     {
+      "evidence_id": "M-02-EV04",
+      "document_id": "FILE003",
+      "title": "3.pdf",
+      "source_section": "text",
+      "evidence_excerpt": "Similar trends are observed on Qwen3-8B-Base, where TTSR consistently outperforms both R-Zero and TTRL across all mathematical benchmarks.",
+      "quote": "Similar trends are observed on Qwen3-8B-Base, where TTSR consistently outperforms both R-Zero and TTRL across all mathematical benchmarks.",
+      "start": 24856,
+      "end": 24994,
+      "supported_nodes": [
+       "M-02"
+      ]
+     }
+    ],
+    "statistics": {
+     "document_count": 2,
+     "research_question_count": 2,
+     "method_count": 2,
+     "evidence_sentence_count": 14,
+     "trend_hotspot_status": "computed"
     }
+   },
+   "meta": {
+    "request_id": "req_5db8134091eb497788b4da1a9e6431b8",
+    "schema_version": "1.0",
+    "model_version": "semantic-toolkit-2026.08",
+    "taxonomy_version": null,
+    "ontology_version": null,
+    "elapsed_ms": 35310,
+    "created_at": "2026-09-11T12:50:25.055161+08:00",
+    "database_dialect": "mysql",
+    "task_id": "tsk_cd5c7867771149a2a598530b9b54bae0",
+    "input_type": "collection",
+    "total": 1,
+    "success_count": 1,
+    "failed_count": 0,
+    "record_id": "rec_f50a4c88fb5e4eac8f82c6fffa71d326",
+    "file_name": null
    }
   }
  }

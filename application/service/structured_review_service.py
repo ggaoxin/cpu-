@@ -31,8 +31,10 @@ def execute_structured_review(
         raise ValueError("结构化自动综述需提供 document_set 文献集")
     if len(raw_documents) < 2:
         raise ValueError("结构化自动综述至少需要2篇文献")
-    if len(raw_documents) > 50:
-        raise ValueError("结构化自动综述一次最多处理50篇文献")
+    if len(raw_documents) > 20:
+        # 2026-09-11 对齐在线测试上限（前端 MAX_BATCH_TEXTS=20）：
+        # API 与在线测试的输入上限必须一致
+        raise ValueError("结构化自动综述一次最多处理20篇文献")
 
     raw_topic = params.get("topic_or_keywords")
     if isinstance(raw_topic, list):
