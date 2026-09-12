@@ -5110,6 +5110,52 @@ class SemanticApplicationService(ISemanticService):
             logger.warning("科研实体识别资源文件解析失败", exc_info=True)
             return []
 
+    @classmethod
+    def _custom_ontology_types(cls, descriptor) -> set:
+        """用户本体的类型集合（并入 domain-ner 防串域白名单）。
+
+        本体为配置型资源（原样透传，无固定行结构），从其 JSON 任意层级
+        收集全大写类型标识（如 BRIDGE_COMPONENT / LOAD_TYPE）：命中
+        ^[A-Z][A-Z_0-9]{2,}$ 的字符串、或"类型体系"/"types"数组元素。
+        上限 50 个防滥用；解析失败返回空集（不影响内置白名单）。
+        """
+        try:
+            uri = str((descriptor or {}).get("storage_uri") or "")
+            if not uri:
+                return set()
+            from config.settings import settings as _settings
+            from infrastructure.resources.normalize import resource_path
+            path = resource_path(uri, _settings.PROJECT_ROOT)
+            if path is None:
+                return set()
+            doc = json.loads(path.read_text(encoding="utf-8-sig", errors="replace"))
+        except Exception:  # noqa: BLE001 - 本体不可解析时走内置白名单
+            return set()
+        found: set = set()
+        import re as _reO
+        _cap = _reO.compile(r"^[A-Z][A-Z_0-9]{2,}$")
+        def _walk(node):
+            if len(found) >= 50:
+                return
+            if isinstance(node, dict):
+                for key, value in node.items():
+                    if str(key) in ("类型体系", "types", "type_system", "categories",
+                                    "entity_types") and isinstance(value, list):
+                        for item in value:
+                            _t = str(item or "").strip().upper()
+                            if _t:
+                                found.add(_t)
+                    _walk(value)
+            elif isinstance(node, list):
+                for item in node:
+                    _walk(item)
+            elif isinstance(node, str):
+                _t = node.strip()
+                if _cap.match(_t):
+                    found.add(_t)
+        _walk(doc)
+        return found
+
     def _load_ner_fewshot(self, descriptor) -> str:
         """领域示例语料 → few-shot 文本。条目 {"text": 示例, "entities": [{"text","type"}]}。"""
         rows = [r for r in self._read_uploaded_resource_json(descriptor) if isinstance(r, dict)]
@@ -5601,10 +5647,16 @@ class SemanticApplicationService(ISemanticService):
                            and _method_tail.search(str(e.get('text') or '').strip()))]
             # ① 类型体系泄漏丢弃（2026-09-11 地震动篇案例）：专业 NER 只允许三领域
             # 类型，LLM 偶发输出 METHOD/科研 等科研 NER 类型（K-means/主成分分析）——
-            # 科研方法归 research-ner，此处整类丢弃
+            # 科研方法归 research-ner，此处整类丢弃。
+            # 2026-09-12 修复：用户上传 ontology_classification_system 时白名单扩展为
+            # 内置∪本体声明类型——此前硬编码白名单把自定义类型（BRIDGE_COMPONENT等）
+            # 整类丢弃，"换本体=换类型体系"实际失效
             _domain_types = {'DRUG', 'DISEASE', 'TREATMENT', 'COMPOUND', 'REACTION',
                              'MATERIAL', 'THEORY', 'PHENOMENON', 'LAW', 'SYMPTOM',
                              'EQUIPMENT', 'TECHNIQUE', 'OTHER'}
+            _onto_extra = self._custom_ontology_types(_res.get("ontology_classification_system"))
+            if _onto_extra:
+                _domain_types |= _onto_extra
             out = [e for e in out
                    if not (isinstance(e, dict)
                            and str(e.get('type') or '') not in _domain_types)]

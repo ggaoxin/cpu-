@@ -67,6 +67,32 @@ function containsFile(value: unknown): boolean {
   return Boolean(value && typeof value === 'object' && Object.values(value as Record<string, unknown>).some(containsFile))
 }
 
+// ---- API Key（后端开启 API_AUTH_ENABLED 时生效；默认关闭零感知）----
+// 401 时弹窗索取密钥存 localStorage，重放一次请求
+function storedApiKey(): string {
+  return localStorage.getItem('x-api-key') || ''
+}
+
+function promptApiKey(): string {
+  const key = window.prompt('本系统已开启接口鉴权，请输入 API Key：', storedApiKey()) || ''
+  if (key) localStorage.setItem('x-api-key', key)
+  return key
+}
+
+async function fetchWithApiKey(url: string, init: RequestInit): Promise<Response> {
+  const key = storedApiKey()
+  if (key) (init.headers as Record<string, string>)['X-API-Key'] = key
+  const response = await fetch(url, init)
+  if (response.status === 401 && !init.headers?.['X-API-Key']) {
+    const retryKey = promptApiKey()
+    if (retryKey) {
+      ;(init.headers as Record<string, string>)['X-API-Key'] = retryKey
+      return fetch(url, init)
+    }
+  }
+  return response
+}
+
 async function parseResponse(response: Response) {
   const contentType = response.headers.get('content-type') || ''
   const body = contentType.includes('application/json')
@@ -113,7 +139,7 @@ export async function executeToolRequest(
   // 避免 >50MB 上传或后端阻塞时前端 fetch 永久挂起、页面无法恢复
   init.signal = AbortSignal.timeout(15 * 60 * 1000)
   try {
-    return parseResponse(await fetch(apiUrl(endpoint), init))
+    return parseResponse(await fetchWithApiKey(apiUrl(endpoint), init))
   } catch (error) {
     if (error instanceof DOMException && error.name === 'TimeoutError') {
       throw new ApiRequestError('请求超时（15 分钟）：任务未在时限内完成，请减少批量规模后重试', 408, null)
@@ -123,7 +149,7 @@ export async function executeToolRequest(
 }
 
 export async function parseCitationMetadata(entriesText: string) {
-  const response = await fetch(apiUrl('/api/v1/citation-metadata/parse'), {
+  const response = await fetchWithApiKey(apiUrl('/api/v1/citation-metadata/parse'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ entries_text: entriesText }),
@@ -132,7 +158,7 @@ export async function parseCitationMetadata(entriesText: string) {
 }
 
 export async function listSemanticResources() {
-  const response = await fetch(apiUrl('/api/v1/semantic-resources?status=current&limit=500'), {
+  const response = await fetchWithApiKey(apiUrl('/api/v1/semantic-resources?status=current&limit=500'), {
     headers: { Accept: 'application/json' },
   })
   return parseResponse(response)
@@ -142,7 +168,7 @@ export async function listClusterCollections() {
   // 聚类标签生成任务的簇文献集（结构化综述"指定文献集"数据源）。
   // 直接按任务时间倒序全量返回，用户从下拉框直接选择（无主题相似度过滤）
   const query = new URLSearchParams({ limit: '200' })
-  return parseResponse(await fetch(apiUrl(`/api/v1/collections/cluster-sets?${query}`), { headers: { Accept: 'application/json' } }))
+  return parseResponse(await fetchWithApiKey(apiUrl(`/api/v1/collections/cluster-sets?${query}`), { headers: { Accept: 'application/json' } }))
 }
 
 export async function listDocumentCollections(topic?: string) {
@@ -151,20 +177,20 @@ export async function listDocumentCollections(topic?: string) {
     query.set('topic', topic.trim())
     query.set('threshold', '0.3')
   }
-  return parseResponse(await fetch(apiUrl(`/api/v1/collections?${query}`), { headers: { Accept: 'application/json' } }))
+  return parseResponse(await fetchWithApiKey(apiUrl(`/api/v1/collections?${query}`), { headers: { Accept: 'application/json' } }))
 }
 
 export async function listCompatibleHistory(downstreamTool: string, upstreamType: string) {
   const query = new URLSearchParams({ downstream_tool: downstreamTool, upstream_type: upstreamType, limit: '200' })
-  return parseResponse(await fetch(apiUrl(`/api/v1/history/compatible?${query}`), { headers: { Accept: 'application/json' } }))
+  return parseResponse(await fetchWithApiKey(apiUrl(`/api/v1/history/compatible?${query}`), { headers: { Accept: 'application/json' } }))
 }
 
 export async function listDictionaries() {
-  return parseResponse(await fetch(apiUrl('/api/v1/dictionaries?limit=200'), { headers: { Accept: 'application/json' } }))
+  return parseResponse(await fetchWithApiKey(apiUrl('/api/v1/dictionaries?limit=200'), { headers: { Accept: 'application/json' } }))
 }
 
 export async function saveDictionary(payload: Record<string, unknown>) {
-  return parseResponse(await fetch(apiUrl('/api/v1/dictionaries'), {
+  return parseResponse(await fetchWithApiKey(apiUrl('/api/v1/dictionaries'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify(payload),
@@ -175,7 +201,7 @@ export async function uploadSemanticResource(file: File, resourceKey: string) {
   const form = new FormData()
   form.append('resource_key', resourceKey)
   form.append('upload', file)
-  return parseResponse(await fetch(apiUrl('/api/v1/semantic-resources/upload'), {
+  return parseResponse(await fetchWithApiKey(apiUrl('/api/v1/semantic-resources/upload'), {
     method: 'POST',
     headers: { Accept: 'application/json' },
     body: form,

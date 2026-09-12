@@ -85,6 +85,25 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # ---- API Key 鉴权（2026-09-12，默认关闭不影响现有使用）----
+    # 开启：config/.env 设 API_AUTH_ENABLED=true + API_KEYS=key1,key2
+    # 请求头 X-API-Key 携带任一密钥即通过；/health 与 /docs 系列豁免。
+    if settings.API_AUTH_ENABLED:
+        _PUBLIC_PATHS = ("/health", "/docs", "/openapi.json", "/redoc")
+
+        @app.middleware("http")
+        async def api_key_guard(request, call_next):
+            if request.url.path.startswith(_PUBLIC_PATHS):
+                return await call_next(request)
+            provided = request.headers.get("X-API-Key", "")
+            if provided and provided in settings.API_KEYS:
+                return await call_next(request)
+            from fastapi.responses import JSONResponse
+            return JSONResponse(
+                status_code=401,
+                content={"code": 40101, "message": "未授权：缺少或无效的 X-API-Key 请求头"},
+            )
+
     @app.get("/health", tags=["系统"])
     def health() -> dict:
         db = database.healthcheck()

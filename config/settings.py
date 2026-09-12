@@ -124,6 +124,13 @@ class Settings:
     # PyMuPDF 双栏走版面分栏读取偶发失败回退 mineru，回退链文本方差影响引用句召回稳定性；
     # mineru md 全文召回稳定（54 条）。引用句识别依赖全文 [n] 标记 + 参考文献章节截断，
     # mineru 结构化输出更可靠。ref_re 已适配冒号变体（参考文献：），空 intent 已兜底。
+    # ---- API Key 鉴权（2026-09-12）----
+    # 默认关闭：不影响现有本地/内网使用。对外暴露时设 API_AUTH_ENABLED=true，
+    # 请求头 X-API-Key 携带 API_KEYS 中的任一密钥即通过（/health /docs 豁免）
+    API_AUTH_ENABLED: bool = os.getenv("API_AUTH_ENABLED", "false").lower() == "true"
+    API_KEYS: frozenset = frozenset(
+        k.strip() for k in os.getenv("API_KEYS", "").split(",") if k.strip())
+
     STRUCTURE_DEPENDENT_TOOLS: frozenset = frozenset({'citation-intent', 'citation-sentiment'})
 
     def should_use_light(self, tool_id: str) -> bool:
