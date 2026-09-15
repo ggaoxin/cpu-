@@ -31,6 +31,14 @@ def create_app() -> FastAPI:
                 logging.getLogger(__name__).exception("数据库初始化失败")
                 if settings.DATABASE_REQUIRED:
                     raise
+        # 用户CLC索引缓存清扫（2026-09-14：闲置TTL+数量上限，索引=纯缓存）
+        try:
+            from infrastructure.rag.clc_user_index_service import sweep_user_indexes
+            _removed = sweep_user_indexes()
+            if _removed:
+                logging.getLogger(__name__).info("CLC 索引缓存启动清扫：%d 个目录", _removed)
+        except Exception:
+            logging.getLogger(__name__).warning("CLC 索引启动清扫失败", exc_info=True)
         # mineru-api 常驻服务健康检查（不阻塞启动，不可用时文件解析降级 pdfplumber）
         try:
             from infrastructure.document_parser.mineru_api_client import mineru_api_client

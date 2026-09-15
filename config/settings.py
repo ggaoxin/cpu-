@@ -95,6 +95,10 @@ class Settings:
     CLC_SMALL_MAX_RECORDS: int = int(os.getenv("CLC_SMALL_MAX_RECORDS", "50"))  # 少量→few-shot 注入
     CLC_SMALL_MAX_BYTES: int = int(os.getenv("CLC_SMALL_MAX_BYTES", "65536"))
     CLC_BUILD_MIN_RECORDS: int = int(os.getenv("CLC_BUILD_MIN_RECORDS", "51"))  # >此值且完整树才建库
+    # 用户CLC索引缓存（2026-09-14 定稿简化版：仅数量上限LRU，不做过期）
+    # 保留最新 100 个用户构建的知识库索引，超出淘汰最早；TTL 默认 0=关闭
+    CLC_INDEX_TTL_HOURS: float = float(os.getenv("CLC_INDEX_TTL_HOURS", "0"))
+    CLC_INDEX_MAX_DIRS: int = int(os.getenv("CLC_INDEX_MAX_DIRS", "100"))
     CLC_USER_CACHE_MAX: int = max(1, int(os.getenv("CLC_USER_CACHE_MAX", "4")))  # for_path LRU 上限
     # MinerU：外部 conda 工具，无法搬入项目；默认指向 mineru conda 环境的可执行文件，
     # 否则 .env 用 MINERU_BIN 指定绝对路径。注意默认值会被写回 os.environ，

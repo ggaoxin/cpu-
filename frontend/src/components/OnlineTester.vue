@@ -158,7 +158,12 @@ let citationCardsEdited = false   // 用户增删改过卡片后不再自动覆�
 const citationExtractedCount = ref(0)
 function autoExtractCitation() {
   const text = citationSingle.documentText.trim()
-  if (!text) { citationExtractedCount.value = 0; return }
+  // 文本清空 → 已解析的引用句卡片同步清空（2026-09-15 用户定调）
+  if (!text) {
+    citationExtractedCount.value = 0
+    citationCards.splice(0, citationCards.length)
+    return
+  }
   const sentences = text.split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
   const cards: CitationCard[] = []
   sentences.forEach((s, i) => {
@@ -178,6 +183,12 @@ function autoExtractCitation() {
   citationCards.splice(0, citationCards.length, ...cards)
 }
 watch(() => citationSingle.documentText, () => {
+  // 文本清空 → 无条件同步清空引用句卡片（编辑保护只对"有新文本"生效）
+  if (!citationSingle.documentText.trim()) {
+    if (citationAutoTimer) clearTimeout(citationAutoTimer)
+    autoExtractCitation()
+    return
+  }
   if (citationCardsEdited) return
   if (citationAutoTimer) clearTimeout(citationAutoTimer)
   citationAutoTimer = setTimeout(autoExtractCitation, 600)
@@ -239,9 +250,10 @@ function removeCitationCard(id: number) {
   if (index >= 0) citationCards.splice(index, 1)
 }
 // 批量文本：解析本条引用数据的参考文献条目 → 多条可编辑元数据
+// （2026-09-15 用户定调：粘贴/上传即自动解析，无需手动按钮）
 async function parseBatchCitationRefs(item: CitationBatchItem) {
   const raw = (item.refsText || '').trim()
-  if (!raw) { item.refsError = '请先粘贴本条的参考文献条目'; return }
+  if (!raw) { item.refsError = ''; item.metaList = []; return }
   item.refsParsing = true
   item.refsError = ''
   try {
@@ -262,20 +274,26 @@ async function parseBatchCitationRefs(item: CitationBatchItem) {
     item.refsParsing = false
   }
 }
+// 自动解析防抖：refsText 变化 800ms 后触发（手动按钮已删）
+const _batchRefsTimers = new WeakMap<CitationBatchItem, ReturnType<typeof setTimeout>>()
+function scheduleBatchRefsParse(item: CitationBatchItem) {
+  const prev = _batchRefsTimers.get(item)
+  if (prev) clearTimeout(prev)
+  _batchRefsTimers.set(item, setTimeout(() => parseBatchCitationRefs(item), 800))
+}
 function removeBatchMetaEntry(item: CitationBatchItem, index: number) {
   item.metaList.splice(index, 1)
 }
 
 // 深度聚类锚点资源（可选）：内置=纯 v3 分组；上传=语步级锚点引导
+// 锚点资源（2026-09-16 用户定调合并）：训练样本与人工标注类目本是同一份数据
+// （共同键=编号），合并为单一上传资源"训练样本与人工标注类目标签数据"——
+// 单文件每条自带 category；后端 _join_anchor_rows 兼容行内类目
 const anchorTrainMode = ref('builtin')
-const anchorGoldMode = ref('builtin')
 const anchorTrainFile = ref<File | null>(null)
-const anchorGoldFile = ref<File | null>(null)
-function handleAnchorUpload(field: 'training_samples' | 'manually_labeled_category_data', event: Event) {
+function handleAnchorUpload(event: Event) {
   const input = event.target as HTMLInputElement
-  const file = input.files?.[0] || null
-  if (field === 'training_samples') anchorTrainFile.value = file
-  else anchorGoldFile.value = file
+  anchorTrainFile.value = input.files?.[0] || null
 }
 const supplementalPayload = ref<Record<string, unknown>>({})
 const labelLengthLimit = ref(12)
@@ -344,7 +362,7 @@ watch(selectedNerRecordId, async recordId => {
   }
 }, { immediate: true })
 const selectedDictionary = computed(() => savedDictionaryOptions.value.find(item => item.id === selectedDictionaryId.value))
-const documentTitleToolIds = new Set(['zh-classify', 'en-classify', 'domain-classify', 'zh-keyword', 'en-keyword', 'rq-detect', 'zh-abstract-move', 'en-abstract-move', 'citation-sentiment', 'citation-intent'])
+const documentTitleToolIds = new Set(['zh-classify', 'en-classify', 'domain-classify', 'zh-keyword', 'en-keyword', 'rq-detect', 'zh-abstract-move', 'en-abstract-move', 'citation-sentiment', 'citation-intent', 'general-ner', 'research-ner', 'domain-ner', 'relation-extract'])
 const needsDocumentTitle = computed(() => documentTitleToolIds.has(props.toolId))
 
 // 深度聚类锚点资源已随主题库删除（v3 语步对齐聚类不再使用锚点资源）
@@ -382,6 +400,11 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
     values.clustering_algorithm_type = form.algorithm
     values.cluster_count = form.clusterCount === '' ? null : Number(form.clusterCount)
     values.output_format = form.outputFormat
+    // 锚点资源必须在此赋值（本分支末尾提前 return，下方通用锚点块执行不到——
+    // 2026-09-16 修复：同 citation 题目漏发模式）：上传模式的文件随 multipart 提交
+    if (anchorTrainMode.value === 'upload' && anchorTrainFile.value) {
+      values.training_samples = anchorTrainFile.value
+    }
     return values
   }
   if (props.toolId === 'structured-review') {
@@ -402,6 +425,9 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
   }
   if (props.toolId.startsWith('citation-')) {
     if (mode.value === 'text') {
+      // 题目必须在此赋值：本分支末尾提前 return，通用的 document_title 赋值
+      // （needsDocumentTitle 分支）执行不到——此前漏发导致弹窗文献列落"当前结果"
+      values.document_title = form.documentTitle
       values.scientific_document_full_text = citationSingle.documentText
       // 提交解析出的全部引用句卡片（每条含上下文）；用户增删改过以卡片为准。
       // 句内多引用拆分后同一句多条记录：citation_marker 绑定各自文献编号，
@@ -476,6 +502,7 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
   if (needsDocumentTitle.value && mode.value === 'text') values.document_title = form.documentTitle
   if (needsDocumentTitle.value && mode.value === 'batch-text' && !props.toolId.startsWith('citation-')) values.document_title = batchTexts.map(item => item.title.trim())
   if (props.toolId === 'domain-classify') values.professional_domain = form.domain
+  if (props.toolId === 'domain-ner' && form.domain && form.domain !== '自动识别') values.domain = form.domain
   if (props.toolId === 'zh-keyword') {
     // 系统预置模式不携带词典字段（后端 dictionary_usage=null、全部未命中属预期）
     if (dictionaryMode.value === 'system') {
@@ -489,22 +516,16 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
       }
     }
   }
-  // 深度聚类锚点资源（可选）：上传模式的文件由 executeToolRequest 的 FormData
-  // 直接携带（File 对象进 payload 后 appendFormValue 走 multipart 文件字段）；
-  // 内置模式不写字段 = 纯 v3 自由分组
-  if (props.toolId === 'deep-cluster') {
-    if (anchorTrainMode.value === 'upload' && anchorTrainFile.value) {
-      values.training_samples = anchorTrainFile.value
-    }
-    if (anchorGoldMode.value === 'upload' && anchorGoldFile.value) {
-      values.manually_labeled_category_data = anchorGoldFile.value
-    }
-  }
   return values
 })
 
 // 真实接口接入时直接提交该对象；字段集合由 tooling 中的统一契约锁定。
-const currentRequestPayload = computed(() => requestPayloadFor(props.tool, mode.value, onlineRequestValues.value))
+// __pending_uploads 是"切了上传未选文件"的内部校验标记（提交校验用），不外发。
+const currentRequestPayload = computed(() => {
+  const payload = { ...requestPayloadFor(props.tool, mode.value, onlineRequestValues.value) }
+  delete payload.__pending_uploads
+  return payload
+})
 
 // 深度聚类「类簇数量」越界判定：最低 1、最大类簇数量必须小于输入文献总数
 // （如 4 篇文献最多 3 簇）。非空且越界时给出提示并禁用「在线测试」按钮。
@@ -530,6 +551,11 @@ function clearCustomDictionary() {
   clearDictionaryFile()
   customDictionaryName.value = ''
   customDictionaryTerms.value = ''
+}
+function handleDictionaryModeChange() {
+  // 切换词典使用方式时清空上一模式遗留,避免旧词典内容残留在请求里
+  clearCustomDictionary()
+  weightBoost.value = '0.08'
 }
 function clearDictionaryFile() {
   customDictionaryFile.value = null
@@ -968,7 +994,14 @@ function requiredResourceError(): string {
       && !excluded.has(key)
       && !hasRequiredValue(supplementalPayload.value[key]),
   )
-  return row ? `请配置必填资源“${row[3]}”。` : ''
+  if (row) return `请配置必填资源“${row[3]}”。`
+  // 切了"用户上传资源"但尚未选文件：必填资源不能静默回退内置（2026-09-15
+  // 用户定调），提交前拦截并指明哪个槽缺文件
+  const pending = (supplementalPayload.value.__pending_uploads as Array<{ key: string, label: string }> | undefined) || []
+  if (pending.length) {
+    return `「${pending.map(item => item.label).join('、')}」已选择用户上传资源，请先上传资源文件（或切回内置）。`
+  }
+  return ''
 }
 
 function validateRequiredInputs(): string {
@@ -1066,8 +1099,6 @@ function validateRequiredInputs(): string {
       if (citationBatchItems.length < 2) return '批量引用数据至少需要 2 条。'
       const noTitleIndex = citationBatchItems.findIndex(item => !item.title.trim())
       if (noTitleIndex >= 0) return `请输入引用数据${noTitleIndex + 1}的题目（必填，用于标识每条响应结果及可视化弹窗中的文献）。`
-      const noMetaIndex = citationBatchItems.findIndex(item => !item.metaList.length)
-      if (noMetaIndex >= 0) return `第 ${noMetaIndex + 1} 条引用数据尚未解析被引文献元数据，请粘贴参考文献条目并点击「开始解析」。`
       const invalidIndex = citationBatchItems.findIndex(item =>
         !item.documentText.trim()
           || !item.citationSentence.trim()
@@ -1077,13 +1108,10 @@ function validateRequiredInputs(): string {
       if (invalidIndex >= 0) return `请完整填写引用数据${invalidIndex + 1}的必填内容。`
       const metadata = supplementalPayload.value.citation_metadata
       if (typeof metadata === 'string' && metadata.trim()) return '批量参考文献元数据必须是合法的 JSON 数组，或改为上传元数据文件。'
-      if (!metadata || (Array.isArray(metadata) && metadata.length === 0)) return '请提供批量被引文献元数据。'
+      // 被引文献元数据选填（2026-09-15 用户定调）：不填不拦截提交，引擎降级；
+      // 填了作为意图/情感判定的辅助因素
     } else if (mode.value === 'file' && !uploadedFiles.length) return '请选择一个文献文件。'
     else if (mode.value === 'batch' && !uploadedFiles.length) return '请至少上传一个文献文件。'
-
-    if (mode.value === 'text' || mode.value === 'batch-text') {
-      if (!hasRequiredValue(supplementalPayload.value.citation_metadata)) return '请提供被引文献元数据。'
-    }
     return requiredResourceError()
   }
 
@@ -1186,7 +1214,15 @@ async function run() {
     if ((mode.value === 'file' || mode.value === 'batch') && uploadedFiles.length
         && uploadedFiles.every(item => item.parseState === 'done')) {
       payload = { ...payload, preparsed: JSON.stringify(uploadedFiles.map(item => item.parseId)) }
+      // 只剥主文献文件（预解析已用 parse_id 替代）：主文本字段或文献集 document_set。
+      // 2026-09-14 修复：此前无差别删除所有 File 值——用户上传的资源文件
+      // （clc_labeled_data 等）也是 File，被误删后请求不带资源、按内置执行
+      const _metadataFields = new Set(['document_title', 'project_name', 'cluster_task_id', 'upstream_ner_record_id'])
+      const _primaryKey = (props.tool.params || []).find(
+        ([name]: [string]) => !_metadataFields.has(name) && !name.includes('.'))?.[0]
+        || props.tool.params?.[0]?.[0]
       for (const [key, value] of Object.entries(payload)) {
+        if (key !== _primaryKey && key !== 'document_set') continue
         if (value instanceof File || (Array.isArray(value) && value.length && value.every(x => x instanceof File))) {
           delete payload[key]
         }
@@ -1310,6 +1346,7 @@ function downloadResult() {
           <div v-if="!['deep-cluster','cluster-label','structured-review','relation-extract'].includes(toolId)" class="field input-mode-field"><label><span class="label-main">输入方式</span><small>{{ inputModeHint }}</small></label><ModeSwitch v-model="mode" :modes="modes" :tool="tool" kind="在线测试输入方式" /></div>
 
           <div v-if="toolId === 'domain-classify'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 专业领域</span><small>选择目标领域后执行三级分类</small></label><select v-model="form.domain" class="select"><option value="">请选择专业领域</option><option value="01">数学与计算科学</option><option value="02">力学与工程力学</option><option value="03">物理学与应用物理</option><option value="04">化学与化学科学</option><option value="05">天文学与空间科学</option><option value="06">地球科学与地质资源</option><option value="07">测绘遥感与地理信息</option><option value="08">气象海洋科学</option><option value="09">生物科学与生物技术</option><option value="10">医学与卫生健康</option><option value="11">药学与毒理学</option><option value="12">农业科学与农业工程</option><option value="13">林业畜牧兽医与水产</option><option value="14">材料科学与材料工程</option><option value="15">矿业与矿物加工</option><option value="16">石油与天然气工程</option><option value="17">冶金与金属加工</option><option value="18">机械工程与智能制造</option><option value="19">仪器仪表与计量检测</option><option value="20">能源与动力工程</option><option value="21">核科学与核工程</option><option value="22">电气工程与电力系统</option><option value="23">电子通信与半导体</option><option value="24">自动化与控制工程</option><option value="25">人工智能与计算机技术</option><option value="26">化学工程与过程工业</option><option value="27">轻工食品与纺织</option><option value="28">建筑与土木工程</option><option value="29">水利与水电工程</option><option value="30">交通运输工程</option><option value="31">航空航天工程</option><option value="32">环境与安全工程</option></select></div>
+          <div v-if="toolId === 'domain-ner'" class="field"><label><span class="label-main">专业领域</span><small>选填；选择后实体领域标签与统计卡跟随该领域，不选则自动识别</small></label><select v-model="form.domain" class="select"><option value="自动识别">自动识别（默认）</option><option>医学</option><option>药学</option><option>化学</option><option>化工</option><option>物理</option><option>生物</option><option>计算机</option><option>材料</option><option>农业</option><option>环境</option><option>地学</option></select></div>
 
           <template v-if="toolId === 'deep-cluster'">
             <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 聚类维度</span><small>选择本次聚类的语义分析视角</small></label><div class="dimension-options"><label :class="{ active: form.clusterDimension === 'technology' }"><input v-model="form.clusterDimension" type="radio" value="technology" /><span><b>技术路线聚类</b><small>重点分析文献采用的方法、模型结构、算法机制、数据处理流程和实验技术，将技术方案相近的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label><label :class="{ active: form.clusterDimension === 'application_scenario' }"><input v-model="form.clusterDimension" type="radio" value="application_scenario" /><span><b>应用场景聚类</b><small>重点分析文献解决的任务、服务对象、行业领域、实际环境和应用目标，将面向相似使用场景的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label></div></div>
@@ -1363,18 +1400,10 @@ function downloadResult() {
               </div>
               <button v-if="docs.length" class="outline-btn deep-cluster-add-doc-btn" type="button" @click="addDoc">＋ 添加文本</button>
               <div class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
-                <div class="field"><label><span class="label-main">训练样本</span><small>可选</small></label>
+                <div class="field full"><label><span class="label-main">训练样本与人工标注类目标签数据</span><small>可选</small></label>
                   <div class="requirement-resource-controls">
-                    <select v-model="anchorTrainMode" class="select resource-source-select"><option value="builtin">内置</option><option value="upload">用户上传资源</option></select>
-                    <div v-if="anchorTrainMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload('training_samples', $event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传训练样本' }}</b><small>仅 .json：编号 + 文本 + 题名</small></label></div>
-
-                  </div>
-                </div>
-                <div class="field"><label><span class="label-main">人工标注类目标签数据</span><small>可选</small></label>
-                  <div class="requirement-resource-controls">
-                    <select v-model="anchorGoldMode" class="select resource-source-select"><option value="builtin">内置</option><option value="upload">用户上传资源</option></select>
-                    <div v-if="anchorGoldMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload('manually_labeled_category_data', $event)" /><span>⇧</span><b>{{ anchorGoldFile?.name || '点击上传类目标签数据' }}</b><small>仅 .json：编号 + 人工标注类目标签</small></label></div>
-
+                    <select v-model="anchorTrainMode" class="select resource-source-select" @change="anchorTrainFile = null"><option value="builtin">内置</option><option value="upload">用户上传资源</option></select>
+                    <div v-if="anchorTrainMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload($event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传已标注文献集' }}</b><small>仅 .json：title（题名）+ text（文本）+ category（人工标注类目）；编号可选</small></label></div>
                   </div>
                 </div>
               </div>
@@ -1412,9 +1441,9 @@ function downloadResult() {
             <div class="citation-structured-input">
               <div class="field document-title-field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识响应结果及可视化弹窗中的当前文献</small></label><input v-model="form.documentTitle" class="input" maxlength="300" placeholder="请输入题目" /></div>
               <div v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="citationSingle.documentText" class="textarea main-textarea" maxlength="8000" placeholder="请输入文献文本"></textarea></div>
-              <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句解析</span><button type="button" class="citation-extract-btn" @click="forceAutoExtractCitation"><i>✦</i>从文献文本自动提取</button></label><small v-if="citationExtractedCount" class="range-hint">已从文献文本解析出 {{ citationCards.length }} 条引用句（含上下文），提交时全部识别；卡片可编辑与删除。</small></div>
+              <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句解析</span><button type="button" class="citation-extract-btn" @click="forceAutoExtractCitation"><i>✦</i>从文献文本自动提取</button></label></div>
               <div v-for="(card, index) in citationCards" :key="card.id" class="document-card citation-card">
-                <div class="document-card-head"><b>引用句 {{ index + 1 }}<span v-if="card.marker" class="citation-marker-bind"> · 文献 {{ card.marker }}</span></b><button class="ghost-btn danger" type="button" @click="removeCitationCard(card.id)">删除</button></div>
+                <div class="document-card-head"><b>引用句 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" @click="removeCitationCard(card.id)">删除</button></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><small>保留完整原句供上下文核对；句内多文献引用已按编号拆分为多张卡片</small></label><textarea v-model="card.sentence" class="textarea compact" placeholder="包含引文标记的引用句" @input="markCitationCardsEdited"></textarea></div>
                 <div class="field"><label><span class="label-main">局部子片段</span><small>该文献编号对应的局部语义片段；意图/情感识别以此为准，留空则用整句判定</small></label><textarea v-model="card.subSpan" class="textarea compact" placeholder="本条引用对应的局部子片段，可编辑" @input="markCitationCardsEdited"></textarea></div>
                 <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="card.previousContext" class="textarea compact citation-context-area" placeholder="引用句前文" @input="markCitationCardsEdited"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="card.nextContext" class="textarea compact citation-context-area" placeholder="引用句后文" @input="markCitationCardsEdited"></textarea></div></div>
@@ -1425,24 +1454,21 @@ function downloadResult() {
             <div class="special-panel batch-text-panel citation-batch-panel">
               <div class="special-panel-head"><div><strong>批量引用数据</strong><span>已添加 {{ citationBatchItems.length }} 条，每条作为一个独立任务</span></div><button class="outline-btn" type="button" @click="addCitationBatchItem">＋ 添加引用数据</button></div>
               <div v-for="(item,index) in citationBatchItems" :key="item.id" class="document-card batch-text-item-card citation-batch-item-card">
-                <div class="document-card-head"><b>引用数据 {{ index + 1 }}<span v-if="item.citationMarker" class="citation-marker-bind"> · 文献 {{ item.citationMarker }}</span></b><button class="ghost-btn danger" type="button" :disabled="citationBatchItems.length <= 2" @click="removeCitationBatchItem(item.id)">删除</button></div>
+                <div class="document-card-head"><b>引用数据 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" :disabled="citationBatchItems.length <= 2" @click="removeCitationBatchItem(item.id)">删除</button></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识本条响应结果及可视化弹窗中的文献</small></label><input v-model="item.title" class="input" maxlength="300" placeholder="请输入本条文献题目" /></div>
                 <div v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="item.documentText" class="textarea compact" maxlength="8000" placeholder="请输入本条引用所属的文献文本"></textarea></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><button v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" type="button" class="citation-extract-btn" @click="autoExtractBatchCitation(item)"><i>✦</i>从文献文本自动提取</button></label><textarea v-model="item.citationSentence" class="textarea compact citation-sentence-area" placeholder="可点击右上按钮从本条文献文本自动提取，也可手动填写"></textarea></div>
                 <div class="field"><label><span class="label-main">局部子片段</span><small>该文献编号对应的局部语义片段；意图/情感识别以此为准，留空则用整句判定</small></label><textarea v-model="item.subSpan" class="textarea compact" placeholder="本条引用对应的局部子片段，可编辑"></textarea></div>
                 <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="item.previousContext" class="textarea compact citation-context-area" placeholder="请输入引用句前文"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="item.nextContext" class="textarea compact citation-context-area" placeholder="请输入引用句后文"></textarea></div></div>
                 <div class="citation-card-metadata">
-                  <div class="citation-metadata-section-head"><b><span class="required-mark">*</span> 被引文献元数据</b><span>粘贴本条引用的参考文献条目，支持多条</span></div>
-                  <textarea v-model="item.refsText" class="textarea compact citation-refs-area" placeholder="每行一条参考文献条目，例如：&#10;[3] Wang F, Li H. Neural Message Passing. ICML, 2020."></textarea>
+                  <div class="citation-metadata-section-head"><b><span class="required-mark">*</span> 被引文献元数据</b><span>粘贴本条引用的参考文献条目，支持多条；粘贴后自动解析</span></div>
+                  <textarea v-model="item.refsText" class="textarea compact citation-refs-area" placeholder="每行一条参考文献条目，例如：&#10;[3] Wang F, Li H. Neural Message Passing. ICML, 2020." @input="scheduleBatchRefsParse(item)"></textarea>
                   <div class="citation-parser-action-row">
                     <span v-if="item.refsParsing" class="citation-parse-status">解析中…</span>
                     <span v-else-if="item.refsError" class="citation-parse-status warning">! {{ item.refsError }}</span>
-                    <span v-else-if="item.metaList.length" class="citation-parse-status success">✓ 已解析 {{ item.metaList.length }} 条</span>
-                    <span v-else class="citation-parse-status">粘贴条目后，点击开始解析</span>
-                    <button class="outline-btn citation-parse-button" type="button" :disabled="item.refsParsing" @click="parseBatchCitationRefs(item)">{{ item.refsParsing ? '解析中…' : '开始解析' }}</button>
                   </div>
                   <div v-for="(entry, eIndex) in item.metaList" :key="eIndex" class="citation-metadata-entry">
-                    <div class="citation-metadata-entry-head"><b>条目 {{ eIndex + 1 }}<span v-if="entry.reference_index"> [{{ entry.reference_index }}]</span></b><button class="ghost-btn danger" type="button" @click="removeBatchMetaEntry(item, eIndex)">删除</button></div>
+                    <div class="citation-metadata-entry-head"><b>参考文献{{ entry.reference_index ? `[${entry.reference_index}]` : ` ${eIndex + 1}` }}</b><button class="ghost-btn danger" type="button" @click="removeBatchMetaEntry(item, eIndex)">删除</button></div>
                     <div class="citation-metadata-form-grid">
                       <div class="field"><label><span class="label-main">发表年份</span></label><input v-model="entry.year" class="input" placeholder="例如：2024" /></div>
                       <div class="field"><label><span class="label-main">作者</span></label><input v-model="entry.authorsText" class="input" placeholder="多个作者用分号分隔" /></div>
@@ -1504,18 +1530,10 @@ function downloadResult() {
                 </template>
               </div>
               <div v-if="toolId === 'deep-cluster'" class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
-                <div class="field"><label><span class="label-main">训练样本</span><small>可选</small></label>
+                <div class="field"><label><span class="label-main">已标注训练样本</span><small>可选；含人工标注类目标签</small></label>
                   <div class="requirement-resource-controls">
-                    <select v-model="anchorTrainMode" class="select resource-source-select"><option value="builtin">内置</option><option value="upload">用户上传资源</option></select>
-                    <div v-if="anchorTrainMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload('training_samples', $event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传训练样本' }}</b><small>仅 .json：编号 + 文本 + 题名</small></label></div>
-
-                  </div>
-                </div>
-                <div class="field"><label><span class="label-main">人工标注类目标签数据</span><small>可选</small></label>
-                  <div class="requirement-resource-controls">
-                    <select v-model="anchorGoldMode" class="select resource-source-select"><option value="builtin">内置</option><option value="upload">用户上传资源</option></select>
-                    <div v-if="anchorGoldMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload('manually_labeled_category_data', $event)" /><span>⇧</span><b>{{ anchorGoldFile?.name || '点击上传类目标签数据' }}</b><small>仅 .json：编号 + 人工标注类目标签</small></label></div>
-
+                    <select v-model="anchorTrainMode" class="select resource-source-select" @change="anchorTrainFile = null"><option value="builtin">内置</option><option value="upload">用户上传资源</option></select>
+                    <div v-if="anchorTrainMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload($event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传已标注文献集' }}</b><small>仅 .json：title（题名）+ text（文本）+ category（人工标注类目）；编号可选</small></label></div>
                   </div>
                 </div>
               </div>
@@ -1545,7 +1563,7 @@ function downloadResult() {
 
 
           <div v-if="toolId === 'zh-keyword'" class="settings-card generic-settings">
-            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="field"><label><span class="label-main">词典使用方式</span><small>区分数据库资源与用户录入</small></label><select v-model="dictionaryMode" class="select"><option value="system">使用系统预置术语词典（默认）</option><option value="custom">新建或上传用户自定义领域词典</option></select></div><div v-if="dictionaryMode === 'system'" class="info-banner dictionary-status">✓ 默认状态：使用系统预置术语词典，不提交用户词典参数。</div><div v-else class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>{{ customDictionaryFile?.name || '上传用户词典文件' }}</b><small>支持 JSON/CSV/XLSX/TXT：术语词条</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div></div></div>
+            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="field"><label><span class="label-main">词典使用方式</span><small>区分数据库资源与用户录入</small></label><select v-model="dictionaryMode" class="select" @change="handleDictionaryModeChange"><option value="system">使用系统预置术语词典（默认）</option><option value="custom">新建或上传用户自定义领域词典</option></select></div><div v-if="dictionaryMode === 'system'" class="info-banner dictionary-status">✓ 默认状态：使用系统预置术语词典，不提交用户词典参数。</div><div v-else class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>{{ customDictionaryFile?.name || '上传用户词典文件' }}</b><small>支持 JSON/CSV/XLSX/TXT：术语词条</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div></div></div>
           </div>
 
         </div>

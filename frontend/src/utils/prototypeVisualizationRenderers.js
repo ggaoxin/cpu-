@@ -110,11 +110,12 @@ function renderDomainClassification(response) {
 
   const matched = successful.filter(record => record.match.status === 'matched').length
   const level2Count = new Set(successful.flatMap(record => record.classifications.map(item => item.level_2).filter(Boolean))).size
+  const level3Count = new Set(successful.flatMap(record => record.classifications.map(item => item.level_3).filter(Boolean))).size
   // 与 zh/en-classify 一致：只把"有 ≥0.8 替代候选"的文献放进候选确认区；只有当前首选、无替代
   // 候选的文献已是正式结果并入库，不在候选区出现空占位、无需人工确认。summary 的"待人工确认"
   // 因此只统计这类真正待确认的文献（有替代候选且未确认），没有则显示 0（不再像旧版把所有
   // 非已确认记录都算成"待确认"，那会把只有当前首选、无需确认的文献也计入，数字虚高且误导）。
-  const summary = [['文献数量', records.length], ['领域匹配', `${matched}/${successful.length}`], ['二级类目', level2Count]]
+  const summary = [['文献数量', records.length], ['领域匹配', `${matched}/${successful.length}`], ['二级类目', level2Count], ['三级类目', level3Count]]
 
   const detailRows = successful.map(record => {
     const item = record.classifications[0]

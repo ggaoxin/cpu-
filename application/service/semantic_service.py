@@ -92,13 +92,16 @@ def _keyword_lexicon(lang: str) -> dict:
     value = {
         "block": frozenset(words),
         "acronyms": frozenset(str(a).strip().upper() for a in data.get("acronym_whitelist") or []),
+        # 裸用无领域区分度的实义泛词（damage/model/analysis…）：单单词命中时若
+        # 本批存在以其为成分的更长术语则让位（见 _clean_keywords），组合词不受影响
+        "generic": frozenset(str(w).strip().casefold() for w in data.get("generic_content_words") or []),
     }
     _LEXICON_CACHE[str(path)] = (mtime, value)
     return value
 
 
 # 沉淀闭环可晋升的丢弃原因（词质量问题；长度越界/重复等结构性丢弃不进闭环）
-_LEXICON_DROP_REASONS = {"英文虚词", "短碎片", "短大写碎片", "原文无此独立词", "中文虚词"}
+_LEXICON_DROP_REASONS = {"英文虚词", "短碎片", "短大写碎片", "原文无此独立词", "中文虚词", "裸泛词让位"}
 
 
 def _log_keyword_drop(lang: str, word: str, reason: str) -> None:
@@ -152,15 +155,16 @@ def _lex_contains(nt: str, h: str) -> bool:
 def _language_mismatch_error(expected: str, text: str, counterpart: str) -> Optional[str]:
     """语言预检：跨语言输入返回可读错误消息（None=通过）。
 
-    用户规则（2026-09-12 定稿）：中文 >50 字即判中文文献——含中文摘要、
-    中英双语论文、带中文参考文献的英文论文（双语=中文）。有效字符
+    用户规则（2026-09-14 定稿）：中文 >20 字即判中文文献——含中文摘要、
+    中英双语论文、带中文参考文献的英文论文（双语=中文）、短中文测试片段
+    （2026-09-12 的 >50 门槛曾把 45 字纯中文误判英文）。有效字符
     （CJK+拉丁字母）<30 不判，避免标题类短输入误伤。
     """
     cjk = sum(1 for ch in text if "一" <= ch <= "鿿")
     latin = sum(1 for ch in text if ch.isascii() and ch.isalpha())
     if cjk + latin < 30:
         return None
-    is_chinese = cjk > 50
+    is_chinese = cjk > 20
     if expected == "zh" and not is_chinese:
         return "语言不匹配：该功能点面向中文文献，但输入疑似英文文本。"
     if expected == "en" and is_chinese:
@@ -282,7 +286,22 @@ class SemanticApplicationService(ISemanticService):
         framework = ("【用户上传 CLC 资源（" + kind + "）】"
                      "作为标引风格参考与范围约束；分类号须在用户库内真实存在。")
         if kind == "labeled_papers":
-            body = SemanticApplicationService._render_clc_few_shot(entries, min(budget, 6000))
+            # 2026-09-14 用户定稿：分类资源统一按类目表处理——标注样本不再渲染
+            # few-shot 示范，仅提取其中出现过的分类号并入"有效分类号范围"清单。
+            # 机制统一为两条：大表建库（向量检索）/ 小表提示词注入范围清单。
+            pairs: list = []
+            _seen: set = set()
+            for e in entries:
+                if not isinstance(e, dict):
+                    continue
+                _mc = e.get("main_classification") if isinstance(e.get("main_classification"), dict) else {}
+                _code = str(e.get("clc_code") or _mc.get("clc_code") or e.get("code") or "").strip()
+                _name = str(e.get("clc_name") or _mc.get("clc_name") or e.get("name") or "").strip()
+                if _code and _code not in _seen:
+                    _seen.add(_code)
+                    pairs.append({"clc_code": _code, "clc_name": _name})
+            body = (SemanticApplicationService._render_clc_scope_list(
+                pairs, 50, "有效分类号（仅以下合法，其余禁止）") if pairs else None)
         elif kind == "taxonomy_scattered":
             body = SemanticApplicationService._render_clc_scope_list(
                 entries, 50, "有效分类号（仅以下合法，其余禁止）")
@@ -622,6 +641,12 @@ class SemanticApplicationService(ISemanticService):
             large_manifest = index_dir / "clc_index_large" / "manifest.json"
             if not large_manifest.exists():
                 continue  # 该资源未建 CLC 索引，试下一个
+            # 命中续期（2026-09-14 索引缓存生命周期）：TTL 闲置判定依据目录 mtime
+            try:
+                import os as _os
+                _os.utime(index_dir)
+            except OSError:
+                pass
             if cross_lingual:
                 m3_manifest = index_dir / "clc_index_m3" / "manifest.json"
                 if not m3_manifest.exists():
@@ -712,6 +737,32 @@ class SemanticApplicationService(ISemanticService):
         # 先检索候选喂给 LLM——候选是自定义体系下唯一的事实来源，不存在锚定问题。
         cross_lingual = bool(getattr(rule, "cross_lingual", False))
         top_k = int((request.params or {}).get("top_k", 5))
+        # ── 映射规则·翻译增强（2026-09-15 定稿架构）──
+        # 中图分类法是中文构建的：英文要先映射为标准中文表达，再用中文匹配中图分类。
+        # 内置 = bge-m3 跨语言向量隐式翻译（默认）；用户上传映射规则 = 词表显式翻译：
+        # 标题/摘要/关键词命中表内英文术语 → 对应中文标准表达并入检索查询与提示词，
+        # 候选与选择仍走语义判断（不锁定结果）。命中事实透出到跨语言映射块。
+        _mapping_hits: dict = {}   # {中文标准表达: 英文术语}——纯翻译表
+        _map_res = ((request.params or {}).get("resolved_resources") or {}).get(
+            "classification_standard_mapping_table")
+        if isinstance(_map_res, dict) and cross_lingual:
+            try:
+                for _r in self._load_clc_mapping_rows(_map_res):
+                    _t = str(_r.get("term") or "").strip()
+                    _zh = str(_r.get("clc_name") or _r.get("label") or "").strip()
+                    if _t and _zh and _zh not in _mapping_hits:
+                        _hay = f"{title}\n{abstract}\n{keywords}".casefold()
+                        if _t.casefold() in _hay:
+                            _mapping_hits[_zh] = _t
+            except Exception:  # noqa: BLE001
+                logger.warning("en分类映射规则加载失败，忽略", exc_info=True)
+        _keywords_eff = keywords
+        if _mapping_hits:
+            # 命中术语的中文标准表达并入检索查询（翻译增强检索）。
+            # keywords 可能是 list（_parse_paper_input 解析产物）——先归一为字符串
+            _kw_str = " ".join(keywords) if isinstance(keywords, list) else str(keywords or "")
+            _keywords_eff = (_kw_str + " " + " ".join(_mapping_hits)).strip()
+
         custom_retriever = None
         custom_candidates: list = []
         if isinstance((request.params or {}).get("resolved_resources"), dict) \
@@ -721,7 +772,7 @@ class SemanticApplicationService(ISemanticService):
             if resolved_retriever is not _builtin:
                 custom_retriever = resolved_retriever
                 custom_candidates = custom_retriever.retrieve(
-                    title, abstract, keywords, k=max(top_k, 12), cross_lingual=cross_lingual)
+                    title, abstract, _keywords_eff, k=max(top_k, 12), cross_lingual=cross_lingual)
             else:
                 # 用户选了资源但未建向量索引(散点表/小表/标注样本):用资源条目本身构建
                 # 作用域检索器,resolve_code/children 均对用户条目生效——否则后置校验会把
@@ -729,7 +780,8 @@ class SemanticApplicationService(ISemanticService):
                 custom_retriever = self._user_scope_retriever(request)
                 if custom_retriever is not None:
                     custom_candidates = custom_retriever.retrieve(
-                        title, abstract, keywords, k=max(top_k, 12), cross_lingual=cross_lingual)
+                        title, abstract, _keywords_eff, k=max(top_k, 12), cross_lingual=cross_lingual)
+
         system_prompt = self._system_prompt(rule, request)
         user_prompt = self._render_classification_user_prompt(title, abstract, keywords, full_text)
         if custom_candidates:
@@ -744,6 +796,11 @@ class SemanticApplicationService(ISemanticService):
                 "禁止使用任何不在候选中的分类号（包括你已知的中图法分类号）：\n"
                 + "\n".join(lines)
             )
+        if _mapping_hits:
+            user_prompt += (
+                "\n\n【用户映射规则·术语对照】用户上传的映射规则给出以下标准中文表达，"
+                "分类判断时请优先按这些中文表达对应的类目理解原文：\n"
+                + "\n".join(f"- {_t} → {_zh}" for _zh, _t in _mapping_hits.items()))
         data = self._glm.chat_json(system_prompt, user_prompt, timeout=120.0, max_tokens=1500)
         data = data.get("data", data) if isinstance(data, dict) else {}
 
@@ -754,7 +811,7 @@ class SemanticApplicationService(ISemanticService):
         if custom_candidates:
             candidates = custom_candidates
         else:
-            candidates = retriever.retrieve(title, abstract, keywords, k=top_k,
+            candidates = retriever.retrieve(title, abstract, _keywords_eff, k=top_k,
                                             cross_lingual=cross_lingual)
 
         # 3b. 解析候选组合（1-3 组，按推荐度降序）；兼容旧版 main_code/auxiliary_codes 单组合响应
@@ -796,6 +853,7 @@ class SemanticApplicationService(ISemanticService):
             if not main_obj:
                 all_resolved = False
                 continue
+
             llm_conf = float(combo.get("confidence") or 0)
             # 用 LLM 返回的真实置信度，不再把首选组合写死成 1.0；封顶 0.95 防虚高
             main_obj["confidence"] = min(llm_conf, 0.95)
@@ -862,6 +920,15 @@ class SemanticApplicationService(ISemanticService):
             "selection_reason": primary["reason"],
             "alignment_check": alignment_check,
         }
+        # 映射规则命中透出（出口层既有契约 user_mapping_applied →
+        # cross_language_mapping.status="已映射（用户映射规则命中）"，前端
+        # enMappingCell 展示命中术语与来源）
+        if _mapping_hits:
+            out["user_mapping_applied"] = {
+                "term": "; ".join(_mapping_hits.values()),
+                "matched_terms": list(_mapping_hits.values()),
+                "zh_terms": list(_mapping_hits.keys()),
+            }
 
         result.success = True
         result.data = out
@@ -995,25 +1062,297 @@ class SemanticApplicationService(ISemanticService):
     def _candidate_to_obj(cand: dict, with_rank: bool = False) -> dict:
         """把检索候选拐成 gold 兼容的分类对象（保留 score 供前端/归一化过滤）。"""
         obj = {
-            "clc_code": cand["clc_code"],
-            "clc_name": cand["clc_name"],
-            "classification_path": cand["classification_path"],
-            "path_codes": cand["path_codes"],
-            "path_names": cand["path_names"],
-            "rag_entry_id": cand["rag_entry_id"],
+            "clc_code": cand.get("clc_code") or "",
+            "clc_name": cand.get("clc_name") or "",
+            "classification_path": cand.get("classification_path")
+                or cand.get("full_path") or "",
+            "path_codes": cand.get("path_codes") or [],
+            "path_names": cand.get("path_names") or [],
+            "rag_entry_id": cand.get("rag_entry_id") or cand.get("id") or "",
             "score": cand.get("score"),
         }
         if with_rank:
-            obj["rank"] = cand["rank"]
+            obj["rank"] = cand.get("rank") or 0
         return obj
+
+    @staticmethod
+    @staticmethod
+    @staticmethod
+    def _load_rules_taxonomy(descriptor: dict) -> list:
+        """读领域分类规则资源 → CLC 条目列表（供作用域检索器构建）。
+
+        支持两种格式：
+        ① 数组：[{clc_code, clc_name, parent_code?}, ...]（与 clc_labeled_data 同构）
+        ② 包装：{categories: [...]} / {taxonomy: [...]} 等 → 自动解包
+        """
+        from infrastructure.resources.normalize import normalized_rows_for, resource_path
+        from config.settings import settings as _st
+        path = resource_path(str((descriptor or {}).get("storage_uri") or ""), _st.PROJECT_ROOT)
+        if path is None:
+            return []
+        rows = normalized_rows_for(path)
+        if not rows:
+            import json as _json
+            try:
+                doc = _json.loads(path.read_text(encoding="utf-8-sig", errors="replace"))
+            except Exception:  # noqa: BLE001
+                return []
+            if isinstance(doc, dict):
+                doc = next((doc[k] for k in ("categories", "taxonomy", "entries", "items", "data", "labels")
+                            if isinstance(doc.get(k), list)), [])
+            rows = [r for r in (doc or []) if isinstance(r, dict)]
+        # 提取 CLC 条目（与 clc_labeled_data 同构的字段别名）
+        out = []
+        for r in rows:
+            code = str(r.get("clc_code") or r.get("code") or r.get("id") or "").strip()
+            name = str(r.get("clc_name") or r.get("name") or r.get("label") or "").strip()
+            parent = str(r.get("parent_code") or r.get("parent") or "").strip()
+            if code and name:
+                out.append({"clc_code": code, "clc_name": name, "parent_code": parent,
+                            "id": code})
+        # 沿 parent_code 链构建层级路径（大类算一级，最多展示三级）
+        _by_code = {e["clc_code"]: e for e in out}
+        for e in out:
+            chain = []
+            cur = e
+            seen = set()
+            while cur and cur["clc_code"] not in seen:
+                seen.add(cur["clc_code"])
+                chain.insert(0, cur)
+                parent_code = cur.get("parent_code") or ""
+                cur = _by_code.get(parent_code) if parent_code else None
+            # 压缩到三级：一级=根节点，二级=根的直接子节点，三级=分类结果本身
+            if len(chain) >= 3:
+                display = [chain[0], chain[1], chain[-1]]
+            elif len(chain) == 2:
+                display = chain
+            else:
+                display = chain
+            e["path_codes"] = [c["clc_code"] for c in display]
+            e["path_names"] = [c["clc_name"] for c in display]  # 纯名称，码前缀由 normalizer 拼接
+            e["full_path"] = " > ".join(f"{c} {n}" for c, n in zip(e["path_codes"], e["path_names"]))
+        return out
+
+    @staticmethod
+    def _build_scope_retriever_from_entries(entries: list):
+        """从 CLC 条目列表构建作用域检索器（与 _user_scope_retriever 同理）。
+
+        条目少（≤200），用 bge-m3 向量编码做余弦检索；无需建磁盘索引。
+        """
+        if not entries:
+            return None
+        try:
+            import numpy as _np
+            from infrastructure.rag.m3_encoder import m3_encoder as _m3
+            texts = [f"{e['clc_code']} {e['clc_name']}" for e in entries]
+            vecs = _np.asarray(_m3.encode(texts), dtype="float32")
+            norms = _np.linalg.norm(vecs, axis=1, keepdims=True)
+            norms[norms == 0] = 1.0
+            vecs = vecs / norms
+
+            class _ScopeRetriever:
+                def resolve_code(self, code: str):
+                    for e in entries:
+                        if e["clc_code"] == code:
+                            return e
+                    return None
+
+                def children(self, parent_code: str):
+                    return [e for e in entries if e.get("parent_code") == parent_code]
+
+                def retrieve(self, title, abstract, keywords, k=5, cross_lingual=False):
+                    query = f"{title or ''} {abstract or ''} {keywords or ''}".strip()[:2000]
+                    if not query:
+                        return entries[:k]
+                    qv = _np.asarray(_m3.encode([query]), dtype="float32")
+                    qn = _np.linalg.norm(qv, axis=1, keepdims=True)
+                    qn[qn == 0] = 1.0
+                    qv = qv / qn
+                    sims = (vecs @ qv.T).flatten()
+                    order = _np.argsort(-sims)[:k]
+                    out = []
+                    for idx in order:
+                        e = dict(entries[int(idx)])
+                        e["score"] = float(sims[int(idx)])
+                        out.append(e)
+                    return out
+
+            return _ScopeRetriever()
+        except Exception:  # noqa: BLE001
+            return None
+
+    @staticmethod
+    def _render_fewshot_examples(descriptor: dict, max_examples: int = 5) -> str:
+        """读人工标注训练数据 → few-shot 样本文本（注入提示词）。
+
+        支持格式：[{text, label}, ...] 或 [{text, 分类标签}, ...] 等别名。
+        """
+        from infrastructure.resources.normalize import normalized_rows_for, resource_path
+        from config.settings import settings as _st
+        path = resource_path(str((descriptor or {}).get("storage_uri") or ""), _st.PROJECT_ROOT)
+        if path is None:
+            return ""
+        rows = normalized_rows_for(path)
+        if not rows:
+            import json as _json
+            try:
+                rows = _json.loads(path.read_text(encoding="utf-8-sig", errors="replace"))
+            except Exception:  # noqa: BLE001
+                return ""
+            if isinstance(rows, dict):
+                rows = next((rows[k] for k in ("samples", "examples", "data", "entries", "items")
+                             if isinstance(rows.get(k), list)), [])
+        lines = []
+        for r in (rows or []):
+            if not isinstance(r, dict):
+                continue
+            text = str(r.get("text") or r.get("content") or r.get("示例文本") or "").strip()
+            label = str(r.get("label") or r.get("category") or r.get("classification")
+                        or r.get("标签") or r.get("分类") or r.get("标注") or "").strip()
+            if text and label:
+                lines.append(f"- 文本「{text[:120]}」→ 分类「{label}」")
+            if len(lines) >= max_examples:
+                break
+        return "\n".join(lines)
+
+    @staticmethod
+    def _match_training_examples(descriptor: dict, input_text: str, threshold: float = 0.45) -> dict:
+        """计算输入文本与训练样本的语义相似度，返回匹配结果。
+
+        相似度 ≥ threshold 的样本视为"命中"，其标签类别并入检索关键词
+        ——训练数据有了不依赖领域规则的独立可观察效果。
+        返回 {"match_count": N, "matched_labels": [...], "matched_examples": [...]}
+        """
+        if not input_text or not input_text.strip():
+            return {}
+        from infrastructure.resources.normalize import normalized_rows_for, resource_path
+        from config.settings import settings as _st
+        path = resource_path(str((descriptor or {}).get("storage_uri") or ""), _st.PROJECT_ROOT)
+        if path is None:
+            return {}
+        rows = normalized_rows_for(path)
+        if not rows:
+            import json as _json
+            try:
+                rows = _json.loads(path.read_text(encoding="utf-8-sig", errors="replace"))
+            except Exception:  # noqa: BLE001
+                return {}
+            if isinstance(rows, dict):
+                rows = next((rows[k] for k in ("samples", "examples", "data", "entries")
+                             if isinstance(rows.get(k), list)), [])
+        pairs = []
+        for r in (rows or []):
+            if not isinstance(r, dict):
+                continue
+            text = str(r.get("text") or r.get("content") or "").strip()
+            label = str(r.get("label") or r.get("category") or r.get("classification")
+                        or r.get("标签") or "").strip()
+            if text and label:
+                pairs.append((text, label))
+        if not pairs:
+            return {}
+        try:
+            import numpy as _np
+            from infrastructure.rag.m3_encoder import m3_encoder as _m3
+            texts = [p[0] for p in pairs] + [input_text]
+            vecs = _np.asarray(_m3.encode(texts), dtype="float32")
+            norms = _np.linalg.norm(vecs, axis=1, keepdims=True)
+            norms[norms == 0] = 1.0
+            vecs = vecs / norms
+            sims = (vecs[:-1] @ vecs[-1]).flatten()
+            matched = []
+            labels = []
+            for (text, label), sim in zip(pairs, sims):
+                if float(sim) >= threshold:
+                    matched.append({"text": text[:80], "label": label, "similarity": round(float(sim), 3)})
+                    if label not in labels:
+                        labels.append(label)
+            if not matched:
+                return {}
+            return {"match_count": len(matched), "matched_labels": labels, "matched_examples": matched}
+        except Exception:  # noqa: BLE001
+            return {}
+
+    @staticmethod
+    def _parse_training_pairs(descriptor: dict) -> list:
+        """解析训练数据 → [(text, label), ...]。"""
+        from pathlib import Path as _P
+        from config.settings import settings as _st
+        uri = str((descriptor or {}).get("storage_uri") or "")
+        path = _P(uri.removeprefix("project://")) if uri else None
+        if path is not None and not path.is_absolute():
+            path = _st.PROJECT_ROOT / path
+        if path is None or not path.is_file():
+            return []
+        import json as _json
+        try:
+            rows = _json.loads(path.read_text(encoding="utf-8-sig", errors="replace"))
+        except Exception:  # noqa: BLE001
+            return []
+        if isinstance(rows, dict):
+            rows = next((rows[k] for k in ("samples", "examples", "data", "entries", "items")
+                         if isinstance(rows.get(k), list)), [])
+        return [(str(r.get("text") or r.get("content") or "").strip(),
+                 str(r.get("label") or r.get("category") or r.get("classification")
+                     or r.get("标签") or "").strip())
+                for r in (rows or []) if isinstance(r, dict)
+                and str(r.get("text") or r.get("content") or "").strip()
+                and str(r.get("label") or r.get("category") or r.get("classification")
+                        or r.get("标签") or "").strip()]
+
+    @staticmethod
+    def _compute_training_similarity(pairs: list, input_text: str, threshold: float = 0.45) -> dict:
+        """输入文本与训练样本的语义相似度 → 匹配结果（标签并入检索）。"""
+        if not input_text.strip() or not pairs:
+            return {}
+        try:
+            import numpy as _np
+            from infrastructure.rag.m3_encoder import m3_encoder as _m3
+            texts = [p[0] for p in pairs] + [input_text]
+            vecs = _np.asarray(_m3.encode(texts), dtype="float32")
+            norms = _np.linalg.norm(vecs, axis=1, keepdims=True)
+            norms[norms == 0] = 1.0
+            vecs = vecs / norms
+            sims = (vecs[:-1] @ vecs[-1]).flatten()
+            matched, labels = [], []
+            for (text, label), sim in zip(pairs, sims):
+                if float(sim) >= threshold:
+                    matched.append({"text": text[:80], "label": label, "similarity": round(float(sim), 3)})
+                    if label not in labels:
+                        labels.append(label)
+            return ({"match_count": len(matched), "matched_labels": labels, "matched_examples": matched}
+                    if matched else {})
+        except Exception:  # noqa: BLE001
+            return {}
+
+    @staticmethod
+    def _load_clc_mapping_rows(descriptor: dict) -> list:
+        """读用户映射规则资源 → [{term, clc_code, clc_name}]（归一化行优先）。"""
+        from infrastructure.resources.normalize import normalized_rows_for, resource_path
+        from config.settings import settings as _st
+        path = resource_path(str((descriptor or {}).get("storage_uri") or ""), _st.PROJECT_ROOT)
+        if path is None:
+            return []
+        rows = normalized_rows_for(path)
+        if not rows:
+            import json as _json
+            try:
+                rows = _json.loads(path.read_text(encoding="utf-8-sig", errors="replace"))
+            except Exception:  # noqa: BLE001
+                return []
+        # 2026-09-15 定稿：en分类的映射规则=纯翻译表（英文术语→中文术语），
+        # 分类号在分类工具里没有意义（分类由语义定案），行内带码也忽略
+        return [r for r in (rows or [])
+                if isinstance(r, dict) and str(r.get("term") or "").strip()
+                and str(r.get("clc_name") or r.get("label") or "").strip()]
 
     @staticmethod
     def _entry_to_obj(entry: dict, candidates) -> dict:
         """把 clc_meta 条目拐成 gold 兼容的分类对象；命中候选时复用其 rag_entry_id。"""
-        rag_id = entry["id"]
+        rag_id = entry.get("id") or entry.get("clc_code") or ""
         for c in candidates:
-            if c["clc_code"] == entry["clc_code"]:
-                rag_id = c["rag_entry_id"]
+            if c.get("clc_code") == entry.get("clc_code"):
+                rag_id = c.get("rag_entry_id") or rag_id
                 break
         return {
             "clc_code": entry["clc_code"],
@@ -1230,6 +1569,9 @@ class SemanticApplicationService(ISemanticService):
         # 用户上传的领域术语库（en-keyword 的 domain_terminology_library 资源）合并进
         # 归一索引：资源文件每次请求现读，届时上传/替换即直接生效（无需重启或改模型文件）。
         # 条目格式 [{canonical: 标准术语, variants: [变体/缩写/同义词]}]，按 canonical 去重。
+        _user_lib_cf: set = set()   # 用户库簇内全部字面形式(casefold)：命中词标 terminology_source
+        _user_lib_name = ""
+        _lib_hits: list = []        # 库内字面命中形式（注入候选池头部）
         if is_en:
             _lib_res = ((request.params or {}).get("resolved_resources") or {}).get("domain_terminology_library")
             _lib_uri = str((_lib_res or {}).get("storage_uri") or "")
@@ -1238,14 +1580,33 @@ class SemanticApplicationService(ISemanticService):
                 _lib_path = _P(_lib_uri.removeprefix("project://")) if _lib_uri.startswith("project://") else _P(_lib_uri)
                 if _lib_path.is_file():
                     try:
-                        import json as _json2
-                        _lib = _json2.loads(_lib_path.read_text(encoding="utf-8"))
-                        _extra = [e for e in (_lib if isinstance(_lib, list) else [])
-                                  if isinstance(e, dict) and e.get("canonical") and e.get("variants")]
+                        # 优先取归一化行（上传/运行预检已缓存，canonical→term 别名已折算），
+                        # 未缓存再裸读 JSON。行内 canonical 或 term 任一存在即成簇：
+                        # variants 缺失视为空簇（术语字面命中仍可注入候选池）。
+                        from infrastructure.resources.normalize import normalized_rows_for as _rows_for
+                        _lib_rows = _rows_for(_lib_path)
+                        if _lib_rows is None:
+                            import json as _json2
+                            _lib = _json2.loads(_lib_path.read_text(encoding="utf-8"))
+                            _lib_rows = _lib if isinstance(_lib, list) else []
+                        _extra = []
+                        for _e in _lib_rows:
+                            if not isinstance(_e, dict):
+                                continue
+                            _canon = str(_e.get("canonical") or _e.get("term") or "").strip()
+                            if not _canon:
+                                continue
+                            _vars = [str(v).strip() for v in (_e.get("variants") or []) if str(v).strip()]
+                            _extra.append({"canonical": _canon, "variants": _vars})
                         if _extra:
                             _seen = {str(c.get("canonical")) for c in model.get("domain_terms") or []}
                             model["domain_terms"] = list(model.get("domain_terms") or []) + [
-                                e for e in _extra if str(e["canonical"]) not in _seen]
+                                e for e in _extra if e["canonical"] not in _seen]
+                            # 库命中标记素材：canonical+全部变体（casefold），
+                            # 命中词的 terminology_source = {type:external, library_name}
+                            _user_lib_cf = {e["canonical"].casefold() for e in _extra} | {
+                                v.casefold() for e in _extra for v in e["variants"]}
+                            _user_lib_name = str(_lib_res.get("name") or "")
 
                     except Exception:  # noqa: BLE001 - 术语库损坏不影响主流程
                         logger.warning("领域术语库资源解析失败：%s", _lib_path.name, exc_info=True)
@@ -1302,7 +1663,15 @@ class SemanticApplicationService(ISemanticService):
                     term = str(value or "").strip()
                     term_id = None
                     term_weight = None
-                if term:
+                if not term:
+                    continue
+                # 拆分：用户可能一行写多个词（"气源压力、模型迎角、阀门开度"）
+                # → 按中英文分隔符拆开逐个匹配，不再整串当一个词条
+                _split_parts = [p.strip() for p in re.split(r"[、，,;；/|\s]+", term) if len(p.strip()) >= 2]
+                if len(_split_parts) > 1:
+                    for part in _split_parts:
+                        custom_terms.append({"term": part, "id": term_id, "weight": term_weight})
+                else:
                     custom_terms.append({"term": term, "id": term_id, "weight": term_weight})
             matching_dictionary_terms = [
                 value["term"] for value in custom_terms
@@ -1323,6 +1692,10 @@ class SemanticApplicationService(ISemanticService):
                         break  # 每簇注入一个命中形式（canonical 优先，否则首个命中的变体）
             if _lib_hits:
                 top_cands = list(dict.fromkeys(_lib_hits + top_cands))[:40]
+        # 用户术语库命中的形式单列传给选词 LLM：要求作为独立关键词原样输出——
+        # 缩写若被嵌进更长短语（"CNN autoencoder"）会错过归一索引的精确匹配，
+        # 指令引导输出裸缩写（"CNN"）才能触发 normalized_term 折算标准术语
+        _lib_prompt_terms = [f for f in (_lib_hits or []) if f.casefold() in _user_lib_cf][:10]
 
         # 2. LLM 选/精炼（带 few-shot + 候选）
         system_prompt = self._system_prompt(rule, request)
@@ -1338,7 +1711,7 @@ class SemanticApplicationService(ISemanticService):
         user_prompt = self._render_keyword_user_prompt(
             title, abstract, top_cands, model.get("few_shot", []), lang=getattr(rule, "lang", ""),
             preserve_original_form=preserve_original_form, count_min=_min_kw, count_max=_max_kw,
-            body_excerpt=_body_excerpt)
+            body_excerpt=_body_excerpt, library_terms=_lib_prompt_terms)
         # 低温采样：关键词选词要稳定可复现（高温导致同文档跑次间 0.8↔0.2 波动），与 fitness 评分轮一致
         # A/B 开关（2026-09-09）：KEYWORD_MERGED_SELECT=1 时选词调用同时输出每词的
         # prob(内容适配度)+scene(应用场景)，跳过独立的 fitness/scenes 轮（省 ~4s/篇）。
@@ -1447,8 +1820,9 @@ class SemanticApplicationService(ISemanticService):
                 _item["fitness"] = round(_fit, 3)                               # 内容适配度=置信度
 
         # 用户词典属于算法输入，在后端候选合并阶段生效，而不是由 Vue 或输出适配器伪造。
-        boost = max(0.0, min(0.5, float(custom_dictionary.get("weight_boost", 0) or 0))) \
-            if isinstance(custom_dictionary, dict) else 0.0
+        # 权重增量完全按用户设置——设多少加多少，没设就不加（2026-09-15 用户反馈：设0.08就该统一+0.08）
+        _raw_boost = float(custom_dictionary.get("weight_boost", 0) or 0) if isinstance(custom_dictionary, dict) else 0
+        boost = min(0.5, _raw_boost)
         matched_terms = []
         by_term = {item["keyword"].casefold(): item for item in cleaned}
         searchable = searchable_text.casefold()
@@ -1544,9 +1918,11 @@ class SemanticApplicationService(ISemanticService):
                 cleaned.append({"keyword": _ph, "weight": round(float(_c.get("score", 0) or 0), 3)})
         # 最终置信度=内容适配度 fitness；用户词典 boost 经 weight_change 叠加
         #（custom_terms 无 fitness，保留 boost 后的 weight 不变）
+        # 词典命中词封顶 1.0（用户显式收录=确定性知识）；非词典词封顶 0.95（防LLM过度自信）
         for _item in cleaned:
             if "fitness" in _item:
-                _item["weight"] = round(min(_item["fitness"] + _item.get("weight_change", 0), 0.95), 3)
+                _cap = 1.0 if _item.get("custom_dictionary_hit") else 0.95
+                _item["weight"] = round(min(_item["fitness"] + _item.get("weight_change", 0), _cap), 3)
                 # 用户词典命中的词置信度下限 0.75：用户显式收录的术语重要性有保障，
                 # 不因 LLM 误判"内容适配度"而输出刺眼低分
                 if _item.get("custom_dictionary_hit"):
@@ -1709,6 +2085,69 @@ class SemanticApplicationService(ISemanticService):
                                 "dense_score": round(float(_sims[_ri][_best]), 4),
                                 "scene": "用户映射表向量索引近邻",
                             }
+            # 归一反查兜底（2026-09-15 用户反馈：CNN 归一成 convolutional neural
+            # network 后仍显示未映射——缩写本身检索不到，但其标准术语检索得到）：
+            # 对未映射且可归一的关键词，用标准术语补一轮内置检索。双查询：裸 canon
+            # （英文跨语言）+ canon×变体词中文场景混合——实测裸英文术语召回差
+            # （reinforcement learning→医学记忆类），中英混合能把学科词带进查询
+            # （TP181 自动推理、机器学习 0.58）显著改善召回
+            if _norm_index:
+                _canon_of = {}
+                _pairs = []  # (canon, query)
+                for _c in cleaned:
+                    _k = _c["keyword"]
+                    if _en_clc_map.get(_k) or _en_clc_map.get(_k.casefold()):
+                        continue
+                    _h = _norm_index.get(_k.casefold())
+                    if _h:
+                        _canon = _h["canonical"]
+                        if _canon not in _canon_of.values():
+                            _canon_of[_k] = _canon
+                            _pairs.append((_canon, _canon))
+                            _scene = str(_en_scenes.get(_k) or "").strip()
+                            if _scene:
+                                _pairs.append((_canon, f"{_canon} {_scene}"))
+                if _pairs:
+                    _canon_hits = _clc_r.retrieve_batch([q for _, q in _pairs], k=8, cross_lingual=True)
+                    _cands_by_canon: Dict[str, list] = {}
+                    for (_canon, _q), _hs in zip(_pairs, _canon_hits):
+                        _cands_by_canon.setdefault(_canon, []).extend(_hs or [])
+                    _canon_cands, _canon_jobs = {}, []
+                    for _canon, _pool in _cands_by_canon.items():
+                        _best: Dict[str, Any] = {}
+                        for _c in _pool:
+                            _code = str(_c.get("clc_code") or "")
+                            if not _code:
+                                continue
+                            _sc = float(_c.get("score") or 0)
+                            if _code not in _best or _sc > float(_best[_code].get("score") or 0):
+                                _best[_code] = _c
+                        _uniq = sorted(_best.values(), key=lambda x: -float(x.get("score") or 0))[:6]
+                        if not _uniq or float(_uniq[0].get("score") or 0) < 0.40:
+                            continue
+                        _canon_cands[_canon] = _uniq
+                        _canon_jobs.append({"term": _canon, "context": _canon,
+                                            "candidates": _uniq})
+                    _canon_rerank = self._llm_rerank_clc_batch(_canon_jobs)
+                    for _canon, _uniq in _canon_cands.items():
+                        _chosen, _conf = _canon_rerank.get(_canon, (-1, 0.0))
+                        if _chosen < 0 or _conf < 0.45:
+                            continue
+                        _c = _uniq[_chosen] if _chosen < len(_uniq) else None
+                        if _c is None:
+                            continue
+                        for _k, _cv in _canon_of.items():
+                            if _cv == _canon:
+                                _en_clc_map[_k] = {
+                                    "system": "CLC",
+                                    "code": _c.get("clc_code"),
+                                    "label": _c.get("clc_name"),
+                                    "classification_path": _c.get("path_names") or [],
+                                    "confidence": round(min(1.0, _conf), 4),
+                                    "mapping_engine": "clc_retriever+batch_rerank",
+                                    "dense_score": round(float(_c.get("score") or 0), 4),
+                                    "scene": f"术语归一：{_canon}",
+                                }
         keyword_rows = []
         # 置信度下限 + 3~5 个收口（2026-09-09 用户需求）：低置信度关键词（<0.5，
         # 如 0.4 的泛化词）无参考价值；关键词规范通常 3-5 个。低于 0.5 丢弃；
@@ -1773,20 +2212,61 @@ class SemanticApplicationService(ISemanticService):
             start = searchable.find(keyword.casefold())
             weight = item.get("weight")
             _kw_hit = _norm_index.get(keyword.casefold()) if is_en else None
+            # 规范化形式：① 整词=库内变体 → 直接填标准术语；② 短语内含变体成分 →
+            # 逐成分展开（bridge SHM → bridge structural health monitoring）；
+            # ③ 无命中 → 原样。归一促成（精确或成分）即标库来源
+            _norm_out = keyword
+            _norm_from_lib = bool(_kw_hit and _user_lib_cf
+                                  and str(_kw_hit.get("canonical") or "").casefold() in _user_lib_cf)
+            if _kw_hit:
+                _norm_out = _kw_hit["canonical"]
+            elif is_en:
+                _parts = []
+                _hit_any = False
+                for _w in keyword.split():
+                    _w_cf = _w.strip('()[]{}"\',.;:').casefold()
+                    _h2 = _norm_index.get(_w_cf)
+                    if _h2:
+                        _parts.append(_h2["canonical"])
+                        if _user_lib_cf and (_w_cf in _user_lib_cf
+                                             or str(_h2.get("canonical") or "").casefold() in _user_lib_cf):
+                            _hit_any = True
+                    else:
+                        _parts.append(_w)
+                if _hit_any:
+                    _norm_out = " ".join(_parts)
+                    _norm_from_lib = True
+            # 分类映射反查链：关键词字面 → casefold → 术语库归一出的标准术语。
+            # 变体（SHM）本身不在映射表、但其标准术语（structural health monitoring）
+            # 在表内时，用标准术语的映射——术语库归一与映射表覆盖两资源协同。
+            # 优先级：表内字面 > 表内标准术语（确定性映射）> 内置检索对变体的猜测
+            _cm = None
+            if is_en:
+                _cm = _en_clc_map.get(keyword) or _en_clc_map.get(keyword.casefold())
+                if _kw_hit:
+                    _canon = str(_kw_hit.get("canonical") or "")
+                    _cm2 = _en_clc_map.get(_canon) or _en_clc_map.get(_canon.casefold())
+                    if isinstance(_cm2, dict) and str(_cm2.get("mapping_engine") or "").startswith("user_resource"):
+                        _cm = _cm2
+            # 用户术语库命中（字面=库内 canonical/变体，或归一由库促成）：标 external
+            # 来源，前端"术语资源"列显示"领域术语库 · 库名"——库注入/归一的可观测指纹
+            _lib_kw = _norm_from_lib or (bool(_user_lib_cf) and keyword.casefold() in _user_lib_cf)
             keyword_rows.append({
                 "keyword": keyword,
                 "term": keyword,
-                "normalized_term": _kw_hit["canonical"] if _kw_hit else keyword,
+                "normalized_term": _norm_out,
                 "weight": weight,
                 "score": weight,
                 "confidence": weight,
                 "rank": rank,
                 "type": item.get("type"),
+                "terminology_source": ({"type": "external", "library_name": _user_lib_name or "用户术语库"}
+                                       if _lib_kw else None),
                 "source": custom_dictionary.get("name") if item.get("custom_dictionary_hit") else "model",
                 "custom_dictionary_hit": bool(item.get("custom_dictionary_hit")),
                 "matched_dictionary_term_id": item.get("dictionary_term_id"),
                 "weight_change": _number_or_default(item.get("weight_change"), 0),
-                "classification_mapping": (_en_clc_map.get(keyword) or _en_clc_map.get(keyword.casefold())) if is_en else None,
+                "classification_mapping": _cm,
                 "source_position": {
                     "start": start if start >= 0 else None,
                     "end": start + len(keyword) if start >= 0 else None,
@@ -2317,7 +2797,7 @@ class SemanticApplicationService(ISemanticService):
                 "few_shot": [], "domain_terms": []}
 
     @staticmethod
-    def _render_keyword_user_prompt(title, abstract, candidates, few_shot, lang="", preserve_original_form=True, count_min=3, count_max=8, body_excerpt: str = "") -> str:
+    def _render_keyword_user_prompt(title, abstract, candidates, few_shot, lang="", preserve_original_form=True, count_min=3, count_max=8, body_excerpt: str = "", library_terms=None) -> str:
         import json as _json
         is_en = lang == "en"
         parts = []
@@ -2337,7 +2817,10 @@ class SemanticApplicationService(ISemanticService):
                         f"Extract {count_min}-{count_max} keywords in total. "
                         "Use terms exactly as they appear in the document; do NOT generalize, rephrase, "
                         "or merge scattered wording into a standard term. Prefer concise base terms; "
-                        "drop generic words. Also surface key metrics, phenomena, or parameters "
+                        "drop generic words — a single bare generic noun (e.g. \"damage\", \"model\", "
+                        "\"analysis\", \"monitoring\", \"learning\") is NEVER a keyword by itself: use the "
+                        "fuller domain-specific term from the document (e.g. \"damage identification\") "
+                        "instead. Also surface key metrics, phenomena, or parameters "
                         "(phenomenon_metric type) that recur in the document—they are often the "
                         "study's defining criteria; do not omit them just because they are not in "
                         "the title. MUST also cover application-scenario / research-object domain "
@@ -2376,6 +2859,14 @@ class SemanticApplicationService(ISemanticService):
                     "object, method, conclusion, or innovation that the abstract does not cover "
                     "(e.g. a named technique appearing only in the method section). Do NOT pick "
                     "generic high-frequency words from the body text.")
+            if library_terms:
+                obj["domain_terminology_hits"] = library_terms
+                obj["domain_terminology_rule"] = (
+                    "These terms come from the user's domain terminology library (standard terms "
+                    "and registered variants such as abbreviations). When one of them is a core "
+                    "topic of this document, output it VERBATIM as a STANDALONE keyword (exact "
+                    "string, e.g. \"CNN\" not \"CNN autoencoder\") so it can be normalized to the "
+                    "standard term; do not embed it inside a longer phrase.")
             parts.append("Extract keywords for the following document:\n" + _json.dumps(obj, ensure_ascii=False, indent=2))
         else:
             if preserve_original_form:
@@ -2480,6 +2971,16 @@ class SemanticApplicationService(ISemanticService):
                     dropped.append({"keyword": kw, "reason": "中文虚词"}); _log_keyword_drop("zh", kw, "中文虚词"); continue
             if kw in stopwords or key in {s.lower() for s in stopwords}:
                 dropped.append({"keyword": kw, "reason": "停用词"}); continue
+            # 裸泛词让位（2026-09-15 用户定调：damage 这类无领域区分度的单词不该
+            # 独立成关键词——标了等于没标还挤占名额）。让位制而非一刀切阻断：
+            # 本批存在以该词为成分的更长完整术语（damage identification）时裸词
+            # 让位；只有裸词时保留（避免误伤 bridge 类研究对象词）。组合词不受影响。
+            if is_en and len(kw.split()) == 1 and key in _lex_en.get("generic", frozenset()):
+                _as_part = any(key != o.lower() and key in o.lower().split()
+                               for o in (str(x.get("keyword") if isinstance(x, dict) else x) for x in raw_kw))
+                if _as_part:
+                    dropped.append({"keyword": kw, "reason": "裸泛词让位"})
+                    _log_keyword_drop("en", kw, "裸泛词让位"); continue
             if len(kw) <= 1:
                 dropped.append({"keyword": kw, "reason": "单字"}); continue
             if key in seen:
@@ -2543,18 +3044,131 @@ class SemanticApplicationService(ISemanticService):
             raise ValueError(f"ac_domain 需在 params.domain_code 指定领域(01-32)，got '{domain_code}'")
         domain_name = valid_domain.split(None, 1)[1] if len(valid_domain.split(None, 1)) > 1 else valid_domain
 
+        # ── 用户上传资源消费（2026-09-15 需规落实）──
+        # ① 领域分类规则 = 该专业领域的三级中图分类体系（答案空间替换）：
+        #    分类号只落用户体系内，resolve_code/路径从用户体系取
+        # ② 人工标注训练数据 = few-shot 样本对（文本+中文标签），校准标引风格
+        _resolved = (request.params or {}).get("resolved_resources") or {}
+        top_k = int((request.params or {}).get("top_k", 5))
+        _rules_res = _resolved.get("domain_classification_rules") if isinstance(_resolved, dict) else None
+        _train_res = _resolved.get("manually_labeled_training_data") if isinstance(_resolved, dict) else None
+        _rules_entries = []
+        _train_boost = {}
+        _keywords_eff_train = keywords
+        custom_retriever = None
+        custom_candidates: list = []
+        fewshot_text = ""
+        if isinstance(_rules_res, dict):
+            # 领域分类规则 → 用户作用域检索器（同 zh/en-classify 的小表路径）
+            _rules_entries = self._load_rules_taxonomy(_rules_res)
+            if _rules_entries:
+                from infrastructure.rag.clc_retriever import CLCRetriever
+                custom_retriever = self._build_scope_retriever_from_entries(_rules_entries)
+                if custom_retriever is not None:
+                    custom_candidates = custom_retriever.retrieve(
+                        title, abstract, keywords, k=max(top_k, 12))
+                    logger.info("领域分类规则作用域检索器生效：%d 个用户条目", len(_rules_entries))
+        if isinstance(_train_res, dict):
+            # 人工标注训练数据 → 一次解析，两处使用（few-shot + 相似度增强）
+            _train_pairs = self._parse_training_pairs(_train_res)
+            if _train_pairs:
+                fewshot_text = "\n".join(
+                    f"- 文本「{t[:120]}」→ 分类「{l}」" for t, l in _train_pairs[:5])
+                logger.info("人工标注训练数据生效：%d 对", len(_train_pairs))
+                # 相似度增强：输入文本与训练样本语义相似 → 标签类别并入检索
+                _train_boost = self._compute_training_similarity(
+                    _train_pairs, f"{title or ''} {abstract or ''}")
+                if _train_boost:
+                    _boost_terms = " ".join(_train_boost["matched_labels"])
+                    _kw_str = " ".join(keywords) if isinstance(keywords, list) else str(keywords or "")
+                    _keywords_eff_train = (_kw_str + " " + _boost_terms).strip()
+                    logger.info("训练数据相似命中 %d 个，标签增强：%s",
+                                _train_boost["match_count"], _boost_terms[:60])
+
         # LLM 在指定领域语境下选 CLC 细码（领域由用户指定，LLM 不判领域）；全文输入时附全文
         system_prompt = self._system_prompt(rule, request).replace("{domain}", valid_domain)
         user_prompt = self._render_classification_user_prompt(title, abstract, keywords, full_text)
+        if custom_candidates:
+            # 用户三级中图分类体系 → 候选限定 + few-shot 样本注入
+            _lines = [f"[{i+1}] {c.get('clc_code')} {c.get('clc_name')}"
+                      + (f" | 路径: {' > '.join(c.get('path_names') or [])}" if c.get("path_names") else "")
+                      for i, c in enumerate(custom_candidates)]
+            user_prompt += (
+                "\n\n【重要】本次使用用户自定义领域分类体系（非内置中图法）。"
+                "clc_code 必须且只能从下列候选分类号中选择，"
+                "禁止使用任何不在候选中的分类号（包括你已知的中图法分类号）：\n"
+                + "\n".join(_lines))
+        if fewshot_text:
+            user_prompt += "\n\n【人工标注样本（用户上传）】以下是已标注的训练样本，当输入文本与某样本内容相似时，优先采用该样本的分类号作为 clc_code 输出：\n" + fewshot_text
+        if _train_boost:
+            _pref = "\n".join(f"→ 优先考虑：{l}" for l in _train_boost.get("matched_labels") or [])
+            user_prompt += "\n\n【训练数据匹配推荐】以下分类号来自与输入文本语义相似的标注样本（相似度≥0.45），应作为首选分类号：\n" + _pref
         data = self._glm.chat_json(system_prompt, user_prompt, timeout=120.0, max_tokens=1500)
         data = data.get("data", data) if isinstance(data, dict) else {}
         clc_code = (data.get("clc_code") or "").strip()
         reason = data.get("selection_reason", "")
 
+        # 训练数据权威覆盖（2026-09-15）：最高相似度样本的分类号优先于 LLM 泛判
+        # ——内置给 TU3（粗），训练标注说这类文本是 TU31（细）→ 用 TU31
+        if _train_boost and _train_boost.get("matched_examples"):
+            _top = max(_train_boost["matched_examples"], key=lambda x: x.get("similarity", 0))
+            _top_code = str(_top.get("label") or "").split()[0] if _top.get("label") else ""
+            _top_sim = float(_top.get("similarity") or 0)
+            if _top_code and _top_sim >= 0.50:
+                # 仅当训练码是 LLM 码的同系（LLM=TU3, 训练=TU31 → 细化）或不同（覆盖）时采用
+                if not clc_code or clc_code == _top_code or _top_code.startswith(clc_code) or clc_code.startswith(_top_code):
+                    if _top_code != clc_code:
+                        reason = f"[训练数据覆盖 {_top_sim:.2f}→{_top_code}] " + reason
+                    clc_code = _top_code
+                    # 训练标签权威输出：直接用训练标签构建分类对象，不走内置 resolve
+                    # ——内置索引可能没有训练标签的细码（如 TU31），resolve 会退到粗码
+                    _top_label = str(_top.get("label") or "")
+                    _top_name = _top_label.split(None, 1)[1] if len(_top_label.split(None, 1)) > 1 else _top_label
+                    # 推断层级路径：TU31 → [TU, TU3, TU31]（字母=一级，+1数字=二级）
+                    import re as _re_t
+                    _m_t = _re_t.match(r'([A-Z]+)(\d*)', _top_code)
+                    _letters = _m_t.group(1) if _m_t else _top_code
+                    _digits = _m_t.group(2) if _m_t else ""
+                    _l1 = _letters
+                    _l2_code = _letters + _digits[:1] if _digits else _letters
+                    # 二级名称：优先从用户规则查，查不到用码的前缀推导
+                    _l2_name = ""
+                    if _rules_entries:
+                        _l2_entry = next((e for e in _rules_entries
+                                          if e.get("clc_code") == _l2_code), None)
+                        if _l2_entry:
+                            _l2_name = str(_l2_entry.get("clc_name") or "")
+                    if not _l2_name:
+                        _l2_name = "相关子类"  # 兜底名称（不含码，避免 normalizer 拼接后重复）
+                    clc_obj = {
+                        "clc_code": _top_code, "clc_name": _top_name,
+                        "classification_path": _top_label,
+                        "path_codes": [_l1, _l2_code, _top_code],
+                        "path_names": [domain_name, _l2_name, _top_name],
+                        "confidence": round(min(0.85 + _top_sim * 0.10, 0.95), 3),
+                    }
+                    result.success = True
+                    result.data = {
+                        "document_title": title,
+                        "domain_code": valid_domain.split()[0],
+                        "domain_name": domain_name,
+                        "clc_classification": clc_obj,
+                        "rag_top_k_candidates": [],
+                        "selection_reason": reason,
+                        "alignment_check": {"domain_valid": True,
+                                            "training_data_override": True},
+                        **({"training_data_effect": _train_boost} if _train_boost else {}),
+                    }
+                    result.confidence = clc_obj.get("confidence")
+                    result.raw = json.dumps(result.data, ensure_ascii=False)
+                    return result
+
         # 仅在远端模型成功后加载体积较大的 CLC 检索索引。
-        top_k = int((request.params or {}).get("top_k", 5))
-        retriever = self._resolve_clc_retriever(code, request, cross_lingual=False)
-        candidates = retriever.retrieve(title, abstract, keywords, k=top_k)
+        retriever = custom_retriever if custom_retriever is not None else \
+            self._resolve_clc_retriever(code, request, cross_lingual=False)
+        _retrieval_kw = _keywords_eff_train if _train_boost else keywords
+        candidates = custom_candidates if custom_candidates else \
+            retriever.retrieve(title, abstract, _retrieval_kw, k=top_k)
 
         # 第二层校验：resolve_code + 二阶段层级细化
         refine = (request.params or {}).get("refine", True)
@@ -2600,6 +3214,8 @@ class SemanticApplicationService(ISemanticService):
             "alignment_check": {"domain_valid": valid_domain is not None,
                                 "clc_code_exists_in_rag": main_entry is not None,
                                 "path_copied_from_rag": True},
+            # 训练数据生效指纹（2026-09-15：测试人员需要可观察的独立效果）
+            **({"training_data_effect": _train_boost} if _train_boost else {}),
         }
         result.success = True
         result.data = out
@@ -4077,9 +4693,78 @@ class SemanticApplicationService(ISemanticService):
             result.raw = json.dumps({"n_citations": 0}, ensure_ascii=False)
             return result
 
+        # ②c 被引文献元数据配对（按引用标记号匹配请求的 citation_metadata）：
+        # 题名/年份作为意图判定的辅助信号（2026-09-15 用户定调——如老文献多为
+        # 背景铺垫、题名含方法名多为方法引入）；未提供时为空，不影响判定
+        _cited_meta_by_marker: dict = {}
+        _meta_rows = (request.params or {}).get("citation_metadata") or []
+        if isinstance(_meta_rows, dict):
+            _meta_rows = [_meta_rows]
+        for _m in _meta_rows if isinstance(_meta_rows, list) else []:
+            if not isinstance(_m, dict):
+                continue
+            _mk = str(_m.get("citation_marker") or _m.get("marker") or "").strip()
+            _nums = set()
+            for _part in _re.split(r"[,，]", _mk.strip().lstrip("[［").rstrip("]］")):
+                _mm2 = _re.fullmatch(r"(\d+)\s*[-–~]\s*(\d+)", _part.strip())
+                if _mm2:
+                    _nums.update(range(int(_mm2.group(1)), int(_mm2.group(2)) + 1))
+                elif _part.strip().isdigit():
+                    _nums.add(int(_part.strip()))
+            _desc = "，".join(str(x) for x in (
+                _m.get("title") or _m.get("work_name") or "",
+                _m.get("publication_year") or _m.get("year") or "") if str(x).strip())
+            if _desc:
+                for _n in _nums:
+                    _cited_meta_by_marker[_n] = _desc
+        for _c in citations:
+            _mk = str(_c.get("citation_marker") or "")
+            _mm3 = _re.search(r"\d+", _mk)
+            _c["_cited_meta"] = _cited_meta_by_marker.get(int(_mm3.group()), "") if _mm3 else ""
+
         # ③ 批量 LLM 判属性（情感/意图）
         is_sentiment = (code == "cr_sentiment")
-        labeled = self._llm_label_citations(citations, is_sentiment, rule, request)
+        # 用户上传的预处理训练集（citation-intent 的 preprocessed_training_set 资源）：
+        # 双机制（2026-09-15 用户定调，同 domain-classify 训练数据）——few-shot 口径
+        # 校准（注入判定提示词）+ 语义相似度覆盖（>0.70 直接采用样本 intent，低于
+        # 阈值保持内置 LLM 判定。2026-09-15 用户定调 0.70：上传资源的价值是高把握
+        # 时的辅助——相似度不够高时覆盖反而拉低置信度，不如内置）。仅意图工具；情感无此资源
+        training_pairs: list = []
+        if not is_sentiment:
+            training_pairs = self._load_citation_training_pairs(request)
+        labeled = self._llm_label_citations(citations, is_sentiment, rule, request,
+                                            fewshot=training_pairs)
+
+        # ③b 训练集相似度候选：待判引用句与训练样本算 bge-m3 余弦相似度，
+        # top1 >0.70 记为候选（_training）——是否覆盖推迟到引擎+冲突审核后，
+        # 按"内置最终置信度 <0.95 才动用训练集"决策（2026-09-15 用户定调：
+        # 上传资源 = 标引规范定制权——内置非绝对自信（<0.95，口径两可）时
+        # 跟随用户标注口径；内置 ≥0.95 的铁案不干预。实测内置分布 0.8-1.0
+        # 且 LLM 逐轮在 ±0.05 波动，0.95 刻度 = 铁案线，保证案例稳定可演示）
+        if training_pairs:
+            try:
+                from infrastructure.rag.m3_encoder import m3_encoder as _m3c
+                import numpy as _np3
+                _sv = _np3.asarray(_m3c.encode([p["text"] for p in training_pairs]), dtype="float32")
+                _sv = _sv / (_np3.linalg.norm(_sv, axis=1, keepdims=True) + 1e-9)
+                _rows = [str(c.get("sub_span") or c.get("sentence") or "") for c in labeled]
+                _qv = _np3.asarray(_m3c.encode(_rows), dtype="float32")
+                _qv = _qv / (_np3.linalg.norm(_qv, axis=1, keepdims=True) + 1e-9)
+                _sims = _qv @ _sv.T
+                for _ri, item in enumerate(labeled):
+                    _best = int(_np3.argmax(_sims[_ri]))
+                    _sim = float(_sims[_ri][_best])
+                    if _sim > 0.70:
+                        item["_training"] = {
+                            "intent": training_pairs[_best]["intent"],
+                            "conf": round(min(0.98, _sim), 3),
+                            "sample": training_pairs[_best]["text"],
+                            "sim": round(_sim, 3),
+                        }
+                logger.info("训练集相似度覆盖：%d/%d 条",
+                            sum(1 for c in labeled if c.get("_training")), len(labeled))
+            except Exception:  # noqa: BLE001 - 相似度计算失败不影响内置路径
+                logger.warning("训练集相似度覆盖失败（保持内置判定）", exc_info=True)
 
         # ④ 后置规则引擎校验调分（动态权重+冲突检测）
         from training.citation_profile import set_citation_profile_by_code
@@ -4126,6 +4811,19 @@ class SemanticApplicationService(ISemanticService):
                     item["reviewed"] = True
 
         labeled = engine_result["adjusted"]
+        # 覆盖决策（引擎/冲突审核之后，基于内置最终置信度）：内置 <0.95（口径
+        # 两可、非铁案）且训练集候选 sim>0.70 → 跟随用户标注口径（conf=相似度）；
+        # 内置 ≥0.95 绝对自信不干预（宁缺勿错）
+        for item in labeled:
+            _td = item.pop("_training", None)
+            if _td and float(item.get("confidence") or 0) < 0.95:
+                item["intent"] = _td["intent"]
+                item["confidence"] = _td["conf"]
+                item["training_data_effect"] = {
+                    "matched_sample": _td["sample"],
+                    "similarity": _td["sim"],
+                    "mechanism": "训练集口径覆盖（内置置信<0.95 且相似度>0.7）",
+                }
 
         # ⑤ 后置校验 + 组装
         valid_labels = ({"支持", "中立", "有局限性"} if is_sentiment
@@ -4232,6 +4930,11 @@ class SemanticApplicationService(ISemanticService):
                 sub_span = str(ctx.get("sub_span") or "").strip()
             if sub_span:
                 row["sub_span"] = sub_span
+            # 训练集覆盖指纹透出（组内首个命中条目）：matched_sample + similarity
+            _td = next((it.get("training_data_effect") for it in items
+                        if it.get("training_data_effect")), None)
+            if _td:
+                row["training_data_effect"] = _td
             out.append(row)
 
         result.success = True
@@ -4517,7 +5220,55 @@ class SemanticApplicationService(ISemanticService):
                     len(kept), len(candidates), len(candidates) - len(kept))
         return kept
 
-    def _llm_label_citations(self, citations: list, is_sentiment: bool, rule, request) -> list:
+    def _load_citation_training_pairs(self, request) -> list:
+        """citation-intent 预处理训练集资源 → few-shot 样本对。
+
+        样本形态（2026-09-15 用户定调）= 题目 + 文本 + 分类结果三件套：
+        document_title + document_text（含引用句）+ intent（reference_entries
+        字段在但可空，仅甲方契约要求）。citation_sentence 为兼容字段，未提供时
+        由 normalize 层从 document_text 提取。相似度覆盖匹配用 citation_sentence，
+        few-shot 渲染带题目与文本。文件损坏/无资源返回空列表（内置路径）。
+        """
+        try:
+            _res = ((request.params or {}).get("resolved_resources") or {}).get("preprocessed_training_set")
+            _uri = str((_res or {}).get("storage_uri") or "")
+            if not _uri:
+                return []
+            from pathlib import Path as _P
+            _path = _P(_uri.removeprefix("project://")) if _uri.startswith("project://") else _P(_uri)
+            if not _path.is_file():
+                return []
+            from infrastructure.resources.normalize import normalized_rows_for as _rows_for
+            _rows = _rows_for(_path)
+            if _rows is None:
+                from infrastructure.resources.normalize import _normalize_citation_training_rows
+                import json as _json3
+                _doc = _json3.loads(_path.read_text(encoding="utf-8"))
+                _raw = _doc if isinstance(_doc, list) else (
+                    next((v for v in _doc.values() if isinstance(v, list)), [])
+                    if isinstance(_doc, dict) else [])
+                _rows = _normalize_citation_training_rows(_raw)
+            pairs = []
+            for _r in _rows:
+                if not isinstance(_r, dict):
+                    continue
+                _sent = str(_r.get("citation_sentence") or "").strip()
+                _intent = str(_r.get("intent") or "").strip()
+                if not _sent or not _intent:
+                    continue
+                pairs.append({
+                    "text": _sent,                     # 相似度匹配面（引用句）
+                    "intent": _intent,                 # 分类结果
+                    "title": str(_r.get("document_title") or _r.get("title") or "").strip(),
+                    "doc": str(_r.get("document_text") or _r.get("text") or "").strip(),
+                })
+            return pairs
+        except Exception:  # noqa: BLE001 - 训练集损坏不影响内置路径
+            logger.warning("引用意图训练集解析失败（保持内置路径）", exc_info=True)
+            return []
+
+    def _llm_label_citations(self, citations: list, is_sentiment: bool, rule, request,
+                             fewshot: list = None) -> list:
         """批量 LLM 判引用句的情感/意图。全部走 _glm_chat_batch 自动并发，
         无手写 ThreadPoolExecutor：每批一次 chat_json 并发，返回不全则直接逐句并发补全
         （取代旧的串行重试3次——补全并发更快，且只在 GLM 偶发返回不全时才触发）。
@@ -4528,6 +5279,16 @@ class SemanticApplicationService(ISemanticService):
         引擎与结果组装按条对齐）。"""
         label_field = 'sentiment' if is_sentiment else 'intent'
         sysp = self._system_prompt(rule, request)
+        if fewshot:
+            # 训练集 few-shot 口径校准：样本 = 题目+文本+分类结果三件套，
+            # 标引风格影响判定（如"借鉴方法"偏背景还是方法引入，按用户口径走）；
+            # 最终标签仍由语义判定+相似度覆盖决定
+            _samples = "\n".join(
+                (f"题目：{p.get('title') or '（无题目）'}\n"
+                 f"文本：{(p.get('doc') or p['text'])[:120]}\n"
+                 f"意图：{p['intent']}")
+                for p in fewshot[:10])
+            sysp += ("\n\n人工标注样本（用户标引口径，判定风格向其对齐）：\n" + _samples)
         batch_size = 10
         batches = [citations[i:i + batch_size] for i in range(0, len(citations), batch_size)]
         _fallback_label = '中立' if is_sentiment else '用于背景介绍'
@@ -4545,8 +5306,11 @@ class SemanticApplicationService(ISemanticService):
 
         # 第一步：所有批次第一次 chat_json 并发。输出按 index 对齐（不复述原句，
         # 输出 token 从 ~100字/条 降到 ~20token/条，实测整批耗时近乎减半）。
+        # 被引文献元数据（_cited_meta：题名,年份）随行附带作辅助信号
         prompts = ['引用句列表：\n' +
-                   '\n'.join([f'[{i}] ' + _judge_text(c)[:250] for i, c in enumerate(batch)]) +
+                   '\n'.join([f'[{i}] ' + _judge_text(c)[:250] +
+                              (f'（被引文献：{c.get("_cited_meta")}）' if c.get("_cited_meta") else '')
+                              for i, c in enumerate(batch)]) +
                    '\n按 index 输出每条的判定，不要复述原句。'
                    for batch in batches]
         batch_ds = self._glm_chat_batch(sysp, prompts, temperature=0.0,
@@ -5110,6 +5874,77 @@ class SemanticApplicationService(ISemanticService):
             logger.warning("科研实体识别资源文件解析失败", exc_info=True)
             return []
 
+    _DOMAIN_TYPE_SYSTEMS_CACHE: tuple = (None, None)  # (mtime_ns, {领域: types})
+
+    @classmethod
+    def _builtin_domain_type_system(cls, domain: str) -> list:
+        """内置领域类型体系（rules/ner/domain_type_systems.json，热加载）。
+
+        领域下拉的 11 个大类各有专属类型集（医学→药物/疾病/疗法…，计算机→算法/
+        模型/数据集…）。返回该领域的 types 列表；未命中返回空（走默认 13 类）。
+        """
+        import json as _jsonD
+        from pathlib import Path as _PD
+        path = _PD(__file__).resolve().parents[2] / "rules" / "ner" / "domain_type_systems.json"
+        try:
+            mtime = path.stat().st_mtime_ns
+        except OSError:
+            return []
+        cached_mtime, cached = cls._DOMAIN_TYPE_SYSTEMS_CACHE
+        if cached_mtime == mtime and cached is not None:
+            systems = cached
+        else:
+            try:
+                systems = _jsonD.loads(path.read_text(encoding="utf-8"))
+            except Exception:  # noqa: BLE001
+                return []
+            cls._DOMAIN_TYPE_SYSTEMS_CACHE = (mtime, systems)
+        return systems.get(str(domain or "").strip()) or []
+
+    def _load_custom_ontology(self, descriptor) -> dict:
+        """domain-ner 用户本体 → {domain, types:[{code,name,description,examples}]}。
+
+        本体为配置型资源（原样透传无行结构）：优先读 types/类型 数组；无则全树
+        扫描含 code+name 的节点（宽容）。解析失败返回空 dict（保持内置类型体系）。
+        """
+        try:
+            uri = str((descriptor or {}).get("storage_uri") or "")
+            if not uri:
+                return {}
+            from config.settings import settings as _settings
+            from infrastructure.resources.normalize import resource_path
+            path = resource_path(uri, _settings.PROJECT_ROOT)
+            if path is None:
+                return {}
+            doc = json.loads(path.read_text(encoding="utf-8-sig", errors="replace"))
+        except Exception:  # noqa: BLE001 - 本体不可解析时走内置类型体系
+            return {}
+        types: list = []
+
+        def _collect(node):
+            if isinstance(node, dict):
+                code = str(node.get("code") or node.get("type_code") or "").strip()
+                name = str(node.get("name") or node.get("label") or node.get("类型名") or "").strip()
+                if code and name and len(types) < 50:
+                    types.append({
+                        "code": code, "name": name,
+                        "description": str(node.get("description") or node.get("描述") or "").strip(),
+                        "examples": [str(x) for x in (node.get("examples") or node.get("示例") or [])][:6],
+                    })
+                for v in node.values():
+                    _collect(v)
+            elif isinstance(node, list):
+                for v in node:
+                    _collect(v)
+
+        if isinstance(doc, dict):
+            _collect(doc.get("types") or doc.get("类型") or doc)
+        elif isinstance(doc, list):
+            _collect(doc)
+        return {"domain": (str(doc.get("domain") or doc.get("领域") or "").strip()
+                           if isinstance(doc, dict) else ""),
+                "types": types}
+
     @classmethod
     def _custom_ontology_types(cls, descriptor) -> set:
         """用户本体的类型集合（并入 domain-ner 防串域白名单）。
@@ -5467,9 +6302,48 @@ class SemanticApplicationService(ISemanticService):
         # 用户上传资源接线（2026-09-05 分层设计）：
         # ① multi_domain_scientific_corpus=领域示例语料 → few-shot 注入 prompt（识别增强，类型体系不变）
         # ② manually_labeled_data=标准词表 → 变体→标准词归一索引（识别后映射，见下方 _apply_standard_mapping）
+        # ③ general_domain_annotated_corpus=通用标注语料 → 同①机制 few-shot（general-ner
+        #    专属槽，2026-09-15 接线：此前为死槽——上传后无消费端）
+        # ④ domain-ner 专属（2026-09-16 接线）：ontology_classification_system=用户本体
+        #    → 类型体系整体注入提示词（答案空间替换，见下方白名单同步）；domain_labeled
+        #    _training_data=领域标注训练数据 → 同①机制 few-shot（此前均为死槽）
         _res = (request.params or {}).get("resolved_resources") or {}
-        _fewshot = self._load_ner_fewshot(_res.get("multi_domain_scientific_corpus"))
+        _fewshot = self._load_ner_fewshot(
+            _res.get("multi_domain_scientific_corpus") or _res.get("general_domain_annotated_corpus")
+            or _res.get("domain_labeled_training_data"))
         _std_index = self._load_ner_standard_index(_res.get("manually_labeled_data"))
+        _ontology = (self._load_custom_ontology(_res.get("ontology_classification_system"))
+                     if code == 'ner_domain' else {})
+        # 领域引导（2026-09-16 用户定调：领域是请求参数，本体只需给 types）：
+        # 请求参数 domain（前端领域下拉）优先；未选时回落本体可选的 domain 字段；
+        # 两者都无则不注入（内置领域自动判定）。无论是否上传本体都注入领域引导
+        _domain_label = ""
+        if code == 'ner_domain':
+            _domain_label = str((request.params or {}).get("domain") or "").strip()
+            if _domain_label in ("", "auto", "自动识别", "请选择专业领域"):
+                _domain_label = str(_ontology.get("domain") or "").strip()
+        # 内置领域类型体系回落（2026-09-16 用户定调：用户传本体→用户体系；
+        # 未传本体+选了领域→该领域内置专属体系；都没有→默认 13 类自动判定）
+        _builtin_types: list = []
+        if code == 'ner_domain' and not _ontology.get("types") and _domain_label:
+            _builtin_types = self._builtin_domain_type_system(_domain_label)
+        if _ontology.get("types") or _builtin_types:
+            _lines = []
+            for _t in (_ontology["types"] if _ontology.get("types") else _builtin_types):
+                _ex = "、".join(_t["examples"][:4])
+                _lines.append(f"- {_t['code']}（{_t['name']}）：{_t['description']}"
+                              + (f"，如 {_ex}" if _ex else ""))
+            system_prompt += (
+                ("\n\n【用户上传本体类型体系" if _ontology.get("types")
+                 else "\n\n【领域类型体系（内置）")
+                + "（重要：忽略前述默认类型体系，实体只能属于下列类型，"
+                "type 字段用英文 code 输出；不属于任何类型的词一律不要输出为实体）】"
+                + (f"\n领域：{_domain_label}" if _domain_label else "")
+                + "\n" + "\n".join(_lines))
+        elif _domain_label:
+            # 未上传本体但请求参数指定了领域：仅注入领域引导（类型仍用内置体系，
+            # 实体 domain 标签按该领域标注）
+            system_prompt += f"\n\n本次识别面向【{_domain_label}】领域，实体领域标签统一标注为该领域。"
         if _fewshot:
             system_prompt += "\n\n【领域示例（用户上传语料，few-shot 校准实体边界与类型风格）】\n" + _fewshot
         if code in ('ner_research', 'ner_domain'):
@@ -5533,12 +6407,9 @@ class SemanticApplicationService(ISemanticService):
                 _sen = str(_ent.pop("std_en", "") or "").strip()
                 if _szh or _sen:
                     _ent.setdefault("standard_names", {"zh": _szh, "en": _sen})
-                    # LLM 同轮生成的标准词是推测（无独立校验），状态如实标注、
-                    # 置信度压低——区别于变体词表的确定性查表命中（0.95，
-                    # 在 _merge_ner_variants 里覆盖 source=variant_lexicon）
-                    _ent.setdefault("mapping_status", "已映射")
-                    _ent.setdefault("mapping_confidence", 0.75)
-                    _ent.setdefault("mapping_source", "llm_inline")
+                    # 同轮生成的标准词只暂存（不标状态/置信度）——下方批量标准化
+                    # 路径接管：独立调用会自报置信度（2026-09-16 用户定调透传原始
+                    # 值，原 0.75 地板导致全 0.75 太整齐），状态/来源在那里统一标注
 
         # 位置校验 + 去重（防 GLM 幻觉位置/重复实体）：长文本多实体时 GLM 可能
         # 退化——重复堆同一实体并编造递增 start/end（实测 48 个"氧化膜"）、末尾
@@ -5656,7 +6527,30 @@ class SemanticApplicationService(ISemanticService):
                              'EQUIPMENT', 'TECHNIQUE', 'OTHER'}
             _onto_extra = self._custom_ontology_types(_res.get("ontology_classification_system"))
             if _onto_extra:
-                _domain_types |= _onto_extra
+                # 用户本体 = 答案空间替换（2026-09-16 用户定调）：类型体系整体换成
+                # 用户的（而非并入内置）——内置类型（如 DRUG）在用户体系下不是合法
+                # 答案，应被过滤；提示词已同步注入用户类型定义
+                _domain_types = _onto_extra
+            elif _builtin_types:
+                # 内置领域类型体系（2026-09-16）：选了领域未传本体 → 该领域专属
+                # 类型集为合法答案（如 计算机→ALGORITHM/MODEL/DATASET…）
+                _domain_types = {str(t.get("code") or "").strip().upper()
+                                 for t in _builtin_types if t.get("code")}
+            else:
+                # 只传训练数据未传本体（2026-09-16 修复）：训练示例教 LLM 输出的
+                # 自定义类型 code（如 DRUG_CLASS）不在内置 13 类白名单——曾整批被
+                # 过滤为 0 条。示例类型并入白名单（∪ 内置，软扩展非替换）
+                _train_types = set()
+                for _r in self._read_uploaded_resource_json(_res.get("domain_labeled_training_data")):
+                    if not isinstance(_r, dict):
+                        continue
+                    for _e in (_r.get("entities") or []):
+                        if isinstance(_e, dict) and _e.get("type"):
+                            _t = str(_e["type"]).strip().upper()
+                            if _t:
+                                _train_types.add(_t)
+                if _train_types:
+                    _domain_types |= _train_types
             out = [e for e in out
                    if not (isinstance(e, dict)
                            and str(e.get('type') or '') not in _domain_types)]
@@ -5804,9 +6698,9 @@ class SemanticApplicationService(ISemanticService):
                         if zh or en:
                             e["standard_names"] = {"zh": zh, "en": en}
                             e["mapping_status"] = "已映射"
-                            # 已映射即成功：LLM 自报置信度设 0.75 地板（用户定稿
-                            # "已映射就不该是 0.5"），自报更高则保留
-                            e["mapping_confidence"] = max(_mc, 0.75)
+                            # 置信度透传 LLM 自报原始值（2026-09-16 用户定调：原 0.75
+                            # 地板导致全 0.75 太整齐）——与用户词表查表的 1.0 区分仍清晰
+                            e["mapping_confidence"] = round(min(1.0, _mc), 3)
                             e.pop("mapping_source", None)  # LLM 生成的非用户词表
         if code in ('ner_research', 'ner_domain') and isinstance(out, list) and out \
                 and not (code == 'ner_research' and _std_index):
@@ -5860,15 +6754,17 @@ class SemanticApplicationService(ISemanticService):
                         if zh or en:
                             e["standard_names"] = {"zh": zh, "en": en}
                             e["mapping_status"] = "已映射"
-                            # 同上：已映射 0.75 地板，LLM 自报更高保留
-                            e["mapping_confidence"] = max(mc, 0.75)
+                            # 置信度透传 LLM 自报原始值（2026-09-16 用户定调，同上）
+                            e["mapping_confidence"] = round(min(1.0, mc), 3)
                 # LLM 未给出标准词的实体标"未映射"（前端默认 fallback '已映射'
-                # 会误显，故显式标注）；domain 统一标内置知识库（用 LLM 内置映射）
+                # 会误显，故显式标注）；domain 知识库标识按资源来源：用户上传本体
+                # 时类型体系就是用户的（标"用户本体体系"），否则内置（2026-09-16
+                # 用户定调——传本体后仍标"内置知识库"有误导）
                 for e in _ents:
                     if not e.get("standard_names"):
                         e["mapping_status"] = "未映射"
                     if code == 'ner_domain':
-                        e["standard_kb_id"] = "内置知识库"
+                        e["standard_kb_id"] = "用户本体体系" if _onto_extra else "内置知识库"
 
         result.success = True
         result.data = out

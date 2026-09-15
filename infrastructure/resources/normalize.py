@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import json
+import re
 import threading
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence
@@ -181,6 +182,29 @@ def _normalize_anchor_rows(rows: List[Any]) -> List[Dict[str, Any]]:
     return out
 
 
+def _normalize_ontology_rows(rows: List[Any]) -> List[Dict[str, Any]]:
+    """专业领域本体（domain-ner）：行需 code（类型码）。
+
+    2026-09-16 从配置型升级行型（全资源统一 LLM 重构兜底）：顶层 types 数组解包后
+    每行 {code, name, description, examples}——code 必需，其余保留。无 types 包装的
+    平铺数组同样接受。
+    """
+    out: List[Dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        code = _first_present(row, ("code", "type_code", "类型码", "编码"))
+        if not code:
+            continue
+        new = dict(row)
+        new["code"] = code
+        name = _first_present(row, ("name", "label", "类型名", "名称"))
+        if name:
+            new.setdefault("name", name)
+        out.append(new)
+    return out
+
+
 def _normalize_clc_rows(rows: List[Any]) -> List[Dict[str, Any]]:
     """中图分类体系（zh/en-classify 自定义 clc_labeled_data）：行需分类号。"""
     out: List[Dict[str, Any]] = []
@@ -210,7 +234,11 @@ def _normalize_clc_rows(rows: List[Any]) -> List[Dict[str, Any]]:
 
 
 def _normalize_mapping_rows(rows: List[Any]) -> List[Dict[str, Any]]:
-    """英文关键词分类标准映射表：行需 term + clc_code。"""
+    """英文→中文映射表：行需 term + (clc_code 或 中文表达)。
+
+    2026-09-15 架构定稿：分类工具走翻译增强（英文术语→标准中文表达即可，
+    clc_code 可选辅助）；关键词工具的逐词直接覆盖仍用 clc_code。
+    """
     out: List[Dict[str, Any]] = []
     for row in rows:
         if not isinstance(row, dict):
@@ -219,12 +247,14 @@ def _normalize_mapping_rows(rows: List[Any]) -> List[Dict[str, Any]]:
                                     "术语", "英文术语"))
         code = _first_present(row, ("clc_code", "code", "classification_code", "clc",
                                     "分类号", "中图分类号"))
-        if not (term and code):
-            continue
+        name = _first_present(row, ("clc_name", "name", "label", "zh_term", "chinese_term",
+                                    "中文术语", "标准中文表达", "类目名称", "类目"))
+        if not term or not (code or name):
+            continue  # 既无分类号也无中文表达：无法用于翻译或覆盖
         new = dict(row)
         new["term"] = term
-        new["clc_code"] = code
-        name = _first_present(row, ("clc_name", "name", "label", "类目名称", "类目"))
+        if code:
+            new["clc_code"] = code
         if name:
             new.setdefault("clc_name", name)
         out.append(new)
@@ -232,7 +262,12 @@ def _normalize_mapping_rows(rows: List[Any]) -> List[Dict[str, Any]]:
 
 
 def _normalize_term_rows(rows: List[Any]) -> List[Dict[str, Any]]:
-    """术语词典条目：行需 term（纯字符串数组也接受）。"""
+    """术语词典条目：行需 term（纯字符串数组也接受）。
+
+    en-keyword 领域术语库的标准形态是术语簇 {"canonical","variants"}：canonical
+    计入 term 别名（确定性归一直接通过，不走 LLM 整理）；variants 的中文别名
+    （同义词/变体/缩写）折算到标准键——消费端只读 variants，不折算会静默丢变体。
+    """
     out: List[Dict[str, Any]] = []
     for row in rows:
         if isinstance(row, str) and row.strip():
@@ -240,12 +275,74 @@ def _normalize_term_rows(rows: List[Any]) -> List[Dict[str, Any]]:
             continue
         if not isinstance(row, dict):
             continue
-        term = _first_present(row, ("term", "keyword", "word", "name",
-                                    "术语", "词", "词条", "术语词条"))
+        term = _first_present(row, ("term", "canonical", "keyword", "word", "name",
+                                    "术语", "标准术语", "词", "词条", "术语词条"))
         if not term:
             continue
         new = dict(row)
         new["term"] = term
+        # variants 别名折算：列表值直取（_first_present 只认字符串，列表会漏）；
+        # 逗号/分号分隔的字符串形式也拆成列表
+        variants = None
+        for _vk in ("variants", "variant", "synonyms", "abbr", "abbreviations",
+                    "变体", "变体列表", "同义词", "缩写"):
+            _vv = row.get(_vk)
+            if isinstance(_vv, list) and _vv:
+                variants = [str(v).strip() for v in _vv if str(v).strip()]
+                break
+            if isinstance(_vv, str) and _vv.strip():
+                variants = [p.strip() for p in re.split(r"[,，;；、]", _vv) if p.strip()]
+                break
+        if variants and not new.get("variants"):
+            new["variants"] = variants
+        out.append(new)
+    return out
+
+
+def _extract_cited_sentence(text: str) -> str:
+    """从样本文本中提取含引用标记的句子（消费端相似度匹配与渲染用）。"""
+    import re as _re
+    for sent in _re.split(r"(?<=[。！？!?])|(?<=\.)\s", text or ""):
+        s = sent.strip()
+        if s and _re.search(r"[\[［]\s*\d+", s):
+            return s
+    return (text or "").strip()
+
+
+def _normalize_citation_training_rows(rows: List[Any]) -> List[Dict[str, Any]]:
+    """引用意图训练集（citation-intent）：行需 题目/文本 + intent（few-shot 三件套）。
+
+    样本形态 = 一次请求 + 标注：document_title + document_text（含引用句）+
+    reference_entries（选填，甲方要求字段在但可空）+ intent。citation_sentence
+    为兼容字段：未显式提供时从 document_text 提取含引用标记的句子。
+    intent 宽松归一到内置三分类（背景介绍/引入研究方法/结果比较），归不进的行
+    丢弃（错误标签会污染 few-shot 口径与相似度覆盖）。
+    """
+    _canon = [("背景介绍", "用于背景介绍"), ("引入研究方法", "用于引入研究方法"),
+              ("研究方法", "用于引入研究方法"), ("方法引入", "用于引入研究方法"),
+              ("结果比较", "用于结果比较"), ("对比", "用于结果比较")]
+    out: List[Dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        doc_text = _first_present(row, ("document_text", "scientific_document_full_text",
+                                        "text", "文献文本", "文本", "正文"))
+        sent = _first_present(row, ("citation_sentence", "sentence", "引用句", "句子"))
+        label_raw = _first_present(row, ("intent", "label", "意图", "标签"))
+        if not (sent or doc_text) or not label_raw:
+            continue
+        intent = ""
+        for key, full in _canon:
+            if key in label_raw:
+                intent = full
+                break
+        if not intent:
+            continue
+        new = dict(row)
+        new["citation_sentence"] = sent or _extract_cited_sentence(doc_text)
+        if doc_text:
+            new.setdefault("document_text", doc_text)
+        new["intent"] = intent
         out.append(new)
     return out
 
@@ -330,8 +427,8 @@ def _normalize_corpus_rows(rows: List[Any]) -> List[Dict[str, Any]]:
 
 # 字段 → (归一化函数, 中文名, 期望结构说明)
 ROW_FIELD_CONFIG: Dict[str, Dict[str, Any]] = {
-    "training_samples": {"fn": _normalize_sample_rows, "label": "训练样本",
-        "expect": "JSON 数组，每条含 编号（document_id）、文本（text）、题名（title）；类目由人工标注文件按编号关联"},
+    "training_samples": {"fn": _normalize_sample_rows, "label": "训练样本与人工标注类目标签数据",
+        "expect": "JSON 数组，每条含 编号（document_id）、题名（title）、文本（text）、人工标注类目（category）"},
     "manually_labeled_category_data": {"fn": _normalize_label_rows, "label": "人工标注类目标签数据",
         "expect": "JSON 数组，每条含 编号（document_id）与人工标注类目标签（category），按编号与训练样本对应"},
     "clc_labeled_data": {"fn": _normalize_clc_rows, "label": "中图分类标注数据",
@@ -339,7 +436,7 @@ ROW_FIELD_CONFIG: Dict[str, Dict[str, Any]] = {
     "classification_standard_mapping_table": {"fn": _normalize_mapping_rows, "label": "分类标准映射表",
         "expect": "JSON 数组，每条含 term 与 clc_code（或别名）"},
     "domain_terminology_library": {"fn": _normalize_term_rows, "label": "领域术语库",
-        "expect": "JSON 数组（术语字符串，或含 term 字段的对象）"},
+        "expect": "JSON 数组，每条为术语簇：{\"canonical\":\"标准术语\",\"variants\":[\"变体/缩写/同义词\"]}（纯术语字符串数组亦可）"},
     "manually_labeled_training_data": {"fn": _normalize_generic_rows, "label": "人工标注训练数据",
         "expect": "JSON 数组，每条为含文本/标注字段的对象"},
     "manually_labeled_data": {"fn": _normalize_stdterm_rows, "label": "标准词表(科研实体标注)",
@@ -350,14 +447,141 @@ ROW_FIELD_CONFIG: Dict[str, Dict[str, Any]] = {
         "expect": "JSON 数组，每条为含文本/标注字段的对象"},
     "multi_domain_scientific_corpus": {"fn": _normalize_corpus_rows, "label": "领域示例语料(科研实体few-shot)",
         "expect": "JSON 数组，每条为示例：{\"text\":\"示例文本\",\"entities\":[{\"text\":\"实体\",\"type\":\"五类之一\"}]}（中文别名：示例文本/识别结果/实体/类型）"},
+    "preprocessed_training_set": {"fn": _normalize_citation_training_rows, "label": "引用意图训练集",
+        "expect": "JSON 数组，每条含 citation_sentence（引用句）+ intent（意图标签：背景介绍/引入研究方法/结果比较；可带 previous_context 上下文）"},
+    "ontology_classification_system": {"fn": _normalize_ontology_rows, "label": "专业领域本体",
+        "expect": "JSON 对象 {types:[...]} 或平铺数组，每个类型含 code（类型码）+ name（类型名），可带 description（判定标准）+ examples（示例词）"},
+    "domain_classification_rules": {"fn": _normalize_clc_rows, "label": "专业领域分类规则",
+        "expect": "JSON 数组，每条含 clc_code（分类号）+ clc_name（类目名），可带 parent_code（父级分类号，构成三级树）"},
 }
 
 # 纯配置型资源：仅做 JSON 解码校验（不做行结构要求，消费端按原样使用）
 CONFIG_FIELD_LABELS: Dict[str, str] = {
-    "preprocessed_training_set": "引用预处理训练集",
-    "ontology_classification_system": "专业领域本体映射体系",
-    "domain_classification_rules": "专业领域分类规则",
 }
+
+
+# 必要字段组（LLM 重构准入探测，2026-09-15 用户定调）：确定性归一失败后，
+# 先探测文件里是否存在可被理解的必要字段（键名不区分大小写，含中文别名与
+# 常见缩写）——存在 → 交给大模型重构兜底；不存在 → 无重构价值，直接报错
+# 指明缺什么。组语义：组内任一键出现即满足该组；optional 组缺失不拦截。
+# 覆盖关键词识别 + 自动分类功能点的资源字段；未列出的字段维持原 LLM 兜底。
+REQUIRED_FIELD_GROUPS: Dict[str, List[Dict[str, Any]]] = {
+    # en-keyword 领域术语库：术语表达必须；variants 是归一功能的原料（缺失只降级）
+    "domain_terminology_library": [
+        {"keys": ("term", "canonical", "keyword", "word", "name", "en", "english",
+                  "术语", "标准术语", "词", "词条", "术语词条"),
+         "label": "术语字段（term/canonical/标准术语）"},
+        {"keys": ("variants", "variant", "synonyms", "abbr", "abbreviations",
+                  "变体", "变体列表", "同义词", "缩写"),
+         "label": "变体字段（variants/变体/同义词/缩写）", "optional": True},
+    ],
+    # en-keyword/en-classify 映射表：术语 + （分类号 或 中文表达）至少其一
+    "classification_standard_mapping_table": [
+        {"keys": ("term", "en_term", "english_term", "keyword", "word", "en", "english",
+                  "术语", "英文术语", "词"),
+         "label": "term（英文术语）"},
+        {"keys": ("clc_code", "code", "classification_code", "clc", "clc_name", "name",
+                  "zh_term", "chinese_term", "label", "zh", "chinese",
+                  "分类号", "中图分类号", "类目名称", "类目", "中文术语", "标准中文表达"),
+         "label": "clc_code（分类号）或中文表达（zh_term/clc_name），至少其一"},
+    ],
+    # zh/en-classify 分类标准：分类号 + 类目名
+    "clc_labeled_data": [
+        {"keys": ("clc_code", "code", "classification_code", "clc", "分类号", "中图分类号"),
+         "label": "clc_code（分类号）"},
+        {"keys": ("clc_name", "name", "label", "类目名称", "类目", "名称"),
+         "label": "clc_name（类目名称）"},
+    ],
+    # domain-classify 训练数据：文本 + 标签
+    "manually_labeled_training_data": [
+        {"keys": ("text", "content", "abstract", "文本", "示例文本", "正文", "内容", "摘要"),
+         "label": "text（示例文本）"},
+        {"keys": ("label", "category", "标签", "分类标签", "类目", "标注"),
+         "label": "label（分类标签）"},
+    ],
+    # citation-intent 训练集：文献文本（或引用句）+ 意图标签
+    "preprocessed_training_set": [
+        {"keys": ("document_text", "scientific_document_full_text", "text", "文献文本", "文本", "正文",
+                  "citation_sentence", "sentence", "引用句", "句子"),
+         "label": "文献文本 document_text（含引用句）或 citation_sentence（引用句）"},
+        {"keys": ("intent", "label", "意图", "标签"),
+         "label": "intent（意图标签：背景介绍/引入研究方法/结果比较）"},
+    ],
+    # general-ner 标注语料：示例文本 + 实体标注
+    "general_domain_annotated_corpus": [
+        {"keys": ("text", "示例文本", "文本", "content"),
+         "label": "text（示例文本）"},
+        {"keys": ("entities", "识别结果", "实体"),
+         "label": "entities（实体数组：text 实体词 + type 四类之一）", "optional": True},
+    ],
+    # research-ner 科研语料：同 general-ner 结构（五类）
+    "multi_domain_scientific_corpus": [
+        {"keys": ("text", "示例文本", "文本", "content"),
+         "label": "text（示例文本）"},
+        {"keys": ("entities", "识别结果", "实体"),
+         "label": "entities（实体数组：text 实体词 + type 五类之一）", "optional": True},
+    ],
+    # research-ner 标准词表：canonical + variants
+    "manually_labeled_data": [
+        {"keys": ("canonical", "标准词", "term", "text"),
+         "label": "canonical（标准中文词）"},
+        {"keys": ("variants", "变体", "同义词", "synonyms"),
+         "label": "variants（变体列表）", "optional": True},
+    ],
+    # domain-ner 本体：类型码 + 类型名
+    "ontology_classification_system": [
+        {"keys": ("code", "type_code", "类型码"),
+         "label": "code（类型码，如 DRUG_CLASS）"},
+        {"keys": ("name", "label", "类型名"),
+         "label": "name（类型名，如 药物类别）", "optional": True},
+    ],
+    # domain-ner 领域训练数据：示例文本 + 实体（type 用本体 code）
+    "domain_labeled_training_data": [
+        {"keys": ("text", "示例文本", "文本", "content"),
+         "label": "text（示例文本）"},
+        {"keys": ("entities", "识别结果", "实体"),
+         "label": "entities（实体数组：text 实体词 + type 本体类型 code）", "optional": True},
+    ],
+    # deep-cluster 锚点（单文件）：文本 + 类目
+    "training_samples": [
+        {"keys": ("text", "abstract", "摘要", "正文", "文本"),
+         "label": "text（文献文本）"},
+        {"keys": ("category", "人工标注类目标签", "标签", "类目"),
+         "label": "category（人工标注类目——簇的种子）"},
+    ],
+}
+
+
+def probe_required_fields(text: str, *, field: str) -> Dict[str, Any]:
+    """LLM 重构准入探测：解析 JSON 并检查必要字段组是否具备。
+
+    返回 {"parse_ok": bool, "must_missing": [组label...], "found_keys": [...]}：
+    - 语法损坏 parse_ok=False（语法修复类重构不做字段要求，修完仍要过归一校验）；
+    - must_missing 非空 = 缺必要字段，不宜调 LLM 重构（报错指明缺失）；
+    - 字段未在 REQUIRED_FIELD_GROUPS 登记的资源恒返回可重构（维持原兜底）。
+    """
+    result: Dict[str, Any] = {"parse_ok": False, "must_missing": [], "found_keys": []}
+    groups = REQUIRED_FIELD_GROUPS.get(field)
+    if not groups:
+        return result
+    try:
+        raw = json.loads(text)
+    except (json.JSONDecodeError, ValueError):
+        return result
+    result["parse_ok"] = True
+    rows = raw if isinstance(raw, list) else (
+        next((v for v in raw.values() if isinstance(v, list)), []) if isinstance(raw, dict) else [])
+    keys: set = set()
+    for row in rows[:50]:
+        if isinstance(row, dict):
+            keys |= {str(k).strip().casefold() for k in row.keys() if str(k).strip()}
+    result["found_keys"] = sorted(keys)
+    for group in groups:
+        if group.get("optional"):
+            continue
+        if not any(str(k).casefold() in keys for k in group["keys"]):
+            result["must_missing"].append(group["label"])
+    return result
 
 
 # ---------------- 归一化主入口 ----------------

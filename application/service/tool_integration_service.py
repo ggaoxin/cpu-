@@ -1481,6 +1481,20 @@ class ToolIntegrationService:
         try:
             inspect_user_resource(path, field=field)
         except ResourceParseError:
+            # 必要字段准入探测（2026-09-15 用户定调）：语法可解析但缺必要字段
+            # （含中文别名）→ 无重构价值，不调大模型，报错指明缺什么
+            from infrastructure.resources.normalize import probe_required_fields
+            try:
+                _raw = path.read_text(encoding="utf-8-sig", errors="replace")[:20000]
+            except OSError:
+                _raw = ""
+            _probe = probe_required_fields(_raw, field=field)
+            if _probe["parse_ok"] and _probe["must_missing"]:
+                raise ResourceParseError(
+                    f"资源缺少必要字段，无法自动整理：{ROW_FIELD_CONFIG.get(field, {}).get('label') or field} "
+                    f"需要每行包含 {'；'.join(_probe['must_missing'])}。"
+                    f"请补充必要字段后重新上传。"
+                ) from None
             # LLM 容错层（2026-09-05 用户定调，全功能点兜底）：规则归一失败
             # （JSON 损坏/0 有效条目/字段不合规）时，用 GLM 把任意结构重构成该
             # 字段的标准 JSON 后复检；重构失败维持原报错（42201 业务信封）。
@@ -1726,21 +1740,21 @@ class ToolIntegrationService:
                 "未能从文献文本中定位引用句（未发现 [n] 形式的引用标记）；"
                 "请确认文本包含引用标记，或手动提供引用句及上下文"
             )
-        # 元数据取用优先级：用户已补充的 citation_metadata > 参考文献条目解析 > 报错
+        # 元数据取用优先级：用户已补充的 citation_metadata > 参考文献条目解析 >
+        # 留空降级（2026-09-15 用户定调：参考文献条目选填——不填不报错，功能
+        # 照常；填了解析为被引文献元数据，作为意图/情感判定的辅助因素）
         metadata = payload.get("citation_metadata")
         if not (isinstance(metadata, list) and metadata):
             entries_raw = payload.get("reference_entries")
             if isinstance(entries_raw, dict):  # 文件上传场景 {file_name, text_content}
                 entries_raw = entries_raw.get("text_content") or entries_raw.get("content") or ""
             entries_raw = str(entries_raw or "").strip()
-            if not entries_raw:
-                raise ValueError(
-                    "请补充被引文献元数据（粘贴/上传参考文献条目），或提供 reference_entries"
-                )
-            metadata = _parse_reference_entries(entries_raw)
-            if not metadata:
-                raise ValueError("参考文献条目解析失败，请检查条目格式")
-            payload["citation_metadata"] = metadata
+            if entries_raw:
+                metadata = _parse_reference_entries(entries_raw)
+                if metadata:
+                    payload["citation_metadata"] = metadata
+                else:
+                    logger.warning("参考文献条目解析失败（降级为无元数据辅助，不阻断）")
         # 引用句按标记号匹配元数据；未匹配到条目的引用句仍保留（元数据留空由引擎降级）
         ref_indexes = {m.get("reference_index") for m in payload.get("citation_metadata") or []
                        if isinstance(m, dict) and m.get("reference_index")}
@@ -1840,8 +1854,8 @@ class ToolIntegrationService:
                         return f"第 {index + 1} 条引用数据缺少引用句文本"
                     if not str(item.get("previous_context") or "").strip() or not str(item.get("next_context") or "").strip():
                         return f"第 {index + 1} 条引用数据必须同时提供引用句上文和下文"
-                if not metadata:
-                    return "citation_metadata 为必填项；文本输入必须提供被引文献元数据"
+                # 被引文献元数据选填（2026-09-15 用户定调）：不填不报错，引擎降级；
+                # 填了作为意图/情感判定的辅助因素
         if contract.tool_id == "deep-cluster":
             documents = payload.get("documents") or []
             metadata = payload.get("document_metadata")

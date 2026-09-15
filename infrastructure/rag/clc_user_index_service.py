@@ -42,6 +42,68 @@ def compute_clc_verdict(entries: list, size_bytes: Optional[int] = None) -> Dict
     }
 
 
+def _index_root() -> Path:
+    """用户索引根目录（runtime/semantic_resources/）。"""
+    from config.settings import settings as _st
+    return _st.PROJECT_ROOT / "runtime" / "semantic_resources"
+
+
+def sweep_user_indexes(*, force: bool = False) -> int:
+    """清扫用户CLC索引缓存（2026-09-14 定稿简化版：仅数量上限LRU）。
+
+    超过 CLC_INDEX_MAX_DIRS（默认100）淘汰最久未用；TTL 默认关闭（=0），
+    设为正数可启用闲置过期。索引目录特征：16位hex命名 + 含 clc_index_large/。
+    命中续期通过 os.utime 刷新目录 mtime。返回删除数。
+    """
+    import re as _re
+    import shutil as _shutil
+    import time as _time
+    from config.settings import settings as _st
+    root = _index_root()
+    if not root.is_dir():
+        return 0
+    ttl_sec = max(0.0, _st.CLC_INDEX_TTL_HOURS) * 3600
+    now = _time.time()
+    dirs = [d for d in root.iterdir()
+            if d.is_dir() and _re.fullmatch(r"[0-9a-f]{16}", d.name)
+            and (d / "clc_index_large").is_dir()]
+    if not dirs:
+        return 0
+    removed = 0
+    if ttl_sec > 0 and not force:
+        for d in dirs:
+            try:
+                if now - d.stat().st_mtime > ttl_sec:
+                    _shutil.rmtree(d, ignore_errors=True)
+                    removed += 1
+                    logger.info("CLC 索引闲置过期清除：%s", d.name)
+            except OSError:
+                pass
+    # 数量上限：按 mtime 降序保留最新 N 个
+    dirs = [d for d in root.iterdir()
+            if d.is_dir() and _re.fullmatch(r"[0-9a-f]{16}", d.name)
+            and (d / "clc_index_large").is_dir()]
+    if len(dirs) > _st.CLC_INDEX_MAX_DIRS:
+        dirs.sort(key=lambda d: d.stat().st_mtime, reverse=True)
+        for d in dirs[_st.CLC_INDEX_MAX_DIRS:]:
+            _shutil.rmtree(d, ignore_errors=True)
+            removed += 1
+            logger.info("CLC 索引超量LRU清除：%s", d.name)
+    return removed
+
+
+def touch_user_index(storage_uri: str) -> None:
+    """命中续期（规则4）：刷新索引目录 mtime。"""
+    import os as _os
+    from infrastructure.rag.clc_retriever import CLCRetriever as _CR
+    index_dir = _CR._index_dir_for(storage_uri)
+    try:
+        if index_dir.is_dir():
+            _os.utime(index_dir)
+    except OSError:
+        pass
+
+
 def submit_build(resource_row: Dict[str, Any], repository=None) -> Optional[str]:
     """对完整分类树用户资源异步建索引；返回 task_id（不满足建库条件返回 None）。
 
@@ -60,6 +122,16 @@ def submit_build(resource_row: Dict[str, Any], repository=None) -> Optional[str]
     if record_count <= settings.CLC_BUILD_MIN_RECORDS:
         logger.info("CLC 资源 %s 条数 %d ≤ %d，不建库（走 few-shot/范围块）",
                     resource_row.get("id"), record_count, settings.CLC_BUILD_MIN_RECORDS)
+        return None
+    # 索引已存在（同内容指纹目录有 manifest）→ 跳过重建（2026-09-14）：
+    # 重复上传同一文件曾无条件再触发约20秒的异步重建；manifest 在构建完成时
+    # 写入，存在即完整索引，检索器可直接 for_path 加载
+    from infrastructure.rag.clc_retriever import CLCRetriever as _CR
+    sweep_user_indexes()  # 上传即惰性清扫（规则3'）
+    _existing = _CR._index_dir_for(storage_uri) / "clc_index_large" / "manifest.json"
+    if _existing.exists():
+        touch_user_index(storage_uri)  # 命中续期（规则4'）
+        logger.info("CLC 索引已存在（%s），跳过重建", _existing.parent.parent.name)
         return None
     task_id = f"tsk_clcidx_{uuid.uuid4().hex[:12]}"
     task = AnalysisTask(
@@ -116,7 +188,13 @@ def _build(task_id: str, storage_uri: str, resource_id: str, repository) -> None
         build_index(str(index_dir), build_large=True, build_m3=True, progress_cb=_cb)
         repository.update_task_status(task_id, TaskStatus.SUCCEEDED,
                                       progress=100, success_count=1)
-        logger.info("CLC 建索引完成：%s → %s", task_id, index_dir)
+        logger.info("CLC 建索引完成：%s → %s", task_id, index_dir)        # 建成后立即修剪超量（2026-09-14）：入口清扫在建之前跑，连续上传不同
+        # 体系时磁盘会在上限+1震荡——建成后补一次清扫消灭该窗口
+        try:
+            sweep_user_indexes()
+        except Exception:
+            pass
+
     except Exception as e:  # noqa: BLE001
         logger.error("CLC 建索引失败 %s: %s", task_id, e)
         repository.update_task_status(task_id, TaskStatus.FAILED,

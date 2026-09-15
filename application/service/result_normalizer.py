@@ -109,7 +109,7 @@ _VIZ_KEEP_FIELDS: Dict[str, frozenset] = {
         "classifications", "multilevel_classification_results",
         "domain_labels",
         "domain_match_result", "selected_domain", "professional_domain",
-        "classification_confidence",
+        "classification_confidence", "training_data_effect",
     }),
     "zh-keyword": frozenset({"keywords"}),
     "en-keyword": frozenset({"keywords", "keywords_or_topic_phrases"}),
@@ -972,7 +972,9 @@ def _en_cross_language_mapping(result: Dict[str, Any], payload: Dict[str, Any]) 
             if words:
                 source_terms.append({"label": " ".join(words)})
     return {
-        "status": "已映射",
+        # 2026-09-15 用户定稿：区分映射来源——内置向量永远在映射，"已映射"无信息量；
+        # 内置显示机制名（内置向量映射），用户映射规则命中才显示"已映射（…命中）"
+        "status": "内置向量映射",
         "source_language": "en",
         "target_language": "zh",
         "source_terms": source_terms,
@@ -1382,9 +1384,13 @@ def _citations(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any
         for _drop in ("context_before", "context_after", "sub_span", "source_position"):
             normalized[-1].pop(_drop, None)
     statistics = data.get(f"{result_key.removesuffix('_results')}_statistics") or data.get("statistics") or dict(Counter(item.get(label_key) for item in normalized if item.get(label_key)))
+    _title = payload.get("document_title") or payload.get("title") or ""
     return {
         **data,
-        "document": data.get("document") or {"title": payload.get("document_title") or payload.get("title") or ""},
+        # 顶层 document_title 同步填充（2026-09-15）：弹窗文献列的旧版取值链只认
+        # 顶层 document_title（不认 document.title），顶层空会落到"当前结果"兜底
+        "document_title": data.get("document_title") or _title,
+        "document": data.get("document") or {"title": _title},
         "input_type": payload.get("input_type"),
         "citations": normalized,
         result_key: normalized,
@@ -1482,6 +1488,9 @@ def _entities(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
     }
     result = {
         **data,
+        # 顶层 document_title 双填（2026-09-15，同 citation 系修复）：弹窗文献列
+        # 的旧版取值链只认顶层 document_title，顶层空会落"当前结果"兜底
+        "document_title": data.get("document_title") or payload.get("document_title") or payload.get("title") or "",
         "document": data.get("document") or {"title": payload.get("document_title") or payload.get("title") or ""},
         "input_type": payload.get("input_type"),
         "entities": items,

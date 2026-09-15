@@ -364,6 +364,8 @@ def anchor_guided_groups(papers, moves, anchor_docs, axis, glm) -> List[Dict[str
     """
     profiles = build_anchor_profiles(anchor_docs, glm)
     if not profiles:
+        import logging
+        logging.getLogger(__name__).info("锚点引导回落自由分组：类目档案为空（语步提取未产出，LLM 波动）")
         return []
     labels = _assign_to_anchor_categories(glm, papers, moves, profiles, axis)
     groups: List[Dict[str, Any]] = []
@@ -386,6 +388,9 @@ def anchor_guided_groups(papers, moves, anchor_docs, axis, glm) -> List[Dict[str
                            "keywords": g.get("keywords") or []})
     covered = sum(len(g["indices"]) for g in groups)
     if covered != len(papers):
+        import logging
+        logging.getLogger(__name__).info(
+            "锚点引导回落自由分组：覆盖不全（%d/%d，LLM 分配波动）", covered, len(papers))
         return []
     return groups
 

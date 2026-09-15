@@ -208,3 +208,16 @@ export async function uploadSemanticResource(file: File, resourceKey: string) {
   }))
 }
 
+// 资源预检（选文件即校验）：加载/解析/归一/大模型重构在参数录入阶段完成，
+// 点击在线测试时只跑功能。返回 {valid, rows, normalized_by, error, note}
+export async function validateSemanticResource(file: File, resourceKey: string) {
+  const form = new FormData()
+  form.append('resource_key', resourceKey)
+  form.append('upload', file)
+  return parseResponse(await fetchWithApiKey(apiUrl('/api/v1/semantic-resources/validate'), {
+    method: 'POST',
+    headers: { Accept: 'application/json' },
+    body: form,
+  }))
+}
+

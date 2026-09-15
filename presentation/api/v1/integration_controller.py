@@ -572,18 +572,47 @@ async def _store_uploaded_resource(
                 entries = inspect_user_resource(stored_path, field=field)
             except ResourceParseError as exc:
                 parse_error = str(exc)
+                # 必要字段准入探测（2026-09-15 用户定调）：语法可解析但缺必要字段
+                # （含中文别名）→ 无重构价值，不调大模型，直接指明缺什么；
+                # 语法损坏 / 字段齐备 → 照旧走大模型重构兜底
+                from infrastructure.resources.normalize import probe_required_fields
+                _probe = probe_required_fields(descriptor.get("text_content") or "", field=field)
+                if _probe["parse_ok"] and _probe["must_missing"]:
+                    _found = "、".join(_probe["found_keys"][:10]) or "（无任何字段名——纯值结构）"
+                    raise HTTPException(
+                        status_code=422,
+                        detail=(
+                            f"资源缺少必要字段，无法自动整理：{ROW_FIELD_CONFIG.get(field, {}).get('label') or field} "
+                            f"需要每行包含 {'；'.join(_probe['must_missing'])}。"
+                            f"文件中检测到的字段：{_found}。"
+                            f"请补充必要字段（标准格式：{ROW_FIELD_CONFIG.get(field, {}).get('expect')}）后重新上传。"
+                        ),
+                    ) from exc
                 if settings.RESOURCE_LLM_NORMALIZE_ENABLED and isinstance(descriptor.get("text_content"), str):
                     from infrastructure.resources.glm_salvage import maybe_llm_normalize
-                    salvaged, note = maybe_llm_normalize(
-                        descriptor["text_content"], field=field,
-                        max_bytes=settings.RESOURCE_LLM_NORMALIZE_MAX_BYTES,
-                        max_rows=settings.RESOURCE_LLM_NORMALIZE_MAX_ROWS,
-                    )
-                    if salvaged is not None:
-                        conv_path = directory / f"{digest[:16]}_{Path(safe_name).stem}_normalized.json"
-                        conv_path.write_text(
-                            json.dumps(salvaged, ensure_ascii=False, indent=2), encoding="utf-8",
+                    conv_path = directory / f"{digest[:16]}_{Path(safe_name).stem}_normalized.json"
+                    salvaged = None
+                    # 预检（/semantic-resources/validate）阶段已生成的大模型整理结果
+                    # 直接复用——同内容指纹不重复调 LLM（选文件时整理过，提交秒级）
+                    if conv_path.is_file():
+                        try:
+                            _reused = json.loads(conv_path.read_text(encoding="utf-8"))
+                            if isinstance(_reused, list) and _reused:
+                                salvaged = _reused
+                        except (json.JSONDecodeError, OSError):
+                            pass
+                    note = ""
+                    if salvaged is None:
+                        salvaged, note = maybe_llm_normalize(
+                            descriptor["text_content"], field=field,
+                            max_bytes=settings.RESOURCE_LLM_NORMALIZE_MAX_BYTES,
+                            max_rows=settings.RESOURCE_LLM_NORMALIZE_MAX_ROWS,
                         )
+                    if salvaged is not None:
+                        if not conv_path.is_file():
+                            conv_path.write_text(
+                                json.dumps(salvaged, ensure_ascii=False, indent=2), encoding="utf-8",
+                            )
                         descriptor["storage_uri"] = conv_path.as_posix()
                         descriptor["normalized_by"] = "glm"
                         descriptor["normalized_rows"] = len(salvaged)
@@ -2020,6 +2049,81 @@ def get_semantic_resource(resource_id: str) -> Dict[str, Any]:
     if not value:
         raise HTTPException(status_code=404, detail="语义资源不存在")
     return {"code": 0, "data": value}
+
+
+@router.post("/semantic-resources/validate")
+async def validate_semantic_resource(
+    resource_key: str = Form(...),
+    upload: UploadFile = File(...),
+) -> Dict[str, Any]:
+    """选文件即预检（2026-09-15 用户定调：加载/解析/重构在参数录入阶段完成，
+    点击在线测试只跑功能）。落盘（同指纹复用）+ 确定性归一 + 必要字段探测 +
+    大模型重构（磁盘结果复用，同内容不重复调 LLM），立即返回可读条数或格式
+    错误。不登记数据库——提交在线测试时随请求内联上传才入库（一次性语义不变）。
+    """
+    import hashlib
+    from infrastructure.resources.normalize import (
+        ROW_FIELD_CONFIG as _ROWCFG, ResourceParseError as _RPE,
+        inspect_user_resource as _inspect, register_normalized as _reg,
+    )
+    content = await upload.read()
+    original_name = Path(upload.filename or "resource.bin").name
+    if not original_name.lower().endswith(".json"):
+        return {"valid": False, "error": "仅支持标准 JSON 文件（CSV、JSONL、TXT 暂不支持）"}
+    digest = hashlib.sha256(content).hexdigest()
+    directory = settings.PROJECT_ROOT / "runtime" / "semantic_resources"
+    directory.mkdir(parents=True, exist_ok=True)
+    safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", original_name) or "resource.bin"
+    stored_path = directory / f"{digest[:16]}_{safe_name}"
+    if not stored_path.exists():
+        stored_path.write_bytes(content)
+    try:
+        text = content.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return {"valid": False, "error": "文件不是有效的 UTF-8 文本 JSON"}
+    field = resource_key
+    if field not in _ROWCFG:
+        return {"valid": True, "rows": None, "normalized_by": None,
+                "note": "配置型资源，仅校验 JSON 可解码", "file_name": original_name}
+    try:
+        rows = _inspect(stored_path, field=field)
+        return {"valid": True, "rows": len(rows), "normalized_by": None, "file_name": original_name}
+    except _RPE as exc:
+        from infrastructure.resources.normalize import probe_required_fields
+        probe = probe_required_fields(text, field=field)
+        if probe["parse_ok"] and probe["must_missing"]:
+            _found = "、".join(probe["found_keys"][:10]) or "（无任何字段名——纯值结构）"
+            return {"valid": False, "error": (
+                f"缺少必要字段：{'；'.join(probe['must_missing'])}。"
+                f"文件中检测到的字段：{_found}。"
+                f"标准格式：{_ROWCFG.get(field, {}).get('expect')}")}
+        # 字段齐备/语法损坏 → 大模型重构（先复用磁盘上已有整理结果）
+        conv_path = directory / f"{digest[:16]}_{Path(safe_name).stem}_normalized.json"
+        salvaged = None
+        if conv_path.is_file():
+            try:
+                _reused = json.loads(conv_path.read_text(encoding="utf-8"))
+                if isinstance(_reused, list) and _reused:
+                    salvaged = _reused
+            except (json.JSONDecodeError, OSError):
+                pass
+        if salvaged is None:
+            if not settings.RESOURCE_LLM_NORMALIZE_ENABLED:
+                return {"valid": False, "error": str(exc)}
+            from infrastructure.resources.glm_salvage import maybe_llm_normalize
+            salvaged, note = maybe_llm_normalize(
+                text, field=field,
+                max_bytes=settings.RESOURCE_LLM_NORMALIZE_MAX_BYTES,
+                max_rows=settings.RESOURCE_LLM_NORMALIZE_MAX_ROWS,
+            )
+            if salvaged is None:
+                if note in {"oversize", "overrows"}:
+                    return {"valid": False, "error": f"{exc}（文件超出大模型自动整理上限）"}
+                return {"valid": False, "error": f"{exc}（已尝试大模型自动整理，未能生成有效结构）"}
+            conv_path.write_text(json.dumps(salvaged, ensure_ascii=False, indent=2), encoding="utf-8")
+        _reg(conv_path, salvaged)
+        return {"valid": True, "rows": len(salvaged), "normalized_by": "glm",
+                "file_name": original_name, "note": "结构非标准，已由大模型整理为标准格式（提交时直接复用）"}
 
 
 @router.post("/semantic-resources/upload")

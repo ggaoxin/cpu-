@@ -1,0 +1,81 @@
+{
+  "医学": [
+    {"code": "DRUG", "name": "药物", "description": "具体药物名称（通用名/商品名/化学名）", "examples": ["阿司匹林", "二甲双胍", "奥美拉唑"]},
+    {"code": "DISEASE", "name": "疾病", "description": "具体疾病/综合征/病理状态", "examples": ["类风湿关节炎", "2型糖尿病", "冠心病"]},
+    {"code": "TREATMENT", "name": "治疗方法", "description": "具体疗法/手术/治疗方案", "examples": ["化疗", "经皮冠状动脉介入", "免疫疗法"]},
+    {"code": "SYMPTOM", "name": "症状", "description": "具体症状表现", "examples": ["发热", "胃肠道出血", "黄疸"]},
+    {"code": "MEDICAL_DEVICE", "name": "医疗器械", "description": "具体医疗设备/器械", "examples": ["呼吸机", "心脏起搏器", "腹腔镜"]}
+  ],
+  "药学": [
+    {"code": "DRUG", "name": "药物", "description": "具体药物名称", "examples": ["阿托伐他汀", "氯吡格雷", "胰岛素"]},
+    {"code": "DRUG_TARGET", "name": "药物靶点", "description": "药物作用的生物分子靶点", "examples": ["ACE2受体", "PD-L1", "HMG-CoA还原酶"]},
+    {"code": "ADVERSE_REACTION", "name": "不良反应", "description": "用药后产生的有害反应", "examples": ["肝肾毒性", "过敏反应", "骨髓抑制"]},
+    {"code": "FORMULATION", "name": "制剂", "description": "具体药物剂型与给药系统", "examples": ["缓释片", "脂质体制剂", "吸入气雾剂"]},
+    {"code": "COMPOUND", "name": "药物成分", "description": "具体化合物成分/活性成分", "examples": ["青蒿素", "紫杉醇", "布洛芬"]}
+  ],
+  "化学": [
+    {"code": "COMPOUND", "name": "化合物", "description": "具体化合物/化学式/聚合物", "examples": ["石墨烯", "聚乙烯", "苯并芘"]},
+    {"code": "REACTION", "name": "化学反应", "description": "具体反应类型/命名反应", "examples": ["狄尔斯-阿尔德反应", "光催化氧化", "聚合反应"]},
+    {"code": "CATALYST", "name": "催化剂", "description": "具体催化剂体系", "examples": ["铂碳催化剂", "钛硅分子筛", "酶催化剂"]},
+    {"code": "SOLVENT", "name": "溶剂", "description": "具体溶剂", "examples": ["二甲基亚砜", "四氢呋喃", "离子液体"]},
+    {"code": "MATERIAL", "name": "材料", "description": "作为研究对象的物质本体", "examples": ["MOF材料", "碳纳米管", "钙钛矿"]}
+  ],
+  "化工": [
+    {"code": "CHEMICAL_PROCESS", "name": "化工工艺", "description": "具体化工生产过程/工艺", "examples": ["流化床裂化", "精馏工艺", "乳化聚合"]},
+    {"code": "REACTION", "name": "化学反应", "description": "具体反应类型", "examples": ["加氢反应", "酯化反应", "磺化反应"]},
+    {"code": "EQUIPMENT", "name": "化工设备", "description": "具体化工设备/装置", "examples": ["精馏塔", "换热器", "反应釜"]},
+    {"code": "MATERIAL", "name": "化工材料", "description": "具体化工产品材料", "examples": ["聚丙烯", "环氧树脂", "橡胶助剂"]},
+    {"code": "SEPARATION_METHOD", "name": "分离方法", "description": "具体分离纯化技术", "examples": ["膜分离", "萃取", "色谱分离"]}
+  ],
+  "物理": [
+    {"code": "THEORY", "name": "理论", "description": "具体理论/理论框架", "examples": ["量子场论", "广义相对论", "超导理论"]},
+    {"code": "PHENOMENON", "name": "现象", "description": "具体物理现象/效应", "examples": ["量子隧穿效应", "光电效应", "超流现象"]},
+    {"code": "LAW", "name": "定律", "description": "具体定律/定理/原理", "examples": ["热力学第二定律", "泡利不相容原理", "守恒定律"]},
+    {"code": "PARTICLE", "name": "粒子", "description": "具体基本粒子/粒子束", "examples": ["希格斯玻色子", "中微子", "缪子"]},
+    {"code": "PHYSICAL_QUANTITY", "name": "物理量", "description": "具体可测物理量（仅作研究对象时）", "examples": ["磁化强度", "弛豫时间", "散射截面"]}
+  ],
+  "生物": [
+    {"code": "PROTEIN", "name": "蛋白质", "description": "具体蛋白质/酶", "examples": ["p53蛋白", "DNA聚合酶", "血红蛋白"]},
+    {"code": "GENE", "name": "基因", "description": "具体基因/基因组位点", "examples": ["BRCA1基因", "TP53", "ACE2"]},
+    {"code": "CELL", "name": "细胞", "description": "具体细胞类型/细胞系", "examples": ["T细胞", "HEK293细胞系", "神经元"]},
+    {"code": "ORGANISM", "name": "生物体", "description": "具体物种/菌株/模式生物", "examples": ["大肠杆菌", "拟南芥", "秀丽隐杆线虫"]},
+    {"code": "PATHWAY", "name": "代谢通路", "description": "具体信号/代谢通路", "examples": ["Wnt信号通路", "糖酵解途径", "MAPK级联"]},
+    {"code": "TECHNIQUE", "name": "生物技术", "description": "具体生物实验技术", "examples": ["CRISPR-Cas9", "单细胞测序", "流式细胞术"]}
+  ],
+  "计算机": [
+    {"code": "ALGORITHM", "name": "算法", "description": "具体算法/方法", "examples": ["Transformer", "随机梯度下降", "A*搜索"]},
+    {"code": "MODEL", "name": "模型", "description": "具体模型架构/预训练模型", "examples": ["BERT", "ResNet", "扩散模型"]},
+    {"code": "DATASET", "name": "数据集", "description": "具体数据集/语料库", "examples": ["ImageNet", "Cora数据集", "WikiText"]},
+    {"code": "FRAMEWORK", "name": "框架工具", "description": "具体软件框架/工具库", "examples": ["PyTorch", "TensorFlow", "Hadoop"]},
+    {"code": "METRIC", "name": "评价指标", "description": "具体性能评价指标（仅作研究对象时）", "examples": ["F1分数", "BLEU", "吞吐量"]},
+    {"code": "TASK", "name": "任务", "description": "具体研究任务/问题形式", "examples": ["图像分类", "机器翻译", "目标检测"]}
+  ],
+  "材料": [
+    {"code": "MATERIAL", "name": "材料", "description": "具体材料/合金/复合材料", "examples": ["钛合金", "碳纤维复合材料", "高熵合金"]},
+    {"code": "SYNTHESIS_METHOD", "name": "合成方法", "description": "具体材料制备/合成技术", "examples": ["水热合成", "磁控溅射", "3D打印"]},
+    {"code": "PROPERTY", "name": "材料性能", "description": "具体性能指标（仅作研究对象时）", "examples": ["屈服强度", "断裂韧性", "热导率"]},
+    {"code": "CHARACTERIZATION", "name": "表征技术", "description": "具体材料表征手段", "examples": ["X射线衍射", "透射电镜", "拉曼光谱"]},
+    {"code": "MICROSTRUCTURE", "name": "微观结构", "description": "具体微观组织结构", "examples": ["位错", "马氏体", "晶界"]}
+  ],
+  "农业": [
+    {"code": "CROP", "name": "作物", "description": "具体农作物/经济作物", "examples": ["水稻", "小麦", "油菜"]},
+    {"code": "PEST", "name": "病虫害", "description": "具体作物病虫害", "examples": ["稻瘟病", "蚜虫", "小麦赤霉病"]},
+    {"code": "AGROCHEMICAL", "name": "农药化肥", "description": "具体农用化学品", "examples": ["草甘膦", "吡虫啉", "尿素"]},
+    {"code": "BREED_VARIETY", "name": "品种", "description": "具体作物品种/品系", "examples": ["杂交水稻汕优63", "中麦175", "先玉335"]},
+    {"code": "CULTIVATION_TECH", "name": "栽培技术", "description": "具体种植/栽培技术", "examples": ["免耕栽培", "滴灌技术", "嫁接育苗"]}
+  ],
+  "环境": [
+    {"code": "POLLUTANT", "name": "污染物", "description": "具体污染物/污染因子", "examples": ["PM2.5", "微塑料", "重金属镉"]},
+    {"code": "ENV_FACTOR", "name": "环境因子", "description": "具体环境要素/因子", "examples": ["臭氧浓度", "水土流失", "富营养化"]},
+    {"code": "TREATMENT_TECH", "name": "治理技术", "description": "具体污染治理/修复技术", "examples": ["活性污泥法", "土壤修复", "脱硫脱硝"]},
+    {"code": "ECOSYSTEM", "name": "生态系统", "description": "具体生态系统类型", "examples": ["红树林湿地", "珊瑚礁", "城市热岛"]},
+    {"code": "ENV_STANDARD", "name": "环境标准", "description": "具体环境质量/排放标准", "examples": ["GB3838地表水标准", "二级排放标准"]}
+  ],
+  "地学": [
+    {"code": "MINERAL", "name": "矿物", "description": "具体矿物", "examples": ["石英", "黄铁矿", "角闪石"]},
+    {"code": "ROCK", "name": "岩石", "description": "具体岩石类型", "examples": ["花岗岩", "玄武岩", "页岩"]},
+    {"code": "GEO_STRUCTURE", "name": "地质构造", "description": "具体构造/结构", "examples": ["郯庐断裂带", "背斜", "俯冲带"]},
+    {"code": "GEOL_EVENT", "name": "地质事件", "description": "具体地质事件/过程", "examples": ["喜马拉雅造山运动", "冰期", "火山喷发"]},
+    {"code": "STRATUM", "name": "地层", "description": "具体地层单元", "examples": ["寒武系", "三叠系", "第四系"]}
+  ]
+}

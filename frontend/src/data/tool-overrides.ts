@@ -824,14 +824,14 @@ const reviewerSupplementParams: Record<string, ToolDefinition['params']> = {
   'citation-sentiment': [
     ['document_title', 'string|string[]', 'required', '文献题目；标识响应结果与可视化弹窗中的当前文献'],
     ['scientific_document_full_text', 'string|file|object[]', 'required', '文献文本或文件'],
-    ['reference_entries', 'string|file', 'required', '参考文献原始条目。【直接影响】大模型批量解析出被引文献元数据并按标记号匹配'],
+    ['reference_entries', 'string|file', 'optional', '参考文献原始条目（选填）。粘贴或上传，解析后核对识别结果；提供时作为判定辅助因素，不填不影响功能'],
     ['citation_sentence_and_context', 'object|object[]', 'conditional', '引用句及上下文。【自动派生】系统从文献文本自动定位生成；手动提供时以所填为准'],
     ['citation_metadata', 'object|object[]|file', 'conditional', '被引文献元数据。【自动派生】由参考文献条目解析得到'],
   ],
   'citation-intent': [
     ['document_title', 'string|string[]', 'required', '文献题目；标识响应结果与可视化弹窗中的当前文献'],
     ['scientific_document_full_text', 'string|file|object[]', 'required', '文献文本或文件'],
-    ['reference_entries', 'string|file', 'required', '参考文献原始条目。【直接影响】解析被引文献元数据并按标记号匹配'],
+    ['reference_entries', 'string|file', 'optional', '参考文献原始条目（选填）。粘贴或上传，解析后核对识别结果；提供时作为意图判定的辅助因素，不填不影响功能'],
     ['citation_sentence_and_context', 'object|object[]', 'conditional', '引用句及上下文。【自动派生】系统自动定位生成；手动提供时以所填为准'],
     ['citation_metadata', 'object|object[]|file', 'conditional', '被引文献元数据。【自动派生】由参考文献条目解析得到'],
     ['preprocessed_training_set', 'resource', 'required', '预处理后的训练集。【辅助影响（证据/规则）】引用意图判定规则包：抽取正则、三类意图定义、关键词打分规则；注入提示词约束判定口径并后置校验调分，不训练模型'],

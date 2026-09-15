@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch, watchEffect } from 'vue'
 import type { InputMode } from '../types'
-import { parseCitationMetadata, uploadSemanticResource } from '../services/api'
+import { parseCitationMetadata, uploadSemanticResource, validateSemanticResource } from '../services/api'
 
 type ResourceField = {
   key: string
@@ -141,6 +141,12 @@ const requestPayload = computed<Record<string, unknown>>(() => {
     if (sourceModes[field.key] !== 'upload') return
     const file = uploadedResources[field.key]
     if (file) payload[field.key] = file
+    else {
+      // 切了"用户上传资源"但尚未选文件：带内部标记供提交校验拦截
+      // （必填资源不能静默回退内置），提交前由 OnlineTester 剔除
+      if (!Array.isArray(payload.__pending_uploads)) payload.__pending_uploads = []
+      ;(payload.__pending_uploads as Array<{ key: string, label: string }>).push({ key: field.key, label: field.label })
+    }
   })
   return payload
 })
@@ -161,7 +167,8 @@ function switchCitationReferenceSource(source: 'paste' | 'upload') {
 async function parseCitationReference() {
   const raw = citationRawReference.value.trim()
   if (!raw) {
-    citationParseState.value = 'empty'
+    citationParseState.value = 'idle'
+    citationMetadataList.value = []
     return
   }
   citationParsing.value = true
@@ -190,6 +197,15 @@ async function parseCitationReference() {
 function removeCitationMetaEntry(index: number) {
   citationMetadataList.value.splice(index, 1)
 }
+
+// 参考文献条目自动解析（2026-09-15 用户定调：粘贴/上传即解析，无需手动按钮）
+let _refParseTimer: ReturnType<typeof setTimeout> | null = null
+watch(citationRawReference, (val) => {
+  if (_refParseTimer) clearTimeout(_refParseTimer)
+  const raw = val.trim()
+  if (!raw) return
+  _refParseTimer = setTimeout(() => { parseCitationReference() }, 800)
+})
 
 async function handleCitationReferenceFile(event: Event) {
   const file = (event.target as HTMLInputElement).files?.[0]
@@ -240,35 +256,83 @@ const resourceSaveNotice = ref('')
 // 各资源字段上传文件的格式与字段说明（与后端 normalize.py 行有效性规则对应，
 // 文案样式与深度聚类锚点上传一致：仅 .json：字段 + 字段）
 const resourceFieldHints: Record<string, string> = {
-  clc_labeled_data: '仅 .json：中图分类号 + 类目名称',
-  classification_standard_mapping_table: '仅 .json：英文术语 + 中图分类号',
-  domain_terminology_library: '仅 .json：术语词条',
-  manually_labeled_training_data: '仅 .json：文本 + 标注内容',
-  manually_labeled_data: '仅 .json：标准词 + 实体类型 + 同义词列表',
-  domain_labeled_training_data: '仅 .json：示例文本 + 实体（实体词 + 类型）',
-  general_domain_annotated_corpus: '仅 .json：示例文本 + 实体（实体词 + 类型）',
-  multi_domain_scientific_corpus: '仅 .json：示例文本 + 实体（实体词 + 类型）',
+  clc_labeled_data: '仅 .json：clc_code（分类号）+ clc_name（类目名称）；大表可加 parent_code 构建知识库',
+  classification_standard_mapping_table: '仅 .json：term（英文术语）+ zh_term/label（中文标准表达）——分类工具用；关键词工具为 term + clc_code（分类号）+ clc_name（类目名）',
+  domain_terminology_library: '仅 .json：canonical（标准术语）+ variants（变体/缩写/同义词）',
+  manually_labeled_training_data: '仅 .json：text（示例文本）+ label（分类标签，分类号+类目名）',
+  manually_labeled_data: '仅 .json：canonical（标准中文词）+ variants（变体列表）+ canonical_en（标准英文词）+ type（五类之一）',
+  domain_labeled_training_data: '仅 .json：text（示例文本）+ entities（实体数组：text 实体词 + type 用本体类型 code）——教实体边界切法',
+  general_domain_annotated_corpus: '仅 .json：text（示例文本）+ entities（实体数组：text 实体词 + type 四类之一 PERSON/LOCATION/ORGANIZATION/EVENT）',
+  multi_domain_scientific_corpus: '仅 .json：text（示例文本）+ entities（实体数组：text 实体词 + type 五类之一 METHOD/DATASET/INSTRUMENT/THEORY/TOPIC）',
   training_samples: '仅 .json：编号 + 文本 + 题名',
   manually_labeled_category_data: '仅 .json：编号 + 人工标注类目标签',
-  domain_classification_rules: '仅 .json：领域分类规则配置',
-  preprocessed_training_set: '仅 .json：引用预处理规则配置',
-  ontology_classification_system: '仅 .json：实体标准名 + 实体类型 + 同义词列表',
+  domain_classification_rules: '仅 .json：clc_code（分类号）+ clc_name（类目名）+ parent_code（父级分类号，构成三级树）',
+  preprocessed_training_set: '仅 .json：document_title（题目）+ document_text（含引用句的文本）+ intent（分类结果：背景介绍/引入研究方法/结果比较）；reference_entries（参考文献条目）选填',
+  ontology_classification_system: '仅 .json：types（类型数组：code 类型码 + name 中文名 + description 判定标准 + examples 示例词）；领域在请求参数下拉里选',
 }
 function fieldHint(key: string): string {
   return resourceFieldHints[key] || '仅 .json'
 }
 
-function handleResourceUpload(event: Event, key: string) {
+// 资源预检状态（选文件即解析：加载/归一/大模型重构在参数录入阶段完成，
+// 点击在线测试只跑功能——与 PDF 预解析同款架构）
+type ResourceProbe = { status: 'checking' | 'ready' | 'error'; rows: number | null; normalizedBy: string | null; error: string }
+const resourceProbes = reactive<Record<string, ResourceProbe>>({})
+
+// 预检白名单（2026-09-15 用户定调）：先只对已测试通过的工具+资源槽开放
+// "选文件即解析"；其余工具（NER/引用意图/深度聚类等）待测试通过后再加进来，
+// 期间维持原有"提交时处理"的行为
+const PRECHECK_TOOLS: Record<string, Set<string>> = {
+  'zh-classify': new Set(['clc_labeled_data']),
+  'en-classify': new Set(['clc_labeled_data', 'classification_standard_mapping_table']),
+  'domain-classify': new Set(['domain_classification_rules', 'manually_labeled_training_data']),
+  'en-keyword': new Set(['domain_terminology_library', 'classification_standard_mapping_table']),
+  'citation-intent': new Set(['preprocessed_training_set']),
+  'general-ner': new Set(['general_domain_annotated_corpus']),
+  'research-ner': new Set(['multi_domain_scientific_corpus', 'manually_labeled_data']),
+  'domain-ner': new Set(['ontology_classification_system', 'domain_labeled_training_data']),
+}
+function precheckEnabled(key: string): boolean {
+  return PRECHECK_TOOLS[props.toolId]?.has(key) ?? false
+}
+
+function _resetProbe(key: string) {
+  delete resourceProbes[key]
+}
+
+async function handleResourceUpload(event: Event, key: string) {
   const file = (event.target as HTMLInputElement).files?.[0] || null
   // 仅放行 .json：accept 只过滤系统选择器，用户切"所有文件"仍可选 txt/csv
   if (file && !file.name.toLowerCase().endsWith('.json')) {
     uploadedResources[key] = null
     if (resourceFileInputs[key]) resourceFileInputs[key]!.value = ''
-    resourceSaveError.value = '仅支持标准 JSON 文件（CSV、JSONL、TXT 暂不支持）'
+    if (precheckEnabled(key)) {
+      resourceProbes[key] = { status: 'error', rows: null, normalizedBy: null, error: '仅支持标准 JSON 文件（CSV、JSONL、TXT 暂不支持）' }
+    } else {
+      resourceSaveError.value = '仅支持标准 JSON 文件（CSV、JSONL、TXT 暂不支持）'
+    }
     return
   }
   uploadedResources[key] = file
   resourceSaveError.value = ''
+  _resetProbe(key)
+  if (!file || !precheckEnabled(key)) return  // 白名单外：维持原有提交时处理行为
+  resourceProbes[key] = { status: 'checking', rows: null, normalizedBy: null, error: '' }
+  try {
+    const res = await validateSemanticResource(file, key) as Record<string, unknown>
+    if (uploadedResources[key] !== file) return  // 用户已换文件/取消：丢弃过期结果
+    if (res?.valid) {
+      resourceProbes[key] = { status: 'ready', rows: (res.rows as number) ?? null,
+                              normalizedBy: (res.normalized_by as string) || null, error: '' }
+    } else {
+      resourceProbes[key] = { status: 'error', rows: null, normalizedBy: null,
+                              error: String(res?.error || '资源文件校验失败') }
+    }
+  } catch (err) {
+    if (uploadedResources[key] !== file) return
+    resourceProbes[key] = { status: 'error', rows: null, normalizedBy: null,
+                            error: err instanceof Error ? err.message : '资源预检请求失败' }
+  }
 }
 
 // 每字段记录文件 input 引用,取消时同步清空原生 value(否则重选同一文件不触发 change)
@@ -276,15 +340,26 @@ const resourceFileInputs: Record<string, HTMLInputElement | null> = {}
 function setResourceFileInput(key: string, el: unknown) {
   resourceFileInputs[key] = (el as HTMLInputElement) || null
 }
+// 切换资源来源（内置↔用户上传）即清空该字段已选文件（2026-09-15）：
+// 切回"用户上传"时上传框必须是空的等待重新选择，不残留之前的内容
+function handleSourceModeChange(key: string) {
+  uploadedResources[key] = null
+  if (resourceFileInputs[key]) resourceFileInputs[key]!.value = ''
+  resourceSaveError.value = ''
+  _resetProbe(key)
+}
+
 function clearUploadedResource(key: string) {
   uploadedResources[key] = null
   if (resourceFileInputs[key]) resourceFileInputs[key]!.value = ''
+  _resetProbe(key)
 }
 
 
 watch(() => props.toolId, () => {
   Object.keys(sourceModes).forEach(key => delete sourceModes[key])
   Object.keys(uploadedResources).forEach(key => delete uploadedResources[key])
+  Object.keys(resourceProbes).forEach(key => delete resourceProbes[key])
   currentGroup.value?.fields.forEach(field => {
     sourceModes[field.key] = 'builtin'
   })
@@ -313,7 +388,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
     <div class="settings-title"><b>被引文献元数据</b><span>{{ mode === 'text' || mode === 'batch-text' ? '由用户填写或上传' : '从文件参考文献列表自动解析' }}</span></div>
 
     <div v-if="mode === 'text'" class="citation-manual-metadata-panel">
-      <div class="citation-metadata-section-head"><b><span class="required-mark">*</span> 参考文献原始条目</b><span>必填；可选择粘贴或上传，解析后核对识别结果</span></div>
+      <div class="citation-metadata-section-head"><b>参考文献原始条目</b><span>选填；可选择粘贴或上传，提供时作为判定辅助因素</span></div>
       <div class="citation-reference-parser">
         <div class="citation-reference-source-switch" role="radiogroup" aria-label="参考文献条目提供方式">
           <button type="button" :class="{ active: citationReferenceSource === 'paste' }" @click="switchCitationReferenceSource('paste')">粘贴条目</button>
@@ -332,15 +407,12 @@ watchEffect(() => emit('update:payload', requestPayload.value))
           </div>
         <div class="citation-parser-action-row">
           <span v-if="citationParsing" class="citation-parse-status">解析中…（大模型解析多条条目约需数秒）</span>
-          <span v-else-if="citationParseState === 'parsed'" class="citation-parse-status success">✓ 已解析 {{ citationMetadataList.length }} 条，请核对下方信息</span>
           <span v-else-if="citationParseState === 'empty'" class="citation-parse-status warning">! {{ citationParseError || '请先粘贴或上传参考文献条目' }}</span>
-          <span v-else class="citation-parse-status">粘贴或上传条目后，点击开始解析</span>
-          <button class="outline-btn citation-parse-button" type="button" :disabled="citationParsing" @click="parseCitationReference">{{ citationParsing ? '解析中…' : '开始解析' }}</button>
         </div>
       </div>
       <div class="citation-parsed-metadata">
         <div v-for="(entry, index) in citationMetadataList" :key="index" class="citation-metadata-entry">
-          <div class="citation-metadata-entry-head"><b>条目 {{ index + 1 }}<span v-if="entry.reference_index"> [{{ entry.reference_index }}]</span></b><button class="ghost-btn danger" type="button" @click="removeCitationMetaEntry(index)">删除</button></div>
+          <div class="citation-metadata-entry-head"><b>参考文献{{ entry.reference_index ? `[${entry.reference_index}]` : ` ${index + 1}` }}</b><button class="ghost-btn danger" type="button" @click="removeCitationMetaEntry(index)">删除</button></div>
           <div class="citation-metadata-form-grid">
             <div class="field"><label><span class="label-main">发表年份</span></label><input v-model="entry.year" class="input" placeholder="例如：2024" /></div>
             <div class="field"><label><span class="label-main">作者</span></label><input v-model="entry.authorsText" class="input" placeholder="多个作者用分号分隔" /></div>
@@ -398,7 +470,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         </div>
         <p v-if="field.description">{{ field.description }}</p>
         <div class="requirement-resource-controls">
-          <select v-model="sourceModes[field.key]" class="select resource-source-select">
+          <select v-model="sourceModes[field.key]" class="select resource-source-select" @change="handleSourceModeChange(field.key)">
             <option value="builtin">内置</option>
             <option value="upload">用户上传资源</option>
           </select>
@@ -413,6 +485,9 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         
         <p v-if="sourceModes[field.key] === 'upload' && resourceSaveError" class="anchor-format-hint" style="color:#c0392b">{{ resourceSaveError }}</p>
         <p v-if="sourceModes[field.key] === 'upload' && resourceSaveNotice" class="anchor-format-hint">{{ resourceSaveNotice }}</p>
+        <p v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.status === 'checking'" class="anchor-format-hint">⏳ 正在解析资源文件（结构非标准时将自动用大模型整理）…</p>
+        <p v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.status === 'ready'" class="anchor-format-hint" style="color:#1e8e3e">✓ 资源已就绪{{ resourceProbes[field.key]?.rows != null ? ` · 已解析 ${resourceProbes[field.key]?.rows} 条` : '' }}{{ resourceProbes[field.key]?.normalizedBy === 'glm' ? '（大模型已整理为标准格式，提交时直接复用）' : '' }}</p>
+        <p v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.status === 'error'" class="anchor-format-hint" style="color:#c0392b">✕ {{ resourceProbes[field.key]?.error }}</p>
       </article>
     </div>
   </div>

@@ -161,7 +161,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
     inputs: [
             ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
             ['scientific_document_full_text', 'string | string[] | file | file[]', 'required', '文献全文文本'],
-      ['reference_entries', 'string | file', 'required', '参考文献原始条目(每行一条,支持多条)。系统据此自动解析被引文献元数据(作者/题名/年份/来源/DOI),并按引用标记号与条目序号匹配'],
+      ['reference_entries', 'string | file', 'optional', '参考文献原始条目(每行一条,选填)。提供时作为判定辅助因素,不填不影响功能'],
       ['citation_sentence_and_context', 'object[]', 'conditional', '引用句及上下文(自动派生,无需手填)。系统从文献文本定位含引用标记的句子并取前后句;手动提供时以所填为准'],
       ['citation_sentence_and_context[].citation_sentence', 'string', 'conditional', '引用句原文(含引用标记,如 [1])'],
       ['citation_sentence_and_context[].previous_context', 'string', 'conditional', '引用句上文'],
@@ -183,7 +183,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
     inputs: [
             ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
             ['scientific_document_full_text', 'string | string[] | file | file[]', 'required', '文献全文文本或文件'],
-      ['reference_entries', 'string | file', 'required', '参考文献原始条目(每行一条)。同引用情感识别'],
+      ['reference_entries', 'string | file', 'optional', '参考文献原始条目(每行一条,选填)。提供时作为判定辅助因素,不填不影响功能'],
       ['citation_sentence_and_context', 'object[]', 'conditional', '引用句及上下文(自动派生)。结构同引用情感识别'],
       ['citation_metadata', 'object[]', 'conditional', '被引文献元数据(自动派生)。结构同引用情感识别'],
       ...resourceDescriptorRows('preprocessed_training_set',

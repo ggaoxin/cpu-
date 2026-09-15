@@ -339,7 +339,11 @@ const RESOURCE_FIELD_NAMES = new Set([
   'preprocessed_training_set', 'general_domain_annotated_corpus', 'multi_domain_scientific_corpus',
   'ontology_classification_system', 'domain_labeled_training_data',
   'training_samples', 'manually_labeled_category_data',
+  'domain_terminology_dictionary',
 ])
+// 元数据键直通（2026-09-15）：部分工具的 params 模板未登记 document_title（如
+// NER 系只列 text/file），按模板过滤会把题目键丢弃——弹窗文献列落"当前结果"
+const METADATA_FIELD_NAMES = new Set(['document_title', 'project_name'])
 function stripEmptyResourceDescriptors(payload: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(payload)) {
@@ -371,8 +375,11 @@ export function requestPayloadFor(
   const template = payloadFor(tool, mode)
   // ``payloadFor`` contains documentation examples. Online execution must
   // never silently submit those examples when the user left a field empty.
-  return Object.fromEntries(Object.keys(template).flatMap(key =>
-    Object.prototype.hasOwnProperty.call(values, key) ? [[key, values[key]]] : [],
+  // 资源字段（2026-09-14 修复）直通：模板按"内置=不提交"剥掉了资源键，
+  // 若按模板过滤会把用户上传的资源 File 一并丢弃——请求静默退回内置资源
+  return Object.fromEntries(Object.keys(values).flatMap(key =>
+    key in template || RESOURCE_FIELD_NAMES.has(key) || METADATA_FIELD_NAMES.has(key)
+      ? [[key, values[key]]] : [],
   ))
 }
 
@@ -529,7 +536,7 @@ const OPTIONAL_RESOURCE_PARAMS: Record<string, Array<[string, string] | [string,
   'zh-classify': [['clc_labeled_data', '中图分类标注数据（.json）']],
   'en-classify': [
     ['clc_labeled_data', '必填；用户可手动上传。中图分类标准（.json：中图分类号 + 类目名称）', 'required'],
-    ['classification_standard_mapping_table', '必填；用户可手动上传。映射规则（.json：英文术语 + 中图分类号）', 'required'],
+    ['classification_standard_mapping_table', '必填；用户可手动上传。映射规则（.json：英文术语 + 中文术语）', 'required'],
   ],
   'domain-classify': [['domain_classification_rules', '领域分类规则（.json）'], ['manually_labeled_training_data', '人工标注训练数据（.json）']],
   'en-keyword': [['domain_terminology_library', '领域术语库（.json）'], ['classification_standard_mapping_table', '分类标准映射表（.json）']],
