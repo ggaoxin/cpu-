@@ -501,7 +501,6 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
   }
   if (needsDocumentTitle.value && mode.value === 'text') values.document_title = form.documentTitle
   if (needsDocumentTitle.value && mode.value === 'batch-text' && !props.toolId.startsWith('citation-')) values.document_title = batchTexts.map(item => item.title.trim())
-  if (props.toolId === 'domain-classify') values.professional_domain = form.domain
   if (props.toolId === 'domain-ner' && form.domain && form.domain !== '自动识别') values.domain = form.domain
   if (props.toolId === 'zh-keyword') {
     // 系统预置模式不携带词典字段（后端 dictionary_usage=null、全部未命中属预期）
@@ -1115,10 +1114,11 @@ function validateRequiredInputs(): string {
     return requiredResourceError()
   }
 
-  if (props.toolId === 'domain-classify' && (!form.domain || form.domain === '请选择专业领域')) return '请选择专业领域。'
   if (mode.value === 'text' && !form.text.trim()) return `请输入${textInputLabel.value}。`
   if (mode.value === 'batch-text') {
     if (batchTexts.length < 2) return '批量文本至少需要 2 条。'
+    const noTitleIndex = batchTexts.findIndex(item => !item.title.trim())
+    if (noTitleIndex >= 0) return `请输入文本${noTitleIndex + 1}的题目（必填，用于标识该条响应结果）。`
     const invalidIndex = batchTexts.findIndex(item => !item.text.trim())
     if (invalidIndex >= 0) return `请输入文本${invalidIndex + 1}的内容。`
   }
@@ -1345,7 +1345,6 @@ function downloadResult() {
           </div>
           <div v-if="!['deep-cluster','cluster-label','structured-review','relation-extract'].includes(toolId)" class="field input-mode-field"><label><span class="label-main">输入方式</span><small>{{ inputModeHint }}</small></label><ModeSwitch v-model="mode" :modes="modes" :tool="tool" kind="在线测试输入方式" /></div>
 
-          <div v-if="toolId === 'domain-classify'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 专业领域</span><small>选择目标领域后执行三级分类</small></label><select v-model="form.domain" class="select"><option value="">请选择专业领域</option><option value="01">数学与计算科学</option><option value="02">力学与工程力学</option><option value="03">物理学与应用物理</option><option value="04">化学与化学科学</option><option value="05">天文学与空间科学</option><option value="06">地球科学与地质资源</option><option value="07">测绘遥感与地理信息</option><option value="08">气象海洋科学</option><option value="09">生物科学与生物技术</option><option value="10">医学与卫生健康</option><option value="11">药学与毒理学</option><option value="12">农业科学与农业工程</option><option value="13">林业畜牧兽医与水产</option><option value="14">材料科学与材料工程</option><option value="15">矿业与矿物加工</option><option value="16">石油与天然气工程</option><option value="17">冶金与金属加工</option><option value="18">机械工程与智能制造</option><option value="19">仪器仪表与计量检测</option><option value="20">能源与动力工程</option><option value="21">核科学与核工程</option><option value="22">电气工程与电力系统</option><option value="23">电子通信与半导体</option><option value="24">自动化与控制工程</option><option value="25">人工智能与计算机技术</option><option value="26">化学工程与过程工业</option><option value="27">轻工食品与纺织</option><option value="28">建筑与土木工程</option><option value="29">水利与水电工程</option><option value="30">交通运输工程</option><option value="31">航空航天工程</option><option value="32">环境与安全工程</option></select></div>
           <div v-if="toolId === 'domain-ner'" class="field"><label><span class="label-main">专业领域</span><small>选填；选择后实体领域标签与统计卡跟随该领域，不选则自动识别</small></label><select v-model="form.domain" class="select"><option value="自动识别">自动识别（默认）</option><option>医学</option><option>药学</option><option>化学</option><option>化工</option><option>物理</option><option>生物</option><option>计算机</option><option>材料</option><option>农业</option><option>环境</option><option>地学</option></select></div>
 
           <template v-if="toolId === 'deep-cluster'">
@@ -1494,7 +1493,7 @@ function downloadResult() {
                 <div class="document-card-head"><b><span class="required-mark">*</span> 文本 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" :disabled="batchTexts.length <= 2" @click="removeBatchText(item.id)">删除</button></div>
                 <div v-if="toolId === 'fund-move'" class="field fund-project-name-field"><label><span class="label-main"><span class="required-mark">*</span> 项目名称</span><small>必填；对应第 {{ index + 1 }} 条文本</small></label><input v-model="item.projectName" class="input" maxlength="200" :placeholder="`请输入第 ${index + 1} 个项目名称`" /></div>
                 <div v-if="needsDocumentTitle" class="field document-title-field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；对应第 {{ index + 1 }} 条文本</small></label><input v-model="item.title" class="input" maxlength="300" :placeholder="`请输入第 ${index + 1} 篇文献题目`" /></div>
-                <div class="field batch-text-content-field"><div class="batch-text-limit">最多 8000 字</div><textarea v-model="item.text" class="textarea compact batch-textarea" maxlength="8000" :placeholder="`请输入第 ${index + 1} 条${textInputLabel}`"></textarea></div>
+                <div class="field batch-text-content-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}</span><small>必填；最多 8000 字</small></label><textarea v-model="item.text" class="textarea compact batch-textarea" maxlength="8000" :placeholder="`请输入第 ${index + 1} 条${textInputLabel}`"></textarea></div>
               </div>
               <!-- 添加按钮放在列表末尾右下：点击后新文本框就在按钮处出现，无需回滚顶部 -->
               <div class="batch-text-add-row"><button class="outline-btn" type="button" @click="addBatchText">＋ 添加文本</button></div>

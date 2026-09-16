@@ -3010,6 +3010,38 @@ class SemanticApplicationService(ISemanticService):
             final = final[:20]
         return final, dropped
 
+    def _judge_domain_code(self, title: str, abstract: str, domain_list: list) -> Optional[tuple]:
+        """LLM 从 32 个专业领域中判断文本所属领域（2026-09-16 用户定调：领域
+        不必手选，大模型自动判断，判断范围固定在领域列表内）。
+
+        返回 (valid_domain 行, auto=True) 或 None（判断失败/超范围）。
+        """
+        if not domain_list:
+            return None
+        lines = "\n".join(domain_list)
+        sysp = ("你是科技文献领域判定专家。根据文献标题与摘要判断其所属专业领域，"
+                f"只能从下列领域中选择（禁止编造列表外的编号）：\n{lines}\n"
+                '只输出JSON：{"domain_code": "28"}')
+        try:
+            raw = self._glm.chat_json(
+                sysp, f"标题：{title or '（无）'}\n摘要：{abstract or '（无）'}",
+                temperature=0.0, timeout=60.0)
+        except Exception:  # noqa: BLE001
+            return None
+        if isinstance(raw, dict) and isinstance(raw.get("data"), dict):
+            raw = raw["data"]
+        code = str((raw or {}).get("domain_code") or "").strip()
+        for d in domain_list:
+            d_code = d.split()[0]
+            if d_code == code:
+                return d, True
+            try:
+                if int(d_code) == int(code):
+                    return d, True
+            except (ValueError, TypeError):
+                pass
+        return None
+
     def _execute_domain_classification(self, code: str, request: SemanticRequest, fp, rule) -> SemanticResult:
         """专业领域分类：用户指定领域(domain_code 01-32) → LLM 在该领域语境下选 CLC 细码 → resolve_code + 层级细化。
 
@@ -3040,8 +3072,16 @@ class SemanticApplicationService(ISemanticService):
                     break
             except (ValueError, TypeError):
                 pass
+        auto_judged = False
+        if valid_domain is None and not domain_code:
+            # 未指定领域（2026-09-16 用户定调）：LLM 自动判断（范围固定在领域列表内）
+            judged = self._judge_domain_code(title or "", abstract or "", domain_list)
+            if judged:
+                valid_domain, auto_judged = judged
         if valid_domain is None:
-            raise ValueError(f"ac_domain 需在 params.domain_code 指定领域(01-32)，got '{domain_code}'")
+            raise ValueError(
+                f"ac_domain 需在 params.domain_code 指定领域(01-32)或留空由系统自动判断，got '{domain_code}'")
+        domain_code = valid_domain.split()[0]
         domain_name = valid_domain.split(None, 1)[1] if len(valid_domain.split(None, 1)) > 1 else valid_domain
 
         # ── 用户上传资源消费（2026-09-15 需规落实）──
@@ -3208,6 +3248,8 @@ class SemanticApplicationService(ISemanticService):
             "document_title": title,
             "domain_code": valid_domain.split()[0] if valid_domain else domain_code,
             "domain_name": domain_name,
+            # 领域由系统自动判断（2026-09-16 用户定调：删除手选下拉）时为 True
+            "domain_auto_judged": auto_judged,
             "clc_classification": clc_obj,
             "rag_top_k_candidates": [self._candidate_to_obj(c, with_rank=True) for c in candidates],
             "selection_reason": reason,

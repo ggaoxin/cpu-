@@ -93,9 +93,11 @@ function requirementExampleValue(name: string, type: string, mode: InputMode, to
   if (name === 'document_title') {
     const title = String(tool.payload?.document_title || '科技文献题目')
     if (mode === 'batch-text') {
+      // 与主字段模板同源（demoBatchTexts）保证数量一致——此前 title 与主字段
+      // 模板各自取数导致 3 题目对 1 文本的错位示例（2026-09-16 用户反馈）
       const batch = Array.isArray((tool as any).demoBatchTexts) ? (tool as any).demoBatchTexts : []
       return batch.length
-        ? batch.map((item: any, index: number) => item?.title || `文本 ${index + 1}`)
+        ? batch.map((item: any, index: number) => String(item?.title || '').trim() || `第 ${index + 1} 篇文献题目`)
         : [title, '第二篇科技文献题目']
     }
     return title
@@ -127,7 +129,18 @@ function requirementExampleValue(name: string, type: string, mode: InputMode, to
   }
   if (name.includes('format')) return 'JSON'
   if (name.includes('full_text') || name.includes('fragment') || name.includes('abstract') || name.includes('document_text')) {
-    if (mode === 'batch-text') return [{ id: 'TEXT001', text: String((tool as any).demoText || '待处理科技文本……') }]
+    if (mode === 'batch-text') {
+      // 与 document_title 模板同源（demoBatchTexts）：条数对齐且内嵌 title——
+      // 与在线测试批量提交的真实结构一致（每条 {id, title, text}）
+      const batch = Array.isArray((tool as any).demoBatchTexts) ? (tool as any).demoBatchTexts : []
+      return batch.length
+        ? batch.map((item: any, index: number) => ({
+            id: item?.id || `TEXT${String(index + 1).padStart(3, '0')}`,
+            ...(String(item?.title || '').trim() ? { title: String(item.title).trim() } : {}),
+            text: typeof item === 'string' ? item : String(item?.text || ''),
+          }))
+        : [{ id: 'TEXT001', text: String((tool as any).demoText || '待处理科技文本……') }]
+    }
     return String((tool as any).demoText || '待处理科技文本……')
   }
   if (type.includes('resource')) {

@@ -718,7 +718,8 @@ def _domain_classification(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
     # 2. selected_domain
     domain_code = str(data.get("domain_code") or "")
     domain_name = str(data.get("domain_name") or "")
-    selected_domain = {"code": domain_code, "name": domain_name}
+    selected_domain = {"code": domain_code, "name": domain_name,
+                       "auto_judged": bool(data.get("domain_auto_judged"))}
 
     # 3. domain_match_result — 根据分类号是否解析成功判定匹配
     clc = _cap_classification_to_three_levels(data.get("clc_classification") or {})

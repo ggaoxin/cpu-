@@ -1461,6 +1461,39 @@ class ToolIntegrationService:
             }, ensure_ascii=False)
         return str(content).strip()
 
+    def _fetch_resource_from_url(self, url: str, field: str):
+        """下载资源 URL → 落盘 runtime/semantic_resources → 返回 upload 型资源行。
+
+        限制：http/https、≤10MB、.json 后缀（资源体系仅支持 JSON）——下载后立即
+        走 inspect 归一化（含必要字段探测与 LLM 重构兜底），失败返回 None。
+        """
+        import hashlib as _hl
+        import urllib.request as _ur
+        if not url.lower().startswith(("http://", "https://")):
+            return None
+        try:
+            with _ur.urlopen(url, timeout=30) as resp:  # noqa: S310 - 用户指定 URL
+                content = resp.read(int(10 * 1024 * 1024) + 1)
+        except Exception as _exc:  # noqa: BLE001
+            logger.warning("resource_url 下载失败 %s: %s", url[:120], _exc)
+            return None
+        if len(content) > 10 * 1024 * 1024 or not content:
+            return None
+        digest = _hl.sha256(content).hexdigest()
+        directory = settings.PROJECT_ROOT / "runtime" / "semantic_resources"
+        directory.mkdir(parents=True, exist_ok=True)
+        path = directory / f"url_{digest[:16]}_{field}.json"
+        path.write_bytes(content)
+        return {
+            "id": f"urlres_{digest[:12]}",
+            "resource_key": field,
+            "name": url.rsplit("/", 1)[-1][:80] or "resource.json",
+            "source_type": "upload",  # URL 拉取的资源在消费端语义=用户上传
+            "storage_uri": path.as_posix(),
+            "content_hash": digest,
+            "status": "current",
+        }
+
     def _inspect_user_resource_file(self, field: str, resource: Dict[str, Any]) -> None:
         """用户指定资源统一预检（公共归一化层，全部工具共用）。
 
@@ -1618,7 +1651,21 @@ class ToolIntegrationService:
             resource_fields.update({"training_samples", "manually_labeled_category_data"})
         for field in resource_fields:
             descriptor = payload.get(field)
-            if not isinstance(descriptor, dict) or not descriptor.get("resource_id"):
+            if not isinstance(descriptor, dict):
+                continue
+            # 资源地址直传（2026-09-16 用户定调：API 集成方的资源在自己服务器上，
+            # 直接给 URL 一跳到位，无需先上传换 id）。下载落盘后走与上传资源完全
+            # 相同的归一化/预检/消费链路；resource_id（库内引用）与 multipart 内联
+            # 仍并行支持，URL 优先。
+            _rurl = str(descriptor.get("resource_url") or "").strip()
+            if _rurl:
+                resource = self._fetch_resource_from_url(_rurl, field)
+                if resource is None:
+                    raise ValueError(f"{field} 的 resource_url 下载或校验失败：{_rurl[:120]}")
+                self._inspect_user_resource_file(field, resource)
+                resolved_resources[field] = resource
+                continue
+            if not descriptor.get("resource_id"):
                 continue
             resource = self.resource_repository.get_semantic_resource(str(descriptor["resource_id"]))
             if resource:
@@ -1820,8 +1867,8 @@ class ToolIntegrationService:
                 return "label_length_min 和 label_length_max 必须是整数"
             if minimum_length < 1 or maximum_length < minimum_length or maximum_length > 100:
                 return "标签长度必须满足 1 ≤ label_length_min ≤ label_length_max ≤ 100"
-        if contract.tool_id == "domain-classify" and not str(payload.get("domain") or "").strip():
-            return "domain 为必填项"
+        # domain-classify 领域不再必填（2026-09-16 用户定调：删除手选下拉，
+        # 留空由引擎 LLM 自动判断，判断范围固定在 32 个专业领域内）
         for field in REQUIRED_RESOURCE_FIELDS.get(contract.tool_id, ()):
             descriptor = payload.get(field)
             # 内置模式（2026-09-06 定调）：不提交该资源字段 = 使用系统预置资源，
@@ -1830,6 +1877,8 @@ class ToolIntegrationService:
                 continue
             if not isinstance(descriptor, dict):
                 return f"{field} 资源格式不正确"
+            if str(descriptor.get("resource_url") or "").strip():
+                continue  # 资源地址直传形态：由 _parameters 下载+预检，此处跳过
             source = str(descriptor.get("source") or "database")
             if source == "database":
                 resource_id = str(descriptor.get("resource_id") or "")
