@@ -1537,6 +1537,7 @@ class ToolIntegrationService:
 
     def _llm_adapt_resource_file(self, field: str, path) -> bool:
         """LLM 结构化适配：任意格式 → 字段标准结构。成功重写原文件并返回 True。"""
+        from infrastructure.resources.normalize import ROW_FIELD_CONFIG
         try:
             raw = path.read_text(encoding="utf-8", errors="replace")[:20000]
         except OSError:
