@@ -357,7 +357,62 @@ def _assign_to_anchor_categories(glm, papers, moves, profiles, axis) -> List[str
     return [label_of.get(i, "") for i in range(len(papers))]
 
 
-def anchor_guided_groups(papers, moves, anchor_docs, axis, glm) -> List[Dict[str, Any]]:
+# 锚点类目生效的语步相似度阈值（2026-09-16 用户定调）：文献与类目档案的
+# 轴语步（技术轴=研究方法 / 应用轴=研究背景+目的）bge-m3 余弦低于阈值时不硬贴
+# 用户类目标签——该文献回落自由分组与内置命名，锚点只在足够相似时生效
+ANCHOR_SIM_THRESHOLD = 0.55
+
+
+def _anchor_similarity_gate(papers, moves, labels, profiles, axis, encoder) -> List[str]:
+    """对 LLM 的锚点分配做语步级向量相似度校验，低相似的文献移出锚点类目。"""
+    if encoder is None:
+        return labels
+    key = "methods" if axis == "technical" else "scenes"
+    import numpy as np
+    doc_axis: List[List[str]] = []
+    for paper, mv in zip(papers, moves):
+        sents = (mv.get("研究方法") or [])[:3] if axis == "technical" else (
+            (mv.get("研究背景") or []) + (mv.get("研究目的") or []))[:3]
+        if not sents:
+            t = str(paper.get("title") or "").strip()
+            sents = [t] if t else []
+        doc_axis.append([s for s in sents if s])
+    # 收集需要校验的 (文献句, 档案句) 一次性批量编码
+    flat: List[str] = []
+    jobs: List[tuple] = []  # (doc_idx, cat)
+    for i, label in enumerate(labels):
+        if not label or label not in profiles:
+            continue
+        arch = [s for s in (profiles[label].get(key) or []) if s]
+        if not arch or not doc_axis[i]:
+            continue  # 档案/文献缺轴语步：无从度量，交由 LLM 判定维持
+        jobs.append((i, label))
+        flat.extend(doc_axis[i])
+        flat.extend(arch)
+    if not jobs:
+        return labels
+    try:
+        vecs = np.asarray(encoder.encode(flat), dtype="float32")
+        vecs = vecs / (np.linalg.norm(vecs, axis=1, keepdims=True) + 1e-9)
+    except Exception:  # noqa: BLE001 - 编码失败不拦截 LLM 判定
+        return labels
+    pos = 0
+    doc_vecs: Dict[int, np.ndarray] = {}
+    arch_vecs: Dict[str, np.ndarray] = {}
+    for i, label in jobs:
+        doc_vecs[i] = vecs[pos:pos + len(doc_axis[i])]; pos += len(doc_axis[i])
+        n_arch = len([s for s in (profiles[label].get(key) or []) if s])
+        arch_vecs.setdefault(label, vecs[pos:pos + n_arch]); pos += n_arch
+    out = list(labels)
+    for i, label in jobs:
+        sims = doc_vecs[i] @ arch_vecs[label].T          # 文献句 × 档案句
+        score = float(np.mean(sims.max(axis=1)))          # 每文献句取最像的档案句，均值
+        if score < ANCHOR_SIM_THRESHOLD:
+            out[i] = ""                                   # 低相似：不硬贴，回落自由分组
+    return out
+
+
+def anchor_guided_groups(papers, moves, anchor_docs, axis, glm, encoder=None) -> List[Dict[str, Any]]:
     """锚点引导分组：用户类目为种子，未归入的文献自由分组。
 
     返回 [{name, indices}]（与 _group_once 同构）；档案为空返回 []（走自由分组）。
@@ -368,6 +423,8 @@ def anchor_guided_groups(papers, moves, anchor_docs, axis, glm) -> List[Dict[str
         logging.getLogger(__name__).info("锚点引导回落自由分组：类目档案为空（语步提取未产出，LLM 波动）")
         return []
     labels = _assign_to_anchor_categories(glm, papers, moves, profiles, axis)
+    # 语步相似度门槛（2026-09-16 用户定调）：低于阈值的文献不贴用户类目
+    labels = _anchor_similarity_gate(papers, moves, labels, profiles, axis, encoder)
     groups: List[Dict[str, Any]] = []
     assigned = [i for i, x in enumerate(labels) if x]
     for cat in profiles:
@@ -591,7 +648,7 @@ def run_move_aligned_clustering(papers, *, selected_axis, glm_client, encoder=No
     method = ""
     if anchor_docs:
         # 锚点引导：用户类目为种子，语步级归类（方法对方法 / 场景对场景）
-        groups = anchor_guided_groups(papers, moves, anchor_docs, selected_axis, glm_client)
+        groups = anchor_guided_groups(papers, moves, anchor_docs, selected_axis, glm_client, encoder)
         method = "llm_anchor_guided_grouping" if groups else ""
     if not groups:
         # 自由分组：≤BATCH_SIZE 一次；>BATCH_SIZE 分批 + 跨批合并
