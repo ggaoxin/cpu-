@@ -135,13 +135,16 @@ def index_status_for(storage_uri: str) -> Optional[Dict[str, Any]]:
     """查询某用户资源的 CLC 索引构建状态（供前端进度展示）。
 
     返回 {needed, status, progress, stage, task_id}：
-    - 索引已完整（manifest 在）→ status=done, progress=100
+    - 索引已完整（large + m3 两个 manifest 都在）→ status=done, progress=100
+      （2026-09-19 修复：此前只查 large——large 建完 m3 还在编码时进度环已显示
+      "构建完成"，但后端任务仍 running 会拦截提交，前端"完成"与后端报错自相矛盾）
     - 构建中 → 从 analysis_tasks 读该 storage_uri 的最新 clc-index-build 任务进度
     - 无任务且无索引 → None（调用方 404）
     """
     from infrastructure.rag.clc_retriever import CLCRetriever as _CR
     index_dir = _CR._index_dir_for(storage_uri)
-    if (index_dir / "clc_index_large" / "manifest.json").exists():
+    if (index_dir / "clc_index_large" / "manifest.json").exists() \
+            and (index_dir / "clc_index_m3" / "manifest.json").exists():
         return {"needed": True, "status": "done", "progress": 100,
                 "stage": "索引就绪", "task_id": None}
     from infrastructure.database.task_repository import task_repository
@@ -181,15 +184,16 @@ def submit_build(resource_row: Dict[str, Any], repository=None) -> Optional[str]
         logger.info("CLC 资源 %s 条数 %d ≤ %d，不建库（走 few-shot/范围块）",
                     resource_row.get("id"), record_count, settings.CLC_BUILD_MIN_RECORDS)
         return None
-    # 索引已存在（同内容指纹目录有 manifest）→ 跳过重建（2026-09-14）：
-    # 重复上传同一文件曾无条件再触发约20秒的异步重建；manifest 在构建完成时
-    # 写入，存在即完整索引，检索器可直接 for_path 加载
+    # 索引已存在（同内容指纹目录 large+m3 两个 manifest 都在）→ 跳过重建
+    # （2026-09-14；2026-09-19 补 m3：en 分类跨语言检索必需，只查 large 会在
+    # m3 缺失/半建时误判完整而永不重建）
     from infrastructure.rag.clc_retriever import CLCRetriever as _CR
     sweep_user_indexes()  # 上传即惰性清扫（规则3'）
-    _existing = _CR._index_dir_for(storage_uri) / "clc_index_large" / "manifest.json"
-    if _existing.exists():
+    _idx = _CR._index_dir_for(storage_uri)
+    if (_idx / "clc_index_large" / "manifest.json").exists() \
+            and (_idx / "clc_index_m3" / "manifest.json").exists():
         touch_user_index(storage_uri)  # 命中续期（规则4'）
-        logger.info("CLC 索引已存在（%s），跳过重建", _existing.parent.parent.name)
+        logger.info("CLC 索引已存在（%s），跳过重建", _idx.name)
         return None
     # 同库构建任务去重（2026-09-19 甲方CPU机器反馈"索引构建中点在线测试报错"）：
     # 构建中提交在线测试会随请求再次 submit_build → 第二个任务在单线程池排队，
