@@ -737,42 +737,163 @@ class SemanticApplicationService(ISemanticService):
         # 先检索候选喂给 LLM——候选是自定义体系下唯一的事实来源，不存在锚定问题。
         cross_lingual = bool(getattr(rule, "cross_lingual", False))
         top_k = int((request.params or {}).get("top_k", 5))
-        # ── 映射规则·翻译增强（2026-09-15 定稿架构）──
+        # ── 映射规则·翻译增强（2026-09-15 定稿架构；2026-09-19 升级双通道）──
         # 中图分类法是中文构建的：英文要先映射为标准中文表达，再用中文匹配中图分类。
         # 内置 = bge-m3 跨语言向量隐式翻译（默认）；用户上传映射规则 = 词表显式翻译：
-        # 标题/摘要/关键词命中表内英文术语 → 对应中文标准表达并入检索查询与提示词，
-        # 候选与选择仍走语义判断（不锁定结果）。命中事实透出到跨语言映射块。
+        # ① 词面通道：题名/摘要/关键词/全文子串命中表内英文术语（精度 100%）；
+        # ② 语义通道（2026-09-19 用户新架构：文本未必含可直接命中的关键词，靠模型
+        #    自己提取）：先让 GLM 提取「应用场景 / 关键技术」两组英文关键词，再与
+        #    词面未命中的表内术语做 bge-m3 语义相似度匹配（≥0.78）——换了说法的
+        #    术语（CNN ↔ convolutional neural network）也能对上。
+        # 命中的中文表达并入检索查询与提示词，候选与选择仍走语义判断（不锁定结果）。
         _mapping_hits: dict = {}   # {中文标准表达: 英文术语}——纯翻译表
+        _mapping_hit_meta: dict = {}  # {中文标准表达: {term, source, similarity}}
+        _mapping_row_codes: dict = {}  # {中文标准表达: 表内 clc_code（若有）}
+        _scenario_kws: list = []   # GLM 提取的应用场景英文关键词
+        _technique_kws: list = []  # GLM 提取的关键技术英文关键词
+        _match_source = ""         # 语义匹配单元来源（文献自带关键词/大模型提取）
+        _kws_for_match: list = []  # 语义匹配单元（作者关键词或 LLM 提取的短语）
         _map_res = ((request.params or {}).get("resolved_resources") or {}).get(
             "classification_standard_mapping_table")
         if isinstance(_map_res, dict) and cross_lingual:
+            _map_rows: list = []
             try:
-                for _r in self._load_clc_mapping_rows(_map_res):
+                _map_rows = self._load_clc_mapping_rows(_map_res)
+                # ① 词面通道：haystack = 题名/摘要/关键词 + 全文前 2 万字
+                # （文件全文输入时术语常只出现在正文、不在抽取出的题名/摘要/关键词里）
+                _hay = f"{title}\n{abstract}\n{keywords}\n{(full_text or '')[:20000]}".casefold()
+                for _r in _map_rows:
                     _t = str(_r.get("term") or "").strip()
                     _zh = str(_r.get("clc_name") or _r.get("label") or "").strip()
                     if _t and _zh and _zh not in _mapping_hits:
-                        _hay = f"{title}\n{abstract}\n{keywords}".casefold()
                         if _t.casefold() in _hay:
                             _mapping_hits[_zh] = _t
+                            _mapping_hit_meta[_zh] = {"term": _t, "source": "literal", "similarity": 1.0}
+                            _code = str(_r.get("clc_code") or "").strip().upper()
+                            if _code:
+                                _mapping_row_codes[_zh] = _code
             except Exception:  # noqa: BLE001
                 logger.warning("en分类映射规则加载失败，忽略", exc_info=True)
+            # ② 语义通道（2026-09-19 分情况定稿）：匹配单元的来源分两种情况——
+            #    a) 文献自带关键词（作者标注，或文件模式解析阶段已提取）→ 直接用，
+            #       不调 LLM（省一次调用，作者关键词本身就是高区分度术语）；
+            #    b) 没有关键词 → LLM 从题名/摘要/全文前 8000 字提取短语/关键词
+            #       （关键词或短句均可，短句上下文更足，bge-m3 本就是句级编码器）
+            if _map_rows:
+                _kw_str_in = " ".join(keywords) if isinstance(keywords, list) else str(keywords or "")
+                _author_kws = [str(k).strip() for k in (keywords if isinstance(keywords, list) else [])
+                               if str(k).strip()]
+                _match_source = ""
+                if _author_kws:
+                    _kws_for_match = _author_kws[:8]
+                    _match_source = "文献自带关键词"
+                else:
+                    try:
+                        _kwd = self._glm.chat_json(
+                            "You extract discriminative keywords from English scientific papers. "
+                            "Output only JSON.",
+                            "Extract three keyword groups from this paper (keywords or short phrases"
+                            " both fine — short phrases carry more context for semantic matching):\n"
+                            "- scenario_keywords: 2-4 English keywords/phrases naming the APPLICATION"
+                            " SCENARIO / domain / problem the paper addresses (not the method)\n"
+                            "- technique_keywords: 1-4 English keywords/phrases naming the key METHODS"
+                            " / technologies used\n"
+                            "- core_terms: 2-6 ATOMIC core concepts (1-2 words each, e.g. the paper"
+                            " says 'lung nodule localization' → core term 'lung nodule')\n"
+                            f"Title: {title}\nAbstract: {abstract}\n"
+                            + (f"Text (first 8000 chars): {(full_text or abstract)[:8000]}"
+                               if (full_text or abstract) else ""),
+                            timeout=60.0, max_tokens=400)
+                        _kwd = _kwd.get("data", _kwd) if isinstance(_kwd, dict) else {}
+                        _scenario_kws = [str(k).strip() for k in (_kwd.get("scenario_keywords") or [])
+                                         if str(k).strip()][:4]
+                        _technique_kws = [str(k).strip() for k in (_kwd.get("technique_keywords") or [])
+                                          if str(k).strip()][:4]
+                        # 原子核心词（2026-09-19）：短语级锚点会稀释核心概念——
+                        # "lung nodule localization"↔"pulmonary nodule" 仅 0.748 挡在
+                        # 阈值外，原子词 "lung nodule"↔"pulmonary nodule" 0.853 稳过。
+                        # 真同义词按"以用户映射为主"的要求必须映射上
+                        _core_kws = [str(k).strip() for k in (_kwd.get("core_terms") or [])
+                                     if str(k).strip()][:6]
+                        _kws_for_match = [k for k in
+                                          (_scenario_kws + _technique_kws + _core_kws) if k]
+                        _match_source = "大模型提取"
+                    except Exception:  # noqa: BLE001
+                        logger.warning("en分类关键词提取失败，跳过语义映射通道", exc_info=True)
+                        _kws_for_match = []
+                _unmatched = [(str(_r.get("term") or "").strip(),
+                               str(_r.get("clc_name") or _r.get("label") or "").strip(),
+                               str(_r.get("clc_code") or "").strip().upper())
+                              for _r in _map_rows]
+                _unmatched = [(_t, _zh, _c) for _t, _zh, _c in _unmatched
+                              if _t and _zh and _zh not in _mapping_hits]
+                if _kws_for_match and _unmatched:
+                    try:
+                        import numpy as _np
+                        from infrastructure.rag.m3_encoder import M3Encoder
+                        _tv = M3Encoder().encode([_t for _t, _, _ in _unmatched])
+                        _kv = M3Encoder().encode(_kws_for_match)
+                        _sims = (_tv @ _kv.T).max(axis=1)  # 每术语对所有关键词的最高相似度
+                        # 阈值 0.75（2026-09-19 实测校准）：近义改写对 0.77+ 放行
+                        # （time series forecasting↔time-series representation 0.774、
+                        # self-supervised representation learning↔self-supervised learning
+                        # 0.898），不同任务对 ≤0.73 挡住（NER↔entity retrieval 0.728）
+                        _sem = sorted(
+                            ((_sims[i], _unmatched[i][0], _unmatched[i][1], _unmatched[i][2])
+                             for i in range(len(_unmatched)) if float(_sims[i]) >= 0.75),
+                            key=lambda x: -x[0])[:3]
+                        for _sim, _t, _zh, _c in _sem:
+                            _mapping_hits[_zh] = _t
+                            _mapping_hit_meta[_zh] = {"term": _t, "source": "semantic",
+                                                      "similarity": round(float(_sim), 3)}
+                            if _c:
+                                _mapping_row_codes[_zh] = _c
+                        if _sem:
+                            logger.info("en分类映射语义命中：%s",
+                                        ", ".join(f"{t}→{z}({s:.2f})" for s, t, z, _ in _sem))
+                    except Exception:  # noqa: BLE001
+                        logger.warning("en分类映射语义匹配失败，仅用词面命中", exc_info=True)
         _keywords_eff = keywords
-        if _mapping_hits:
-            # 命中术语的中文标准表达并入检索查询（翻译增强检索）。
+        if _mapping_hits or _scenario_kws or _technique_kws:
+            # 命中术语的中文标准表达 + 提取的英文关键词并入检索查询（翻译增强检索）。
             # keywords 可能是 list（_parse_paper_input 解析产物）——先归一为字符串
             _kw_str = " ".join(keywords) if isinstance(keywords, list) else str(keywords or "")
-            _keywords_eff = (_kw_str + " " + " ".join(_mapping_hits)).strip()
+            _parts = [_kw_str] + list(_mapping_hits) + _scenario_kws + _technique_kws
+            _keywords_eff = " ".join(p for p in _parts if p).strip() or None
 
         custom_retriever = None
         custom_candidates: list = []
         if isinstance((request.params or {}).get("resolved_resources"), dict) \
                 and (request.params or {}).get("resolved_resources", {}).get("clc_labeled_data"):
             from infrastructure.rag.clc_retriever import clc_retriever as _builtin
+            # 索引构建中拦截（2026-09-19 用户定调：用户上传中图分类标准后、知识库
+            # 构建未完成时点在线测试要报错等待，而不是带内置/词面检索直接跑）——
+            # 前端已按进度环拦截，此处兜底覆盖直连 API/SDK 与前端竞态窗口
+            _clc_res = (request.params or {})["resolved_resources"]["clc_labeled_data"]
+            _clc_uri = str((_clc_res or {}).get("storage_uri") or "")
+            if _clc_uri:
+                from infrastructure.rag.clc_user_index_service import _pending_task_for
+                _pending = _pending_task_for(_clc_uri)
+                if _pending is not None:
+                    raise ValueError(
+                        f"中图分类标准知识库索引构建中（{int(_pending.get('progress') or 0)}%），"
+                        "请等待构建完成后再提交在线测试。"
+                    )
             resolved_retriever = self._resolve_clc_retriever(code, request, cross_lingual)
             if resolved_retriever is not _builtin:
                 custom_retriever = resolved_retriever
-                custom_candidates = custom_retriever.retrieve(
-                    title, abstract, _keywords_eff, k=max(top_k, 12), cross_lingual=cross_lingual)
+                # 索引构建期间并发读保护（2026-09-19）：m3 向量在 retrieve 内懒加载，
+                # 索引半建/被重建重写时 np.load 可能抛错——降级走用户条目作用域检索，
+                # 不让"构建中点在线测试"以报错收场
+                try:
+                    custom_candidates = custom_retriever.retrieve(
+                        title, abstract, _keywords_eff, k=max(top_k, 12), cross_lingual=cross_lingual)
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("用户 CLC 向量检索失败(%s)，降级用户条目作用域检索", exc)
+                    custom_retriever = self._user_scope_retriever(request)
+                    if custom_retriever is not None:
+                        custom_candidates = custom_retriever.retrieve(
+                            title, abstract, _keywords_eff, k=max(top_k, 12), cross_lingual=cross_lingual)
             else:
                 # 用户选了资源但未建向量索引(散点表/小表/标注样本):用资源条目本身构建
                 # 作用域检索器,resolve_code/children 均对用户条目生效——否则后置校验会把
@@ -797,10 +918,15 @@ class SemanticApplicationService(ISemanticService):
                 + "\n".join(lines)
             )
         if _mapping_hits:
+            _lines = []
+            for _zh, _t in _mapping_hits.items():
+                _meta = _mapping_hit_meta.get(_zh) or {}
+                _mark = "" if _meta.get("source") == "literal" \
+                    else f"（语义命中 {_meta.get('similarity', 0):.2f}）"
+                _lines.append(f"- {_t} → {_zh}{_mark}")
             user_prompt += (
                 "\n\n【用户映射规则·术语对照】用户上传的映射规则给出以下标准中文表达，"
-                "分类判断时请优先按这些中文表达对应的类目理解原文：\n"
-                + "\n".join(f"- {_t} → {_zh}" for _zh, _t in _mapping_hits.items()))
+                "分类判断时请优先按这些中文表达对应的类目理解原文：\n" + "\n".join(_lines))
         data = self._glm.chat_json(system_prompt, user_prompt, timeout=120.0, max_tokens=1500)
         data = data.get("data", data) if isinstance(data, dict) else {}
 
@@ -811,8 +937,13 @@ class SemanticApplicationService(ISemanticService):
         if custom_candidates:
             candidates = custom_candidates
         else:
-            candidates = retriever.retrieve(title, abstract, _keywords_eff, k=top_k,
-                                            cross_lingual=cross_lingual)
+            # 候选仅是输出展示字段：检索异常（如用户索引正被重建）不应让整篇失败
+            try:
+                candidates = retriever.retrieve(title, abstract, _keywords_eff, k=top_k,
+                                                cross_lingual=cross_lingual)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("CLC 候选检索失败(%s)，rag_top_k_candidates 置空继续", exc)
+                candidates = []
 
         # 3b. 解析候选组合（1-3 组，按推荐度降序）；兼容旧版 main_code/auxiliary_codes 单组合响应
         combos_raw = data.get("combinations") or []
@@ -921,14 +1052,27 @@ class SemanticApplicationService(ISemanticService):
             "alignment_check": alignment_check,
         }
         # 映射规则命中透出（出口层既有契约 user_mapping_applied →
-        # cross_language_mapping.status="已映射（用户映射规则命中）"，前端
-        # enMappingCell 展示命中术语与来源）
+        # cross_language_mapping.status="已映射（用户映射规则命中）"，弹窗只显示
+        # 状态徽章，明细留 matched_details）。状态语义（2026-09-19 用户定稿）：
+        # 跨语言映射 = "英文→用户表内词"这一步走了谁的表——词面/语义（≥0.75 阈值）
+        # 命中用户表即"已映射（用户映射规则…）"，命中的中文表达随后注入 CLC 检索
+        # 与提示词参与分类；没命中或阈值不够 → 内置向量映射（bge-m3 隐式翻译）。
+        # 不做"结果必须对应表内条目"的二次校验（映射表是翻译口径，不是类目清单）
         if _mapping_hits:
             out["user_mapping_applied"] = {
                 "term": "; ".join(_mapping_hits.values()),
                 "matched_terms": list(_mapping_hits.values()),
                 "zh_terms": list(_mapping_hits.keys()),
+                "matched_details": [_mapping_hit_meta.get(_zh) or {"term": _t, "source": "literal"}
+                                    for _zh, _t in _mapping_hits.items()],
             }
+        if _scenario_kws or _technique_kws:
+            out["application_scenario_keywords"] = _scenario_kws
+            out["key_technique_keywords"] = _technique_kws
+        if _match_source:
+            # 语义匹配单元来源（分情况）：文献自带关键词（直接用，未调LLM）/
+            # 大模型提取（无关键词时从题名/摘要/全文前8000字提取短语）
+            out["mapping_match_units"] = {"source": _match_source, "units": _kws_for_match}
 
         result.success = True
         result.data = out

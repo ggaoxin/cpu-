@@ -27,8 +27,8 @@ const resourceGroups: Record<string, { title: string; description: string; field
     title: '分类标准与映射规则',
     description: '跨语言映射后输出中图分类结果',
     fields: [
-      { key: 'clc_labeled_data', label: '中图分类标准', description: '必填；用户可手动上传', placeholder: '请选择分类标准版本', required: true },
-      { key: 'classification_standard_mapping_table', label: '映射规则', description: '必填；用户可手动上传', placeholder: '请选择映射规则版本', required: true },
+      { key: 'clc_labeled_data', label: '中图分类标准', description: '分类号与类目体系', placeholder: '请选择分类标准版本', required: true },
+      { key: 'classification_standard_mapping_table', label: '映射规则', description: '英文术语对应中文标准表达', placeholder: '请选择映射规则版本', required: true },
     ],
   },
   'domain-classify': {
@@ -147,6 +147,16 @@ const requestPayload = computed<Record<string, unknown>>(() => {
       if (!Array.isArray(payload.__pending_uploads)) payload.__pending_uploads = []
       ;(payload.__pending_uploads as Array<{ key: string, label: string }>).push({ key: field.key, label: field.label })
     }
+    // 分类知识库索引构建中：构建未完成禁止提交在线测试（2026-09-19 用户定调：
+    // 构建中点在线测试要拦截报错提示等待，而不是带内置/词面检索直接跑），
+    // 带内部标记供提交校验拦截，提交前由 OnlineTester 剔除
+    if (resourceProbes[field.key]?.indexStatus === 'building') {
+      if (!Array.isArray(payload.__building_uploads)) payload.__building_uploads = []
+      ;(payload.__building_uploads as Array<{ key: string, label: string, progress: number }>).push({
+        key: field.key, label: field.label,
+        progress: Number(resourceProbes[field.key]?.indexProgress || 0),
+      })
+    }
   })
   return payload
 })
@@ -256,8 +266,7 @@ const resourceSaveNotice = ref('')
 // 各资源字段上传文件的格式与字段说明（与后端 normalize.py 行有效性规则对应，
 // 文案样式与深度聚类锚点上传一致：仅 .json：字段 + 字段）
 const resourceFieldHints: Record<string, string> = {
-  clc_labeled_data: '仅 .json：clc_code（分类号）+ clc_name（类目名称）；大表可加 parent_code 构建知识库',
-  classification_standard_mapping_table: '仅 .json：term（英文术语）+ zh_term/label（中文标准表达）——分类工具用；关键词工具为 term + clc_code（分类号）+ clc_name（类目名）',
+  clc_labeled_data: '仅 .json：三个字段 clc_code（分类号）+ clc_name（类目名称）+ parent_code（父级分类号，可选）',
   domain_terminology_library: '仅 .json：canonical（标准术语）+ variants（变体/缩写/同义词）',
   manually_labeled_training_data: '仅 .json：text（示例文本）+ label（分类标签，分类号+类目名）',
   manually_labeled_data: '仅 .json：canonical（标准中文词）+ variants（变体列表）+ canonical_en（标准英文词）+ type（五类之一）',
@@ -271,6 +280,13 @@ const resourceFieldHints: Record<string, string> = {
   ontology_classification_system: '仅 .json：types（类型数组：code 类型码 + name 中文名 + description 判定标准 + examples 示例词）；领域在请求参数下拉里选',
 }
 function fieldHint(key: string): string {
+  // 映射表字段两个工具共用但格式不同（2026-09-19 用户反馈：两种格式混在一条
+  // 提示里看不懂"怎么还有关键词"）——按当前工具只显示对应格式
+  if (key === 'classification_standard_mapping_table') {
+    return props.toolId === 'en-keyword'
+      ? '仅 .json：term（英文术语）+ clc_code（分类号）+ clc_name（类目名）'
+      : '仅 .json：term（英文术语）+ zh_term/label（中文标准表达）'
+  }
   return resourceFieldHints[key] || '仅 .json'
 }
 
@@ -526,7 +542,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
           <span class="parse-ring" :data-state="resourceProbes[field.key]?.indexStatus === 'done' ? 'done' : resourceProbes[field.key]?.indexStatus === 'failed' ? 'error' : 'parsing'" :style="`--p:${resourceProbes[field.key]?.indexProgress || 0}%`"><i>{{ resourceProbes[field.key]?.indexStatus === 'done' ? '✓' : resourceProbes[field.key]?.indexStatus === 'failed' ? '✗' : (resourceProbes[field.key]?.indexProgress || 0) + '%' }}</i></span>
           <span v-if="resourceProbes[field.key]?.indexStatus === 'done'" class="parse-text ok">分类知识库构建完成，提交即用用户体系分类</span>
           <span v-else-if="resourceProbes[field.key]?.indexStatus === 'failed'" class="parse-text err">分类知识库构建失败，可重新选文件重试</span>
-          <span v-else class="parse-text">构建分类知识库（bge 向量编码）{{ resourceProbes[field.key]?.indexProgress || 0 }}% —— 完成前的提交将走内置资源</span>
+          <span v-else class="parse-text">构建分类知识库（bge 向量编码）{{ resourceProbes[field.key]?.indexProgress || 0 }}% —— 构建完成前暂不能提交在线测试</span>
         </div>
         <p v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.status === 'error'" class="anchor-format-hint" style="color:#c0392b">✕ {{ resourceProbes[field.key]?.error }}</p>
       </article>

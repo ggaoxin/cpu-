@@ -519,10 +519,13 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
 })
 
 // 真实接口接入时直接提交该对象；字段集合由 tooling 中的统一契约锁定。
-// __pending_uploads 是"切了上传未选文件"的内部校验标记（提交校验用），不外发。
+// __pending_uploads 是"切了上传未选文件"的内部校验标记（提交校验用），不外发；
+// __building_uploads 是"分类知识库索引构建中"的内部校验标记（构建未完成拦截
+// 提交并提示等待），同样不外发。
 const currentRequestPayload = computed(() => {
   const payload = { ...requestPayloadFor(props.tool, mode.value, onlineRequestValues.value) }
   delete payload.__pending_uploads
+  delete payload.__building_uploads
   return payload
 })
 
@@ -535,6 +538,16 @@ const clusterCountError = computed(() => {
   if (!Number.isInteger(count) || count < 1) return '类簇数量必须是不小于 1 的整数（留空时自动确定）。'
   if (total > 1 && count >= total) return `类簇数量必须小于输入文献数量（当前 ${total} 篇，最大 ${total - 1}）。`
   return ''
+})
+
+// 分类知识库构建中（用户上传中图分类标准后 bge 向量编码未完成）：点「在线测试」
+// 弹错误提示拦截（2026-09-19 用户定调：按钮保持可点，点击报错提示等待，
+// 构建过程不受影响；进度环到 100% 后即可正常提交）。提示带实时进度，与资源
+// 面板的构建进度环同步（2s 轮询刷新）。
+const clcBuildingMessage = computed(() => {
+  const building = (supplementalPayload.value.__building_uploads as Array<{ key: string, label: string, progress: number }> | undefined) || []
+  if (!building.length) return ''
+  return `「${building.map(item => item.label).join('、')}」分类知识库正在构建（${building[0].progress}%），请等待构建完成后再测试。`
 })
 
 function updateSupplementalPayload(payload: Record<string, unknown>) {
@@ -1000,6 +1013,9 @@ function requiredResourceError(): string {
   if (pending.length) {
     return `「${pending.map(item => item.label).join('、')}」已选择用户上传资源，请先上传资源文件（或切回内置）。`
   }
+  // 分类知识库索引构建中：点在线测试弹错误提示（2026-09-19 用户定调：按钮
+  // 保持可点、点击报错等待且不影响构建过程，而不是带内置/词面检索直接跑）
+  if (clcBuildingMessage.value) return clcBuildingMessage.value
   return ''
 }
 

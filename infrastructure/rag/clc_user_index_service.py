@@ -105,6 +105,32 @@ def touch_user_index(storage_uri: str) -> None:
 
 
 
+def _pending_task_for(storage_uri: str, workspace_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """该 storage_uri 是否有排队/执行中的建库任务，有则返回该任务行。"""
+    from infrastructure.database.task_repository import task_repository
+    from config.settings import settings as _st
+    try:
+        tasks = task_repository.list_tasks(workspace_id or _st.DEFAULT_WORKSPACE_ID,
+                                           tool_id="clc-index-build", limit=50)
+    except Exception:  # noqa: BLE001
+        return None
+    for t in tasks or []:
+        if str((t.get("parameters") or {}).get("storage_uri") or "") == storage_uri \
+                and str(t.get("status") or "") in {"queued", "running"}:
+            return t
+    return None
+
+
+def has_pending_build(storage_uri: str) -> bool:
+    """守门查询（一次性资源清理用）：建库任务待执行时不可删资源 json。
+
+    2026-09-19 甲方反馈"索引构建中点在线测试报错"根因之一：在线测试结束的
+    一次性清理把资源 json unlink，排队中的建库任务随后 open() 直接
+    No such file 失败——进度环永远到不了 100%。
+    """
+    return _pending_task_for(storage_uri) is not None
+
+
 def index_status_for(storage_uri: str) -> Optional[Dict[str, Any]]:
     """查询某用户资源的 CLC 索引构建状态（供前端进度展示）。
 
@@ -165,6 +191,14 @@ def submit_build(resource_row: Dict[str, Any], repository=None) -> Optional[str]
         touch_user_index(storage_uri)  # 命中续期（规则4'）
         logger.info("CLC 索引已存在（%s），跳过重建", _existing.parent.parent.name)
         return None
+    # 同库构建任务去重（2026-09-19 甲方CPU机器反馈"索引构建中点在线测试报错"）：
+    # 构建中提交在线测试会随请求再次 submit_build → 第二个任务在单线程池排队，
+    # 前一个完成后立刻**重写** .npy/manifest —— 并发分类 for_path/np.load 可能
+    # 读到半写文件而报错。同 storage_uri 已有 queued/running 任务时不再排队重建。
+    _pending = _pending_task_for(storage_uri, str(resource_row.get("workspace_id") or ""))
+    if _pending is not None:
+        logger.info("CLC 索引构建任务已在队列/执行中（%s），跳过重复建库", _pending.get("id"))
+        return None
     task_id = f"tsk_clcidx_{uuid.uuid4().hex[:12]}"
     task = AnalysisTask(
         id=task_id,
@@ -205,16 +239,29 @@ def _build(task_id: str, storage_uri: str, resource_id: str, repository) -> None
             entries = json.load(f)
         if not isinstance(entries, list) or not entries:
             raise ValueError("资源非 JSON 数组或为空")
+        # 1b. 与预检同一套行归一化（2026-09-19）：中文字段别名（分类号/类目名称）的
+        # 文件预检按归一化行判 taxonomy_complete 触发建库，此处若按原始行 detect 会
+        # 判 unknown → "非完整分类树，拒绝建库"，进度环转 ✗ 与预检自相矛盾
+        try:
+            from infrastructure.resources.normalize import normalize_resource_document
+            _norm = normalize_resource_document(entries, field="clc_labeled_data")
+            if _norm:
+                entries = _norm
+        except Exception:  # noqa: BLE001 - 归一化失败退回原始行
+            pass
         # 2. normalize + detect（非完整树拒绝）
         normalize_meta(entries)
         kind = detect_taxonomy_kind(entries)
         if kind != "taxonomy_complete":
             raise ValueError(f"非完整分类树（{kind}），拒绝建库——resolve_code 上溯在散点库失效")
-        # 3. 写 clc_meta_full.json
+        # 3. 写 clc_meta_full.json（原子写：并发分类 for_path 读该文件，半写会解析失败）
         index_dir.mkdir(parents=True, exist_ok=True)
         meta_path = index_dir / "clc_meta_full.json"
-        with open(meta_path, "w", encoding="utf-8") as f:
+        tmp_path = index_dir / "clc_meta_full.json.tmp"
+        with open(tmp_path, "w", encoding="utf-8") as f:
             json.dump(entries, f, ensure_ascii=False, indent=2)
+        import os as _os
+        _os.replace(tmp_path, meta_path)
         logger.info("CLC 建索引 %s：meta 写入 %s（%d 条）", task_id, meta_path, len(entries))
 
         # 4. 建向量索引（progress_cb 更新进度）

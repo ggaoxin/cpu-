@@ -343,7 +343,9 @@ body.v690-general-ner-active .ner-results-table td,
 .requirement-resource-heading > div { display: flex; min-width: 0; align-items: baseline; color: #2c405e; }
 .requirement-resource-heading b { font-size: 13px; }
 .requirement-resource-heading small { color: #8e9db2; font-size: 10.5px; font-weight: 400; white-space: nowrap; }
-.requirement-resource-item > p { min-width: 0; min-height: 24px; grid-column: 2; grid-row: 1; align-self: baseline; margin: 0; color: #718096; font-size: 10.5px; line-height: 1.65; text-align: right; white-space: nowrap; }
+/* 描述列：超宽必须截断省略（2026-09-19 甲方反馈"必填；用户…"与相邻字段标题重叠）——
+   nowrap 且不裁切时文本会溢出轨道压到左右文字 */
+.requirement-resource-item > p { min-width: 0; min-height: 24px; grid-column: 2; grid-row: 1; align-self: baseline; margin: 0; color: #718096; font-size: 10.5px; line-height: 1.65; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .requirement-resource-controls { display: flex; grid-column: 1/-1; flex-direction: column; gap: 8px; margin-top: 10px; }
 /* 上传框自身的取消按钮:锚定上传框右上角(非整个控件列),悬停浮现 */
 .resource-upload-wrap { position: relative; }

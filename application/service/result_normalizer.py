@@ -169,9 +169,15 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
         return _moves(raw, tool_id, payload)
     if tool_id in {"zh-classify", "en-classify"}:
         result = _classification(raw, tool_id)
-        # 用户题目优先于引擎原始数据(引擎可能带空 document_title,setdefault 会被挡住)
-        if payload.get("document_title") or payload.get("title"):
-            result["document_title"] = payload.get("document_title") or payload.get("title")
+        # 题目优先级（2026-09-19 修正）：用户手填题目 > 引擎从全文提取的真实论文
+        # 题名 > 文件名兜底。文件模式 payload.document_title 是 _payload_for_group
+        # 用 file_name setdefault 的兜底值——此前无条件覆盖，把引擎提取的论文题名
+        # 挤掉导致弹窗题名列恒显示文件名；payload 题目与文件名相同时视为兜底不覆盖
+        _pt = payload.get("document_title") or payload.get("title")
+        if _pt:
+            _is_fn_fallback = str(_pt) == str(payload.get("file_name") or "")
+            if not _is_fn_fallback or not str(result.get("document_title") or "").strip():
+                result["document_title"] = _pt
         result.setdefault("classification_confidence", _confidence(result.get("primary_classification") or {}, 0.0))
         if tool_id == "en-classify":
             if not result.get("literature_distribution_analysis_report"):
@@ -180,14 +186,28 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
                 result["literature_distribution_analysis_report"] = report
             if not result.get("cross_language_mapping"):
                 result["cross_language_mapping"] = _en_cross_language_mapping(result, payload)
-            # 用户独立映射规则命中 → 跨语言映射块透出命中术语与来源（弹窗 enMappingCell 展示）
+            # 用户独立映射规则命中 → 跨语言映射块只显示映射状态徽章（2026-09-19
+            # 用户定稿：命中术语不进弹窗展示，明细留在 matched_details 供 API 查看）。
+            # 双通道：词面子串命中（literal）/ 关键词语义命中（semantic，bge-m3）——
+            # 有词面命中以词面为准，仅语义命中单独标注
             applied = result.get("user_mapping_applied")
             if isinstance(applied, dict) and applied.get("term"):
                 clm = result["cross_language_mapping"]
-                clm["status"] = "已映射（用户映射规则命中）"
-                hit_terms = [t for t in (applied.get("matched_terms") or []) if t]
-                clm["source_terms"] = [{"label": t} for t in hit_terms[:4]] or clm.get("source_terms") or []
+                details = [d for d in (applied.get("matched_details") or []) if isinstance(d, dict)]
+                has_literal = any(d.get("source") != "semantic" for d in details) or not details
+                clm["status"] = "已映射（用户映射规则命中）" if has_literal \
+                    else "已映射（用户映射规则·语义命中）"
                 clm["mapping_source"] = "user_mapping_table"
+                clm["matched_details"] = details
+            # GLM 提取的应用场景/关键技术关键词折进跨语言映射块（弹窗可见提取质量）
+            if isinstance(result.get("application_scenario_keywords"), list) \
+                    or isinstance(result.get("key_technique_keywords"), list):
+                clm2 = result["cross_language_mapping"]
+                clm2["scenario_keywords"] = list(result.get("application_scenario_keywords") or [])
+                clm2["technique_keywords"] = list(result.get("key_technique_keywords") or [])
+            # 语义匹配单元来源（文献自带关键词直接用 / 无关键词时大模型提取）
+            if isinstance(result.get("mapping_match_units"), dict):
+                result["cross_language_mapping"]["match_units"] = result["mapping_match_units"]
         return result
     if tool_id == "domain-classify":
         return _domain_classification(raw, payload)
@@ -958,27 +978,17 @@ def _en_cross_language_mapping(result: Dict[str, Any], payload: Dict[str, Any]) 
     """en-classify 跨语言映射：英文文献必然经 英文→中文CLC 跨语言检索，分类成功即"已映射"。
 
     前端 enMappingCell 只读 status 与 source_terms[].label（visualizationRenderers.js:158）。
-    source_terms 取 document_title，回退到英文正文前若干实词。
+    内置向量映射时不列源术语（2026-09-19 用户定稿：论文题目在题名列已有，作为
+    "映射源术语"显示在状态上方是噪声）；仅用户映射规则命中时才列命中术语。
     """
     primary = result.get("primary_classification") or {}
-    title = str(payload.get("document_title") or payload.get("title") or "").strip()
-    source_terms = []
-    if title:
-        source_terms.append({"label": title})
-    else:
-        en_text = str(payload.get("english_scientific_document_text") or "").strip()
-        if en_text:
-            # 取前若干英文实词作为映射源术语
-            words = [w for w in en_text.split() if any(c.isalpha() for c in w)][:8]
-            if words:
-                source_terms.append({"label": " ".join(words)})
     return {
         # 2026-09-15 用户定稿：区分映射来源——内置向量永远在映射，"已映射"无信息量；
         # 内置显示机制名（内置向量映射），用户映射规则命中才显示"已映射（…命中）"
         "status": "内置向量映射",
         "source_language": "en",
         "target_language": "zh",
-        "source_terms": source_terms,
+        "source_terms": [],
         "target_classification": {
             "clc_code": str(primary.get("clc_code") or primary.get("code") or "").strip(),
             "clc_name": str(primary.get("clc_name") or primary.get("label") or "").strip(),

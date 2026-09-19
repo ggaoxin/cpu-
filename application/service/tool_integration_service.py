@@ -480,11 +480,23 @@ class ToolIntegrationService:
             uri = str(row.get("storage_uri") or "")
             if uri:
                 path = _P(uri.removeprefix("project://")) if uri.startswith("project://") else _P(uri)
+                # 建库任务待执行时不可删 json（2026-09-19 甲方"构建中点测试报错"根因：
+                # 排队中的建库任务 open() 已被 unlink 的资源文件 → No such file 失败，
+                # 进度环永远到不了 100%；索引建成/无任务时才走一次性删除）
+                _pending_build = False
                 try:
-                    if "semantic_resources" in path.parts and path.is_file():
-                        path.unlink()
-                except OSError:
-                    logger.warning("一次性资源文件删除失败: %s", path, exc_info=True)
+                    from infrastructure.rag.clc_user_index_service import has_pending_build
+                    _pending_build = has_pending_build(uri)
+                except Exception:  # noqa: BLE001
+                    _pending_build = False
+                if _pending_build:
+                    logger.info("资源 %s 的建库任务待执行，保留 json 供构建读取", path.name)
+                else:
+                    try:
+                        if "semantic_resources" in path.parts and path.is_file():
+                            path.unlink()
+                    except OSError:
+                        logger.warning("一次性资源文件删除失败: %s", path, exc_info=True)
             self.resource_repository.delete_semantic_resource(rid)
             logger.info("一次性上传资源已清理: %s (%s)", rid, row.get("name"))
 
@@ -1401,7 +1413,12 @@ class ToolIntegrationService:
     @staticmethod
     def _single_text(contract: ToolContract, payload: Dict[str, Any]) -> str:
         if contract.tool_id in {"zh-classify", "en-classify", "domain-classify"}:
-            plain_text = str(payload.get("text") or "").strip()
+            raw = payload.get("text")
+            # multipart 表单层 _parse_form_value 会把 JSON 样式的 text 字段解析成
+            # dict——str(dict) 变单引号 repr，下游 paper JSON 解析（ch_name/keywords）
+            # 必失败；还原为合法 JSON 字符串，自带关键词才能进分类/映射管线
+            plain_text = (json.dumps(raw, ensure_ascii=False)
+                          if isinstance(raw, (dict, list)) else str(raw or "")).strip()
             if plain_text:
                 return plain_text
             if not (payload.get("title") or payload.get("abstract")):

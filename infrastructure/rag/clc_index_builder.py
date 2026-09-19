@@ -78,6 +78,19 @@ def build_index(
             except Exception:  # noqa: BLE001
                 pass  # 进度回调异常不影响建库
 
+    def _atomic_save_npy(path: str, array) -> None:
+        # 原子落盘（2026-09-19）：先写临时文件再 os.replace——构建期间并发分类
+        # for_path/np.load 可能读到半写 .npy 而报错（甲方CPU机器构建窗口长更易触发）
+        tmp = path + ".tmp.npy"
+        np.save(tmp, array)
+        os.replace(tmp, path)
+
+    def _atomic_dump_json(path: str, obj) -> None:
+        tmp = path + ".tmp.json"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(obj, f, ensure_ascii=False, indent=2)
+        os.replace(tmp, path)
+
     _cb(2.0, "load_meta")
     with open(meta_path, encoding="utf-8") as f:
         meta = json.load(f)
@@ -102,13 +115,11 @@ def build_index(
             t = time.time()
             V = model.encode(texts, batch_size=64, normalize_embeddings=True,
                              show_progress_bar=True)
-            np.save(os.path.join(large_dir, f"clc_vectors_large_{label}.npy"),
-                    V.astype(np.float32))
+            _atomic_save_npy(os.path.join(large_dir, f"clc_vectors_large_{label}.npy"),
+                             V.astype(np.float32))
             _cb(50.0 if label == "fullpath" else 70.0,
                 f"large_{label}_encoded:{time.time()-t:.1f}s")
-        json.dump(large_manifest,
-                  open(os.path.join(large_dir, "manifest.json"), "w", encoding="utf-8"),
-                  ensure_ascii=False, indent=2)
+        _atomic_dump_json(os.path.join(large_dir, "manifest.json"), large_manifest)
         del model  # 释放显存给 m3
         _cb(72.0 if build_m3 else 100.0, "large_done")
 
@@ -124,13 +135,12 @@ def build_index(
         t = time.time()
         V = m3_model.encode(texts, batch_size=32, normalize_embeddings=True,
                            show_progress_bar=True)
-        np.save(os.path.join(m3_dir, "clc_vectors_m3_fullpath.npy"), V.astype(np.float32))
+        _atomic_save_npy(os.path.join(m3_dir, "clc_vectors_m3_fullpath.npy"),
+                         V.astype(np.float32))
         m3_manifest = {
             "encoder": "bge-m3", "dim": m3_dim, "entry_count": n,
             "meta_file": "clc_meta_full.json", "normalize_embeddings": True,
             "field": "full_path", "note": "多语言跨语言索引；bge-m3 dense 无需 query 前缀",
         }
-        json.dump(m3_manifest,
-                  open(os.path.join(m3_dir, "manifest.json"), "w", encoding="utf-8"),
-                  ensure_ascii=False, indent=2)
+        _atomic_dump_json(os.path.join(m3_dir, "manifest.json"), m3_manifest)
         _cb(100.0, "m3_done")
