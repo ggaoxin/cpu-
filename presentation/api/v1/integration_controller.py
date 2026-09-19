@@ -2081,7 +2081,8 @@ async def validate_semantic_resource(
     def _index_build_status(stored_path, field, rows):
         """CLC 大表（分类树+超阈值）预检即建索引，返回进度描述供前端轮询展示。"""
         try:
-            if field not in ("clc_labeled_data", "classification_standard_mapping_table")                     or not isinstance(rows, list):
+            if field not in ("clc_labeled_data", "classification_standard_mapping_table",
+                             "domain_classification_rules") or not isinstance(rows, list):
                 return None
             from infrastructure.rag.clc_user_index_service import compute_clc_verdict
             verdict = compute_clc_verdict(rows, stored_path.stat().st_size)

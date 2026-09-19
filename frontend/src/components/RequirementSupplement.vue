@@ -268,7 +268,7 @@ const resourceSaveNotice = ref('')
 const resourceFieldHints: Record<string, string> = {
   clc_labeled_data: '仅 .json：三个字段 clc_code（分类号）+ clc_name（类目名称）+ parent_code（父级分类号，可选）',
   domain_terminology_library: '仅 .json：canonical（标准术语）+ variants（变体/缩写/同义词）',
-  manually_labeled_training_data: '仅 .json：text（示例文本）+ label（分类标签，分类号+类目名）',
+  manually_labeled_training_data: '仅 .json：text（示例文本）+ label（类目名，可不带分类号）',
   manually_labeled_data: '仅 .json：canonical（标准中文词）+ variants（变体列表）+ canonical_en（标准英文词）+ type（五类之一）',
   domain_labeled_training_data: '仅 .json：text（示例文本）+ entities（实体数组：text 实体词 + type 用本体类型 code）——教实体边界切法',
   general_domain_annotated_corpus: '仅 .json：text（示例文本）+ entities（实体数组：text 实体词 + type 四类之一 PERSON/LOCATION/ORGANIZATION/EVENT）',
@@ -540,9 +540,9 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         <p v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.status === 'ready'" class="anchor-format-hint" style="color:#1e8e3e">✓ 资源已就绪{{ resourceProbes[field.key]?.rows != null ? ` · 已解析 ${resourceProbes[field.key]?.rows} 条` : '' }}{{ resourceProbes[field.key]?.normalizedBy === 'glm' ? '（大模型已整理为标准格式，提交时直接复用）' : '' }}</p>
         <div v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.indexStatus" style="display:flex;align-items:center;gap:10px;padding:4px 0;">
           <span class="parse-ring" :data-state="resourceProbes[field.key]?.indexStatus === 'done' ? 'done' : resourceProbes[field.key]?.indexStatus === 'failed' ? 'error' : 'parsing'" :style="`--p:${resourceProbes[field.key]?.indexProgress || 0}%`"><i>{{ resourceProbes[field.key]?.indexStatus === 'done' ? '✓' : resourceProbes[field.key]?.indexStatus === 'failed' ? '✗' : (resourceProbes[field.key]?.indexProgress || 0) + '%' }}</i></span>
-          <span v-if="resourceProbes[field.key]?.indexStatus === 'done'" class="parse-text ok">分类知识库构建完成，提交即用用户体系分类</span>
-          <span v-else-if="resourceProbes[field.key]?.indexStatus === 'failed'" class="parse-text err">分类知识库构建失败，可重新选文件重试</span>
-          <span v-else class="parse-text">构建分类知识库（bge 向量编码）{{ resourceProbes[field.key]?.indexProgress || 0 }}% —— 构建完成前暂不能提交在线测试</span>
+          <span v-if="resourceProbes[field.key]?.indexStatus === 'done'" class="parse-text ok clc-progress-text">分类知识库构建完成，提交即用用户体系分类</span>
+          <span v-else-if="resourceProbes[field.key]?.indexStatus === 'failed'" class="parse-text err clc-progress-text">分类知识库构建失败，可重新选文件重试</span>
+          <span v-else class="parse-text clc-progress-text">构建分类知识库（bge 向量编码）{{ resourceProbes[field.key]?.indexProgress || 0 }}% —— 构建完成前暂不能提交在线测试</span>
         </div>
         <p v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.status === 'error'" class="anchor-format-hint" style="color:#c0392b">✕ {{ resourceProbes[field.key]?.error }}</p>
       </article>
