@@ -126,9 +126,12 @@ def index_status_for(storage_uri: str) -> Optional[Dict[str, Any]]:
         if params.get("storage_uri") == storage_uri:
             status = str(t.get("status") or "")
             mapped = "done" if status == "succeeded" else ("failed" if status == "failed" else "building")
+            stage = {"done": "索引就绪", "failed": "构建失败", "building": "向量编码构建中"}[mapped]
             return {"needed": True, "status": mapped,
                     "progress": int(t.get("progress") or 0),
-                    "stage": "向量编码构建中" if mapped == "building" else ("索引就绪" if mapped == "done" else "构建失败"),
+                    "stage": stage,
+                    "raw_status": status,
+                    "error": str(t.get("error_summary") or ""),
                     "task_id": str(t.get("id") or "")}
     return None
 
@@ -185,11 +188,17 @@ def submit_build(resource_row: Dict[str, Any], repository=None) -> Optional[str]
 
 
 def _build(task_id: str, storage_uri: str, resource_id: str, repository) -> None:
-    """异步建索引：读 entries → normalize → detect（非 complete 失败）→ 写 meta → build_index。"""
-    from infrastructure.rag.clc_index_builder import build_index
-    from infrastructure.rag.clc_retriever import CLCRetriever
-    index_dir = CLCRetriever._index_dir_for(storage_uri)
+    """异步建索引：读 entries → normalize → detect（非 complete 失败）→ 写 meta → build_index。
+
+    全体包裹 try/except（2026-09-19 甲方机器反馈：导入/目录计算在 try 外，
+    worker 线程在这里异常被 Future 静默吞掉 → 任务永远停在 queued 无日志。
+    单线程池一旦卡死后续任务全部排队只能重启）
+    """
+    index_dir = None
     try:
+        from infrastructure.rag.clc_index_builder import build_index
+        from infrastructure.rag.clc_retriever import CLCRetriever
+        index_dir = CLCRetriever._index_dir_for(storage_uri)
         repository.update_task_status(task_id, TaskStatus.RUNNING, progress=5)
         # 1. 读 entries
         with open(storage_uri, encoding="utf-8") as f:
@@ -229,8 +238,9 @@ def _build(task_id: str, storage_uri: str, resource_id: str, repository) -> None
         repository.update_task_status(task_id, TaskStatus.FAILED,
                                       error_summary=str(e)[:500])
         # 删半成品（不写/删 manifest → 分类 probe 落空自动回退内置单例）
-        try:
-            for sub in ("clc_index_large", "clc_index_m3"):
-                shutil.rmtree(index_dir / sub, ignore_errors=True)
-        except Exception:  # noqa: BLE001
-            pass
+        if index_dir is not None:
+            try:
+                for sub in ("clc_index_large", "clc_index_m3"):
+                    shutil.rmtree(index_dir / sub, ignore_errors=True)
+            except Exception:  # noqa: BLE001
+                pass

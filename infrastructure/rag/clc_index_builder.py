@@ -30,7 +30,11 @@ _LARGE_PREFIX = "为这个句子生成表示以用于检索相关文章："
 
 
 def _gpu_device() -> str:
-    return os.environ.get("BGE_DEVICE", "cuda")
+    # CPU 部署兼容（2026-09-19 甲方机器反馈：纯CPU部署默认cuda导致
+    # Torch not compiled with CUDA enabled 建库失败）——与 clc_retriever/
+    # m3_encoder 同款：有CUDA用cuda，没有自动回退cpu
+    import torch
+    return os.environ.get("BGE_DEVICE", "cuda" if torch.cuda.is_available() else "cpu")
 
 
 def build_index(
