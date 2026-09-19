@@ -208,6 +208,14 @@ export async function uploadSemanticResource(file: File, resourceKey: string) {
   }))
 }
 
+// CLC 索引构建进度（轮询用，轻量 GET——不重复触发构建）
+export async function getIndexStatus(storageUri: string) {
+  const q = new URLSearchParams({ storage_uri: storageUri })
+  return parseResponse(await fetchWithApiKey(apiUrl(`/api/v1/semantic-resources/index-status?${q}`), {
+    headers: { Accept: 'application/json' },
+  }))
+}
+
 // 资源预检（选文件即校验）：加载/解析/归一/大模型重构在参数录入阶段完成，
 // 点击在线测试时只跑功能。返回 {valid, rows, normalized_by, error, note}
 export async function validateSemanticResource(file: File, resourceKey: string) {

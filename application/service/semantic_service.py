@@ -6337,8 +6337,8 @@ class SemanticApplicationService(ISemanticService):
         if _ref_m:
             text = text[:_ref_m.start()]
 
-        truncated = len(text) > NER_TEXT_LIMIT
-        eff_text = text[:NER_TEXT_LIMIT] if truncated else text
+        truncated = False   # 全文分块（2026-09-18 用户定调：NER 面向全文抽取，
+        eff_text = text     # 不再截断——超长文本按句边界切块并发，块数无上限）
 
         system_prompt = self._system_prompt(rule, request)
         # 用户上传资源接线（2026-09-05 分层设计）：
@@ -6396,41 +6396,55 @@ class SemanticApplicationService(ISemanticService):
                 "在原有识别 JSON 的每个实体对象中追加 \"std_zh\", \"std_en\" 两个字段。"
             )
         user_payload = {"text": eff_text, "meta": request.meta}
-        # 长文对半分块并发（2026-09-10 响应提速，ResNet 篇 10k 单次 65s → ~30s）：
-        # 按句边界切两块各自送 LLM 并行，第二块实体位置加偏移后合并；分块后
-        # 单块更短，GLM 生成也更快。位置校验循环按 eff_text 全文复核兜底。
-        # 自适应（2026-09-10 批量优化）：仅当自己是当前唯一活跃 NER 执行时才
-        # 分块——批量 6 篇若都分块，在途请求 6×2=12 路挤满 GLM 配额反而墙钟
-        # 翻倍（科研批量 72s 实测）；批量时各篇退回单次调用，配额留给篇间并发。
+        # 全文分块并发（2026-09-18 用户定调：NER 面向全文，不截断）：
+        # 按句边界切块（每块 ≤ NER_TEXT_LIMIT），块数无上限，块间并发（配额自
+        # 适应：多 NER 在途时降并发防挤爆 GLM）；后续块实体位置加块偏移；跨块
+        # 去重（边界处同一实体可能被切进两块——casefold 全等去重）。位置校验
+        # 循环按 eff_text 全文复核兜底（原有逻辑不变）。
         _chunk_ok = False
         with self.__class__._NER_INFLIGHT_LOCK:
             _chunk_ok = self.__class__._NER_INFLIGHT <= 1
             self.__class__._NER_INFLIGHT += 1
         try:
-            if _chunk_ok and len(eff_text) > 6000:
+            if len(eff_text) > NER_TEXT_LIMIT:
                 import re as _reC
-                _cut = eff_text.rfind("。", 0, len(eff_text) // 2)
-                if _cut < 3000:
-                    _cut = eff_text.rfind(". ", 0, len(eff_text) // 2)
-                if _cut < 3000:
-                    _cut = len(eff_text) // 2
-                _chunks = [(eff_text[:_cut + 1], 0), (eff_text[_cut + 1:], _cut + 1)]
+                _chunks = []
+                _pos = 0
+                while _pos < len(eff_text):
+                    _end = min(_pos + NER_TEXT_LIMIT, len(eff_text))
+                    if _end < len(eff_text):
+                        _cut = eff_text.rfind("。", _pos + int(NER_TEXT_LIMIT * 0.6), _end)
+                        if _cut <= _pos:
+                            _cut = eff_text.rfind(". ", _pos + int(NER_TEXT_LIMIT * 0.6), _end)
+                        if _cut > _pos:
+                            _end = _cut + 1
+                    _chunks.append((eff_text[_pos:_end], _pos))
+                    _pos = _end
+                _workers = min(4, len(_chunks)) if _chunk_ok else min(2, len(_chunks))
                 _prompts = [self._render_user_prompt({"text": c, "meta": request.meta}, request.params)
                             for c, _ in _chunks]
-                _batch = self._glm_chat_batch(system_prompt, _prompts, timeout=120.0,
-                                              max_tokens=3000, max_workers=2)
+                _batch = self._glm_chat_batch(system_prompt, _prompts, timeout=180.0,
+                                              max_tokens=3000, max_workers=_workers)
                 out = []
+                _seen_chunk = set()
                 for (_c, _off), _d in zip(_chunks, _batch):
                     if _d is None:
                         continue
                     _rows = _d.get("data", _d) if isinstance(_d, dict) else _d
                     for _e in (_rows if isinstance(_rows, list) else []):
-                        if isinstance(_e, dict) and _off:
+                        if not isinstance(_e, dict):
+                            continue
+                        if _off:
                             try:
                                 _e["start"] = int(_e.get("start", -1)) + _off
                                 _e["end"] = int(_e.get("end", -1)) + _off
                             except (TypeError, ValueError):
                                 pass
+                        _key = (str(_e.get("text") or _e.get("name") or "").strip().casefold(),
+                                str(_e.get("type") or _e.get("entity_type") or ""))
+                        if _key in _seen_chunk:
+                            continue  # 跨块同文同类型去重（块边界重复抽取）
+                        _seen_chunk.add(_key)
                         out.append(_e)
                 data = {"data": out}  # 下游 evidence/raw 组装沿用 data 变量
             else:

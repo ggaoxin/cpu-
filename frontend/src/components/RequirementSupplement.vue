@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch, watchEffect } from 'vue'
 import type { InputMode } from '../types'
-import { parseCitationMetadata, uploadSemanticResource, validateSemanticResource } from '../services/api'
+import { parseCitationMetadata, uploadSemanticResource, validateSemanticResource, getIndexStatus } from '../services/api'
 
 type ResourceField = {
   key: string
@@ -276,7 +276,7 @@ function fieldHint(key: string): string {
 
 // 资源预检状态（选文件即解析：加载/归一/大模型重构在参数录入阶段完成，
 // 点击在线测试只跑功能——与 PDF 预解析同款架构）
-type ResourceProbe = { status: 'checking' | 'ready' | 'error'; rows: number | null; normalizedBy: string | null; error: string }
+type ResourceProbe = { status: 'checking' | 'ready' | 'error'; rows: number | null; normalizedBy: string | null; error: string; indexStatus: string; indexProgress: number }
 const resourceProbes = reactive<Record<string, ResourceProbe>>({})
 
 // 预检白名单（2026-09-15 用户定调）：先只对已测试通过的工具+资源槽开放
@@ -300,6 +300,29 @@ function _resetProbe(key: string) {
   delete resourceProbes[key]
 }
 
+// 索引进度轮询：3s 一次直到 done/failed（进度条文案与文件解析一致）
+async function pollIndexBuild(key: string, storageUri: string) {
+  const file = uploadedResources[key]
+  if (!file) return
+  try {
+    // 轻量轮询 GET /index-status（不重复上传/预检/触发构建）
+    const resp = await getIndexStatus(storageUri) as Record<string, unknown>
+    // 响应是 {code:0, data:{status,progress,...}}——业务字段在 data 层
+    const st = (resp?.data ?? resp) as Record<string, unknown>
+    const probe = resourceProbes[key]
+    if (!probe || uploadedResources[key] !== file) return
+    const status = String(st?.status || '')
+    probe.indexStatus = status
+    probe.indexProgress = Number(st?.progress || 0)
+    if (status !== 'done') {
+      if (status === 'failed') return
+      setTimeout(() => { pollIndexBuild(key, storageUri) }, 2000)
+    }
+  } catch {
+    // 轮询失败静默（不影响 ready 状态展示）
+  }
+}
+
 async function handleResourceUpload(event: Event, key: string) {
   const file = (event.target as HTMLInputElement).files?.[0] || null
   // 仅放行 .json：accept 只过滤系统选择器，用户切"所有文件"仍可选 txt/csv
@@ -317,13 +340,25 @@ async function handleResourceUpload(event: Event, key: string) {
   resourceSaveError.value = ''
   _resetProbe(key)
   if (!file || !precheckEnabled(key)) return  // 白名单外：维持原有提交时处理行为
-  resourceProbes[key] = { status: 'checking', rows: null, normalizedBy: null, error: '' }
+  resourceProbes[key] = { status: 'checking', rows: null, normalizedBy: null, error: '', indexStatus: '', indexProgress: 0 }
   try {
     const res = await validateSemanticResource(file, key) as Record<string, unknown>
     if (uploadedResources[key] !== file) return  // 用户已换文件/取消：丢弃过期结果
     if (res?.valid) {
       resourceProbes[key] = { status: 'ready', rows: (res.rows as number) ?? null,
-                              normalizedBy: (res.normalized_by as string) || null, error: '' }
+                              normalizedBy: (res.normalized_by as string) || null, error: '',
+                              indexStatus: '', indexProgress: 0 }
+      // CLC 大表索引构建进度（2026-09-19 用户定调：bge 编码过程要像文件解析
+      // 一样有进度——validate 返回 index_build 后轮询 /index-status 渲染进度条）
+      const ib = (res as Record<string, unknown>).index_build as Record<string, unknown> | undefined | null
+      if (ib && ib.storage_uri) {
+        const probe = resourceProbes[key]
+        if (probe) {
+          probe.indexStatus = String(ib.status || '')
+          probe.indexProgress = Number(ib.progress || 0)
+        }
+        if (String(ib.status) !== 'done') pollIndexBuild(key, String(ib.storage_uri))
+      }
     } else {
       resourceProbes[key] = { status: 'error', rows: null, normalizedBy: null,
                               error: String(res?.error || '资源文件校验失败') }
@@ -331,7 +366,7 @@ async function handleResourceUpload(event: Event, key: string) {
   } catch (err) {
     if (uploadedResources[key] !== file) return
     resourceProbes[key] = { status: 'error', rows: null, normalizedBy: null,
-                            error: err instanceof Error ? err.message : '资源预检请求失败' }
+                            error: err instanceof Error ? err.message : '资源预检请求失败', indexStatus: '', indexProgress: 0 }
   }
 }
 
@@ -487,6 +522,12 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         <p v-if="sourceModes[field.key] === 'upload' && resourceSaveNotice" class="anchor-format-hint">{{ resourceSaveNotice }}</p>
         <p v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.status === 'checking'" class="anchor-format-hint">⏳ 正在解析资源文件（结构非标准时将自动用大模型整理）…</p>
         <p v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.status === 'ready'" class="anchor-format-hint" style="color:#1e8e3e">✓ 资源已就绪{{ resourceProbes[field.key]?.rows != null ? ` · 已解析 ${resourceProbes[field.key]?.rows} 条` : '' }}{{ resourceProbes[field.key]?.normalizedBy === 'glm' ? '（大模型已整理为标准格式，提交时直接复用）' : '' }}</p>
+        <div v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.indexStatus" style="display:flex;align-items:center;gap:10px;padding:4px 0;">
+          <span class="parse-ring" :data-state="resourceProbes[field.key]?.indexStatus === 'done' ? 'done' : resourceProbes[field.key]?.indexStatus === 'failed' ? 'error' : 'parsing'" :style="`--p:${resourceProbes[field.key]?.indexProgress || 0}%`"><i>{{ resourceProbes[field.key]?.indexStatus === 'done' ? '✓' : resourceProbes[field.key]?.indexStatus === 'failed' ? '✗' : (resourceProbes[field.key]?.indexProgress || 0) + '%' }}</i></span>
+          <span v-if="resourceProbes[field.key]?.indexStatus === 'done'" class="parse-text ok">分类知识库构建完成，提交即用用户体系分类</span>
+          <span v-else-if="resourceProbes[field.key]?.indexStatus === 'failed'" class="parse-text err">分类知识库构建失败，可重新选文件重试</span>
+          <span v-else class="parse-text">构建分类知识库（bge 向量编码）{{ resourceProbes[field.key]?.indexProgress || 0 }}% —— 完成前的提交将走内置资源</span>
+        </div>
         <p v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.status === 'error'" class="anchor-format-hint" style="color:#c0392b">✕ {{ resourceProbes[field.key]?.error }}</p>
       </article>
     </div>

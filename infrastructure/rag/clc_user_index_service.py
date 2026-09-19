@@ -104,6 +104,35 @@ def touch_user_index(storage_uri: str) -> None:
         pass
 
 
+
+def index_status_for(storage_uri: str) -> Optional[Dict[str, Any]]:
+    """查询某用户资源的 CLC 索引构建状态（供前端进度展示）。
+
+    返回 {needed, status, progress, stage, task_id}：
+    - 索引已完整（manifest 在）→ status=done, progress=100
+    - 构建中 → 从 analysis_tasks 读该 storage_uri 的最新 clc-index-build 任务进度
+    - 无任务且无索引 → None（调用方 404）
+    """
+    from infrastructure.rag.clc_retriever import CLCRetriever as _CR
+    index_dir = _CR._index_dir_for(storage_uri)
+    if (index_dir / "clc_index_large" / "manifest.json").exists():
+        return {"needed": True, "status": "done", "progress": 100,
+                "stage": "索引就绪", "task_id": None}
+    from infrastructure.database.task_repository import task_repository
+    from config.settings import settings as _st
+    tasks = task_repository.list_tasks(_st.DEFAULT_WORKSPACE_ID, tool_id="clc-index-build", limit=50)
+    for t in sorted(tasks, key=lambda x: str(x.get("created_at") or ""), reverse=True):
+        params = t.get("parameters") or {}
+        if params.get("storage_uri") == storage_uri:
+            status = str(t.get("status") or "")
+            mapped = "done" if status == "succeeded" else ("failed" if status == "failed" else "building")
+            return {"needed": True, "status": mapped,
+                    "progress": int(t.get("progress") or 0),
+                    "stage": "向量编码构建中" if mapped == "building" else ("索引就绪" if mapped == "done" else "构建失败"),
+                    "task_id": str(t.get("id") or "")}
+    return None
+
+
 def submit_build(resource_row: Dict[str, Any], repository=None) -> Optional[str]:
     """对完整分类树用户资源异步建索引；返回 task_id（不满足建库条件返回 None）。
 

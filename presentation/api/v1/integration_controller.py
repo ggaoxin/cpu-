@@ -2043,6 +2043,17 @@ def list_semantic_resources(
     return {"code": 0, "data": resource_service.list_semantic_resources(resource_key, status, limit=limit)}
 
 
+@router.get("/semantic-resources/index-status")
+def get_index_status(storage_uri: str = Query(...)) -> Dict[str, Any]:
+    """CLC 用户索引构建进度（2026-09-19 用户定调：编码过程要有进度，
+    与文件解析进度同款交互——资源槽选文件后前端轮询此端点渲染进度条）。"""
+    from infrastructure.rag.clc_user_index_service import index_status_for
+    status = index_status_for(storage_uri)
+    if status is None:
+        raise HTTPException(status_code=404, detail="该资源无需构建索引或路径不存在")
+    return {"code": 0, "data": status}
+
+
 @router.get("/semantic-resources/{resource_id}")
 def get_semantic_resource(resource_id: str) -> Dict[str, Any]:
     value = resource_service.get_semantic_resource(resource_id)
@@ -2066,6 +2077,31 @@ async def validate_semantic_resource(
         ROW_FIELD_CONFIG as _ROWCFG, ResourceParseError as _RPE,
         inspect_user_resource as _inspect, register_normalized as _reg,
     )
+
+    def _index_build_status(stored_path, field, rows):
+        """CLC 大表（分类树+超阈值）预检即建索引，返回进度描述供前端轮询展示。"""
+        try:
+            if field not in ("clc_labeled_data", "classification_standard_mapping_table")                     or not isinstance(rows, list):
+                return None
+            from infrastructure.rag.clc_user_index_service import compute_clc_verdict
+            verdict = compute_clc_verdict(rows, stored_path.stat().st_size)
+            if not (verdict and verdict.get("kind") == "taxonomy_complete"
+                    and verdict.get("record_count", 0) > settings.CLC_BUILD_MIN_RECORDS):
+                return None
+            from infrastructure.rag.clc_user_index_service import submit_build, index_status_for
+            resource_row = {
+                "id": f"probe_{digest[:12]}", "workspace_id": settings.DEFAULT_WORKSPACE_ID,
+                "storage_uri": stored_path.as_posix(),
+                "record_count": verdict.get("record_count"),
+            }
+            submit_build(resource_row)
+            _st = index_status_for(stored_path.as_posix()) or {}
+            _st["storage_uri"] = stored_path.as_posix()
+            return _st
+        except Exception:  # noqa: BLE001 - 进度信息失败不影响预检
+            return None
+
+
     content = await upload.read()
     original_name = Path(upload.filename or "resource.bin").name
     if not original_name.lower().endswith(".json"):
@@ -2087,7 +2123,8 @@ async def validate_semantic_resource(
                 "note": "配置型资源，仅校验 JSON 可解码", "file_name": original_name}
     try:
         rows = _inspect(stored_path, field=field)
-        return {"valid": True, "rows": len(rows), "normalized_by": None, "file_name": original_name}
+        return {"valid": True, "rows": len(rows), "normalized_by": None, "file_name": original_name,
+                "index_build": _index_build_status(stored_path, field, rows)}
     except _RPE as exc:
         from infrastructure.resources.normalize import probe_required_fields
         probe = probe_required_fields(text, field=field)
@@ -2123,7 +2160,8 @@ async def validate_semantic_resource(
             conv_path.write_text(json.dumps(salvaged, ensure_ascii=False, indent=2), encoding="utf-8")
         _reg(conv_path, salvaged)
         return {"valid": True, "rows": len(salvaged), "normalized_by": "glm",
-                "file_name": original_name, "note": "结构非标准，已由大模型整理为标准格式（提交时直接复用）"}
+                "file_name": original_name, "note": "结构非标准，已由大模型整理为标准格式（提交时直接复用）",
+                "index_build": _index_build_status(stored_path, field, salvaged)}
 
 
 @router.post("/semantic-resources/upload")
