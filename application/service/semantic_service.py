@@ -2150,19 +2150,27 @@ class SemanticApplicationService(ISemanticService):
                         _mdata = json.loads(_mp.read_text(encoding="utf-8-sig", errors="replace"))
                         _raw_rows = (_mdata.get("entries") or _mdata.get("mappings") or []) \
                             if isinstance(_mdata, dict) else (_mdata if isinstance(_mdata, list) else [])
+                    # 格式对齐 en-classify 映射（2026-09-20 用户定调）：term + 中文标准
+                    # 表达即可（zh_term/label/clc_name 任一），clc_code 可选——纯翻译表
+                    # 行不再被丢弃；带码行照旧透出 code
                     _rows = [e for e in _raw_rows
-                             if isinstance(e, dict) and e.get("term") and e.get("clc_code")]
+                             if isinstance(e, dict) and e.get("term")
+                             and (e.get("clc_code") or e.get("clc_name") or e.get("name")
+                                  or e.get("label") or e.get("zh_term"))]
                     for _e in _rows:
                         _user_map_index[str(_e["term"]).casefold()] = {
-                            "system": "CLC", "code": str(_e["clc_code"]),
-                            "label": str(_e.get("clc_name") or _e.get("name") or ""),
+                            "system": "CLC", "code": str(_e.get("clc_code") or ""),
+                            "user_term": str(_e["term"]),
+                            "label": str(_e.get("clc_name") or _e.get("name")
+                                        or _e.get("label") or _e.get("zh_term") or ""),
                             "classification_path": _e.get("classification_path") or [],
                             "confidence": 1.0,
                             "mapping_engine": "user_resource_direct",
                             "dense_score": 1.0, "scene": "用户映射表直接覆盖",
                         }
-                    if len(_rows) > 50:
-                        # 大表:用户术语建 m3 向量索引(按资源ID缓存,避免重复编码)
+                    if _rows:
+                        # 语义通道对齐 en-classify：全表建 m3 索引（此前仅>50条大表），
+                        # 小表也能近邻匹配；按资源ID缓存避免重复编码
                         _cache_key = f"kwmap_{_map_res.get('id')}_{_map_res.get('content_hash') or len(_rows)}"
                         _cached = getattr(SemanticApplicationService, "_user_map_cache", None) or {}
                         if _cache_key in _cached:
@@ -2238,28 +2246,131 @@ class SemanticApplicationService(ISemanticService):
                 }
             for _uk, _uv in _user_map_index.items():
                 _en_clc_map[_uk] = _uv
-            # 大表向量索引:剩余词近邻匹配用户术语(≥0.62 视为同术语)
+            # 向量索引近邻匹配用户术语——对齐 en-classify 语义通道（2026-09-20）：
+            # ① 查询侧带归一标准形（CNN 与表内全称直接相似度低，但其标准术语
+            #    convolutional neural network 能对上——术语库归一后反查映射表）
+            # ② 阈值 0.75（en-classify 实测校准：近义改写 0.77+ 放行，相关但不同
+            #    的概念 ≤0.73 挡住；此前 0.62 会把不该配的词硬配）
             if _user_map_vecs is not None and _user_map_vecs.size:
                 import numpy as _np2
                 _remain = [c["keyword"] for c in cleaned
                            if c["keyword"].casefold() not in _user_map_index]
-                if _remain:
+                _queries, _qowner = [], []
+                for _kw in _remain:
+                    _queries.append(_kw)
+                    _qowner.append(_kw)
+                    _h = _norm_index.get(_kw.casefold())
+                    if _h and _h.get("canonical") \
+                            and _h["canonical"].casefold() != _kw.casefold():
+                        _queries.append(_h["canonical"])
+                        _qowner.append(_kw)
+                if _queries:
                     from infrastructure.rag.m3_encoder import m3_encoder as _m3e
-                    _qv = _m3e.encode(_remain)
+                    _qv = _m3e.encode(_queries)
                     _sims = _qv @ _user_map_vecs.T
-                    for _ri, _kw in enumerate(_remain):
-                        _best = int(_np2.argmax(_sims[_ri]))
-                        if float(_sims[_ri][_best]) >= 0.62:
-                            _e = _user_map_rows[_best]
+                    _best_of: Dict[str, tuple] = {}
+                    for _qi, _kw in enumerate(_qowner):
+                        _bi = int(_np2.argmax(_sims[_qi]))
+                        _s = float(_sims[_qi][_bi])
+                        if _kw not in _best_of or _s > _best_of[_kw][0]:
+                            _best_of[_kw] = (_s, _bi)
+                    for _kw, (_s, _bi) in _best_of.items():
+                        if _s >= 0.75:
+                            _e = _user_map_rows[_bi]
                             _en_clc_map[_kw] = {
-                                "system": "CLC", "code": str(_e["clc_code"]),
-                                "label": str(_e.get("clc_name") or _e.get("name") or ""),
+                                "system": "CLC", "code": str(_e.get("clc_code") or ""),
+                                "user_term": str(_e["term"]),
+                                "label": str(_e.get("clc_name") or _e.get("name")
+                                            or _e.get("label") or _e.get("zh_term") or ""),
                                 "classification_path": _e.get("classification_path") or [],
-                                "confidence": round(float(_sims[_ri][_best]), 4),
+                                "confidence": round(_s, 4),
                                 "mapping_engine": "user_resource_index",
-                                "dense_score": round(float(_sims[_ri][_best]), 4),
+                                "dense_score": round(_s, 4),
                                 "scene": "用户映射表向量索引近邻",
                             }
+            # 无码用户表达 → CLC 分类号锚定（2026-09-20 用户定调"映射列要分类号
+            # 不是裸中文"，且不能拿用户表达冒充官方类目名）。两段式：
+            # ① 英中混合查询（英文术语+中文表达）召回内置候选 + LLM rerank 精选
+            #    （置信 ≥0.45，复用关键词映射的成熟链路；纯中文查询实测全是噪声）
+            # ② rerank 无果的词：GLM temperature=0 凭 CLC 知识提最下位类号 +
+            #    resolve_code 防幻觉校验。两段都失败 → 保持中文显示不硬配
+            _no_code_all = {str(v.get("label") or "").strip(): v
+                            for v in _en_clc_map.values()
+                            if isinstance(v, dict) and not str(v.get("code") or "").strip()
+                            and str(v.get("label") or "").strip()}
+            if _no_code_all:
+                from infrastructure.rag.clc_retriever import clc_retriever as _clc_anchor
+
+                # 锚定结果缓存（2026-09-20：LLM rerank/提号跨次有波动——同一张表
+                # 首次锚定后按 内容指纹+表达 复用，用户看到的行为恒定）
+                _akey = str(_map_res.get("content_hash") or _map_res.get("id") or "")
+                _acache = getattr(SemanticApplicationService, "_kw_anchor_cache", None) or {}
+                if len(_acache) > 200:
+                    _acache.clear()
+
+                def _apply_anchor(entry: dict, resolved: dict, via: str) -> None:
+                    """落号（类目名用知识库真实名称，用户表达只进 scene）并写缓存。"""
+                    _user_expr = str(entry.get("label") or "")
+                    entry.update({
+                        "code": resolved["clc_code"], "label": resolved["clc_name"],
+                        "classification_path": resolved.get("path_names")
+                                               or resolved.get("full_path") or [],
+                        "scene": (str(entry.get("scene") or "")
+                                  + f"；用户表达「{_user_expr}」{via}").lstrip("；"),
+                    })
+                    _acache[f"{_akey}:{_user_expr}"] = {
+                        "clc_code": resolved["clc_code"], "clc_name": resolved["clc_name"],
+                        "path_names": resolved.get("path_names") or resolved.get("full_path") or [],
+                    }
+                    SemanticApplicationService._kw_anchor_cache = _acache
+
+                # 命中缓存的直接落号；未命中的走中文分类法锚定
+                _no_code = {}
+                for _label, _v in _no_code_all.items():
+                    _ch = _acache.get(f"{_akey}:{_label}")
+                    if _ch is not None:
+                        _v.update({"code": _ch["clc_code"], "label": _ch["clc_name"],
+                                   "classification_path": _ch.get("path_names") or [],
+                                   "scene": (str(_v.get("scene") or "") + "；锚定").lstrip("；")})
+                    else:
+                        _no_code[_label] = _v
+                # 中文分类法锚定（2026-09-20 用户定调：映射成中文标准词后，用中文
+                # 科技文献分类的方法落号——GLM 读中文表达提分类号 + resolve_code
+                # 防幻觉校验，与 zh-classify 核心路径同构；实测中文词判断稳定准确，
+                # 无需英中混合检索绕路）
+                if _no_code:
+                    try:
+                        _anchor = self._glm.chat_json(
+                            "你是中图分类法（CLC）标引专家。为每个中文词给出最贴切的"
+                            "分类号（尽量到最下位类；不确定就不给）。"
+                            '只输出JSON：{"data":{"mappings":[{"label":"","clc_code":""}]}',
+                            "词表：\n" + "\n".join(f"- {l}" for l in _no_code),
+                            temperature=0.0, timeout=60.0, max_tokens=400)
+                        _anchor = _anchor.get("data", _anchor) if isinstance(_anchor, dict) else {}
+                        _l2c = {str(m.get("label") or "").strip(): str(m.get("clc_code") or "").strip()
+                                for m in (_anchor.get("mappings") or []) if isinstance(m, dict)}
+                        for _label, _v in _no_code.items():
+                            _c = _l2c.get(_label)
+                            if not _c:
+                                continue
+                            _e = _clc_anchor.resolve_code(_c)
+                            if _e is not None:
+                                _apply_anchor(_v, _e, "中文分类锚定")
+                    except Exception:  # noqa: BLE001
+                        logger.warning("用户表达中文分类锚定失败，保持中文显示", exc_info=True)
+                # 同 label 多条目补齐（2026-09-20：CNN 的输出条目按 canon 键、锚定
+                # 作用在 CNN 键条目上——label 相同的去重让另一个漏锚；锚定写入了缓存，
+                # 再全量扫一遍未落号条目按 label 统一补齐）
+                for _v in _en_clc_map.values():
+                    if isinstance(_v, dict) and not str(_v.get("code") or "").strip():
+                        _ch2 = _acache.get(f"{_akey}:{str(_v.get('label') or '').strip()}")
+                        if _ch2 is not None:
+                            _v.update({"code": _ch2["clc_code"], "label": _ch2["clc_name"],
+                                       "classification_path": _ch2.get("path_names") or [],
+                                       "scene": (str(_v.get("scene") or "") + "；锚定").lstrip("；")})
+                _anchored = sum(1 for v in _en_clc_map.values()
+                                if isinstance(v, dict) and str(v.get("code") or "").strip())
+                logger.info("无码用户表达CLC锚定：%d/%d 个词落号", _anchored, len(_no_code_all))
             # 归一反查兜底（2026-09-15 用户反馈：CNN 归一成 convolutional neural
             # network 后仍显示未映射——缩写本身检索不到，但其标准术语检索得到）：
             # 对未映射且可归一的关键词，用标准术语补一轮内置检索。双查询：裸 canon

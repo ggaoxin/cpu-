@@ -284,7 +284,7 @@ function fieldHint(key: string): string {
   // 提示里看不懂"怎么还有关键词"）——按当前工具只显示对应格式
   if (key === 'classification_standard_mapping_table') {
     return props.toolId === 'en-keyword'
-      ? '仅 .json：term（英文术语）+ clc_code（分类号）+ clc_name（类目名）'
+      ? '仅 .json：term（英文术语）+ zh_term/label（中文标准表达，可带 clc_code）'
       : '仅 .json：term（英文术语）+ zh_term/label（中文标准表达）'
   }
   return resourceFieldHints[key] || '仅 .json'
