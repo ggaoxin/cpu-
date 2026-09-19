@@ -1264,13 +1264,15 @@ def _research_questions(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
         # 短语级: phrase_id/sentence_id/phrase/normalized_question/confidence
         # 结构化: research_question_id/role/parent_id/normalized_question/question_type/
         #         research_object/constraints/confidence
-        # phrase_start/end(短语定位)、parent_index/sentence_index/source_sections(中间
-        # 关联值)、句子级冗余的 question_type/research_object/role/constraints 等
-        # 弹窗不读取，不进公开响应
+        # phrase_start/end(短语定位)、parent_index/sentence_index(中间关联值)、
+        # 句子级冗余的 question_type/research_object/role/constraints 等弹窗不读取，
+        # 不进公开响应。source_sections（章节溯源）保留（2026-09-20：文本格式要求
+        # JSON结构/章节结构时算出的精确章节路径，此前被剥离导致该参数用户不可见）
         sentences = _list(data.get("research_question_sentences"))
         phrases = _list(data.get("research_question_phrases"))
         structured = _list(data.get("structured_research_questions"))
-        _sent_keep = ("sentence_id", "id", "sentence", "text", "expression_type", "type", "confidence")
+        _sent_keep = ("sentence_id", "id", "sentence", "text", "expression_type", "type",
+                      "confidence", "source_sections")
         _phrase_keep = ("phrase_id", "id", "sentence_id", "phrase", "text",
                         "normalized_question", "question", "confidence")
         for _s in sentences:
@@ -1315,6 +1317,9 @@ def _research_questions(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
             "id": sentence_id,
             "expression_type": expression_type,
             "confidence": _confidence(item),
+            # 章节溯源（2026-09-20 放开：文本格式要求 JSON结构/章节结构时引擎算出的
+            # 精确章节路径，此前构造响应行时丢弃，参数的作用用户不可见）
+            "source_sections": _list(item.get("source_sections")),
         })
         # 规范化问题：优先 normalized_question，回退 implication/phrase/sentence
         norm_q = item.get("normalized_question") or item.get("implication") or phrase or sentence

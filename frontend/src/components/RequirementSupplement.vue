@@ -431,7 +431,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
 
 <template>
   <div v-if="toolId === 'rq-detect'" class="settings-card requirement-supplement-card">
-    <div class="field"><label><span class="label-main">文本格式要求</span><small>可选；未设置时自动识别</small></label><select v-model="textFormatRequirement" class="select"><option>自动识别</option><option>纯文本</option><option>章节结构文本</option><option>JSON 结构文本</option></select></div>
+    <div class="field"><label><span class="label-main">文本格式要求</span><small>决定下载结果的文件结构：JSON / 文本清单 / 章节分组文本</small></label><select v-model="textFormatRequirement" class="select"><option>自动识别</option><option>纯文本</option><option>章节结构文本</option><option>JSON 结构文本</option></select></div>
     
   </div>
 

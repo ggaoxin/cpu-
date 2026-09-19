@@ -1282,6 +1282,50 @@ async function copyResult() {
     resultCopyTimer = setTimeout(() => { resultCopied.value = false }, 1200)
   } catch { resultCopied.value = false }
 }
+// 研究问题识别下载文本报告（2026-09-20 用户定调：文本格式要求即下载结构——
+// 纯文本=顺序清单，章节结构文本=按溯源章节分组，JSON=默认 JSON 下载）
+function rqResultAsText(data: Record<string, unknown> | undefined, bySection: boolean): string {
+  const sentences = (data?.research_question_sentences as Array<Record<string, unknown>>) || []
+  const structured = (data?.structured_research_questions as Array<Record<string, unknown>>) || []
+  const title = String((data?.document as Record<string, unknown>)?.title || '研究问题识别结果')
+  const lines: string[] = [title, '='.repeat(title.length), '']
+  if (!sentences.length) { lines.push('（未识别出研究问题）'); return lines.join('\n') }
+  // 分组有效性预检（2026-09-20 用户反馈：无章节标题的输入选"章节结构文本"下载
+  // 出现单个"■ 摘要"伪分组）——只有一个分组时退化为顺序清单，不装模作样分组
+  let sectionGroups: Map<string, Array<{ s: Record<string, unknown>; st: Record<string, unknown> }>> | null = null
+  if (bySection) {
+    sectionGroups = new Map()
+    sentences.forEach((s, i) => {
+      const sec = ((s.source_sections as string[]) || ['未定位章节']).join(' / ')
+      if (!sectionGroups!.has(sec)) sectionGroups!.set(sec, [])
+      sectionGroups!.get(sec)!.push({ s, st: (structured[i] || {}) as Record<string, unknown> })
+    })
+    if (sectionGroups.size <= 1) sectionGroups = null
+  }
+  if (!sectionGroups) {
+    sentences.forEach((s, i) => {
+      const st = structured[i] || {}
+      lines.push(`【问题${i + 1}】${s.sentence || s.text}`)
+      lines.push(`  规范化问题：${st.normalized_question || '—'}`)
+      lines.push(`  类型：${st.question_type || '—'} | 研究对象：${st.research_object || '—'} | 置信度：${s.confidence ?? '—'}`)
+      const cons = (st.constraints as string[]) || []
+      if (cons.length) lines.push(`  约束条件：${cons.join('、')}`)
+      lines.push(`  来源：${((s.source_sections as string[]) || ['—']).join(' / ')}`)
+      lines.push('')
+    })
+    return lines.join('\n')
+  }
+  for (const [sec, items] of sectionGroups) {
+    lines.push(`■ ${sec}`, '')
+    items.forEach(({ s, st }, j) => {
+      lines.push(`  ${j + 1}. ${s.sentence || s.text}`)
+      lines.push(`     规范化问题：${st.normalized_question || '—'}（置信度 ${s.confidence ?? '—'}）`)
+    })
+    lines.push('')
+  }
+  return lines.join('\n')
+}
+
 function downloadResult() {
   if (!result.value) return
   const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
@@ -1297,6 +1341,16 @@ function downloadResult() {
     if ((fmt.includes('数据库') || fmt.toUpperCase().includes('DATABASE')) && Array.isArray(data?.database_records)) {
       const blob = new Blob([JSON.stringify(data.database_records, null, 2)], { type: 'application/json' })
       const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${props.toolId}_database_records.json`; a.click(); URL.revokeObjectURL(url); return
+    }
+  }
+  // 研究问题识别：文本格式要求即下载结构（纯文本=顺序清单txt，章节结构文本=
+  // 按溯源章节分组txt，JSON结构文本/自动识别=默认JSON）
+  if (props.toolId === 'rq-detect') {
+    const fmtReq = String((supplementalPayload.value as Record<string, unknown>)?.text_format_requirement ?? '自动识别')
+    if (fmtReq === '纯文本' || fmtReq === '章节结构文本') {
+      const txt = rqResultAsText(data, fmtReq === '章节结构文本')
+      const blob = new Blob(['\ufeff' + txt], { type: 'text/plain;charset=utf-8' })
+      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${props.toolId}_result.txt`; a.click(); URL.revokeObjectURL(url); return
     }
   }
   const blob = new Blob([pretty(result.value)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${props.toolId}_result.json`; a.click(); URL.revokeObjectURL(url)

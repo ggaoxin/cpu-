@@ -3810,7 +3810,10 @@ class SemanticApplicationService(ISemanticService):
                     # 无明确标题（如整篇无 Abstract/引言 字样）：用 LLM 按段落语义判定的章节。
                     # 纯文本声明时跳过（用户声明无结构，LLM 从可见文字猜章节不可靠）
                     source_sections = [llm_section]
-                elif full_text:
+                elif full_text or _format_req == "纯文本":
+                    # 纯文本声明：输入即整篇文本，来源如实标"全文"——此前落"摘要"
+                    # 是给论文 JSON 摘要字段准备的标签，粘贴普通文本标摘要误导
+                    # （2026-09-20 用户反馈"明明是纯文本也没有章节怎么来源是摘要"）
                     source_sections = ["全文"]
                 else:
                     source_sections = [abstract_label]
