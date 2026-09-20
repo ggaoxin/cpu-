@@ -1041,6 +1041,11 @@ const tiAlFundBatchResult = {
 }
 
 const finalOverrides: Record<string, Partial<ToolDefinition>> = {
+  'zh-classify': {
+    description: '依据中图分类法自动分类中文科技文献，支持文本与文件的单篇和批量处理；输出分类号、置信度、领域标签及批量统计。',
+    features: '标题—摘要—关键词联合建模、中图分类号预测、置信度与领域标签、批量归类统计、文本与文件批处理、元数据提取、原分类号校验、跨学科判断',
+    scenarios: '中文论文归类、科技报告编目、跨学科文献组织、专题管理',
+  },
   'zh-keyword': {
     response: generatedZhKeyword.response,
     demoTextResult: generatedZhKeyword.demoTextResult,

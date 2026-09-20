@@ -293,7 +293,13 @@ const anchorTrainMode = ref('builtin')
 const anchorTrainFile = ref<File | null>(null)
 function handleAnchorUpload(event: Event) {
   const input = event.target as HTMLInputElement
-  anchorTrainFile.value = input.files?.[0] || null
+  const file = input.files?.[0] || null
+  if (file && !/\.json$/i.test(file.name)) {
+    showToast(`不支持的文件格式：${file.name}。已标注文献集仅支持 JSON`)
+    input.value = ''
+    return
+  }
+  anchorTrainFile.value = file
 }
 const supplementalPayload = ref<Record<string, unknown>>({})
 const labelLengthLimit = ref(12)
@@ -529,6 +535,18 @@ const currentRequestPayload = computed(() => {
   return payload
 })
 
+// 批量文本题目重复检测（2026-09-20 问题4b）：重复题目标红框（模仿注册用户名
+// 已存在的样式），提交时拦截弹窗报错——弹窗可视化按题目标识文献，重复会导致
+// 结果无法对应
+const duplicateBatchTitles = computed<Set<string>>(() => {
+  const counts = new Map<string, number>()
+  batchTexts.forEach(item => {
+    const t = item.title.trim()
+    if (t) counts.set(t, (counts.get(t) || 0) + 1)
+  })
+  return new Set([...counts.entries()].filter(([, n]) => n > 1).map(([t]) => t))
+})
+
 // 深度聚类「类簇数量」越界判定：最低 1、最大类簇数量必须小于输入文献总数
 // （如 4 篇文献最多 3 簇）。非空且越界时给出提示并禁用「在线测试」按钮。
 const clusterCountError = computed(() => {
@@ -555,7 +573,14 @@ function updateSupplementalPayload(payload: Record<string, unknown>) {
 }
 
 function handleDictionaryFile(event: Event) {
-  customDictionaryFile.value = (event.target as HTMLInputElement).files?.[0] || null
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0] || null
+  if (file && !/\.(json|csv|xlsx|txt)$/i.test(file.name)) {
+    showToast(`不支持的文件格式：${file.name}。词典仅支持 JSON、CSV、XLSX、TXT`)
+    input.value = ''
+    return
+  }
+  customDictionaryFile.value = file
 }
 
 const dictionaryFileInput = ref<HTMLInputElement | null>(null)
@@ -802,7 +827,21 @@ const MAX_BATCH_FILES = 20
 function perFileLimitMB() { return 50 }  // 单文件上限统一 50MB（所有功能点）
 function handleFileSelection(event: Event, multiple: boolean) {
   const input = event.target as HTMLInputElement
-  processSelectedFiles(Array.from(input.files || []), multiple, () => { input.value = '' })
+  const files = Array.from(input.files || [])
+  // 问题3修复（2026-09-20）：无论处理结果如何都清空原生 input 的 value——
+  // 此前只在回调时清空，正常路径保留 value 导致"删除后重选同一文件"
+  // 不触发 change 事件，只能刷新页面恢复
+  input.value = ''
+  // 扩展名白名单（2026-09-20 用户定调：选择器切"所有文件"可绕过 accept，
+  // 选择路径与拖拽路径同口径校验，不合规弹窗拒绝）
+  const allowed = /\.(pdf|docx|txt)$/i
+  const rejected = files.filter(file => !allowed.test(file.name))
+  if (rejected.length) {
+    showToast(`不支持的文件格式：${rejected.map(f => f.name).join('、')}。仅支持 PDF、DOCX、TXT`)
+    input.value = ''
+    return
+  }
+  processSelectedFiles(files, multiple)
 }
 
 // 拖拽上传：整块上传框都是感应区（原生 file input 只认自己那一小块，
@@ -840,6 +879,21 @@ function processSelectedFiles(files: File[], multiple: boolean, reset?: () => vo
     return
   }
   requestError.value = ''
+  // 问题4a（2026-09-20）：同名文件判重保留首个并弹窗（不允许上传多个同名文件），
+  // 不再静默忽略；同批 [f1,f2,f1] → 首个 f1 与 f2 入列，第二个 f1 忽略
+  const seenNames = new Set(uploadedFiles.map(item => item.name))
+  const dupNames: string[] = []
+  const uniqueFiles: File[] = []
+  files.forEach(file => {
+    if (seenNames.has(file.name)) { dupNames.push(file.name); return }
+    seenNames.add(file.name)
+    uniqueFiles.push(file)
+  })
+  if (dupNames.length) {
+    showToast(`不允许上传多个同名文件：已保留首个「${[...new Set(dupNames)].join('、')}」，重复项已忽略`)
+  }
+  files = uniqueFiles
+  if (!files.length) return
   files.forEach(file => {
     const duplicate = uploadedFiles.some(item => item.name === file.name && item.size === file.size && item.file.lastModified === file.lastModified)
     if (duplicate) return
@@ -1100,7 +1154,7 @@ function validateRequiredInputs(): string {
       }
       return ''
     }
-    return uploadedFiles.length >= 3 ? '' : '结构化自动综述至少需要上传3个文献文件。'
+    return uploadedFiles.length >= 2 ? '' : '结构化自动综述至少需要上传2个文献文件。'
   }
 
   if (props.toolId.startsWith('citation-')) {
@@ -1133,10 +1187,15 @@ function validateRequiredInputs(): string {
   if (mode.value === 'text' && !form.text.trim()) return `请输入${textInputLabel.value}。`
   if (mode.value === 'batch-text') {
     if (batchTexts.length < 2) return '批量文本至少需要 2 条。'
-    const noTitleIndex = batchTexts.findIndex(item => !item.title.trim())
-    if (noTitleIndex >= 0) return `请输入文本${noTitleIndex + 1}的题目（必填，用于标识该条响应结果）。`
+    // 题目校验只对有题目输入框的工具（needsDocumentTitle）生效（见下方条件块）——
+    // 此前无条件校验把 fund-move 卡死：其卡片只有项目名称+文本（无题目框），
+    // 题目恒空，永远提示"请输入文本N的题目"无法测试（2026-09-20 用户反馈）
     const invalidIndex = batchTexts.findIndex(item => !item.text.trim())
     if (invalidIndex >= 0) return `请输入文本${invalidIndex + 1}的内容。`
+    // 题目重复拦截（2026-09-20 问题4b）：同名题目使弹窗文献无法区分
+    if (duplicateBatchTitles.value.size) {
+      return `题目重复：${[...duplicateBatchTitles.value].slice(0, 3).join('、')}——每条文本的题目必须唯一（红框标出）。`
+    }
   }
   // 题目必填:弹窗可视化按题目/文件名标识当前文献,文本输入必须提供题目(文件模式由文件名兜底)
   if (needsDocumentTitle.value && mode.value === 'text' && !form.documentTitle.trim()) {
@@ -1562,7 +1621,7 @@ function downloadResult() {
               <div v-for="(item,index) in batchTexts" :key="item.id" class="document-card batch-text-item-card">
                 <div class="document-card-head"><b><span class="required-mark">*</span> 文本 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" :disabled="batchTexts.length <= 2" @click="removeBatchText(item.id)">删除</button></div>
                 <div v-if="toolId === 'fund-move'" class="field fund-project-name-field"><label><span class="label-main"><span class="required-mark">*</span> 项目名称</span><small>必填；对应第 {{ index + 1 }} 条文本</small></label><input v-model="item.projectName" class="input" maxlength="200" :placeholder="`请输入第 ${index + 1} 个项目名称`" /></div>
-                <div v-if="needsDocumentTitle" class="field document-title-field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；对应第 {{ index + 1 }} 条文本</small></label><input v-model="item.title" class="input" maxlength="300" :placeholder="`请输入第 ${index + 1} 篇文献题目`" /></div>
+                <div v-if="needsDocumentTitle" class="field document-title-field" :class="{ 'duplicate-title-field': duplicateBatchTitles.has(item.title.trim()) }"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；对应第 {{ index + 1 }} 条文本{{ duplicateBatchTitles.has(item.title.trim()) ? '；与其他条目重复，请修改为唯一题目' : '' }}</small></label><input v-model="item.title" class="input" maxlength="300" :placeholder="`请输入第 ${index + 1} 篇文献题目`" /></div>
                 <div class="field batch-text-content-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}</span><small>必填；最多 8000 字</small></label><textarea v-model="item.text" class="textarea compact batch-textarea" maxlength="8000" :placeholder="`请输入第 ${index + 1} 条${textInputLabel}`"></textarea></div>
               </div>
               <!-- 添加按钮放在列表末尾右下：点击后新文本框就在按钮处出现，无需回滚顶部 -->
@@ -1575,7 +1634,7 @@ function downloadResult() {
           <template v-else-if="mode === 'batch' && toolId !== 'relation-extract'">
             <div class="special-panel batch-file-panel">
               <div class="special-panel-head"><div><strong><span class="required-mark">*</span> {{ toolId === 'structured-review' ? '文献集文件' : '批量文件上传' }}</strong><span>必填<span class="nowrap-chunk"> · 已选择 {{ uploadedFiles.length }} 个文件</span></span></div></div>
-              <label class="upload-zone batch-file-upload-zone" @dragover.prevent @drop.prevent="handleFileDrop($event, true)"><input type="file" multiple accept=".pdf,.docx,.txt" @change="handleFileSelection($event, true)" /><span class="upload-icon">⇧</span><b>一次选择或拖拽多个文件</b><small>支持 PDF、DOCX、TXT；单文件最大 50 MB，最少 2 个、最多 20 个</small></label>
+              <label class="upload-zone batch-file-upload-zone" @dragover.prevent @drop.prevent="handleFileDrop($event, true)"><input type="file" multiple accept=".pdf,.docx,.txt" @change="handleFileSelection($event, true)" /><span class="upload-icon">⇧</span><b>一次选择或拖拽多个文件</b><small>支持 PDF、DOCX、TXT；单文件最大 50 MB，最少 {{ props.toolId === 'deep-cluster' ? 4 : 2 }} 个、最多 20 个</small></label>
               <div class="batch-file-queue">
                 <div class="batch-file-queue-head"><b>待处理文件队列</b><span>{{ uploadedFiles.length }} 个文件</span></div>
                 <div v-if="!uploadedFiles.length" class="batch-file-empty">选择文件后，将在这里逐项显示文件名称、大小和处理状态。</div>
@@ -1599,7 +1658,7 @@ function downloadResult() {
                 </template>
               </div>
               <div v-if="toolId === 'deep-cluster'" class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
-                <div class="field"><label><span class="label-main">已标注训练样本</span><small>可选；含人工标注类目标签</small></label>
+                <div class="field full"><label><span class="label-main">训练样本与人工标注类目标签数据</span><small>可选</small></label>
                   <div class="requirement-resource-controls">
                     <select v-model="anchorTrainMode" class="select resource-source-select" @change="anchorTrainFile = null"><option value="builtin">内置</option><option value="upload">用户上传资源</option></select>
                     <div v-if="anchorTrainMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload($event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传已标注文献集' }}</b><small>仅 .json：title（题名）+ text（文本）+ category（人工标注类目）；编号可选</small></label></div>

@@ -249,7 +249,10 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
     if tool_id == "relation-extract":
         data = raw if isinstance(raw, dict) else {}
         source = _list(data.get("triples", data.get("relations", [])) if data else raw)
-        original_sentence = str(payload.get("text") or data.get("original_sentence") or "")
+        # 原文优先级：引擎透出的 original_sentence（真实全文）> payload.text。
+        # 文件模式下 payload.text 是临时文件路径（实测 20 字符路径串被当原文
+        # 切句，句子字符范围全部错位）——引擎值在前自然规避
+        original_sentence = str(data.get("original_sentence") or payload.get("text") or "")
         # 句子切分 + 句号映射，用于为每条三元组分配 sentence_id 与上下文片段
         import re as _re
         sentences = [s.strip() for s in _re.split(r'(?<=[。！？!?])\s*|\n+', original_sentence) if s.strip()]
@@ -288,10 +291,25 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
                 left = str(head_text or "")
                 right = str(tail_text or "")
                 dep_path = f"{left} ←[{trigger or '关系'}]→ {right}".strip()
+            # 句子字符范围（2026-09-20 用户定调：弹窗句子位置列用字符区间表示，
+            # 如"字符 128—203"，与 NER 实体位置同口径）：sentence_id 定位包含句
+            # 在原文中的 span
+            _sent_span = None
+            if sentence_id.startswith("SENT-"):
+                try:
+                    _idx = int(sentence_id.split("-")[-1])
+                except ValueError:
+                    _idx = -1
+                if 0 <= _idx < len(sentences):
+                    _sent_text = sentences[_idx]
+                    _pos = original_sentence.find(_sent_text)
+                    if _pos >= 0:
+                        _sent_span = {"start": _pos, "end": _pos + len(_sent_text)}
             triples.append({
                 **value,
                 "triple_id": triple_id,
                 "sentence_id": sentence_id,
+                **({"source_position": _sent_span} if _sent_span else {}),
                 "subject": head_text,
                 "relation": relation_str,
                 "object": tail_text,

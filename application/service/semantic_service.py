@@ -56,6 +56,11 @@ LANGUAGE_BY_CODE = {
     "mr_zh_fund": ("zh", None),
 }
 
+# 中英双语工具（无固定语言对，但只支持中/英文）：西班牙语等第三语言报错
+_ZH_EN_BILINGUAL_CODES = {
+    "ner_general", "ner_research", "ner_domain", "ner_relation",
+}
+
 
 # 英文功能词防线（2026-09-09，"he/At/ti" 垃圾关键词案例）：kw_en.yaml 的停用词
 # 全是学术泛词（study/method/results…），不含基础虚词；LLM 低温下偶发输出虚词时
@@ -152,13 +157,66 @@ def _lex_contains(nt: str, h: str) -> bool:
     return True
 
 
+# 西/法/德/葡等非英文高频停用词（英文文本不会成片出现这些词）
+_NON_EN_STOPWORDS = {
+    "el", "la", "los", "las", "de", "que", "y", "en", "un", "una", "por", "con",
+    "para", "es", "del", "se", "al", "como", "pero", "más", "muy", "son", "han",
+    "le", "les", "des", "du", "et", "est", "dans", "sur", "une", "est", "avec",
+    "der", "die", "das", "und", "ist", "mit", "nicht", "ein", "eine", "für",
+    "von", "auf", "auch", "wird", "como", "su", "sus", "lo", "ya", "métodos",
+}
+_EN_STOPWORDS = {
+    "the", "of", "and", "to", "in", "is", "for", "with", "on", "by", "as", "at",
+    "that", "this", "are", "was", "be", "we", "it", "from", "or", "an", "which",
+    "based", "using", "used", "our", "these", "their", "has", "have", "can",
+}
+
+
+def _looks_english(text: str) -> bool:
+    """拉丁文本是否英文（2026-09-20 用户定调：西班牙语等非中英文文本要报错，
+    此前拉丁字母一律当英文放行）。双信号：① 带音符字符（á é ñ ü ß 等）
+    占比 >0.5%（英文极少出现）；② 英文停用词为 0 且西/法/德停用词 ≥2。"""
+    letters = [ch for ch in text if ch.isalpha()]
+    if not letters:
+        return True
+    # 只统计拉丁扩展区音符（á é ñ ü ß 等 U+00C0–U+024F）——中英混合文本
+    # （中文标题+英文正文）里的汉字不是"音符"，此前 ord>127 一刀切把
+    # 「测试 We propose…」误判成西班牙语（2026-09-21 实测修复）
+    accented = sum(1 for ch in letters if 0xC0 <= ord(ch) <= 0x24F)
+    if accented / len(letters) > 0.005:
+        return False
+    words = re.findall(r"[a-zA-Z]+", text.lower())
+    if not words:
+        return True
+    en_hits = sum(1 for w in words if w in _EN_STOPWORDS)
+    other_hits = sum(1 for w in words if w in _NON_EN_STOPWORDS)
+    if en_hits == 0 and other_hits >= 2:
+        return False
+    return True
+
+
+def _non_zh_en_error(text: str) -> Optional[str]:
+    """中英文之外的语言检测（供 zh/en 双语工具共用）。None=是中文或英文。"""
+    cjk = sum(1 for ch in text if "一" <= ch <= "鿿")
+    if cjk > 20:
+        return None  # 中文
+    latin = sum(1 for ch in text if ch.isascii() and ch.isalpha())
+    if cjk + latin < 30:
+        return None  # 短输入不判
+    if latin and not _looks_english(text):
+        return "不支持非中英文文本：该功能点仅支持中文/英文文献，检测到输入疑似西班牙语等其他语言文本。"
+    return None
+
+
 def _language_mismatch_error(expected: str, text: str, counterpart: str) -> Optional[str]:
-    """语言预检：跨语言输入返回可读错误消息（None=通过）。
+    """语言预检：跨语言/非中英文输入返回可读错误消息（None=通过）。
 
     用户规则（2026-09-14 定稿）：中文 >20 字即判中文文献——含中文摘要、
     中英双语论文、带中文参考文献的英文论文（双语=中文）、短中文测试片段
     （2026-09-12 的 >50 门槛曾把 45 字纯中文误判英文）。有效字符
     （CJK+拉丁字母）<30 不判，避免标题类短输入误伤。
+    2026-09-20 补丁：西班牙语等非中英文文本此前被当英文放行——拉丁文本
+    增加英文性判定（_looks_english），非英文的拉丁文本按"非中英文"报错。
     """
     cjk = sum(1 for ch in text if "一" <= ch <= "鿿")
     latin = sum(1 for ch in text if ch.isascii() and ch.isalpha())
@@ -166,10 +224,47 @@ def _language_mismatch_error(expected: str, text: str, counterpart: str) -> Opti
         return None
     is_chinese = cjk > 20
     if expected == "zh" and not is_chinese:
+        if latin and not _looks_english(text):
+            return "语言不匹配：该功能点面向中文文献，输入为西班牙语等非中英文文本。"
         return "语言不匹配：该功能点面向中文文献，但输入疑似英文文本。"
     if expected == "en" and is_chinese:
         return "语言不匹配：该功能点面向英文文献，但输入疑似中文文本。"
+    if expected == "en" and latin and not _looks_english(text):
+        return "不支持非中英文文本：该功能点仅支持中文/英文文献，检测到输入疑似西班牙语等其他语言文本。"
     return None
+
+
+# 依存弧符号节点判定：纯标点/括号/数字/破折号等组合（（），。：；、！？—–2001— 832000 等）
+import re as _re_dep
+_DEP_SYMBOLIC_NODE = _re_dep.compile(r'^[\s（），。：；、！？《》“”‘’.,:;!?()\[\]{}—\-–…·\d]+$')
+
+
+def sanitize_dependency_arcs(arcs) -> list:
+    """依存弧清洗（2026-09-20 用户定调：中心词/依存词必须是实词或实体——
+    标点、括号、纯数字（邮编/年份）等符号性成分不是句法节点，出现在弧两端
+    即为噪声；另过滤自环（中心词=依存词，依存树非法）与重复弧。GLM 按
+    ner_relation.yaml "允许近似" 产弧，常把符号成分当节点，展示前统一清洗。"""
+    seen = set()
+    out = []
+    for a in arcs or []:
+        if not isinstance(a, dict):
+            continue
+        head = str(a.get("head") or "").strip()
+        dep = str(a.get("dependent") or "").strip()
+        rel = str(a.get("relation") or "").strip()
+        if not head or not dep or not rel:
+            continue
+        if _DEP_SYMBOLIC_NODE.match(head) or _DEP_SYMBOLIC_NODE.match(dep):
+            continue  # 符号/标点/纯数字不作节点
+        if head == dep:
+            continue  # 自环非法
+        key = (str(a.get("sentence_id") or ""), head, rel, dep)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"sentence_id": a.get("sentence_id"), "head": head,
+                    "relation": rel, "dependent": dep})
+    return out
 
 
 class SemanticApplicationService(ISemanticService):
@@ -424,6 +519,14 @@ class SemanticApplicationService(ISemanticService):
                 _texts = list(request.texts or []) if request.texts else ([request.text] if request.text else [])
                 for _i, _t in enumerate(_texts):
                     _lang_err = _language_mismatch_error(_expected, str(_t or ""), _counterpart)
+                    if _lang_err:
+                        raise ValueError(f"第 {_i + 1} 篇输入{_lang_err}" if len(_texts) > 1 else _lang_err)
+            elif code in _ZH_EN_BILINGUAL_CODES:
+                # 中英双语工具（NER/关系等，无固定语言对）：西班牙语等第三语言
+                # 此前完全不检查直接放行（2026-09-20 用户定调：非中英文要报错）
+                _texts = list(request.texts or []) if request.texts else ([request.text] if request.text else [])
+                for _i, _t in enumerate(_texts):
+                    _lang_err = _non_zh_en_error(str(_t or ""))
                     if _lang_err:
                         raise ValueError(f"第 {_i + 1} 篇输入{_lang_err}" if len(_texts) > 1 else _lang_err)
 
@@ -4533,21 +4636,13 @@ class SemanticApplicationService(ISemanticService):
         _is_fund_text = (len(full_text) >= 1500 and _kw_hits >= 2) or _kw_hits >= 4 \
                         or (len(full_text) >= 80 and _kw_hits >= 3)
         if not _is_fund_text:
-            _empty_moves = [{"move_type": _mt, "content": "", "sources": [], "source_sections": [],
-                             "n_fragments": 0, "confidence": None} for _mt in move_types]
-            result.success = True
-            result.data = {
-                "moves": _empty_moves,
-                "confidence": None,
-                "document": {},
-                "document_type_check": "非基金类文本：输入不是基金申请书/项目申报书/任务书/结题报告等基金类文本，未识别到基金语步",
-            }
-            result.evidence = []
-            result.confidence = None
-            result.raw = json.dumps({"moves": _empty_moves, "n_chars": len(full_text),
-                                     "mode": "not_fund_text", "n_units": 0}, ensure_ascii=False)
-            logger.info("基金语步预检:非基金类文本(%d 字,%d 个申报结构词命中),跳过识别", len(full_text), _kw_hits)
-            return result
+            # 2026-09-20 用户定调（问题7）：非基金文献直接报错提醒，不再返回全空
+            # 语步的"成功"结果——用户拿论文测试时之前显示成功但五类语步全空，
+            # 应弹窗告知包含非基金项目文献
+            raise ValueError(
+                "输入不是基金项目文献（未检出申请书/申报书/任务书/结题报告等"
+                "基金文档特征，检测到的是普通论文/摘要类文本）；"
+                "请上传基金项目申请书、进展报告或结题报告后重试")
         summary_prompt = rule.raw.get("summary_prompt", rule.system_prompt)
         system_prompt = self._system_prompt(rule, request)
         aggregated = {mt: [] for mt in move_types}
@@ -6749,6 +6844,15 @@ class SemanticApplicationService(ISemanticService):
             self.__class__._NER_INFLIGHT += 1
         try:
             if len(eff_text) > NER_TEXT_LIMIT:
+                # 块数封顶（2026-09-20 问题2：49MB txt→4900 块×LLM 调用=数小时，
+                # 客户端必然超时报错）：单篇最多 30 块（30 万字符）——实体集中于
+                # 前部正文，超出部分对召回增益极小而成本线性爆炸
+                _MAX_NER_CHARS = NER_TEXT_LIMIT * 30
+                if len(eff_text) > _MAX_NER_CHARS:
+                    logger.warning("NER 文本 %.1f 万字超 30 万字上限，截取前 30 万字符处理",
+                                   len(eff_text) / 10000)
+                    eff_text = eff_text[:_MAX_NER_CHARS]
+                    truncated = True
                 import re as _reC
                 _chunks = []
                 _pos = 0
@@ -7164,6 +7268,14 @@ class SemanticApplicationService(ISemanticService):
                     if code == 'ner_domain':
                         e["standard_kb_id"] = "用户本体体系" if _onto_extra else "内置知识库"
 
+        if code == 'ner_relation' and isinstance(out, dict) and text:
+            # 全文随结果透出（2026-09-20：归一化层计算三元组句子字符范围需要原文，
+            # 文件/上游记录模式 payload 不带全文，第二句起 find 定位失败位置为空）
+            out.setdefault("original_sentence", text)
+        if code == 'ner_relation' and isinstance(out, dict) \
+                and isinstance(out.get("dependency_parse"), list):
+            # 依存弧清洗：符号节点/自环/重复（GLM best-effort 产弧的噪声）
+            out["dependency_parse"] = sanitize_dependency_arcs(out["dependency_parse"])
         result.success = True
         result.data = out
         result.evidence = data.get("evidence", []) if isinstance(data, dict) else []

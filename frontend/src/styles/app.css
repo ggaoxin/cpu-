@@ -1398,3 +1398,744 @@ mark.fund-move-orig-mark-v663 {
 .relation-results-table tbody > tr.relation-main-row > td:nth-child(5) {
   display: table-cell !important;
 }
+
+/* ========================================================================
+   平台原生算法页视觉对齐层（2026-09-20）
+   基准：算法中心 → 分类分析算法 → 异构节点分类。
+   这里只覆盖视觉和布局，不改接口、请求字段或业务行为。
+   ======================================================================== */
+:root {
+  --platform-page-bg: #dee1eb;
+  --platform-card-bg: linear-gradient(180deg, rgba(250, 249, 250, 0) 0%, rgba(196, 214, 246, .25) 100%), rgba(255, 255, 255, .8);
+  --platform-text-primary: rgba(0, 0, 0, .88);
+  --platform-title-text: #020c1a;
+  --platform-text-body: #4e5969;
+  --platform-text-muted: #86909c;
+  --platform-border: #e5e6eb;
+  --platform-divider: #e9ebf7;
+  --platform-control-border: #c9cdd4;
+  --platform-code-bg: #1d2129;
+  --platform-code-text: #c9d1d9;
+  --platform-primary: #2454ff;
+}
+
+html,
+body,
+#app,
+body.figma-ui-v717 {
+  font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue' !important;
+  color: var(--platform-text-primary) !important;
+  background: var(--platform-page-bg) !important;
+}
+
+body.figma-ui-v717 .platform-frame-v640 {
+  position: relative !important;
+  width: 100% !important;
+  height: 100vh !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  overflow: hidden !important;
+}
+
+body.figma-ui-v717 .platform-frame-v640::before {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  content: '' !important;
+  pointer-events: none !important;
+  backdrop-filter: saturate(180%) blur(20px) !important;
+}
+
+body.figma-ui-v717 .platform-frame-v640::after {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  content: '' !important;
+  pointer-events: none !important;
+  background: url('https://cdn1.deepmd.net/static/img/1f96c3bdgkx-filtter-bg.png') center / 100% 110% no-repeat !important;
+}
+
+body.figma-ui-v717 .platform-frame-v640 .app {
+  position: relative !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100vh !important;
+  min-height: 0 !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  background: transparent !important;
+}
+
+body.figma-ui-v717 .platform-frame-v640 .content-wrap {
+  width: 100% !important;
+  height: 100vh !important;
+  min-width: 0 !important;
+  padding: 12px 12px 12px 0 !important;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+
+body.figma-ui-v717 .page-shell {
+  position: relative !important;
+  z-index: 2 !important;
+  display: flex !important;
+  width: 100% !important;
+  height: calc(100vh - 36px) !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, .18), 0 8px 20px -8px rgba(0, 0, 0, .1) !important;
+  backdrop-filter: none !important;
+}
+
+body.figma-ui-v717 .page-shell::before {
+  position: absolute !important;
+  inset: -6px !important;
+  z-index: 0 !important;
+  content: '' !important;
+  pointer-events: none !important;
+  background: linear-gradient(120deg, transparent 30%, rgba(220, 220, 220, .18), transparent 70%) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid #fff !important;
+  border-radius: 18px !important;
+}
+
+body.figma-ui-v717 .page-shell > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+body.figma-ui-v717 .breadcrumb {
+  display: flex !important;
+  min-height: 24px !important;
+  margin: 0 0 16px !important;
+  padding: 0 !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: var(--platform-text-muted) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 22px !important;
+}
+
+body.figma-ui-v717 .breadcrumb strong {
+  color: var(--platform-text-primary) !important;
+  font-weight: 400 !important;
+}
+
+body.figma-ui-v717 .breadcrumb .slash {
+  color: #c9cdd4 !important;
+}
+
+body.figma-ui-v717 .main-card {
+  width: 100% !important;
+  height: calc(100vh - 110px) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 24px !important;
+  flex: 0 0 auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scrollbar-width: none !important;
+  background: var(--platform-card-bg) !important;
+  border: 1px solid #f0f0f0 !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+body.figma-ui-v717 .main-card::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
+
+body.figma-ui-v717 .main-card::-webkit-scrollbar-thumb {
+  background: rgba(134, 144, 156, .45) !important;
+  border-radius: 5px !important;
+}
+
+body.figma-ui-v717 .hero {
+  margin: 0 0 24px !important;
+  padding: 0 0 24px !important;
+  border-bottom: 1px solid var(--platform-divider) !important;
+}
+
+body.figma-ui-v717 .hero h1 {
+  margin: 0 0 8px !important;
+  color: var(--platform-title-text) !important;
+  font-size: 20px !important;
+  font-weight: 500 !important;
+  line-height: 31.4286px !important;
+  letter-spacing: 0 !important;
+}
+
+body.figma-ui-v717 .hero p {
+  max-width: none !important;
+  margin: 0 0 24px !important;
+  color: var(--platform-text-body) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 22px !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: break-word !important;
+}
+
+body.figma-ui-v717 .main-card > .hero .tag-row {
+  display: flex !important;
+  width: 100% !important;
+  flex-flow: row nowrap !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  overflow: visible !important;
+}
+
+body.figma-ui-v717 .main-card > .hero .tag-row > .tag-box {
+  display: flex !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  padding: 6px 8px !important;
+  flex: 0 1 auto !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: var(--platform-text-primary) !important;
+  background: transparent !important;
+  border: 1px solid var(--platform-border) !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
+  transition: all .2s !important;
+  white-space: normal !important;
+  overflow: visible !important;
+}
+
+body.figma-ui-v717 .main-card > .hero .tag-row > .tag-box > b {
+  display: block !important;
+  flex: 0 0 auto !important;
+  color: var(--platform-text-muted) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 18.8571px !important;
+  white-space: normal !important;
+}
+
+body.figma-ui-v717 .main-card > .hero .tag-row > .tag-box > i {
+  display: block !important;
+  width: 1px !important;
+  height: 12px !important;
+  flex: 0 0 1px !important;
+  background: var(--platform-border) !important;
+}
+
+body.figma-ui-v717 .main-card > .hero .tag-row > .tag-box > span {
+  display: block !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  flex: 1 1 auto !important;
+  color: var(--platform-title-text) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 18.8571px !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+body.figma-ui-v717 .main-card > .section {
+  margin: 0 0 28px !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+body.figma-ui-v717 .main-card > .section + .section {
+  padding-top: 0 !important;
+}
+
+body.figma-ui-v717 .main-card > .section:not(:last-child) {
+  border-bottom: 0 !important;
+}
+
+body.figma-ui-v717 .section-header {
+  display: flex !important;
+  min-height: 0 !important;
+  margin: 0 0 12px !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+body.figma-ui-v717 .section-title {
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  color: var(--platform-title-text) !important;
+  font-size: 18px !important;
+  font-weight: 500 !important;
+  line-height: 28.2857px !important;
+  letter-spacing: 0 !important;
+}
+
+body.figma-ui-v717 .call-sample-header-v773 {
+  justify-content: flex-start !important;
+}
+
+body.figma-ui-v717 .reference-copy-btn {
+  display: inline-flex !important;
+  width: 110px !important;
+  position: relative !important;
+  min-width: 94px !important;
+  height: 38px !important;
+  min-height: 0 !important;
+  margin-left: auto !important;
+  padding: 0 15px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  color: var(--platform-text-primary) !important;
+  background: #f6f7f9 !important;
+  border: 1px solid var(--platform-control-border) !important;
+  border-radius: 30px !important;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .02) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: normal !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+body.figma-ui-v717 .reference-copy-btn::before {
+  content: '' !important;
+  display: block !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+  flex: 0 0 16px !important;
+  background: currentColor !important;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='5' y='2' width='9' height='10' rx='1' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cpath d='M11 12v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h2' fill='none' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E") center / 16px 16px no-repeat !important;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='5' y='2' width='9' height='10' rx='1' fill='none' stroke='white' stroke-width='1.5'/%3E%3Cpath d='M11 12v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h2' fill='none' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E") center / 16px 16px no-repeat !important;
+}
+
+body.figma-ui-v717 .reference-copy-btn:hover {
+  background: #f6f7f9 !important;
+  border-color: var(--platform-control-border) !important;
+}
+
+body.figma-ui-v717 #callTypeSwitchV770,
+body.figma-ui-v717 .api-mode-switch {
+  padding: 3px !important;
+  gap: 4px !important;
+  background: #f6f7f9 !important;
+  border: 1px solid var(--platform-border) !important;
+  border-radius: 8px !important;
+}
+
+body.figma-ui-v717 .call-type-btn-v770,
+body.figma-ui-v717 .api-mode-btn {
+  min-height: 32px !important;
+  padding: 0 12px !important;
+  color: var(--platform-text-body) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+}
+
+body.figma-ui-v717 .call-type-btn-v770.active,
+body.figma-ui-v717 .api-mode-btn.active {
+  color: var(--platform-primary) !important;
+  background: #fff !important;
+  border-color: #d7e1ff !important;
+  box-shadow: 0 1px 3px rgba(36, 84, 255, .1) !important;
+}
+
+body.figma-ui-v717 .code-box {
+  position: static !important;
+  height: auto !important;
+  max-height: 360px !important;
+  padding: 20px !important;
+  overflow: auto !important;
+  color: var(--platform-code-text) !important;
+  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  line-height: 1.7 !important;
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+  background: var(--platform-code-bg) !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+}
+
+body.figma-ui-v717 .code-box pre {
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  color: var(--platform-code-text) !important;
+  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  line-height: inherit !important;
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+}
+
+body.figma-ui-v717 .code-box.hover-copy-box {
+  position: relative !important;
+}
+
+body.figma-ui-v717 .hover-copy-btn {
+  top: 12px !important;
+  right: 12px !important;
+  min-height: 30px !important;
+  padding: 0 11px !important;
+  color: var(--platform-text-primary) !important;
+  background: #f6f7f9 !important;
+  border: 1px solid var(--platform-control-border) !important;
+  border-radius: 30px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+body.figma-ui-v717 .table-card {
+  overflow: auto !important;
+  background: #fff !important;
+  border: 1px solid #f0f0f0 !important;
+  border-radius: 8px !important;
+}
+
+body.figma-ui-v717 .table-card table {
+  width: 100% !important;
+  background: #fff !important;
+  table-layout: auto !important;
+}
+
+body.figma-ui-v717 .table-card th,
+body.figma-ui-v717 .table-card td {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 12px 8px !important;
+  color: var(--platform-text-primary) !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 22px !important;
+  white-space: normal !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere !important;
+}
+
+body.figma-ui-v717 .table-card th {
+  background: #fafafa !important;
+  font-weight: 600 !important;
+}
+
+body.figma-ui-v717 .pill {
+  min-height: 22px !important;
+  padding: 1px 8px !important;
+  border-radius: 5px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 20px !important;
+}
+
+body.figma-ui-v717 .primary-btn,
+body.figma-ui-v717 .outline-btn,
+body.figma-ui-v717 .ghost-btn {
+  min-height: 38px !important;
+  padding: 0 15px !important;
+  border-radius: 30px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 22px !important;
+  white-space: nowrap !important;
+}
+
+body.figma-ui-v717 .primary-btn {
+  color: #fff !important;
+  background: var(--platform-primary) !important;
+  border-color: transparent !important;
+  box-shadow: 0 2px 0 rgba(5, 105, 255, .06) !important;
+}
+
+body.figma-ui-v717 .primary-btn:hover:not(:disabled) {
+  transform: none !important;
+  background: #4080ff !important;
+  box-shadow: 0 2px 0 rgba(5, 105, 255, .06) !important;
+}
+
+body.figma-ui-v717 .main-card > .online-test-section {
+  padding-top: 0 !important;
+}
+
+body.figma-ui-v717 .test-panel {
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 40px !important;
+  padding: 16px !important;
+  background: #fff !important;
+  border: 1px solid #f2f3f5 !important;
+  border-radius: 8px !important;
+}
+
+body.figma-ui-v717 .test-card {
+  display: block !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 0 !important;
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body.figma-ui-v717 .response-card {
+  padding-left: 0 !important;
+  border-left: 0 !important;
+}
+
+body.figma-ui-v717 .test-card-header {
+  min-height: 0 !important;
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+  gap: normal !important;
+  border: 0 !important;
+}
+
+body.figma-ui-v717 .test-card-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: var(--platform-title-text) !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  line-height: 25.1429px !important;
+  white-space: normal !important;
+}
+
+body.figma-ui-v717 .test-card-title::before {
+  content: '' !important;
+  display: block !important;
+  width: 3px !important;
+  height: 16px !important;
+  flex: 0 0 3px !important;
+  background: var(--platform-primary) !important;
+  border-radius: 999px !important;
+}
+
+body.figma-ui-v717 .request-card .form-grid,
+body.figma-ui-v717 .response-result-body {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 16px !important;
+  overflow: visible !important;
+  background: #f7f8fa !important;
+  border: 1px solid #f2f3f5 !important;
+  border-radius: 8px !important;
+}
+
+body.figma-ui-v717 .request-card .form-grid {
+  gap: 12px !important;
+}
+
+body.figma-ui-v717 .response-result-body {
+  display: block !important;
+  height: 380px !important;
+  min-height: 380px !important;
+  max-height: 520px !important;
+  overflow: auto !important;
+  background: var(--platform-code-bg) !important;
+  border: 0 !important;
+  color: var(--platform-text-muted) !important;
+  font-family: SFMono-Regular, Consolas, Menlo, monospace !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+}
+
+body.figma-ui-v717 .response-result-body > .console {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  color: #c9cdd4 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  font-family: SFMono-Regular, Consolas, Menlo, monospace !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+}
+
+body.figma-ui-v717 .response-result-body > .console.placeholder {
+  color: var(--platform-text-muted) !important;
+}
+
+body.figma-ui-v717 .input,
+body.figma-ui-v717 .select,
+body.figma-ui-v717 .numeric-stepper-input,
+body.figma-ui-v717 .form-grid input:not([type="checkbox"]):not([type="radio"]),
+body.figma-ui-v717 .form-grid select {
+  display: block !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 6px 11px !important;
+  color: var(--platform-text-primary) !important;
+  background: #fff !important;
+  border-color: #d9d9d9 !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
+  transition: all .2s !important;
+}
+
+body.figma-ui-v717 .textarea,
+body.figma-ui-v717 .form-grid textarea {
+  padding: 6px 11px !important;
+  color: var(--platform-text-primary) !important;
+  background: #fff !important;
+  border-color: #d9d9d9 !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
+}
+
+body.figma-ui-v717 .form-grid input:not([type="checkbox"]):not([type="radio"]):focus,
+body.figma-ui-v717 .form-grid select:focus,
+body.figma-ui-v717 .form-grid textarea:focus {
+  outline: 0 !important;
+  border: 1px solid #2454ff !important;
+  box-shadow: 0 0 0 2px rgba(5, 105, 255, .06) !important;
+}
+
+/* 静态说明文字统一完整展示：不使用省略号或多行裁切。 */
+body.figma-ui-v717 :is(
+  .hero p,
+  .tag-box span,
+  .section-title,
+  .field > label,
+  .field > label > small,
+  .settings-title span,
+  .special-panel-head span,
+  .field-heading span,
+  .requirement-resource-item p,
+  .response-source-note
+) {
+  max-height: none !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  -webkit-line-clamp: unset !important;
+  overflow-wrap: anywhere !important;
+}
+
+body.figma-ui-v717 .footer-note {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  body.figma-ui-v717 .platform-frame-v640 .content-wrap {
+    padding: 8px !important;
+  }
+
+  body.figma-ui-v717 .page-shell {
+    height: calc(100vh - 16px) !important;
+    height: calc(100dvh - 16px) !important;
+    padding: 8px !important;
+  }
+
+  body.figma-ui-v717 .main-card {
+    padding: 16px !important;
+  }
+
+  body.figma-ui-v717 .main-card > .hero .tag-row {
+    display: flex !important;
+    width: 100% !important;
+    flex-flow: column nowrap !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  body.figma-ui-v717 .main-card > .hero .tag-row > .tag-box {
+    display: flex !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+  }
+
+  body.figma-ui-v717 .call-sample-header-v773 {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 12px !important;
+  }
+
+  body.figma-ui-v717 .call-sample-header-v773 > .section-title {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  body.figma-ui-v717 .call-sample-header-v773 > .reference-copy-btn {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    margin-left: 0 !important;
+  }
+
+  body.figma-ui-v717 .call-sample-header-v773 > #callTypeSwitchV770 {
+    width: 100% !important;
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.figma-ui-v717 .test-panel {
+    flex-direction: column !important;
+    gap: 24px !important;
+  }
+
+  body.figma-ui-v717 .test-card {
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 480px !important;
+  }
+
+  body.figma-ui-v717 .response-card-actions-v645 {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  body.figma-ui-v717 .response-card-actions-v645 button {
+    max-width: 100% !important;
+  }
+}
+
+/* 批量文本题目重复（2026-09-20 问题4b）：模仿"用户名已存在"的红框标记 */
+.duplicate-title-field .input { border-color: #e5484d !important; box-shadow: 0 0 0 2px rgba(229, 72, 77, 0.12); }
+.duplicate-title-field small { color: #c0392b !important; }

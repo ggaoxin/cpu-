@@ -31,14 +31,15 @@ async function copyWithToast(value: string, name: string) { try { await copyText
 <template>
   <section class="section">
     <div class="section-header call-sample-header-v773">
-      <h2 class="section-title">调用示例</h2>
+      <h2 class="section-title">{{ callType === 'api' ? 'API 调用示例' : 'SDK 调用示例' }}</h2>
       <div id="callTypeSwitchV770" aria-label="调用方式">
         <button class="call-type-btn-v770" :class="{ active: callType === 'api' }" @click="callType = 'api'">API 调用</button>
         <button class="call-type-btn-v770" :class="{ active: callType === 'sdk' }" @click="callType = 'sdk'">SDK 调用</button>
       </div>
+      <button class="reference-copy-btn" type="button" @click="copy(callCode, 'call')">{{ copiedKeys.call ? '已复制' : '复制代码' }}</button>
     </div>
     <ModeSwitch v-model="mode" :modes="modes" :tool="tool" :kind="callType === 'api' ? 'API 调用输入方式' : 'SDK 调用输入方式'" />
-    <div class="code-box hover-copy-box"><pre>{{ callCode }}</pre><button class="hover-copy-btn" type="button" @click="copy(callCode, 'call')">{{ copiedKeys.call ? '✔' : '⧉ 复制' }}</button></div>
+    <div class="code-box"><pre>{{ callCode }}</pre></div>
   </section>
 
   <section class="section">

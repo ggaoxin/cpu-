@@ -218,7 +218,13 @@ watch(citationRawReference, (val) => {
 })
 
 async function handleCitationReferenceFile(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0]
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (file && !/\.(txt|json|jsonl|csv)$/i.test(file.name)) {
+    citationParseError.value = `不支持的文件格式：${file.name}。参考文献条目仅支持 TXT、JSON、JSONL、CSV`
+    input.value = ''
+    return
+  }
   citationUploadName.value = file?.name || ''
   citationParseState.value = 'idle'
   if (!file) return
@@ -255,7 +261,18 @@ function clearCitationMetadataFile(target: 'batch' | 'fallback') {
   if (el) el.value = ''
 }
 function handleCitationMetadataFile(event: Event, target: 'batch' | 'fallback') {
-  const file = (event.target as HTMLInputElement).files?.[0] || null
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0] || null
+  // 白名单与上传提示一致：批量槽提示 JSON/JSONL/CSV/XLSX/TXT（含 TXT），
+  // 单篇槽提示 JSON/JSONL/CSV/XLSX
+  const pattern = target === 'batch' ? /\.(json|jsonl|csv|xlsx|txt)$/i : /\.(json|jsonl|csv|xlsx)$/i
+  const hint = target === 'batch' ? 'JSON、JSONL、CSV、XLSX、TXT' : 'JSON、JSONL、CSV、XLSX'
+  if (file && !pattern.test(file.name)) {
+    resourceSaveError.value = `不支持的文件格式：${file.name}。元数据仅支持 ${hint}`
+    input.value = ''
+    return
+  }
+  resourceSaveError.value = ''
   if (target === 'batch') citationBatchMetadataFile.value = file
   else citationFallbackMetadataFile.value = file
 }
@@ -341,14 +358,21 @@ async function pollIndexBuild(key: string, storageUri: string) {
 
 async function handleResourceUpload(event: Event, key: string) {
   const file = (event.target as HTMLInputElement).files?.[0] || null
-  // 仅放行 .json：accept 只过滤系统选择器，用户切"所有文件"仍可选 txt/csv
-  if (file && !file.name.toLowerCase().endsWith('.json')) {
+  // 格式白名单与各字段上传提示严格一致（2026-09-20 用户定调）：语义资源仅 .json；
+  // structured-review 文献元数据提示为 JSON/JSONL/CSV/XLSX——此前一刀切 .json
+  // 把提示声明的合法格式也拒了。accept 只过滤选择器，切"所有文件"仍可绕过
+  const metaAllowed = /\.(json|jsonl|csv|xlsx)$/i
+  const allowed = key === 'document_metadata' ? metaAllowed : /\.json$/i
+  const allowedText = key === 'document_metadata'
+    ? '仅支持 JSON、JSONL、CSV、XLSX'
+    : '仅支持标准 JSON 文件（CSV、JSONL、TXT 暂不支持）'
+  if (file && !allowed.test(file.name)) {
     uploadedResources[key] = null
     if (resourceFileInputs[key]) resourceFileInputs[key]!.value = ''
     if (precheckEnabled(key)) {
-      resourceProbes[key] = { status: 'error', rows: null, normalizedBy: null, error: '仅支持标准 JSON 文件（CSV、JSONL、TXT 暂不支持）' }
+      resourceProbes[key] = { status: 'error', rows: null, normalizedBy: null, error: allowedText }
     } else {
-      resourceSaveError.value = '仅支持标准 JSON 文件（CSV、JSONL、TXT 暂不支持）'
+      resourceSaveError.value = allowedText
     }
     return
   }

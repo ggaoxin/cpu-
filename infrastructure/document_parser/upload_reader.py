@@ -29,6 +29,63 @@ def _decode(content: bytes) -> str:
     return content.decode("utf-8", errors="replace")
 
 
+# 二进制文件魔数（.txt 等纯文本扩展名收到这些开头 = 重命名/损坏）
+_BINARY_MAGICS = (b"PK\x03\x04", b"%PDF", b"\x89PNG", b"\xd0\xcf\x11\xe0",
+                  b"\xff\xd8\xff", b"GIF8", b"7z\xbc\xaf", b"Rar!")
+
+
+def _plain_text_guard(content: bytes, text: str, filename: str) -> None:
+    """纯文本类文件（.txt/.md/.json/.csv/.jsonl）损坏检测（2026-09-20 用户定调：
+    损坏文件必须报错，不允许静默"成功"）。三类情况：
+
+    ① 二进制魔数开头 —— PDF/DOCX/图片等被改名 .txt（或恰好是这些格式）；
+    ② 解码替换符/控制字符占比过高 —— 随机字节流被 errors=replace 强解成乱码，
+       此前会原样送 LLM 出 0 实体"成功"；
+    ③ 有效文本过短 —— 全空白/控制符strip后不足 10 字符。
+    """
+    if content[:8].startswith(_BINARY_MAGICS):
+        raise ValueError(
+            f"文件 {filename} 是二进制格式（与纯文本扩展名不符），"
+            "文件可能被重命名或已损坏；请上传有效的 PDF、DOCX、TXT 文件")
+    if not text or not text.strip():
+        raise ValueError(f"文件 {filename} 内容为空，文件可能已损坏")
+    # 性能（2026-09-20 问题2）：49MB 文本逐字符全量扫描极慢——乱码占比只统计
+    # 前 20000 字符（乱码文件开头即乱码，采样足够判定）
+    n = min(len(text), 20000)
+    if n:
+        bad = sum(1 for c in text[:n]
+                  if c == "\ufffd" or (ord(c) < 32 and c not in "\n\r\t\f\b"))
+        if n >= 20 and bad / n > 0.05:
+            raise ValueError(
+                f"文件 {filename} 无法解码为可读文本（乱码字符占比过高），"
+                "文件可能已损坏；请确认文件为有效的文本文件")
+        effective = sum(1 for c in text[:n or 1] if not c.isspace())
+        if effective < 10:
+            raise ValueError(
+                f"文件 {filename} 有效文本内容过短（不足 10 个字符），"
+                "文件可能为空或已损坏")
+        # 纯拉丁乱码检测（2026-09-20 问题5）：随机字母/符号流能"成功"解码但
+        # 不是人类文本——无 CJK 且常见词命中为 0（英文/中文高频词+科技术语）
+        has_cjk = any("一" <= c <= "鿿" for c in text[:20000])
+        if not has_cjk and effective >= 200:
+            import re as _re_g
+            words = set(w.lower() for w in _re_g.findall(r"[A-Za-z]{2,}", text[:20000]))
+            # 随机字母流会碰巧拼出 or/it/of 等两字母词（实测 1062 个随机词命中
+            # 5 个两字母常见词）——判据收紧到：≥1 个四字母以上常见词，或 ≥3 个
+            # 三字母以上常见词（随机拼出 the+and+for 三个的概率可忽略）
+            _COMMON4 = {"that", "this", "from", "based", "using", "used", "model",
+                        "method", "data", "result", "study", "research", "system",
+                        "paper", "propose", "analysis", "approach", "learning",
+                        "with", "text", "size", "type", "name", "time", "date"}
+            _COMMON3 = _COMMON4 | {"the", "and", "for", "are", "not", "can",
+                                   "has", "have", "was", "our", "all", "new"}
+            _h3 = words & _COMMON3
+            if not (len(_h3) >= 3 or (words & _COMMON4)) :
+                raise ValueError(
+                    f"文件 {filename} 内容为不可识别的乱码字符（未检出任何自然语言"
+                    "词汇），文件可能已损坏；请确认文件为有效的文本文件")
+
+
 def _docx_text(content: bytes) -> str:
     with zipfile.ZipFile(io.BytesIO(content)) as archive:
         if sum(item.file_size for item in archive.infolist()) > 200 * 1024 * 1024:
@@ -298,6 +355,27 @@ def _xlsx_text(content: bytes) -> str:
     return "\n".join(rows)
 
 
+def _extract_pdf(content: bytes, use_light: bool) -> str:
+    """PDF 提取（原 extract_bytes 内联逻辑）：light=PyMuPDF 直抽+mineru回退；否则强制 mineru。"""
+    if use_light:
+        text = _pymupdf_text(content)
+        if text:
+            return text
+        # PyMuPDF 抽空（双栏/扫描件）回退 mineru OCR，经 PageBudgetPool 限流，
+        # 避免多任务并发大双栏/扫描 PDF 回退时绕过在途页数预算压 GPU。
+        # light=False 路径的 pool 由调用方(is_path)负责，此处只管 light 回退路径。
+        from infrastructure.document_parser.mineru_api_client import _count_pages
+        from infrastructure.document_parser.concurrency_pool import get_page_budget_pool
+        _pages = _count_pages(content)
+        _pool = get_page_budget_pool()
+        _pool.acquire(_pages)
+        try:
+            return _pdf_text(content)
+        finally:
+            _pool.release(_pages)
+    return _pdf_text(content)  # light=False 强制 mineru（调用方 is_path 已包 pool）
+
+
 def extract_bytes(content: bytes, filename: str, *, light: bool | None = None) -> str:
     suffix = Path(filename or "upload.txt").suffix.lower()
     if suffix not in SUPPORTED_EXTENSIONS:
@@ -306,28 +384,29 @@ def extract_bytes(content: bytes, filename: str, *, light: bool | None = None) -
         # light=None 跟全局 PDF_EXTRACT_MODE；light=True 走 PyMuPDF 直抽（纯文本工具轻量），
         # 扫描件/抽空时回退 _pdf_text（mineru OCR）；light=False 强制 mineru（强结构工具）
         use_light = light if light is not None else (settings.PDF_EXTRACT_MODE == "light")
-        if use_light:
-            text = _pymupdf_text(content)
-            if text:
-                return text
-            # PyMuPDF 抽空（双栏/扫描件）回退 mineru OCR，经 PageBudgetPool 限流，
-            # 避免多任务并发大双栏/扫描 PDF 回退时绕过在途页数预算压 GPU。
-            # light=False 路径的 pool 由调用方(is_path)负责，此处只管 light 回退路径。
-            from infrastructure.document_parser.mineru_api_client import _count_pages
-            from infrastructure.document_parser.concurrency_pool import get_page_budget_pool
-            _pages = _count_pages(content)
-            _pool = get_page_budget_pool()
-            _pool.acquire(_pages)
-            try:
-                return _pdf_text(content)
-            finally:
-                _pool.release(_pages)
-        return _pdf_text(content)  # light=False 强制 mineru（调用方 is_path 已包 pool）
+        try:
+            return _extract_pdf(content, use_light)
+        except ValueError:
+            raise
+        except Exception as exc:  # noqa: BLE001 - 损坏PDF统一业务提示（2026-09-20）
+            raise ValueError(
+                f"文件 {filename} 无法解析，可能已损坏或不是有效的 PDF 文件"
+                f"（{str(exc)[:80]}）") from exc
     if suffix == ".docx":
-        return _docx_text(content)
+        try:
+            return _docx_text(content)
+        except ValueError:
+            raise
+        except Exception as exc:  # noqa: BLE001 - 损坏DOCX统一业务提示（2026-09-20）
+            raise ValueError(
+                f"文件 {filename} 无法解析，可能已损坏或不是有效的 DOCX 文件"
+                f"（{exc}）") from exc
     if suffix == ".xlsx":
         return _xlsx_text(content)
     text = _decode(content)
+    if suffix in {".txt", ".md", ".json", ".jsonl", ".csv"}:
+        # 纯文本类损坏检测：二进制伪装/乱码/过短（此前乱码 txt 会静默"成功"）
+        _plain_text_guard(content, text, filename)
     if suffix == ".json":
         try:
             return json.dumps(json.loads(text), ensure_ascii=False, indent=2)

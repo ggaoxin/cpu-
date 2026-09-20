@@ -70,7 +70,7 @@ function previewVisualization(mode: InputMode) {
             <div class="hero">
               <h1>{{ tool.title }}</h1>
               <p>{{ tool.description }}</p>
-              <div class="tag-row"><div class="tag-box"><b>功能特点</b><span>{{ tool.features }}</span></div><div class="tag-box"><b>适用场景</b><span>{{ tool.scenarios }}</span></div></div>
+              <div class="tag-row"><div class="tag-box"><b>功能特点</b><i aria-hidden="true"></i><span>{{ tool.features }}</span></div><div class="tag-box"><b>适用场景</b><i aria-hidden="true"></i><span>{{ tool.scenarios }}</span></div></div>
             </div>
             <DocumentationPanel :key="`${activeId}-docs`" :tool="tool" />
             <OnlineTester :key="`${activeId}-test`" :tool-id="activeId" :tool="tool" @visualize="visualize" @preview="previewVisualization" />

@@ -1198,6 +1198,23 @@ def _abstract_from_md(md: str) -> tuple:
     return "", title
 
 
+# 主文献文件格式白名单（2026-09-20 用户定调：除声明格式外一律弹窗报错拒绝，
+# 不允许上传——选择器切"所有文件"或改扩展名绕过 accept 的文件此前会被当
+# 纯文本解析"成功"出结果，属于静默错误）
+_ALLOWED_DOC_SUFFIXES = {".pdf", ".docx", ".txt"}
+
+
+def _reject_disallowed_doc_files(uploads) -> None:
+    bad = [u.filename or "?" for u in uploads
+           if Path(u.filename or "").suffix.lower() not in _ALLOWED_DOC_SUFFIXES]
+    if bad:
+        raise HTTPException(
+            status_code=422,
+            detail=f"不支持的文件格式：{'、'.join(bad[:5])}{' 等' if len(bad) > 5 else ''}。"
+                   "仅支持 PDF、DOCX、TXT",
+        )
+
+
 @router.post("/files/parse")
 async def parse_files(
     request: Request,
@@ -1212,6 +1229,7 @@ async def parse_files(
     """
     form = await request.form()
     uploads = [value for value in form.getlist("files") if isinstance(value, StarletteUploadFile)]
+    _reject_disallowed_doc_files(uploads)
     if not uploads:
         return JSONResponse(status_code=422, content={"code": 42201, "message": "未收到待解析文件"})
     if len(uploads) > settings.MAX_BATCH_FILES:
@@ -1362,6 +1380,8 @@ def _file_endpoint(tool_id: str, multiple: bool):
         # 已通过 /files/parse 完成文件→文本，这里直接取文本构造 extracted，
         # 跳过文件接收与解析；文件本体不再传输。
         preparsed_raw = str(form.get("preparsed") or "").strip()
+        if uploads:
+            _reject_disallowed_doc_files(uploads)
         if not uploads and not preparsed_raw:
             raise HTTPException(status_code=422, detail=f"缺少上传字段：{field}")
         if not multiple and not preparsed_raw and len(uploads) != 1:
@@ -1585,6 +1605,9 @@ def relation_dependency_preview(payload: Dict[str, Any] = Body(...)) -> Dict[str
         "你是中文依存句法分析专家。对给定文本做依存句法分析,输出依存弧列表。\n"
         "每条弧:head(中心词/支配词)、relation(依存关系类型,如:主谓关系/动宾关系/定语/状语/并列关系/介宾关系)、"
         "dependent(依存词/从属词)、sentence_id(句子编号,SENT-001格式)。\n"
+        "硬约束(违反的弧会被丢弃):head与dependent必须是实词或实体——禁止标点符号((),。:;等)、"
+        "括号、纯数字(邮编/年份)作为节点;禁止head与dependent相同(自环);"
+        "单位地址邮编等附属信息不产弧;每个词至多一个中心词。\n"
         "只输出JSON:{\"data\":[{\"head\":\"\",\"relation\":\"\",\"dependent\":\"\",\"sentence_id\":\"SENT-001\"}]}"
     )
     try:
@@ -1592,6 +1615,10 @@ def relation_dependency_preview(payload: Dict[str, Any] = Body(...)) -> Dict[str
         arcs = out.get("data", out) if isinstance(out, dict) else []
         if not isinstance(arcs, list):
             arcs = []
+        # 依存弧清洗（2026-09-20 用户定调）：符号节点/自环/重复弧过滤——
+        # 中心词与依存词必须是实词或实体，标点括号邮编不是句法节点
+        from application.service.semantic_service import sanitize_dependency_arcs
+        arcs = sanitize_dependency_arcs(arcs)
         return {"code": 0, "message": f"已生成 {len(arcs)} 条依存弧", "data": arcs}
     except Exception as exc:
         raise HTTPException(status_code=422, detail=f"依存句法分析失败: {exc}") from exc
