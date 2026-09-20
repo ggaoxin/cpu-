@@ -41,13 +41,28 @@ const tool = computed(() => tools[activeId.value])
 document.title = `${tool.value.title} · 语义计算工具库`
 
 function selectTool(id: string) {
-  // 「语义计算工具库」子菜单：真实页面跳转到该工具的专属 URL（非局部组件切换）。
-  // 浏览器地址栏更新、产生历史记录（返回键可回退上一页）；新页面加载时由
-  // toolIdFromLocation 恢复 activeId，侧栏高亮/面包屑/标题随之渲染。
-  // 其余「算法中心其他算法库」装饰菜单本无点击逻辑，不受影响。
-  if (!tools[id]) return
-  window.location.assign(appPath(`/tool/${id}`))
+  // 「语义计算工具库」子菜单：SPA 局部切换（2026-09-21 甲方反馈：此前
+  // window.location.assign 整页跳转——重新加载整个 JS 包、白屏一闪，切换
+  // 不流畅；别人的系统无刷新感。改 history.pushState 只换组件不刷新：
+  // 地址栏更新、产生历史记录、组件因 :key 变化重挂载，全部局部完成）。
+  if (!tools[id] || id === activeId.value) return
+  activeId.value = id
+  modalOpen.value = false
+  currentResponse.value = null
+  history.pushState({}, '', appPath(`/tool/${id}`))
+  document.title = `${tools[id].title} · 语义计算工具库`
+  content.value?.scrollTo({ top: 0 })
 }
+
+// 浏览器返回/前进：按当前 URL 恢复工具（pushState 路由的配套监听）
+window.addEventListener('popstate', () => {
+  const id = toolIdFromLocation() || 'zh-abstract-move'
+  if (tools[id] && id !== activeId.value) {
+    activeId.value = id
+    modalOpen.value = false
+    document.title = `${tools[id].title} · 语义计算工具库`
+  }
+})
 function visualize(response: unknown) { currentResponse.value = response; modalPreview.value = false; modalOpen.value = true }
 function previewVisualization(mode: InputMode) {
   if (!supportsVisualization(activeId.value)) return

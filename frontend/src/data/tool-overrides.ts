@@ -1231,6 +1231,34 @@ const finalOverrides: Record<string, Partial<ToolDefinition>> = {
   }
 }
 
+
+// 功能特点/适用场景简写层（2026-09-21 甲方定稿：全工具简短、不换行——原型里的长描述在标签框内折行）
+const shortFeatureTexts: Record<string, { features: string; scenarios: string }> = {
+  'zh-abstract-move': { features: '摘要五类语步识别，批量文本与文件，置信度输出', scenarios: '中文摘要解析与批量处理' },
+  'en-abstract-move': { features: '英文摘要五类语步识别，批量处理，置信度输出', scenarios: '英文摘要解析与批量处理' },
+  'fund-move': { features: '基金语步分类，章节溯源，文本文件批处理', scenarios: '基金申请书与结题材料解析' },
+  'zh-classify': { features: '中图分类号预测，领域标签，跨学科判断，批量处理', scenarios: '中文论文归类与报告编目' },
+  'en-classify': { features: '跨语言类目映射，分类号预测，批量分布报告', scenarios: 'SCI/EI文献分类与编目' },
+  'domain-classify': { features: '领域自动判断，三级分类，置信度与批量统计', scenarios: '专题文献组织与领域建库' },
+  'zh-keyword': { features: '摘要定位，领域识别，术语资源与自适应词权', scenarios: '中文论文标引与术语抽取' },
+  'en-keyword': { features: '英文摘要定位，缩写识别，术语规范化映射', scenarios: '英文文献标引与术语规范' },
+  'rq-detect': { features: '显式与隐式问题识别，主子问题，章节溯源', scenarios: '论文问题提炼与批量分析' },
+  'citation-sentiment': { features: '引用句抽取，元数据匹配，三分类与证据', scenarios: '引文价值评价与影响力分析' },
+  'citation-intent': { features: '引用句抽取，三类意图识别，证据与评分', scenarios: '综述结构分析与引文网络' },
+  'definition-detect': { features: '定义句识别，概念词抽取，术语映射统计', scenarios: '概念梳理与领域术语库建设' },
+  'general-ner': { features: '四类通用实体识别，标准词映射，位置溯源', scenarios: '通用信息抽取与图谱构建' },
+  'research-ner': { features: '五类科研实体识别，标准词映射，全文抽取', scenarios: '科研信息抽取与图谱构建' },
+  'domain-ner': { features: '本体体系限定，领域实体识别，知识库映射', scenarios: '专业领域抽取与图谱构建' },
+  'relation-extract': { features: '实体关系三元组，依存路径，知识网络', scenarios: '知识图谱边构建与关系发现' },
+  'deep-cluster': { features: '语义聚类，技术与应用双轴，质量与趋势', scenarios: '文献群组组织与研究布局' },
+  'cluster-label': { features: '短语清洗，候选标签生成，差异化优化', scenarios: '聚类结果命名与专题组织' },
+  'structured-review': { features: '问题方法进展三层综述，趋势与证据溯源', scenarios: '批量文献综述与进展梳理' },
+}
+for (const [id, text] of Object.entries(shortFeatureTexts)) {
+  if (finalOverrides[id]) Object.assign(finalOverrides[id], text)
+  else finalOverrides[id] = text as Partial<ToolDefinition>
+}
+
 export const tools = Object.fromEntries(
   Object.entries(generatedTools as Record<string, ToolDefinition>).map(([id, tool]) => {
     const override = finalOverrides[id] || {}

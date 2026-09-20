@@ -52,7 +52,7 @@ async function copyWithToast(value: string, name: string) { try { await copyText
   <section class="section">
     <div class="section-header"><h2 class="section-title">响应示例</h2></div>
     <ModeSwitch v-model="mode" :modes="modes" :tool="tool" kind="响应示例输入方式" />
-    <div class="code-box hover-copy-box"><pre>{{ responseCode }}</pre><button class="hover-copy-btn" type="button" @click="copy(responseCode, 'response')">{{ copiedKeys.response ? '✔' : '⧉ 复制' }}</button></div>
+    <div class="code-box"><pre>{{ responseCode }}</pre></div>
   </section>
   <div v-if="copied" class="toast show">{{ copied }}</div>
 </template>

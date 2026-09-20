@@ -2139,3 +2139,56 @@ body.figma-ui-v717 .footer-note {
 /* 批量文本题目重复（2026-09-20 问题4b）：模仿"用户名已存在"的红框标记 */
 .duplicate-title-field .input { border-color: #e5484d !important; box-shadow: 0 0 0 2px rgba(229, 72, 77, 0.12); }
 .duplicate-title-field small { color: #c0392b !important; }
+
+/* ── 卡内滚动恢复（2026-09-21 甲方反馈，叠在 figma 视觉层之上）──
+   视觉层把 .test-card 改为 height:auto/overflow:visible，批量文本添加时
+   卡片无限向下膨胀、把整页顶走（无内部滚动）。恢复做法：卡片本身仍自适应，
+   但表单区/响应体各自内部滚动（滚动条隐藏与平台风格一致，滚轮/触控可用），
+   两卡内容框顶部由统一头部高度对齐。 */
+body.figma-ui-v717 .test-card-header {
+  min-height: 36px !important;   /* 请求/响应头部等高 → 下方内容框顶部对齐 */
+  align-items: center !important;
+}
+body.figma-ui-v717 .request-card .form-grid {
+  max-height: calc(100vh - 290px) !important;
+  overflow-y: auto !important;   /* 批量文本在表单区内滚动，不再顶开页面 */
+  overscroll-behavior: contain;
+}
+body.figma-ui-v717 .response-card .response-result-body {
+  max-height: calc(100vh - 290px) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+/* 响应区三操作按钮严格等高（2026-09-21 甲方反馈：下载/可视化/清除不等高——
+   .visual-btn 的 31px 旧规则与视觉层 38px 在不同构建下胜出方不同）：
+   统一显式高度 + 垂直居中，任何样式层竞争下恒等 */
+body.figma-ui-v717 .response-card-actions-v645 button,
+.response-card-actions-v645 button {
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* ── 请求/响应两内容框等高（2026-09-21 甲方定稿，叠在视觉层之上）──
+   视觉层把响应体定死 380px、请求表单弹性增长 → 两框高度不一致。
+   统一：两框同高（calc(100vh - 300px)）+ 各自内部滚动（滚动条隐藏，
+   滚轮可用）——响应结果再长也在框内滚，不再撑高/错位。 */
+body.figma-ui-v717 .request-card .form-grid,
+body.figma-ui-v717 .response-card .response-result-body {
+  height: calc(100vh - 300px) !important;
+  min-height: 320px !important;
+  max-height: calc(100vh - 300px) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+/* ── 文档面板代码框：滚动条隐藏（2026-09-21 甲方定稿：保持隐藏滚动条）── */
+body.figma-ui-v717 .code-box {
+  scrollbar-width: none;
+}
+body.figma-ui-v717 .code-box::-webkit-scrollbar { width: 0 !important; height: 0 !important; display: none !important; }
+/* 响应示例/响应结果 复制按钮不渲染（2026-09-21 甲方定稿：删除复制按钮） */
