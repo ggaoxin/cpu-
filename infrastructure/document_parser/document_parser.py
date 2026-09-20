@@ -33,22 +33,35 @@ def extract_abstract_text(text: str, doc_type: str = "zh_paper") -> str:
     中文：[【（]?摘要[】）]?[:：]? 到 关键词/中图分类号/引言 等边界；
     英文：## Abstract（markdown 标题）、Abstract:、ABSTRACT 到 Keywords/Introduction 边界。
     提取不到返回空串（调用方据此回退全文路径）。
+
+    实现约束（2026-09-21，KEGNER 甲方机器事故同步）：起点/终点标记各一次线性
+    search 后切片。禁止 (.+?)+DOTALL 全文惰性扫描——大 PDF 全文上回溯爆炸，
+    KEGNER（引擎复制自本库）曾致主线程满负荷卡死十余小时、健康检查连败数千次。
+    旧前瞻中的 ^## 因无 MULTILINE 只能在 pos 0 命中，而摘要起点必在其后，
+    恒为死分支，不再保留。新旧实现在 10 组形态样例上输出逐一等价。
     """
     full = text
     if doc_type == 'zh_paper':
-        m = re.search(r'[\[【（(]?\s*摘\s*要\s*[\]】）)]?\s*[:：]?\s*(.+?)(?=关键词|中图分类号|文献标识码|文献标志码|文章编号|Abstract|ABSTRACT|引言|0\s*引|^##)',
-                      full, re.DOTALL)
+        m = re.search(r'[\[【（(]?\s*摘\s*要\s*[\]】）)]?\s*[:：]?\s*', full)
         if m:
-            return m.group(1).strip()
-    m = re.search(r'##\s*(?:Abstract|ABSTRACT)[^\n]*\n\s*(.+?)(?=\n##\s|\n#\s|[\[【（(]?\s*(?:Key\s*words|Keywords|KEYWORDS|Index\s*Terms)|$)', full, re.DOTALL)
+            rest = full[m.end():]
+            s = re.search(r'关键词|中图分类号|文献标识码|文献标志码|文章编号|Abstract|ABSTRACT|引言|0\s*引', rest)
+            if s:
+                return rest[:s.start()].strip()
+    m = re.search(r'##\s*(?:Abstract|ABSTRACT)[^\n]*\n\s*', full)
     if m:
-        return m.group(1).strip()
-    m = re.search(r'(?:^|\n)Abstract\s*[.。:：]?\s*(.+?)(?=Keywords|Index Terms|Introduction|1\.|^##|$)', full, re.DOTALL)
-    if m:
-        return m.group(1).strip()
-    m = re.search(r'(?:^|\n)ABSTRACT\s*[.。:：]?\s*(.+?)(?=Keywords|Index Terms|1\s+INTRODUCTION|^##|$)', full, re.DOTALL)
-    if m:
-        return m.group(1).strip()
+        rest = full[m.end():]
+        s = re.search(r'\n#{1,2}\s|[\[【（(]?\s*(?:Key\s*words|Keywords|KEYWORDS|Index\s*Terms)', rest)
+        return (rest[:s.start()] if s else rest).strip()
+    for start, stop in (
+        (r'(?:^|\n)Abstract\s*[.。:：]?\s*', r'Keywords|Index Terms|Introduction|1\.'),
+        (r'(?:^|\n)ABSTRACT\s*[.。:：]?\s*', r'Keywords|Index Terms|1\s+INTRODUCTION'),
+    ):
+        m = re.search(start, full)
+        if m:
+            rest = full[m.end():]
+            s = re.search(stop, rest)
+            return (rest[:s.start()] if s else rest).strip()
     return ''
 
 
@@ -574,13 +587,13 @@ class DocumentParser:
 
         # 摘要+关键词（从表格提取）
         project_abstract_zh = self._clean_text(
-            self._extract_from_table(text, r'项目摘要.*?中文摘要\s*[:：]?\s*(.+?)(?:Abstract|英文摘要)', ''))
+            self._slice_from_table(text, r'项目摘要.*?中文摘要\s*[:：]?\s*', r'Abstract|英文摘要', ''))
         project_abstract_en = self._clean_text(
-            self._extract_from_table(text, r'项目摘要.*?Abstract\s*[:：]?\s*(.+?)(?:关键词|Keywords|NSFC)', ''))
+            self._slice_from_table(text, r'项目摘要.*?Abstract\s*[:：]?\s*', r'关键词|Keywords|NSFC', ''))
         completion_abstract_zh = self._clean_text(
-            self._extract_from_table(text, r'结题摘要.*?中文摘要.*?[:：]\s*(.+?)(?=Abstract|#|$)', ''))
+            self._slice_from_table(text, r'结题摘要.*?中文摘要.*?[:：]\s*', r'Abstract|#', ''))
         completion_abstract_en = self._clean_text(
-            self._extract_from_table(text, r'结题摘要.*?Abstract.*?[:：]\s*(.+?)(?=关键词|Keywords|#|$)', ''))
+            self._slice_from_table(text, r'结题摘要.*?Abstract.*?[:：]\s*', r'关键词|Keywords|#', ''))
 
         keywords_zh, keywords_en = [], []
         for m in re.finditer(r'关键词\s*（用分号分开）\s*[:：]\s*([^<\n]+?)(?:\s*Keywords|<|$)', text):
@@ -899,6 +912,17 @@ class DocumentParser:
     def _extract_from_table(text: str, pattern: str, default: str = '') -> str:
         m = re.search(pattern, text, re.DOTALL)
         return m.group(1).strip() if m else default
+
+    @staticmethod
+    def _slice_from_table(text: str, start: str, stop: str, default: str = '') -> str:
+        """起点/终点各一次线性 search 后切片（2026-09-21 防 ReDoS：与
+        extract_abstract_text 同型修复，替代 (.+?)+DOTALL 全文惰性扫描）。"""
+        m = re.search(start, text)
+        if not m:
+            return default
+        rest = text[m.end():]
+        s = re.search(stop, rest)
+        return (rest[:s.start()] if s else rest).strip()
 
     @staticmethod
     def _clean_text(text: str) -> str:
