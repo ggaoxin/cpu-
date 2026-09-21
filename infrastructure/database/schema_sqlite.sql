@@ -306,3 +306,8 @@ CREATE INDEX IF NOT EXISTS idx_clusters_result ON clusters(result_record_id);
 CREATE INDEX IF NOT EXISTS idx_cluster_labels_result ON cluster_labels(result_record_id);
 CREATE INDEX IF NOT EXISTS idx_review_nodes_result ON review_nodes(result_record_id);
 CREATE INDEX IF NOT EXISTS idx_feedback_result ON user_feedback(result_record_id, created_at);
+CREATE TABLE IF NOT EXISTS parse_store (
+    parse_id TEXT PRIMARY KEY, file_name TEXT NULL,
+    media_type TEXT NULL, text TEXT NULL,
+    created_at TEXT NULL, created_ts REAL NULL
+);

@@ -523,3 +523,9 @@ CREATE TABLE IF NOT EXISTS review_evidence_links (
     CONSTRAINT fk_review_evidence_result FOREIGN KEY (result_record_id) REFERENCES result_records(id),
     KEY idx_review_evidence_result (result_record_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS parse_store (
+    parse_id VARCHAR(64) PRIMARY KEY, file_name VARCHAR(500) NULL,
+    media_type VARCHAR(200) NULL, text LONGTEXT NULL,
+    created_at VARCHAR(40) NULL, created_ts DOUBLE NULL,
+    KEY idx_parse_store_created (created_ts)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

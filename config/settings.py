@@ -57,12 +57,16 @@ class Settings:
     )
     DATABASE_AUTO_CREATE: bool = os.getenv("DATABASE_AUTO_CREATE", "true").lower() == "true"
     DATABASE_REQUIRED: bool = os.getenv("DATABASE_REQUIRED", "false").lower() == "true"
-    ASYNC_WORKERS: int = max(1, int(os.getenv("ASYNC_WORKERS", "4")))
+    # 多 Worker 并发守恒（2026-09-21 甲方多 worker 改造）：进程级并发参数按
+    # worker 数整除——2 worker 下每进程 2/3，全局仍约 4/6，避免 GLM QPS 与
+    # 任务槽翻倍。WORKER_INDEX/WEB_CONCURRENCY 由启动脚本注入。
+    _WORKERS: int = max(1, int(os.getenv("WEB_CONCURRENCY", os.getenv("UVICORN_WORKERS", "1"))))
+    ASYNC_WORKERS: int = max(1, int(os.getenv("ASYNC_WORKERS", "4")) // _WORKERS)
     # 逐篇工具批量执行时单任务的 GLM 并发数上限；同时受进程级 _GLM_SEMAPHORE 约束，
     # 多个批量任务同时运行时全进程在途 GLM 调用总数不超过此值。
     # 实测单篇语步识别 GLM 约 3-5s；GLM QPS 通常 5-10，默认 6 偏保守。
     # 遇 429 限流下调到 3-4，QPS 充裕上调到 8-10。
-    GLM_MAX_CONCURRENCY: int = max(1, int(os.getenv("GLM_MAX_CONCURRENCY", "6")))
+    GLM_MAX_CONCURRENCY: int = max(1, int(os.getenv("GLM_MAX_CONCURRENCY", "6")) // _WORKERS)
 
     # ---- Web / 上传 ----
     CORS_ORIGINS: List[str] = [

@@ -19,7 +19,7 @@ fi
 
 echo "[3/4] FastAPI 后端(8000) ..."
 if ! curl -s -o /dev/null --max-time 3 http://127.0.0.1:8000/docs; then
-    cd "$(dirname "$0")/.." && setsid nohup python3 -m uvicorn presentation.main:app --host 0.0.0.0 --port 8000 > /root/autodl-tmp/backend.log 2>&1 &
+    cd "$(dirname "$0")/.." && WEB_CONCURRENCY="${BACKEND_WORKERS:-2}" setsid nohup python3 -m uvicorn presentation.main:app --workers "${BACKEND_WORKERS:-2}" --host 0.0.0.0 --port 8000 > /root/autodl-tmp/backend.log 2>&1 &
     for i in $(seq 1 20); do curl -s -o /dev/null --max-time 2 http://127.0.0.1:8000/docs && break; sleep 2; done
 fi
 curl -s -o /dev/null --max-time 3 http://127.0.0.1:8000/docs && echo "  后端 OK" || echo "  后端启动失败,查看 /root/autodl-tmp/backend.log"
