@@ -5100,6 +5100,11 @@ class SemanticApplicationService(ISemanticService):
         text = (request.text or "").strip()
         if not text:
             raise ValueError("引用句识别需提供 text 字段（文献全文）")
+        # 超长文封顶（2026-09-21 甲方 49MB txt：引用句识别面向文献正文引用区，
+        # 前 30 万字符（约 300 页）已完整覆盖，与 NER/定义封顶同口径）
+        if len(text) > 300000:
+            logger.warning("引用文本 %.1f 万字超 30 万上限，截取前 30 万字符处理", len(text) / 10000)
+            text = text[:300000]
 
         # PDF/MD 文件路径 → DocumentParser 提取全文
         if text.endswith(('.pdf', '.md')) and os.path.exists(text):
@@ -5987,6 +5992,12 @@ class SemanticApplicationService(ISemanticService):
 
         def _extract_defs(full_text: str) -> list:
             cleaned = self._clean_definition_text(full_text)
+            # 超长文封顶（2026-09-21 甲方 49MB txt：3600 万字按 5000 字/块切出
+            # 7000+ 块 → 逐块 GLM 调用数小时级；定义句集中在前部正文，截前 30 万字
+            # （60 块）与 NER 封顶同口径
+            if len(cleaned) > 300000:
+                logger.warning("概念定义文本 %.1f 万字超 30 万上限，截取前 30 万字符处理", len(cleaned) / 10000)
+                cleaned = cleaned[:300000]
             if not cleaned.strip():
                 return []
             chunks = self._definition_chunks(cleaned)
