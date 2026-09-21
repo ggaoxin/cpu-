@@ -860,7 +860,40 @@ function handleFileDrop(event: DragEvent, multiple: boolean) {
   processSelectedFiles(dropped.filter(file => allowed.test(file.name)), multiple)
 }
 
-function processSelectedFiles(files: File[], multiple: boolean, reset?: () => void) {
+// 上传内容体检（2026-09-22 用户定稿：前端选中即弹窗拦病态文件，后端 422 仍是
+// 最终权威——SDK/API 直连无前端）：空文件 / 魔数与扩展名不符（改名伪装）/
+// 纯空白 txt。选中瞬间本地校验，零网络往返，不合规文件不进上传列表。
+const BINARY_MAGICS_FRONT: Array<[string, string]> = [
+  ['PK\x03\x04', 'DOCX/压缩包'], ['%PDF', 'PDF'], ['\x89PNG', 'PNG 图片'],
+  ['\xFF\xD8\xFF', 'JPEG 图片'], ['GIF8', 'GIF 图片'], ['Rar!', 'RAR 压缩包'],
+]
+async function validateUploadContent(file: File): Promise<string | null> {
+  if (file.size === 0) return `「${file.name}」为空文件（0 字节），请检查文件是否有效`
+  const head = new Uint8Array(await file.slice(0, 1024).arrayBuffer())
+  const headText = new TextDecoder('latin1').decode(head)
+  const ext = file.name.split('.').pop()?.toLowerCase() || ''
+  if (ext === 'pdf') {
+    if (!headText.includes('%PDF-')) {
+      const disguised = BINARY_MAGICS_FRONT.find(([magic]) => headText.startsWith(magic))
+      const hint = disguised ? `（实为${disguised[1]}内容，疑似改名伪装）` : ''
+      return `「${file.name}」内容与扩展名不符：不是有效的 PDF 文件${hint}，请上传真实格式`
+    }
+  } else if (ext === 'docx') {
+    if (!headText.startsWith('PK\x03\x04')) {
+      return `「${file.name}」内容与扩展名不符：不是有效的 DOCX 文件，请上传真实格式`
+    }
+  } else if (ext === 'txt') {
+    const binary = BINARY_MAGICS_FRONT.find(([magic]) => headText.startsWith(magic))
+    if (binary) {
+      return `「${file.name}」是${binary[1]}文件（与 TXT 扩展名不符），请上传真实格式`
+    }
+    const sample = await file.slice(0, 65536).text()
+    if (!sample.trim()) return `「${file.name}」内容为空或仅空白字符，请检查文件`
+  }
+  return null
+}
+
+async function processSelectedFiles(files: File[], multiple: boolean, reset?: () => void) {
   // 单文件模式：一次只能上传一个文件——拖入多个直接报错，整个拒绝（不静默取第一个）
   if (!multiple && files.length > 1) {
     showToast(`只能同时上传一个文件：本次选择了 ${files.length} 个（${files.slice(0, 3).map(f => f.name).join('、')}${files.length > 3 ? ' 等' : ''}），请只选择一个`)
@@ -879,6 +912,15 @@ function processSelectedFiles(files: File[], multiple: boolean, reset?: () => vo
     showToast(`批量文件数量不能超过 ${MAX_BATCH_FILES} 个：当前已选 ${uploadedFiles.length} 个，本次又选择 ${files.length} 个`)
     reset?.()
     return
+  }
+  // 内容体检：空文件/改名伪装/纯空白在选择阶段本地拒绝（与后端 verify_content_magic 同口径）
+  const contentErrors = await Promise.all(files.map(file => validateUploadContent(file)))
+  const invalidMsgs = contentErrors.filter((msg): msg is string => !!msg)
+  if (invalidMsgs.length) {
+    showToast(invalidMsgs.length === 1 ? invalidMsgs[0] : `${invalidMsgs.length} 个文件不合规已拒绝：${invalidMsgs[0]}${invalidMsgs.length > 1 ? ' 等' : ''}`)
+    const validFiles = files.filter((_, i) => !contentErrors[i])
+    if (!validFiles.length) { reset?.(); return }
+    files = validFiles
   }
   requestError.value = ''
   // 问题4a（2026-09-20）：同名文件判重保留首个并弹窗（不允许上传多个同名文件），
@@ -980,10 +1022,51 @@ function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
   form.append('tool_id', props.toolId)
   form.append('files', item.file, item.name)
   xhr.open('POST', apiUrl('/api/v1/files/parse'))
+  // 网络中断反馈（2026-09-21 用户定稿简化版）：中断即提示「网络中断，请
+  // 耐心等待」（不失败，给恢复机会）；持续中断 10 秒 → 判死「上传失败，请
+  // 重新上传」。中断判定 = 浏览器 offline 或 上传阶段 10 秒零字节进展（上传
+  // 中的停滞）；解析阶段（等服务器，扫描件慢属正常）不受停滞判定影响，仅
+  // 15 分钟绝对上限（与提交路径超时对齐）。进度恢复自动撤销提示继续传
+  const startedAt = Date.now()
+  let lastActivity = Date.now()
+  const failNetwork = (reason: string) => {
+    if (item.parseState === 'uploading' || item.parseState === 'parsing') {
+      item.parseState = 'error'
+      item.parseError = reason
+      showToast(reason)
+      onDone()
+    }
+  }
+  xhr.onerror = () => failNetwork('上传失败，请重新上传')
+  let interruptSince = 0
+  const watchdog = setInterval(() => {
+    if (item.parseState !== 'uploading' && item.parseState !== 'parsing') return
+    const offline = !navigator.onLine
+    const stalled = item.parseState === 'uploading' && Date.now() - lastActivity > 10000
+    const interrupted = offline || stalled
+    if (interrupted && !interruptSince) {
+      interruptSince = Date.now()
+      showToast('网络中断，请耐心等待…')
+    } else if (!interrupted && interruptSince) {
+      interruptSince = 0  // 网络恢复：撤销中断计时，继续传，不打扰用户
+    } else if (interrupted && interruptSince && Date.now() - interruptSince >= 10000) {
+      clearInterval(watchdog)
+      try { xhr.abort() } catch { /* 已结束 */ }
+      failNetwork('上传失败，请重新上传')
+    } else if (item.parseState === 'parsing' && Date.now() - startedAt > 15 * 60 * 1000) {
+      clearInterval(watchdog)
+      try { xhr.abort() } catch { /* 已结束 */ }
+      failNetwork('解析超时（15 分钟），请重新测试')
+    }
+  }, 1000)
   xhr.upload.onprogress = event => {
+    lastActivity = Date.now()
     if (event.lengthComputable) item.parseProgress = Math.max(1, Math.round(event.loaded / event.total * 100))
   }
-  xhr.upload.onload = () => { item.parseState = 'parsing' }
+  xhr.upload.onload = () => {
+    window.removeEventListener('offline', offlineHandler)
+    item.parseState = 'parsing'
+  }
   xhr.onload = () => {
     try {
       const body = JSON.parse(xhr.responseText)
@@ -1000,11 +1083,7 @@ function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
       item.parseState = 'error'
       item.parseError = '解析响应异常'
     }
-    onDone()
-  }
-  xhr.onerror = () => {
-    item.parseState = 'error'
-    item.parseError = '网络错误，解析未完成'
+    clearInterval(watchdog)
     onDone()
   }
   xhr.send(form)

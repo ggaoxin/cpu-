@@ -400,6 +400,11 @@ def _detect_language(text: Any) -> str:
 _MOVE_CATEGORIES_EN = ["Background", "Objective", "Methods", "Results", "Conclusion"]
 
 
+# _move_char_range 去空白归一化的单槽缓存（键=源字符串对象 id+len），
+# 同一原文的重复定位只做一次逐字符归一化（见函数内注释）
+_NORM_CACHE: dict = {}
+
+
 def _move_char_range(abstract: str, text: str) -> tuple:
     """语步文本在摘要中的字符范围（与前端 charRange 同款两级匹配）。
 
@@ -410,12 +415,22 @@ def _move_char_range(abstract: str, text: str) -> tuple:
     idx = abstract.find(text)
     if idx >= 0:
         return idx, idx + len(text)
-    norm_chars, map_to_original = [], []
-    for i, ch in enumerate(abstract):
-        if not ch.isspace() and ch != "　":
-            norm_chars.append(ch)
-            map_to_original.append(i)
-    norm_abs = "".join(norm_chars)
+    # 去空白归一化按源文本缓存（id+len 双键防 id 复用）：同一次归一化里同一原文
+    # 会被多个语步/多句拼接反复定位，逐字符归一化 21M 级文本单次 ~4s，重复调用
+    # 累计几十分钟不返回（2026-09-22 49MB txt 卡死根因之一）；缓存后只算一次
+    global _NORM_CACHE
+    cached = _NORM_CACHE.get("src")
+    if cached is None or cached is not abstract or _NORM_CACHE.get("len") != len(abstract):
+        norm_chars, map_to_original = [], []
+        for i, ch in enumerate(abstract):
+            if not ch.isspace() and ch != "　":
+                norm_chars.append(ch)
+                map_to_original.append(i)
+        _NORM_CACHE = {"src": abstract, "len": len(abstract),
+                       "norm": "".join(norm_chars), "map": map_to_original}
+    # 固定读取单槽对象：async 批量线程可能并发重建全局缓存，避免 norm/map 跨版本错配
+    cache = _NORM_CACHE
+    norm_abs = cache["norm"]
     norm_text = "".join(ch for ch in text if not ch.isspace() and ch != "　")
     if not norm_text:
         return None, None
@@ -424,6 +439,7 @@ def _move_char_range(abstract: str, text: str) -> tuple:
         n_start = norm_abs.lower().find(norm_text.lower())
     if n_start < 0:
         return None, None
+    map_to_original = cache["map"]
     start_idx = map_to_original[n_start]
     last_idx = map_to_original[min(n_start + len(norm_text) - 1, len(map_to_original) - 1)]
     return start_idx, (last_idx if last_idx is not None else start_idx) + 1
@@ -610,6 +626,11 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
             abstract_text = str(document_data["abstract"])
         elif isinstance(payload.get("text"), str):
             abstract_text = payload["text"]
+        # 对齐源与引擎同口径截断 300k（preparsed 文件模式 payload.text 是全量解析文本，
+        # 49MB 级会到 21M 字符；引擎只处理了前 300k，语步文本在 300k 之外必然定位
+        # 失败——每次 miss 触发全文逐字符归一化（21M 约 4s），拼接兜底按句循环调用
+        # 累计几十分钟不返回，2026-09-22 zh-abstract-move 49MB 卡死根因）
+        abstract_text = abstract_text[:300000]
         for label in categories:
             text = raw.get(label)
             has_text = text not in (None, "")
@@ -680,6 +701,11 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     if not document.get("abstract"):
         document["abstract"] = (payload.get("text") or payload.get("project_document_text")
                                 or payload.get("abstract") or data.get("abstract") or "")
+        # 响应体积护栏：preparsed 文件模式 payload.text 是全量解析文本（49MB txt 达
+        # 21M 字符），整段回传前端会拖垮弹窗渲染与接口传输；定位对齐已在 300k 内
+        # 完成，此处与对齐源同口径截断（真实摘要远小于此，截断只影响病态超长输入）
+        if len(str(document["abstract"])) > 300000:
+            document["abstract"] = str(document["abstract"])[:300000]
     # 基金语步的原文片段来自申报书全文（文件模式下 abstract 只是摘要，匹配会大面积
     # 失败）：用引擎传出的内部全文（source_full_text，不进公开响应）作为高亮定位源
     if tool_id == "fund-move":

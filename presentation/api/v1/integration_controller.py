@@ -122,7 +122,7 @@ from config.settings import settings
 from config.tool_contracts import CONTRACTS
 from config.vue_contracts import get_vue_contract
 from infrastructure.database.task_repository import task_repository
-from infrastructure.document_parser.upload_reader import extract_uploads, save_uploads_to_temp
+from infrastructure.document_parser.upload_reader import extract_uploads, save_uploads_to_temp, verify_content_magic
 from presentation.api.base_controller import get_semantic_service
 
 router = APIRouter(tags=["Vue 集成接口"])
@@ -228,7 +228,8 @@ async def _llm_title_abstract_from_text(text: str) -> tuple[str, str]:
             "你是文献信息抽取专家。从给定文本片段中提取论文标题和摘要。"
             '只输出JSON：{"data":{"title":"","abstract":""}}；'
             "title 是论文题目（无题目返回空串，禁止编造）；abstract 是摘要原文"
-            "（逐字摘录，无摘要返回空串）。片段可能是正文中部，此时两者都可能为空。",
+            "（逐字摘录，无摘要返回空串）。片段可能是正文中部，此时两者都可能为空；"
+            "整段文本本身若是纯摘要（无其他结构），abstract 返回全文。",
             f"文本片段：\n{head}", timeout=60.0, max_tokens=2000)
         out = out.get("data", out) if isinstance(out, dict) else {}
         title = str(out.get("title") or "").strip()[:200]
@@ -244,32 +245,109 @@ async def _llm_title_abstract_from_text(text: str) -> tuple[str, str]:
         return "", ""
 
 
-async def _abstract_text_from_plain(tmp_path: str, filename: str) -> tuple[str, str]:
-    """".txt/.docx/.md 等纯文本格式的摘要提取:整文即候选文本。
+_JUNK_CHARS_RE = re.compile(r"[​‌‍⁠﻿ ]")  # 零宽/BOM/nbsp
 
-    短文（≤2000 字）通常就是用户准备的摘要文本，整文直接作摘要；
-    长文（全文）用 DocumentParser.parse_text 按中文论文结构（标题/摘要：/关键词：）
-    提取标题与摘要，未命中时截前 2000 字兜底。
+
+def _clean_extracted_title(title: str) -> str:
+    """提取结果清洗·标题：去 markdown 标记/零宽字符/BOM/首尾杂标点。"""
+    t = _JUNK_CHARS_RE.sub("", title or "")
+    t = re.sub(r"^[#\s>*\-•]+", "", t)           # 行首 #/列表/引用标记
+    t = re.sub(r"[*_`]{1,3}", "", t)             # 强调符号
+    t = re.sub(r"\s+", " ", t).strip()
+    t = t.strip(" ：:，,。；;、—-|")
+    return t[:200]
+
+
+def _clean_extracted_abstract(abstract: str) -> str:
+    """提取结果清洗·摘要：去图片引用/图表注/独立行页码/残留"摘要："标签/零宽字符。"""
+    a = _JUNK_CHARS_RE.sub("", abstract or "")
+    a = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", a)                          # ![](images/..)
+    a = re.sub(r"(?m)^(?:Figure|Fig\.?|Table|图|表)\s*\d+\s*[：:].*$", "", a)  # 图表注整行
+    a = re.sub(r"(?m)^\s*[-–—]?\s*\d{1,4}\s*[-–—]?\s*$", "", a)        # 独立行页码
+    a = re.sub(r"^[\[【（(]?\s*(?:摘\s*要|Abstract|ABSTRACT)\s*[\]】）)]?\s*[:：]?\s*",
+               "", a)                                                    # 残留摘要标签（仅开头）
+    a = re.sub(r"[ \t]+", " ", a)
+    a = re.sub(r"\n{3,}", "\n\n", a)
+    return a.strip()
+
+
+async def _llm_judge_title_abstract(text: str, cand_title: str, cand_abstract: str) -> tuple[str, str]:
+    """LLM 判定规则提取的候选是否真是标题/摘要；不 ok/缺失的项从原文逐字重提。
+
+    「提取+校验+自愈」闭环（2026-09-22 用户定稿，与 PDF 快速路径同哲学）：
+    规则可能有误命中（期刊页眉/作者行被当标题、"摘要"字样出现在正文中），
+    由 LLM 语义判定兜住。LLM 调用失败时原样返回候选（规则为主，不阻断解析）。
     """
-    from infrastructure.document_parser.upload_reader import extract_bytes
+    head = text[:8000]
+    # 门槛只挡"短到无结构可言"的输入（<50 字纯短语）；此前沿用的 <200 字门槛
+    # 会放过约 200 字的短全文（标题+摘要+关键词），期刊页眉误命中就无人兜底了
+    if len(head.strip()) < 50:
+        return cand_title, cand_abstract
+    if not cand_title and not cand_abstract:
+        return await _llm_title_abstract_from_text(text)
+    cand_block = (
+        "\n规则提取候选：\n"
+        f"标题：{cand_title or '（无）'}\n"
+        f"摘要：{(cand_abstract or '（无）')[:800]}\n")
     try:
-        text = extract_bytes(Path(tmp_path).read_bytes(), filename).strip()
-    except ValueError:
-        raise
+        from infrastructure.llm.glm_client import glm_client
+        out = glm_client.chat_json(
+            "你是文献结构判定专家。给定文本片段与规则提取的候选标题/摘要。"
+            "判定候选是否真是论文标题/摘要（title_ok/abstract_ok，布尔）："
+            "标题应是论文题目，而非期刊名/卷期页眉/作者行/章节名；"
+            "摘要应是摘要段，而非正文/关键词列表/参考文献。"
+            "任何候选不 ok 或缺失时，必须从文本片段中逐字摘录正确的标题与摘要"
+            "（无则返回空串，禁止编造；整段文本本身若是纯摘要，abstract 返回全文）。"
+            + cand_block
+            + '只输出JSON：{"title_ok":true,"abstract_ok":true,"title":"","abstract":""}',
+            f"文本片段：\n{head}", timeout=60.0, max_tokens=3000)
+        out = out.get("data", out) if isinstance(out, dict) else {}
+        title_ok = bool(out.get("title_ok"))
+        abstract_ok = bool(out.get("abstract_ok"))
+        # 候被判可信 → 原样保留规则结果；不可信 → 用 LLM 逐字重提的值
+        final_title = cand_title if (title_ok and cand_title) else str(out.get("title") or "").strip()[:200]
+        final_abstract = cand_abstract if (abstract_ok and cand_abstract) else str(out.get("abstract") or "").strip()[:6000]
+        # 防幻觉硬校验（LLM 重提的值）：标题须在原文出现（空白不敏感），
+        # 摘要须是原文子串（空白不敏感）——不通过则退回候选值
+        import re as _re_k
+        _norm = _re_k.sub(r"\s+", "", text[:20000].casefold())
+        if final_title and not cand_title == final_title:
+            if _re_k.sub(r"\s+", "", final_title.casefold()) not in _norm:
+                final_title = cand_title
+        if final_abstract and final_abstract != cand_abstract:
+            if _re_k.sub(r"\s+", "", final_abstract.casefold())[:2000] not in _norm:
+                final_abstract = cand_abstract
+        return final_title, final_abstract
+    except Exception:  # noqa: BLE001 - LLM 判定失败退回规则结果
+        return cand_title, cand_abstract
+
+
+async def _plain_abstract_title(text: str) -> tuple[str, str]:
+    """纯文本（已解析出的全文）→ (摘要, 标题)。
+
+    主规则 + LLM 判定兜底（2026-09-22 用户定稿）：
+    ① 正则结构切（摘要：/关键词：/Abstract: 边界）——确定性、零成本；
+       删除了"≤2000 字整文即摘要"的字数硬规则（长度判断不了语义）
+    ② LLM 判定候选真伪（期刊页眉/作者行误命中兜住），不 ok/缺失项从原文
+       前 8000 字逐字重提；无候选时退化为纯 LLM 提取
+    ③ 两者皆空 → 前 2000 字硬兜底
+    出口统一过清洗（_clean_extracted_title/_abstract 去符号杂质）。
+    """
+    text = (text or "").strip()
     if not text:
         return "", ""
-    if len(text) <= 2000:
-        return text, ""
+    # ① 主规则：结构标记正则切（确定性、零成本；带"摘要：/关键词："标记的文本
+    #    一律走此路径。不再用"≤2000 字整文即摘要"的字数硬规则——长度判断不了
+    #    语义：1500 字短全文会被整篇当摘要、无标记纯摘要会依赖碰运气的截断）
+    abstract, title = "", ""
     try:
         from infrastructure.document_parser.document_parser import DocumentParser
         # 结构解析输入封顶前 20 万字符（2026-09-21 甲方49MB txt 报502排查：
-        # parse_text 全量正则在 3600 万字符上耗 5.6s+，慢 CPU 成倍放大且内存
-        # 高位停留；摘要/标题必在文首，截前 20 万字实测 0.03s 结果一致）
+        # parse_text 全量正则在 3600 万字符上耗 5.6s+；摘要/标题必在文首）
         parsed = DocumentParser().parse_text(text[:200000])
         abstract = (parsed.get("abstract") or "").strip()
         title = (parsed.get("title") or "").strip()
-        # 期刊页眉/刊头行不是论文标题（实测《Information & Computer》2026年第3期
-        # 被当标题）——命中期刊特征视为无标题，交给 LLM 兜底提取真题目
+        # 期刊页眉/刊头行不是论文标题——命中期刊特征视为无标题，交给 LLM 补
         import re as _re_j
         if title and _re_j.search(
             r'(?:《[^》]*》|网络首发|首发论文|Vol\.?\s*\d|No\.\s*\d|第\d+期|'
@@ -277,13 +355,21 @@ async def _abstract_text_from_plain(tmp_path: str, filename: str) -> tuple[str, 
             title = ""
     except Exception:  # noqa: BLE001
         abstract, title = "", ""
-    # 规则未命中（乱格式无 # 标题/无"摘要："标记）→ 大模型前 8000 字兜底
-    # 提取标题与摘要（规则命中的字段优先，LLM 只补缺失项）
-    if not title or not abstract:
-        llm_title, llm_abstract = await _llm_title_abstract_from_text(text)
-        title = title or llm_title
-        abstract = abstract or llm_abstract
-    return (abstract or text[:2000]), title
+    # ② LLM 判定+兜底：候选交 LLM 判真伪（规则误命中由此兜住）；
+    #    无候选（无标记纯摘要/乱格式）时退化为纯 LLM 逐字提取
+    title, abstract = await _llm_judge_title_abstract(text, title, abstract)
+    # ③ 硬兜底：规则与 LLM 都未命中（正文片段/乱文本）截前 2000 字保证工具可跑
+    return _clean_extracted_abstract(abstract or text[:2000]), _clean_extracted_title(title)
+
+
+async def _abstract_text_from_plain(tmp_path: str, filename: str) -> tuple[str, str]:
+    """".txt/.docx/.md 等纯文本格式的摘要提取（文件版，读出文本后委托 _plain_abstract_title）。"""
+    from infrastructure.document_parser.upload_reader import extract_bytes
+    try:
+        text = extract_bytes(Path(tmp_path).read_bytes(), filename)
+    except ValueError:
+        raise
+    return await _plain_abstract_title(text)
 
 
 def _extract_abstract_via_pymupdf(tmp_path: str) -> tuple[str, str]:
@@ -419,6 +505,10 @@ async def _abstract_text(processor, tmp_path: str, content: bytes | None = None,
     suffix = Path(filename or "").suffix.lower()
     if suffix and suffix != ".pdf":
         return await _abstract_text_from_plain(tmp_path, filename)
+    # 改名伪装校验（2026-09-22）：.pdf 直传此 PDF 管线不经 extract_bytes，
+    # DOCX 改名 .pdf 会被 mineru 按内容自动识别而静默"成功"
+    with open(tmp_path, "rb") as _f:
+        verify_content_magic(filename or "upload.pdf", _f.read(1024))
     if settings.PDF_EXTRACT_MODE == "light":
         abstract = await asyncio.to_thread(_extract_abstract_via_rules, tmp_path)
         if not abstract:
@@ -1304,6 +1394,10 @@ async def parse_files(
             content = await upload.read(_maximum + 1)
             if len(content) > _maximum:
                 raise ValueError(f"文件 {upload.filename} 超过 {_limit_mb}MB 限制")
+            # 改名伪装文件显式拒绝（2026-09-22）：mineru 按内容自动识别真实格式，
+            # DOCX 改名 .pdf 会被静默"成功"解析——pdf 直送 mineru 分支不走
+            # extract_bytes，必须在分发前校验
+            verify_content_magic(upload.filename or "", content)
             name = upload.filename or "upload.pdf"
             if not name.lower().endswith(".pdf") or effective_tool in PYMUPDF_TOOLS:
                 # 非 PDF 或 PyMuPDF 专用工具（基金/定义/聚类/综述）：直接走
@@ -1390,8 +1484,21 @@ async def parse_files(
                         rebuilt, max_size_mb=_limit_mb, light=settings.should_use_light(effective_tool)))
             if _other:
                 rebuilt2 = [await _rebuild(f[0], f[1], f[3]) for f in _other]
-                parsed_pairs.extend(await extract_uploads(
-                    rebuilt2, max_size_mb=_limit_mb, light=settings.should_use_light(effective_tool)))
+                _pairs = await extract_uploads(
+                    rebuilt2, max_size_mb=_limit_mb, light=settings.should_use_light(effective_tool))
+                # 摘要语步工具的 txt/docx/md 此前存的是全量全文（2026-09-22 修复：
+                # 49MB txt → parse_store 21.5M 字 → 提交时整篇当"摘要"送引擎，
+                # 6183 句/语步数万字进结果）。PDF 走 _extract_abstract_fast，
+                # 非 PDF 也须同口径只存摘要。
+                if is_abstract_tool:
+                    for _p in _pairs:
+                        if _p.get("text"):
+                            _ab, _ti = await _plain_abstract_title(str(_p["text"]))
+                            if _ab:
+                                _p["text"] = _ab
+                            if _ti:
+                                _p["title"] = _ti
+                parsed_pairs.extend(_pairs)
     except (ValueError, RuntimeError, OSError) as exc:
         return JSONResponse(status_code=422, content={"code": 42201, "message": str(exc)})
     finally:
@@ -1490,6 +1597,20 @@ def _file_endpoint(tool_id: str, multiple: bool):
                 } for item in _ps.take_many(parse_ids)]
             except ValueError as exc:
                 raise HTTPException(status_code=422, detail=str(exc)) from exc
+            # 摘要语步工具 preparsed 路径同款「只送纯摘要」提取（2026-09-22 修复）：
+            # 此前仅直传分支做提取，前端上传→preparsed 提交把整篇全文当"摘要"送引擎，
+            # 49MB 级文件前 300k 全进结果（6183 句、语步文本数万字、document.abstract
+            # 30 万字符直传前端拖死弹窗）。parse 阶段已提取的新 parse_id 文本就是摘要，
+            # 只有老 parse_id（存的全量全文，>2000 字）才需要在提交侧补提取。
+            if tool_id in ABSTRACT_MOVE_TOOLS:
+                for item in extracted:
+                    _t = str(item.get("text") or "")
+                    if _t and len(_t) > 2000:
+                        _ab, _ti = await _plain_abstract_title(_t)
+                        if _ab:
+                            item["text"] = _ab
+                        if _ti:
+                            item["title"] = _ti
             # 批量预解析提交支持异步（2026-09-09 实时进度需求）：Prefer: respond-async
             # → submit 立即返回 task_id，前端轮询 /tasks/{id}/progress，终态取
             # /tasks/{id}/vue-result（与同步响应同构）。此前 preparsed 分支提前

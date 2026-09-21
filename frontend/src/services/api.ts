@@ -144,6 +144,11 @@ export async function executeToolRequest(
     if (error instanceof DOMException && error.name === 'TimeoutError') {
       throw new ApiRequestError('请求超时（15 分钟）：任务未在时限内完成，请减少批量规模后重试', 408, null)
     }
+    // 网络中断（fetch 抛 TypeError: Failed to fetch）→ 明确中文提示，响应区
+    // 显示"网络中断请重新测试"而非静默挂起/恢复后自动返回（2026-09-21 用户定稿）
+    if (error instanceof TypeError || !navigator.onLine) {
+      throw new ApiRequestError('网络中断，请重新测试', 0, null)
+    }
     throw error
   }
 }

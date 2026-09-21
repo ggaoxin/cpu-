@@ -598,6 +598,11 @@ class SemanticApplicationService(ISemanticService):
         abstract = user_payload.get("text", "")
         if not abstract:
             raise ValueError("语步识别需提供 text 字段（单篇摘要）")
+        # 超长输入兜底：49MB 级纯文本整篇作"摘要"单次直送 GLM → 1261/1210。
+        # 300k 与 NER/概念定义/引用识别同口径（实测单次调用可通过），真实摘要
+        # 远小于此，截断只影响病态超长输入。
+        if len(abstract) > 300000:
+            abstract = abstract[:300000]
         # 清洗代码仓库地址/URL/邮箱（2026-09-09 需求：不属于任何语步）。
         # 与 result_normalizer 的句子对齐共用同一口径（strip_non_move_artifacts），
         # 避免"service 已清、normalizer 按原文重对齐又拼回"。
@@ -1204,7 +1209,7 @@ class SemanticApplicationService(ISemanticService):
                 title = (obj.get("ch_name") or obj.get("en_name")
                          or obj.get("title") or "")
                 abstract = (obj.get("ch_abstract") or obj.get("en_abstract")
-                            or obj.get("abstract") or "")
+                            or obj.get("abstract") or "")[:12000]
                 kws = obj.get("keywords", []) or []
                 keywords = [(k.get("en_name") or k.get("ch_name") or "") if isinstance(k, dict) else k
                             for k in kws]
@@ -1220,7 +1225,7 @@ class SemanticApplicationService(ISemanticService):
                     else:
                         abstract = abstract or generic_text
             except _json.JSONDecodeError:
-                abstract = text
+                abstract = text[:12000]  # 摘要上限（49MB txt 整篇成"摘要"直送 GLM → 1261）
         elif text and os.path.exists(text) and text.lower().endswith(('.pdf', '.md')):
             # 文件路径 → MinerU全文
             from infrastructure.document_parser.mineru_reader import process_to_text
@@ -1242,7 +1247,7 @@ class SemanticApplicationService(ISemanticService):
             if parsed:
                 title, abstract, keywords = parsed["title"], parsed["abstract"], parsed["keywords"]
             else:
-                abstract = text
+                abstract = text[:12000]  # 摘要上限（49MB txt 整篇成"摘要"直送 GLM → 1261）
                 # 纯文本全文（MinerU 失败回退 pypdf 的 PDF 全文，无 ## 标题行 → 落到本分支）：
                 # 文本足够长且多行才视作全文，从首部提取论文题目，避免 document_title 落空
                 # 回退到文件名（前端批量 recordsOf 在 document_title 为空时显示 item.file_name）。
@@ -1837,6 +1842,14 @@ class SemanticApplicationService(ISemanticService):
                 mine_source = ((title or "") + "\n" + abstract).strip()
             elif _llm_title:
                 title = _llm_title
+        # 超长输入兜底：纯文本路径 _split_title_abstract 会把 49MB 级整篇成
+        # "摘要/挖掘源"单次直送 GLM → 1261/1210。信号源统一截断 300k（与
+        # NER/概念定义/引用识别同口径，实测单次调用可通过）；下方 searchable_text
+        # 优先取 full_text/paste_full_text，字面校验仍尽可能面向全文。
+        if len(abstract or "") > 300000:
+            abstract = abstract[:300000]
+        if len(mine_source or "") > 300000:
+            mine_source = mine_source[:300000]
         title = (title or "").lstrip('#').strip()
         # 原词校验/排序定位面向全文（不限定摘要段；关键词可出自全文任意位置）——
         # 摘要优先只收窄"挖掘与 LLM 的信号源"，不收窄字面校验范围
@@ -1898,8 +1911,12 @@ class SemanticApplicationService(ISemanticService):
         # 词挤掉摘要词"——现有 fitness 轮 + 词表防线双兜底，泛意词进池也会被拦。
         if searchable_text and len(searchable_text) > len(mine_source) + 200:
             try:
-                _full_c = (mine_candidates(searchable_text) if is_en
-                           else mine_candidates(title, searchable_text))
+                # 全文挖掘输入封顶 300k（与信号源同口径）：挖掘目的是补低频核心术语，
+                # 前 300k 已覆盖任何真实文献全文；49MB 级病态输入全量挖掘实测 jieba
+                # 365s（2026-09-22 zh关键词 40MB 超 120s 根因）。字面校验仍面向全文。
+                _mine_full = searchable_text[:300000]
+                _full_c = (mine_candidates(_mine_full) if is_en
+                           else mine_candidates(title, _mine_full))
                 _full_c = score_candidates(_full_c, model.get("feature_weights", {}))
                 _lx_en, _lx_zh = _keyword_lexicon("en"), _keyword_lexicon("zh")
                 _seen = {c["phrase"] for c in cands}
@@ -3843,6 +3860,11 @@ class SemanticApplicationService(ISemanticService):
         # 兜底（spans 未命中时归「全文」而非「摘要」）
         if _json_spans:
             full_text = abstract
+        # 超长输入兜底截断：49MB 级纯文本整篇成"摘要"直送 GLM → 1261 Prompt 超长；
+        # 全文路径已在上方按 8000 截断，此处对剩余路径（纯摘要/JSON/章节文本）统一同口径，
+        # 字面校验与 start/end 偏移均面向同一截断文本（与全文路径口径一致）
+        if len(abstract) > 8000:
+            abstract = abstract[:8000]
         lang = (request.params or {}).get("lang", getattr(rule, "lang", "") or "zh")
         system_prompt = self._system_prompt(rule, request, lang)
         is_en = lang == "en"

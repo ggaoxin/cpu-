@@ -18,6 +18,17 @@ else
 fi
 
 echo "[3/4] FastAPI 后端(8000) ..."
+# RESTART_BACKEND=1: 强制重启后端。多 worker 模式下 uvicorn 父进程被 kill 后,
+# spawn 出的子进程会以孤儿进程继续占着 8000 端口跑旧代码(表现为"改了代码不生效"、
+# 502),必须按端口把父+子进程全部清掉再启动。
+if [ "${RESTART_BACKEND:-0}" = "1" ]; then
+    PIDS=$(ss -ltnp 2>/dev/null | awk '/:8000 /{print $NF}' | grep -o 'pid=[0-9]*' | cut -d= -f2 | sort -u)
+    if [ -n "$PIDS" ]; then
+        echo "  清理 8000 端口旧进程: $PIDS"
+        kill -9 $PIDS 2>/dev/null || true
+        sleep 2
+    fi
+fi
 if ! curl -s -o /dev/null --max-time 3 http://127.0.0.1:8000/docs; then
     cd "$(dirname "$0")/.." && WEB_CONCURRENCY="${BACKEND_WORKERS:-2}" setsid nohup python3 -m uvicorn presentation.main:app --workers "${BACKEND_WORKERS:-2}" --host 0.0.0.0 --port 8000 > /root/autodl-tmp/backend.log 2>&1 &
     for i in $(seq 1 20); do curl -s -o /dev/null --max-time 2 http://127.0.0.1:8000/docs && break; sleep 2; done

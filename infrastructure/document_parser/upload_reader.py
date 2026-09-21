@@ -33,6 +33,36 @@ def _decode(content: bytes) -> str:
 _BINARY_MAGICS = (b"PK\x03\x04", b"%PDF", b"\x89PNG", b"\xd0\xcf\x11\xe0",
                   b"\xff\xd8\xff", b"GIF8", b"7z\xbc\xaf", b"Rar!")
 
+# 格式专属魔数：扩展名与内容一致性校验用（2026-09-22）
+_PDF_MAGIC = b"%PDF-"
+_ZIP_MAGIC = b"PK\x03\x04"
+
+
+def verify_content_magic(filename: str, content: bytes) -> None:
+    """上传文件体检（2026-09-22 用户测试项：0 字节 PDF 静默成功、DOCX 伪装 .pdf
+    静默成功——同类问题按 格式×病态内容 全矩阵统一拦截，不只修单一格式）。
+
+    ① 空文件（0 字节/纯空白）——全格式拒绝（mineru 等解析器按内容自动识别，
+       改名/空文件会被"正常"解析出文本或空结果，属静默错误）；
+    ② 扩展名与魔数不符——.pdf 头部 1024 字节内须有 %PDF-；.docx/.xlsx 须为
+       ZIP 头（PK）。.txt 等纯文本的二进制伪装由 _plain_text_guard 负责。
+    """
+    suffix = Path(filename or "").suffix.lower()
+    if not content or not content.strip():
+        raise ValueError(
+            f"文件 {filename} 为空文件（0 字节或仅空白字符），无法解析；请上传有效文件")
+    if suffix == ".pdf":
+        if _PDF_MAGIC not in content[:1024]:
+            kind = "DOCX/压缩包" if content[:4] == _ZIP_MAGIC else "非 PDF"
+            raise ValueError(
+                f"文件 {filename} 内容与扩展名不符（实为{kind}内容），已拒绝；"
+                "请上传真实格式的文件")
+    elif suffix in (".docx", ".xlsx"):
+        if not content.startswith(_ZIP_MAGIC):
+            raise ValueError(
+                f"文件 {filename} 内容与扩展名不符（不是有效的 "
+                f"{suffix.upper()[1:]} 文件），已拒绝；请上传真实格式的文件")
+
 
 def _plain_text_guard(content: bytes, text: str, filename: str) -> None:
     """纯文本类文件（.txt/.md/.json/.csv/.jsonl）损坏检测（2026-09-20 用户定调：
@@ -380,6 +410,7 @@ def extract_bytes(content: bytes, filename: str, *, light: bool | None = None) -
     suffix = Path(filename or "upload.txt").suffix.lower()
     if suffix not in SUPPORTED_EXTENSIONS:
         raise ValueError(f"不支持的文件格式：{suffix or '无扩展名'}")
+    verify_content_magic(filename, content)  # 改名伪装文件显式拒绝（2026-09-22）
     if suffix == ".pdf":
         # light=None 跟全局 PDF_EXTRACT_MODE；light=True 走 PyMuPDF 直抽（纯文本工具轻量），
         # 扫描件/抽空时回退 _pdf_text（mineru OCR）；light=False 强制 mineru（强结构工具）
@@ -488,6 +519,32 @@ async def extract_uploads(uploads: Iterable[UploadFile], max_size_mb: int | None
     return await asyncio.gather(*[extract_one(*i) for i in items])
 
 
+def _structural_probe(filename: str, path: str) -> None:
+    """落盘后结构自检（2026-09-22）：魔数合法但内容损坏的文件（%PDF- 头+垃圾/
+    假 zip），直传延迟解析路径（PATH_PASSTHROUGH 落盘、引擎内才解析）此前要到
+    引擎深处才失败——前端只看到 50001 "failed" 无原因。上传期即验证结构，
+    与 extract_bytes 立即解析的路径同口径给出可读报错。"""
+    suffix = Path(filename or "").suffix.lower()
+    try:
+        if suffix == ".pdf":
+            import pymupdf
+            with pymupdf.open(path):
+                pass
+        elif suffix == ".docx":
+            import zipfile
+            if not zipfile.is_zipfile(path) or \
+                    "word/document.xml" not in zipfile.ZipFile(path).namelist():
+                raise ValueError("缺少 word/document.xml（非 Word 文档结构）")
+    except ValueError:
+        raise ValueError(
+            f"文件 {filename} 无法解析，可能已损坏或不是有效的"
+            f"{suffix.upper()[1:] if suffix else ''} 文件；请重新上传或更换格式")
+    except Exception as exc:  # noqa: BLE001 - pymupdf/zip 各类损坏报错统一收口
+        raise ValueError(
+            f"文件 {filename} 无法解析，可能已损坏或不是有效的"
+            f"{suffix.upper()[1:] if suffix else ''} 文件（{str(exc)[:60]}）；请重新上传或更换格式") from exc
+
+
 async def save_uploads_to_temp(uploads: Iterable[UploadFile], max_size_mb: int | None = None) -> List[Dict[str, str]]:
     """把上传文件原样落盘为临时文件，返回路径（不预解析文本）。
 
@@ -505,10 +562,12 @@ async def save_uploads_to_temp(uploads: Iterable[UploadFile], max_size_mb: int |
         content = await upload.read(maximum + 1)
         if len(content) > maximum:
             raise ValueError(f"文件 {upload.filename} 超过 {limit_mb}MB 限制")
+        verify_content_magic(upload.filename or "", content)  # 落盘前校验（2026-09-22）
         suffix = Path(upload.filename or "upload.pdf").suffix or ".pdf"
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
             tmp.write(content)
             tmp_path = tmp.name
+        _structural_probe(upload.filename or "", tmp_path)  # 损坏结构上传期即拒（2026-09-22）
         results.append({
             "file_name": upload.filename or "upload",
             "media_type": upload.content_type or "application/octet-stream",
