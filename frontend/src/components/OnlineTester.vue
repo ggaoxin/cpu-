@@ -5,6 +5,8 @@ import { endpointFor, modesFor, pretty, requestPayloadFor, supportsVisualization
 import { ApiRequestError, apiUrl, executeToolRequest, listCompatibleHistory, listDictionaries, listClusterCollections, listDocumentCollections, listSemanticResources, parseCitationMetadata, saveDictionary } from '../services/api'
 import { requirementInputsFor } from '../data/requirement-contracts'
 import { copyText } from '../utils/clipboard'
+import trashIconUrl from '../assets/the-trash.svg'
+import runIconUrl from '../assets/kb.svg'
 import ModeSwitch from './ModeSwitch.vue'
 import RequirementSupplement from './RequirementSupplement.vue'
 
@@ -1427,8 +1429,8 @@ function downloadResult() {
       </transition>
     </Teleport>
     <div class="section-header">
-      <div class="test-header-left"><h2 class="section-title">在线测试</h2><span class="pill ready">{{ running ? '执行中' : '就绪' }}</span></div>
-      <button class="primary-btn" type="button" :disabled="running || !!clusterCountError" :title="clusterCountError || undefined" @click="run">{{ running ? '正在测试…' : '▶ 在线测试' }}</button>
+      <div class="test-header-left"><h2 class="section-title">在线测试</h2><span class="pill ready"><i aria-hidden="true"></i>{{ running ? '执行中' : '就绪' }}</span></div>
+      <button class="primary-btn online-test-run-btn" type="button" :disabled="running || !!clusterCountError" :title="clusterCountError || undefined" @click="run"><img v-if="!running" :src="runIconUrl" class="online-test-run-icon" alt="" aria-hidden="true" /><span>{{ running ? '正在测试…' : '在线测试' }}</span></button>
     </div>
     <div class="test-panel">
       <div class="test-card request-card">
@@ -1699,7 +1701,7 @@ function downloadResult() {
 
       <div class="test-card response-card">
         <div v-if="languageMismatch" class="info-banner warning" style="margin:0 0 10px"><b>语言不匹配提示</b><span>{{ languageMismatch }}</span></div>
-        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="downloadResult">⇩ 下载结果</button><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)">▦ 查看可视化结果</button><button id="clearBtn" class="ghost-btn" @click="clearResult">⌫ 清除结果</button></div></div>
+        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="downloadResult">⇩ 下载结果</button><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)">▦ 查看可视化结果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><img :src="trashIconUrl" class="clear-result-icon" alt="" aria-hidden="true" />清除结果</button></div></div>
         <div class="response-result-body hover-copy-box"><pre v-if="hasResult" class="console">{{ pretty(result) }}</pre><div v-else-if="running && runProgress" class="console live-progress"><div class="lp-summary"><b>正在处理 {{ runProgress.total }} 篇</b><span>已完成 {{ runProgress.success_count + runProgress.failed_count }}/{{ runProgress.total }}（成功 {{ runProgress.success_count }}<template v-if="runProgress.failed_count">，失败 {{ runProgress.failed_count }}</template>）· 累计 {{ runProgress.elapsed }}s</span></div><div class="lp-rows"><div v-for="it in runProgress.items" :key="it.index" class="lp-row" :data-st="it.status"><i>{{ it.index + 1 }}</i><span class="lp-name" :title="it.file_name">{{ it.file_name }}</span><template v-if="it.status === 'succeeded'"><b class="lp-ok">✓</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template><template v-else-if="it.status === 'failed'"><b class="lp-err">✗</b><span class="lp-time">失败</span></template><template v-else><b class="lp-run">…</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template></div></div></div><div v-else-if="requestError" class="console placeholder request-error">{{ requestError }}</div><div v-else class="console placeholder">等待测试执行...</div></div>
       </div>
     </div>

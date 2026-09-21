@@ -44,7 +44,7 @@ async function copyWithToast(value: string, name: string) { try { await copyText
 
   <section class="section">
     <div class="section-header"><h2 class="section-title">请求参数</h2></div>
-    <div class="table-card"><table><thead><tr><th style="width:24%">参数名</th><th style="width:14%">类型</th><th style="width:12%">必填</th><th>说明</th></tr></thead>
+    <div class="table-card request-params-table"><table><thead><tr><th style="width:24%">参数名</th><th style="width:14%">类型</th><th style="width:12%">必填</th><th>说明</th></tr></thead>
       <tbody><tr v-for="row in parameterRows" :key="row[0]"><td><code>{{ row[0] }}</code></td><td>{{ row[1] }}</td><td><span class="pill" :class="row[2]">{{ row[2] === 'required' ? '必填' : row[2] === 'conditional' ? '条件必填' : '选填' }}</span></td><td>{{ row[3] }}</td></tr></tbody>
     </table></div>
   </section>

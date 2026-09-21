@@ -1544,22 +1544,74 @@ body.figma-ui-v717 .main-card {
   flex: 0 0 auto !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
-  scrollbar-width: none !important;
+  scrollbar-width: auto !important;
   background: var(--platform-card-bg) !important;
   border: 1px solid #f0f0f0 !important;
   border-radius: 8px !important;
   box-shadow: none !important;
 }
 
-body.figma-ui-v717 .main-card::-webkit-scrollbar {
-  width: 0 !important;
-  height: 0 !important;
-  display: none !important;
+body.figma-ui-v717 #clearBtn {
+  display: flex !important;
+  width: auto !important;
+  height: 22px !important;
+  min-height: 0 !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #1d2129 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 22px !important;
+  cursor: pointer !important;
+  transform: none !important;
+}
+body.figma-ui-v717 #clearBtn:hover,
+body.figma-ui-v717 #clearBtn:active,
+body.figma-ui-v717 #clearBtn:focus,
+body.figma-ui-v717 #clearBtn:focus-visible {
+  color: #3c49dd !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  transform: none !important;
+}
+.clear-result-icon { display: block; width: 16px; height: 16px; flex: 0 0 16px; }
+.online-test-run-btn { gap: 8px !important; }
+.online-test-run-icon { display: block; width: 16px; height: 16px; flex: 0 0 16px; }
+
+body.figma-ui-v717 .pill.ready {
+  height: 22.8571px !important;
+  min-height: 0 !important;
+  padding: 2px 8px !important;
+  gap: 2px !important;
+  border-radius: 6px !important;
+  line-height: 18.8571px !important;
 }
 
-body.figma-ui-v717 .main-card::-webkit-scrollbar-thumb {
-  background: rgba(134, 144, 156, .45) !important;
-  border-radius: 5px !important;
+body.figma-ui-v717 .pill.ready > i {
+  display: block;
+  width: 5px;
+  height: 5px;
+  flex: 0 0 5px;
+  background: #fff;
+  border-radius: 50%;
+}
+
+body.figma-ui-v717 .request-params-table tbody tr > td {
+  transition: background-color .2s ease, border-color .2s ease !important;
+}
+
+body.figma-ui-v717 .request-params-table tbody tr:hover > td {
+  background-color: rgba(250, 250, 250, .89) !important;
 }
 
 body.figma-ui-v717 .hero {
@@ -2186,9 +2238,10 @@ body.figma-ui-v717 .response-card .response-result-body {
   overscroll-behavior: contain;
 }
 
-/* ── 文档面板代码框：滚动条隐藏（2026-09-21 甲方定稿：保持隐藏滚动条）── */
+/* 文档面板代码框：与算法中心参考页一致，使用浏览器原生纵向滚动条。 */
 body.figma-ui-v717 .code-box {
-  scrollbar-width: none;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scrollbar-width: auto;
 }
-body.figma-ui-v717 .code-box::-webkit-scrollbar { width: 0 !important; height: 0 !important; display: none !important; }
 /* 响应示例/响应结果 复制按钮不渲染（2026-09-21 甲方定稿：删除复制按钮） */
