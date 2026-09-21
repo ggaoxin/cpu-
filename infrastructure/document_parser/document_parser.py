@@ -239,7 +239,10 @@ class DocumentParser:
     def _parse_paper(self, text: str, doc_type: str) -> Dict[str, Any]:
         lines = text.split('\n')
 
-        # 标题
+        # 标题。真实论文标题必是短文本（≤200字）：markdown # 标题截 200 防超长；
+        # 兜底"前10行首个非空行"只认 ≤200 字的行——无换行的超大 txt（49MB 单行）
+        # 首行即全文 20 万字，此前整篇被当标题写入 document_title 撑爆列宽
+        # （2026-09-21 甲方 502/1406 事故），超长行视为正文不是标题
         title = ''
         title_line_idx = -1
         for i, line in enumerate(lines):
@@ -247,14 +250,14 @@ class DocumentParser:
             if m and m.group(1) == '#':
                 heading = m.group(2).strip()
                 if not self.JOURNAL_COVER_RE.match(heading):
-                    title = re.sub(r'<[^>]+>', '', heading).strip()
+                    title = re.sub(r'<[^>]+>', '', heading).strip()[:200]
                     title_line_idx = i
                     break
         if not title:
             for line in lines[:10]:
                 stripped = line.strip()
                 if stripped and not stripped.startswith('#') and not stripped.startswith('!') and \
-                   not self.JOURNAL_COVER_RE.match(stripped) and len(stripped) > 5:
+                   not self.JOURNAL_COVER_RE.match(stripped) and 5 < len(stripped) <= 200:
                     title = stripped
                     break
 

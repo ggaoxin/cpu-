@@ -215,6 +215,35 @@ def _glm_abstract_callable():
     return _call
 
 
+async def _llm_title_abstract_from_text(text: str) -> tuple[str, str]:
+    """大模型从前 8000 字提取标题+摘要（txt 规则未命中时的兜底，2026-09-21
+    用户定稿：乱格式粘贴文本无 # 标题/无"摘要："标记时规则无能为力，LLM 语义
+    定位天然稳健）。输出限长防跑偏：title≤200 字、abstract≤6000 字。"""
+    head = text[:8000]
+    if len(head.strip()) < 200:
+        return "", ""
+    try:
+        from infrastructure.llm.glm_client import glm_client
+        out = glm_client.chat_json(
+            "你是文献信息抽取专家。从给定文本片段中提取论文标题和摘要。"
+            '只输出JSON：{"data":{"title":"","abstract":""}}；'
+            "title 是论文题目（无题目返回空串，禁止编造）；abstract 是摘要原文"
+            "（逐字摘录，无摘要返回空串）。片段可能是正文中部，此时两者都可能为空。",
+            f"文本片段：\n{head}", timeout=60.0, max_tokens=2000)
+        out = out.get("data", out) if isinstance(out, dict) else {}
+        title = str(out.get("title") or "").strip()[:200]
+        abstract = str(out.get("abstract") or "").strip()[:6000]
+        # 防幻觉：标题须在原文中出现（大小写/空白不敏感）
+        if title:
+            import re as _re_h
+            _norm = _re_h.sub(r"\s+", "", text[:20000].casefold())
+            if _re_h.sub(r"\s+", "", title.casefold()) not in _norm:
+                title = ""
+        return title, abstract
+    except Exception:  # noqa: BLE001 - LLM 兜底失败返回空，调用方用规则结果
+        return "", ""
+
+
 async def _abstract_text_from_plain(tmp_path: str, filename: str) -> tuple[str, str]:
     """".txt/.docx/.md 等纯文本格式的摘要提取:整文即候选文本。
 
@@ -233,12 +262,28 @@ async def _abstract_text_from_plain(tmp_path: str, filename: str) -> tuple[str, 
         return text, ""
     try:
         from infrastructure.document_parser.document_parser import DocumentParser
-        parsed = DocumentParser().parse_text(text)
+        # 结构解析输入封顶前 20 万字符（2026-09-21 甲方49MB txt 报502排查：
+        # parse_text 全量正则在 3600 万字符上耗 5.6s+，慢 CPU 成倍放大且内存
+        # 高位停留；摘要/标题必在文首，截前 20 万字实测 0.03s 结果一致）
+        parsed = DocumentParser().parse_text(text[:200000])
         abstract = (parsed.get("abstract") or "").strip()
         title = (parsed.get("title") or "").strip()
-        return (abstract or text[:2000]), title
+        # 期刊页眉/刊头行不是论文标题（实测《Information & Computer》2026年第3期
+        # 被当标题）——命中期刊特征视为无标题，交给 LLM 兜底提取真题目
+        import re as _re_j
+        if title and _re_j.search(
+            r'(?:《[^》]*》|网络首发|首发论文|Vol\.?\s*\d|No\.\s*\d|第\d+期|'
+            r'DOI|doi:|ISSN|ISBN|期刊|杂志|收稿日期|\d{4}年第?\d+期)', title):
+            title = ""
     except Exception:  # noqa: BLE001
-        return text[:2000], ""
+        abstract, title = "", ""
+    # 规则未命中（乱格式无 # 标题/无"摘要："标记）→ 大模型前 8000 字兜底
+    # 提取标题与摘要（规则命中的字段优先，LLM 只补缺失项）
+    if not title or not abstract:
+        llm_title, llm_abstract = await _llm_title_abstract_from_text(text)
+        title = title or llm_title
+        abstract = abstract or llm_abstract
+    return (abstract or text[:2000]), title
 
 
 def _extract_abstract_via_pymupdf(tmp_path: str) -> tuple[str, str]:

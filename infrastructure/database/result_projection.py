@@ -63,6 +63,10 @@ def _save_moves(session: Any, record_id: str, result: Dict[str, Any], _: str) ->
     if not (isinstance(_title, str) and _title.strip()):
         _fallback = result.get("document_title")
         _title = _fallback if isinstance(_fallback, str) and _fallback.strip() else None
+    # 超长标题截断（2026-09-21 甲方49MB txt：解析出的"标题"超列宽 1000 →
+    # MySQL 1406 Data too long 整篇 50001）
+    if isinstance(_title, str):
+        _title = _title[:950]
     session.execute(
         "INSERT INTO move_results (result_record_id, document_title, project_title, statistics_json, move_count, sentence_count, input_type, overall_confidence, document_language) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (record_id, _title, result.get("project_title"),

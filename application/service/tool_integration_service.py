@@ -911,14 +911,14 @@ class ToolIntegrationService:
             return value
         source = group[0].source if len(group) == 1 else {}
         if source.get("title") is not None:
-            value["title"] = source.get("title")
-            value["document_title"] = source.get("title")
+            value["title"] = str(source.get("title"))[:900]
+            value["document_title"] = value["title"]
         if source.get("project_name") is not None:
-            value["project_name"] = source.get("project_name")
+            value["project_name"] = str(source.get("project_name"))[:900]
         if source.get("file_name"):
-            value["file_name"] = source.get("file_name")
-            value.setdefault("title", source.get("file_name"))
-            value.setdefault("document_title", source.get("file_name"))
+            value["file_name"] = str(source.get("file_name"))[:900]
+            value.setdefault("title", value["file_name"])
+            value.setdefault("document_title", value["file_name"])
         if value.get("input_type") == "upstream_records":
             value["text"] = group[0].text
         elif group[0].text:

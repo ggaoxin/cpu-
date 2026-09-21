@@ -585,6 +585,11 @@ def _align_moves_to_sentences(moves: list, abstract: str) -> None:
 
 def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     data = raw if isinstance(raw, dict) else {}
+    # 题名透出（2026-09-21）：文件模式 _result_payload 已把提取的真实标题放
+    # payload.document_title，_moves 此前不读 → 弹窗题名列恒显示文件名
+    _ptitle = str(payload.get("document_title") or payload.get("title") or "").strip()
+    if _ptitle and not str(data.get("document_title") or "").strip():
+        data["document_title"] = _ptitle
     overall_confidence = data.get("confidence")
     move_confidence = data.pop("move_confidence", None) or {}
     source = _list(data.get("moves", data.get("spans", [])) if data else raw)
