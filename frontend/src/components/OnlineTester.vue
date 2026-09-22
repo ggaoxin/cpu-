@@ -1429,6 +1429,53 @@ async function runBatchWithProgress(endpoint: string, payload: Record<string, un
   return finalBody
 }
 
+// 在线测试提交的网络中断重试（2026-09-22 用户定稿，与上传同口径）：
+// 断网每次给 10 秒恢复窗口——窗口内恢复→免罚自动重新提交；未恢复→自动重试
+// （第 N/3 次）；3 次耗尽→「测试失败」终态显示在响应区。连接活着的正常慢
+// 响应（深度聚类/批量可跑数分钟）不算中断，只有负面信号（浏览器离线/网络
+// 层错误 TypeError/status=0）才触发；服务侧死亡（在线时连接错误/5xx）不重试。
+const SUBMIT_NET_WAIT_MS = 10000
+const SUBMIT_NET_MAX_RETRIES = 3
+let submitNetRetries = 0
+let submitNetToastAt = 0
+function submitNetToast() {
+  if (Date.now() - submitNetToastAt > 2500) {
+    submitNetToastAt = Date.now()
+    showToast('网络中断，请耐心等待…')
+  }
+}
+async function submitWithNetRetry<T>(doRequest: () => Promise<T>): Promise<T> {
+  submitNetRetries = 0
+  for (;;) {
+    try {
+      return await doRequest()
+    } catch (error) {
+      const isNetError = !navigator.onLine || error instanceof TypeError
+        || (error instanceof ApiRequestError && error.status === 0)
+      if (!isNetError) throw error   // 业务错误/超时/服务侧死亡：原样抛出
+      submitNetToast()
+      // 10 秒恢复窗口：期间恢复→免罚重发；未恢复→消耗一次重试再发
+      const deadline = Date.now() + SUBMIT_NET_WAIT_MS
+      let recovered = false
+      while (Date.now() < deadline) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        if (navigator.onLine) { recovered = true; break }
+      }
+      if (recovered) {
+        showToast('网络已恢复，自动重新提交测试…')
+        continue
+      }
+      if (submitNetRetries >= SUBMIT_NET_MAX_RETRIES) {
+        throw new ApiRequestError(
+          `网络中断（已自动重试 ${SUBMIT_NET_MAX_RETRIES} 次），请检查网络后重新测试`, 0, null)
+      }
+      submitNetRetries += 1
+      submitNetToastAt = Date.now()
+      showToast(`网络仍未恢复，自动重试测试（第 ${submitNetRetries}/${SUBMIT_NET_MAX_RETRIES} 次）…`)
+    }
+  }
+}
+
 async function run() {
   const validationError = validateRequiredInputs()
   if (validationError) {
@@ -1466,8 +1513,8 @@ async function run() {
     const batchCount = mode.value === 'batch' ? uploadedFiles.length : mode.value === 'batch-text' ? docs.length : 1
     const useAsyncProgress = batchCount >= 2 && !['deep-cluster', 'cluster-label', 'structured-review'].includes(props.toolId)
     result.value = useAsyncProgress
-      ? await runBatchWithProgress(endpointFor(props.tool, mode.value), payload)
-      : await executeToolRequest(endpointFor(props.tool, mode.value), mode.value, payload)
+      ? await submitWithNetRetry(() => runBatchWithProgress(endpointFor(props.tool, mode.value), payload))
+      : await submitWithNetRetry(() => executeToolRequest(endpointFor(props.tool, mode.value), mode.value, payload))
     // 引用工具文件模式：PDF 解析成功但未检测到引用标记时引擎返回空结果，
     // 给出业务提示（后端不报参数错误），避免用户只看到空列表
     if (props.toolId.startsWith('citation-') && (mode.value === 'file' || mode.value === 'batch')) {
