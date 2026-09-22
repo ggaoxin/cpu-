@@ -120,7 +120,7 @@ export async function executeToolRequest(
   endpoint: string,
   mode: InputMode,
   payload: Record<string, unknown>,
-  opts?: { headers?: Record<string, string> },
+  opts?: { headers?: Record<string, string>; signal?: AbortSignal },
 ) {
   const fileMode = mode === 'file' || mode === 'batch' || containsFile(payload)
   const init: RequestInit = {
@@ -136,20 +136,32 @@ export async function executeToolRequest(
     init.body = JSON.stringify(jsonSafeValue(payload))
   }
   // 超时保护:深度聚类/批量任务可能运行数分钟,给 15 分钟硬超时,
-  // 避免 >50MB 上传或后端阻塞时前端 fetch 永久挂起、页面无法恢复
-  init.signal = AbortSignal.timeout(15 * 60 * 1000)
+  // 避免 >50MB 上传或后端阻塞时前端 fetch 永久挂起、页面无法恢复。
+  // 外部 signal（提交阶段断网看门狗超时中止）与超时合并：超时以 TimeoutError
+  // 原因中止以区分文案；外部中止视为网络中断（2026-09-22）
+  const ctrl = new AbortController()
+  const timeoutId = setTimeout(
+    () => ctrl.abort(new DOMException('请求超时（15 分钟）', 'TimeoutError')), 15 * 60 * 1000)
+  if (opts?.signal) {
+    if (opts.signal.aborted) ctrl.abort()
+    else opts.signal.addEventListener('abort', () => ctrl.abort(), { once: true })
+  }
+  init.signal = ctrl.signal
   try {
     return parseResponse(await fetchWithApiKey(apiUrl(endpoint), init))
   } catch (error) {
     if (error instanceof DOMException && error.name === 'TimeoutError') {
       throw new ApiRequestError('请求超时（15 分钟）：任务未在时限内完成，请减少批量规模后重试', 408, null)
     }
-    // 网络中断（fetch 抛 TypeError: Failed to fetch）→ 明确中文提示，响应区
-    // 显示"网络中断请重新测试"而非静默挂起/恢复后自动返回（2026-09-21 用户定稿）
-    if (error instanceof TypeError || !navigator.onLine) {
+    // 网络中断（fetch 抛 TypeError / 断网看门狗外部中止 AbortError / 浏览器离线）
+    // → 明确中文提示并按网络口径交给上层重试（2026-09-21/22 用户定稿）
+    if (error instanceof TypeError || !navigator.onLine
+        || (error instanceof DOMException && error.name === 'AbortError')) {
       throw new ApiRequestError('网络中断，请重新测试', 0, null)
     }
     throw error
+  } finally {
+    clearTimeout(timeoutId)
   }
 }
 

@@ -1444,11 +1444,30 @@ function submitNetToast() {
     showToast('网络中断，请耐心等待…')
   }
 }
-async function submitWithNetRetry<T>(doRequest: () => Promise<T>): Promise<T> {
+async function submitWithNetRetry<T>(doRequest: (signal: AbortSignal) => Promise<T>): Promise<T> {
   submitNetRetries = 0
   for (;;) {
+    // 飞行中看门狗（2026-09-22 用户实测缺口：请求等响应期间断网无任何提示——
+    // 重试逻辑此前只在请求失败后触发，fetch 挂起时无人监测离线）：离线即弹
+    // 耐心提示；持续 10 秒 → 外部中止挂起的请求 → 走失败重试链；窗口内恢复
+    // → 恢复提示，请求继续等（连接未死则正常返回）
+    const ctrl = new AbortController()
+    let interruptSince = 0
+    const watchdog = setInterval(() => {
+      if (!navigator.onLine) {
+        if (!interruptSince) {
+          interruptSince = Date.now()
+          submitNetToast()
+        } else if (Date.now() - interruptSince >= SUBMIT_NET_WAIT_MS) {
+          ctrl.abort()   // 挂死连接不等到 15 分钟超时，按网络中断处理
+        }
+      } else if (interruptSince) {
+        interruptSince = 0
+        showToast('网络已恢复，继续等待测试结果…')
+      }
+    }, 1000)
     try {
-      return await doRequest()
+      return await doRequest(ctrl.signal)
     } catch (error) {
       const isNetError = !navigator.onLine || error instanceof TypeError
         || (error instanceof ApiRequestError && error.status === 0)
@@ -1472,6 +1491,8 @@ async function submitWithNetRetry<T>(doRequest: () => Promise<T>): Promise<T> {
       submitNetRetries += 1
       submitNetToastAt = Date.now()
       showToast(`网络仍未恢复，自动重试测试（第 ${submitNetRetries}/${SUBMIT_NET_MAX_RETRIES} 次）…`)
+    } finally {
+      clearInterval(watchdog)
     }
   }
 }
@@ -1513,8 +1534,8 @@ async function run() {
     const batchCount = mode.value === 'batch' ? uploadedFiles.length : mode.value === 'batch-text' ? docs.length : 1
     const useAsyncProgress = batchCount >= 2 && !['deep-cluster', 'cluster-label', 'structured-review'].includes(props.toolId)
     result.value = useAsyncProgress
-      ? await submitWithNetRetry(() => runBatchWithProgress(endpointFor(props.tool, mode.value), payload))
-      : await submitWithNetRetry(() => executeToolRequest(endpointFor(props.tool, mode.value), mode.value, payload))
+      ? await submitWithNetRetry((_signal) => runBatchWithProgress(endpointFor(props.tool, mode.value), payload))
+      : await submitWithNetRetry((signal) => executeToolRequest(endpointFor(props.tool, mode.value), mode.value, payload, { signal }))
     // 引用工具文件模式：PDF 解析成功但未检测到引用标记时引擎返回空结果，
     // 给出业务提示（后端不报参数错误），避免用户只看到空列表
     if (props.toolId.startsWith('citation-') && (mode.value === 'file' || mode.value === 'batch')) {
