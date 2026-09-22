@@ -1068,6 +1068,14 @@ function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
     item.parseState = 'parsing'
   }
   xhr.onload = () => {
+    // status=0 = 网络层失败（中断/连接被重置时浏览器以 onload 而非 onerror 收尾，
+    // responseText 为空）——此前落入 JSON.parse 的 catch 被静默标成「解析响应异常」，
+    // 无弹窗且文案不对（2026-09-22 真实断网模拟复现）。统一走网络失败口径
+    if (xhr.status === 0) {
+      clearInterval(watchdog)
+      failNetwork('上传失败，请重新上传')
+      return
+    }
     try {
       const body = JSON.parse(xhr.responseText)
       const row = body?.data?.results?.[0]
@@ -1081,7 +1089,10 @@ function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
       }
     } catch {
       item.parseState = 'error'
-      item.parseError = '解析响应异常'
+      // 5xx/代理错误（后端不可用等）：可读文案+弹窗——此前静默标「解析响应异常」
+      // 只有悬停才看到（2026-09-22 真实断网模拟顺带暴露的同类洞）
+      item.parseError = xhr.status >= 500 ? '服务暂不可用，请稍后重试' : '解析响应异常'
+      showToast(item.parseError)
     }
     clearInterval(watchdog)
     onDone()
