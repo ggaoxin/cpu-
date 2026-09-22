@@ -91,6 +91,18 @@ type UploadedFileItem = {
   parseId?: string
   parsedChars?: number
   parseError?: string
+  // 网络类失败自动重试标记（2026-09-22）：只自动重试一次防循环，再失败留手动
+  autoRetried?: boolean
+}
+
+// 失败按钮标签按真实原因显示（2026-09-22 用户反馈：无论哪段失败都显示
+// 「解析失败」分不清是上传还是解析；title 悬停仍有完整原因）
+function parseFailLabel(item: UploadedFileItem) {
+  const e = item.parseError || ''
+  if (e.startsWith('上传失败')) return '上传失败'
+  if (e.startsWith('服务暂不可用')) return '服务暂不可用'
+  if (e.startsWith('解析超时')) return '解析超时'
+  return '解析失败'
 }
 
 const docs = reactive<ReviewDocument[]>([])
@@ -1035,9 +1047,26 @@ function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
       item.parseError = reason
       showToast(reason)
       onDone()
+      // 网络类失败自动重试一次（2026-09-22 用户需求）：等浏览器重新在线后 2 秒
+      // 自动重传，避免瞬断让用户手动重来；仅自动重试一次防循环，再失败留手动
+      if (!item.autoRetried && /网络|连接/.test(reason)) {
+        item.autoRetried = true
+        const tryAutoRetry = () => {
+          if (!navigator.onLine) { setTimeout(tryAutoRetry, 1000); return }
+          if (item.parseState === 'error') {
+            showToast('网络已恢复，自动重试上传…')
+            retryParse(item)
+          }
+        }
+        setTimeout(tryAutoRetry, 2000)
+      }
     }
   }
-  xhr.onerror = () => failNetwork('上传失败，请重新上传')
+  // 失败文案区分阶段（2026-09-22 用户反馈：无论哪段断都显示「解析失败」）：
+  // 上传阶段=上传失败，解析阶段=解析失败，服务不可用单独口径
+  xhr.onerror = () => failNetwork(item.parseState === 'uploading'
+    ? '上传失败：网络错误，请重新上传'
+    : '解析失败：连接错误，请重新测试')
   let interruptSince = 0
   const watchdog = setInterval(() => {
     if (item.parseState !== 'uploading' && item.parseState !== 'parsing') return
@@ -1048,11 +1077,15 @@ function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
       interruptSince = Date.now()
       showToast('网络中断，请耐心等待…')
     } else if (!interrupted && interruptSince) {
-      interruptSince = 0  // 网络恢复：撤销中断计时，继续传，不打扰用户
+      interruptSince = 0
+      // 网络恢复反馈（2026-09-22 用户需求：恢复中也要有提示，不能静默继续）
+      showToast(item.parseState === 'uploading' ? '网络已恢复，继续上传…' : '网络已恢复，继续等待解析结果…')
     } else if (interrupted && interruptSince && Date.now() - interruptSince >= 10000) {
       clearInterval(watchdog)
       try { xhr.abort() } catch { /* 已结束 */ }
-      failNetwork('上传失败，请重新上传')
+      failNetwork(item.parseState === 'uploading'
+        ? '上传失败：网络中断，请重新上传'
+        : '解析失败：网络中断，请重新测试')
     } else if (item.parseState === 'parsing' && Date.now() - startedAt > 15 * 60 * 1000) {
       clearInterval(watchdog)
       try { xhr.abort() } catch { /* 已结束 */ }
@@ -1070,10 +1103,12 @@ function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
   xhr.onload = () => {
     // status=0 = 网络层失败（中断/连接被重置时浏览器以 onload 而非 onerror 收尾，
     // responseText 为空）——此前落入 JSON.parse 的 catch 被静默标成「解析响应异常」，
-    // 无弹窗且文案不对（2026-09-22 真实断网模拟复现）。统一走网络失败口径
+    // 无弹窗且文案不对（2026-09-22 真实断网模拟复现）。统一走网络失败口径（区分阶段）
     if (xhr.status === 0) {
       clearInterval(watchdog)
-      failNetwork('上传失败，请重新上传')
+      failNetwork(item.parseState === 'uploading'
+        ? '上传失败：连接中断，请重新上传'
+        : '解析失败：连接中断，请重新测试')
       return
     }
     try {
@@ -1721,7 +1756,7 @@ function downloadResult() {
             </div>
           </template>
           <template v-else-if="mode === 'file' && toolId !== 'relation-extract'">
-            <div class="field single-file-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}文件</span><small>本次只处理一个文件</small></label><label class="upload-zone single-file-upload-zone" @dragover.prevent @drop.prevent="handleFileDrop($event, false)"><input type="file" accept=".pdf,.docx,.txt" @change="handleFileSelection($event, false)" /><span class="upload-icon">⇧</span><b>选择一个文件或拖拽到此处</b><small>支持 PDF、DOCX、TXT，单文件最大 50 MB</small></label><div v-if="uploadedFiles.length" class="selected-file-list single-file-list"><article v-for="item in uploadedFiles.slice(0,1)" :key="item.id" class="selected-file-row"><i>1</i><div class="file-name-cell"><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }}</small></div><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">解析失败，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article></div></div>
+            <div class="field single-file-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}文件</span><small>本次只处理一个文件</small></label><label class="upload-zone single-file-upload-zone" @dragover.prevent @drop.prevent="handleFileDrop($event, false)"><input type="file" accept=".pdf,.docx,.txt" @change="handleFileSelection($event, false)" /><span class="upload-icon">⇧</span><b>选择一个文件或拖拽到此处</b><small>支持 PDF、DOCX、TXT，单文件最大 50 MB</small></label><div v-if="uploadedFiles.length" class="selected-file-list single-file-list"><article v-for="item in uploadedFiles.slice(0,1)" :key="item.id" class="selected-file-row"><i>1</i><div class="file-name-cell"><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }}</small></div><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">{{ parseFailLabel(item) }}，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article></div></div>
           </template>
           <template v-else-if="mode === 'batch' && toolId !== 'relation-extract'">
             <div class="special-panel batch-file-panel">
@@ -1733,7 +1768,7 @@ function downloadResult() {
                 <template v-if="toolId === 'deep-cluster'">
                   <article v-for="(item,index) in uploadedFiles" :key="item.id" class="document-card deep-cluster-file-card">
                     <div class="document-card-head"><b>文件 {{ index + 1 }} · {{ item.name }}</b><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></div>
-                    <div class="selected-file-summary"><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">解析失败，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span></div>
+                    <div class="selected-file-summary"><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">{{ parseFailLabel(item) }}，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span></div>
                     <div class="settings-title deep-cluster-metadata-title"><b>文献元数据</b><span>由用户填写，与当前文件一一关联</span></div>
                     <div class="two-column deep-cluster-metadata-grid">
                       <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="item.documentId" class="input" placeholder="例如：DOC001" /></div>
@@ -1746,7 +1781,7 @@ function downloadResult() {
                   </article>
                 </template>
                 <template v-else>
-                  <article v-for="(item,index) in uploadedFiles" :key="item.id" class="selected-file-row"><i>{{ index + 1 }}</i><div class="file-name-cell"><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }}</small></div><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">解析失败，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article>
+                  <article v-for="(item,index) in uploadedFiles" :key="item.id" class="selected-file-row"><i>{{ index + 1 }}</i><div class="file-name-cell"><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }}</small></div><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">{{ parseFailLabel(item) }}，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article>
                 </template>
               </div>
               <div v-if="toolId === 'deep-cluster'" class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
