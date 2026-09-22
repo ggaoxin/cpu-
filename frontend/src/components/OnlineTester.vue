@@ -91,8 +91,8 @@ type UploadedFileItem = {
   parseId?: string
   parsedChars?: number
   parseError?: string
-  // 网络类失败自动重试标记（2026-09-22）：只自动重试一次防循环，再失败留手动
-  autoRetried?: boolean
+  // 网络中断自动重试计数（2026-09-22 用户定稿：断网 10 秒窗口 × 3 次重试）
+  netRetries?: number
 }
 
 // 失败按钮标签按真实原因显示（2026-09-22 用户反馈：无论哪段失败都显示
@@ -1025,114 +1025,146 @@ function resetScanHint() {
 }
 
 function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
-  item.parseState = 'uploading'
-  item.parseProgress = 0
   item.parseError = ''
+  item.netRetries = 0   // 每次进入（新上传/手动重试）重置自动重试预算
   armScanHint()
-  const xhr = new XMLHttpRequest()
-  const form = new FormData()
-  form.append('tool_id', props.toolId)
-  form.append('files', item.file, item.name)
-  xhr.open('POST', apiUrl('/api/v1/files/parse'))
-  // 网络中断反馈（2026-09-21 用户定稿简化版）：中断即提示「网络中断，请
-  // 耐心等待」（不失败，给恢复机会）；持续中断 10 秒 → 判死「上传失败，请
-  // 重新上传」。中断判定 = 浏览器 offline 或 上传阶段 10 秒零字节进展（上传
-  // 中的停滞）；解析阶段（等服务器，扫描件慢属正常）不受停滞判定影响，仅
-  // 15 分钟绝对上限（与提交路径超时对齐）。进度恢复自动撤销提示继续传
+  // 网络中断反馈与自动重试（2026-09-22 用户定稿）：断网每次给 10 秒等待恢复
+  // 窗口，窗口内恢复→当前请求继续；未恢复→自动重试整个上传（重新发起请求），
+  // 最多 3 次，耗尽→失败终态；解析阶段同口径。
+  // 与「大文件解析慢」的区分：只有浏览器报离线（navigator.onLine=false）、连接
+  // 死亡（onerror/status=0）或上传 10 秒零字节进展才判网络中断；连接活着的
+  // 解析等待属正常（mineru 大 PDF 数十秒），不受停滞判定，仅保留 15 分钟绝对
+  // 上限防挂死。
+  const NET_WAIT_MS = 10000
+  const NET_MAX_RETRIES = 3
   const startedAt = Date.now()
   let lastActivity = Date.now()
+  let watchdog: ReturnType<typeof setInterval> | undefined
   const failNetwork = (reason: string) => {
     if (item.parseState === 'uploading' || item.parseState === 'parsing') {
       item.parseState = 'error'
       item.parseError = reason
       showToast(reason)
       onDone()
-      // 网络类失败自动重试一次（2026-09-22 用户需求）：等浏览器重新在线后 2 秒
-      // 自动重传，避免瞬断让用户手动重来；仅自动重试一次防循环，再失败留手动
-      if (!item.autoRetried && /网络|连接/.test(reason)) {
-        item.autoRetried = true
-        const tryAutoRetry = () => {
-          if (!navigator.onLine) { setTimeout(tryAutoRetry, 1000); return }
-          if (item.parseState === 'error') {
-            showToast('网络已恢复，自动重试上传…')
-            retryParse(item)
-          }
-        }
-        setTimeout(tryAutoRetry, 2000)
-      }
     }
   }
-  // 失败文案区分阶段（2026-09-22 用户反馈：无论哪段断都显示「解析失败」）：
-  // 上传阶段=上传失败，解析阶段=解析失败，服务不可用单独口径
-  xhr.onerror = () => failNetwork(item.parseState === 'uploading'
-    ? '上传失败：网络错误，请重新上传'
-    : '解析失败：连接错误，请重新测试')
+  // 断网 10 秒未恢复 → 消耗一次自动重试重新发起整个请求；3 次耗尽 → 失败终态
+  const retryOnNetInterrupt = () => {
+    if (watchdog) { clearInterval(watchdog); watchdog = undefined }
+    if ((item.netRetries || 0) < NET_MAX_RETRIES) {
+      item.netRetries = (item.netRetries || 0) + 1
+      netToastAt = Date.now()
+      showToast(`网络仍未恢复，自动重试上传（第 ${item.netRetries}/${NET_MAX_RETRIES} 次）…`)
+      startAttempt()
+    } else {
+      failNetwork(item.parseState === 'uploading'
+        ? `上传失败：网络中断（已自动重试 ${NET_MAX_RETRIES} 次），请检查网络后重新上传`
+        : `解析失败：网络中断（已自动重试 ${NET_MAX_RETRIES} 次），请检查网络后重新测试`)
+    }
+  }
   let interruptSince = 0
-  const watchdog = setInterval(() => {
-    if (item.parseState !== 'uploading' && item.parseState !== 'parsing') return
-    const offline = !navigator.onLine
-    const stalled = item.parseState === 'uploading' && Date.now() - lastActivity > 10000
-    const interrupted = offline || stalled
-    if (interrupted && !interruptSince) {
+  let attemptDead = false   // 当前请求已死（离线期连接被杀），恢复窗口内等复活
+  let netToastAt = 0         // 网络类弹窗节流：重试发起瞬间请求秒死会立刻再触发
+  // 中断提示，把「第 N/3 次」弹窗毫秒级顶掉——2.5s 内不重复弹网络类提示
+  const markInterrupt = () => {
+    if (!interruptSince) {
       interruptSince = Date.now()
-      showToast('网络中断，请耐心等待…')
-    } else if (!interrupted && interruptSince) {
-      interruptSince = 0
-      // 网络恢复反馈（2026-09-22 用户需求：恢复中也要有提示，不能静默继续）
-      showToast(item.parseState === 'uploading' ? '网络已恢复，继续上传…' : '网络已恢复，继续等待解析结果…')
-    } else if (interrupted && interruptSince && Date.now() - interruptSince >= 10000) {
-      clearInterval(watchdog)
-      try { xhr.abort() } catch { /* 已结束 */ }
-      failNetwork(item.parseState === 'uploading'
-        ? '上传失败：网络中断，请重新上传'
-        : '解析失败：网络中断，请重新测试')
-    } else if (item.parseState === 'parsing' && Date.now() - startedAt > 15 * 60 * 1000) {
-      clearInterval(watchdog)
-      try { xhr.abort() } catch { /* 已结束 */ }
-      failNetwork('解析超时（15 分钟），请重新测试')
-    }
-  }, 1000)
-  xhr.upload.onprogress = event => {
-    lastActivity = Date.now()
-    if (event.lengthComputable) item.parseProgress = Math.max(1, Math.round(event.loaded / event.total * 100))
-  }
-  xhr.upload.onload = () => {
-    window.removeEventListener('offline', offlineHandler)
-    item.parseState = 'parsing'
-  }
-  xhr.onload = () => {
-    // status=0 = 网络层失败（中断/连接被重置时浏览器以 onload 而非 onerror 收尾，
-    // responseText 为空）——此前落入 JSON.parse 的 catch 被静默标成「解析响应异常」，
-    // 无弹窗且文案不对（2026-09-22 真实断网模拟复现）。统一走网络失败口径（区分阶段）
-    if (xhr.status === 0) {
-      clearInterval(watchdog)
-      failNetwork(item.parseState === 'uploading'
-        ? '上传失败：连接中断，请重新上传'
-        : '解析失败：连接中断，请重新测试')
-      return
-    }
-    try {
-      const body = JSON.parse(xhr.responseText)
-      const row = body?.data?.results?.[0]
-      if (body.code === 0 && row) {
-        item.parseId = row.parse_id
-        item.parsedChars = row.char_count
-        item.parseState = 'done'
-      } else {
-        item.parseState = 'error'
-        item.parseError = body?.message || '解析失败'
+      if (Date.now() - netToastAt > 2500) {
+        netToastAt = Date.now()
+        showToast('网络中断，请耐心等待…')
       }
-    } catch {
-      item.parseState = 'error'
-      // 5xx/代理错误（后端不可用等）：可读文案+弹窗——此前静默标「解析响应异常」
-      // 只有悬停才看到（2026-09-22 真实断网模拟顺带暴露的同类洞）
-      item.parseError = xhr.status >= 500 ? '服务暂不可用，请稍后重试' : '解析响应异常'
-      showToast(item.parseError)
     }
-    clearInterval(watchdog)
-    onDone()
   }
-  xhr.send(form)
+  function startAttempt() {
+    item.parseState = 'uploading'
+    item.parseProgress = 0
+    attemptDead = false
+    const xhr = new XMLHttpRequest()
+    const form = new FormData()
+    form.append('tool_id', props.toolId)
+    form.append('files', item.file, item.name)
+    xhr.open('POST', apiUrl('/api/v1/files/parse'))
+    // 连接死亡：浏览器离线 → 不立即消耗重试（否则离线发请求秒死、3 次毫秒烧
+    // 完），交给看门狗 10 秒恢复窗口统一裁决；在线（服务侧死亡）→ 重试无意义
+    // 直接按阶段失败
+    const dieConnection = () => {
+      if (!navigator.onLine) { attemptDead = true; markInterrupt(); return }
+      if (watchdog) clearInterval(watchdog)
+      failNetwork(item.parseState === 'uploading'
+        ? '上传失败：连接错误，请重新上传'
+        : '解析失败：连接错误，请重新测试')
+    }
+    xhr.onerror = dieConnection
+    lastActivity = Date.now()
+    interruptSince = 0
+    watchdog = setInterval(() => {
+      if (item.parseState !== 'uploading' && item.parseState !== 'parsing') return
+      const offline = !navigator.onLine
+      const stalled = item.parseState === 'uploading' && Date.now() - lastActivity > NET_WAIT_MS
+      const interrupted = offline || stalled
+      if (interrupted && !interruptSince) {
+        markInterrupt()
+      } else if (!interrupted && interruptSince) {
+        interruptSince = 0
+        if (attemptDead) {
+          // 请求已死但网络在 10 秒窗口内恢复：重发请求，不消耗重试预算
+          attemptDead = false
+          showToast('网络已恢复，继续上传…')
+          if (watchdog) { clearInterval(watchdog); watchdog = undefined }
+          startAttempt()
+        } else {
+          // 恢复反馈（2026-09-22）：不能静默继续，用户需要知道活着
+          showToast(item.parseState === 'uploading' ? '网络已恢复，继续上传…' : '网络已恢复，继续等待解析结果…')
+        }
+      } else if (interrupted && interruptSince && Date.now() - interruptSince >= NET_WAIT_MS) {
+        try { xhr.abort() } catch { /* 已结束 */ }
+        retryOnNetInterrupt()
+      } else if (item.parseState === 'parsing' && Date.now() - startedAt > 15 * 60 * 1000) {
+        if (watchdog) clearInterval(watchdog)
+        try { xhr.abort() } catch { /* 已结束 */ }
+        failNetwork('解析超时（15 分钟），请重新测试')
+      }
+    }, 1000)
+    xhr.upload.onprogress = event => {
+      lastActivity = Date.now()
+      if (event.lengthComputable) item.parseProgress = Math.max(1, Math.round(event.loaded / event.total * 100))
+    }
+    xhr.upload.onload = () => { item.parseState = 'parsing' }
+    xhr.onload = () => {
+      // status=0 = 网络层失败（连接被重置时浏览器以 onload 而非 onerror 收尾、
+      // 响应为空）：离线→请求已死但交给看门狗 10 秒恢复窗口（恢复即重发，不
+      // 消耗预算；超时消耗一次重试）；在线→服务侧死亡直接失败
+      if (xhr.status === 0) {
+        if (!navigator.onLine) { attemptDead = true; markInterrupt(); return }
+        if (watchdog) clearInterval(watchdog)
+        failNetwork(item.parseState === 'uploading'
+          ? '上传失败：连接中断，请重新上传'
+          : '解析失败：连接中断，请重新测试')
+        return
+      }
+      try {
+        const body = JSON.parse(xhr.responseText)
+        const row = body?.data?.results?.[0]
+        if (body.code === 0 && row) {
+          item.parseId = row.parse_id
+          item.parsedChars = row.char_count
+          item.parseState = 'done'
+        } else {
+          item.parseState = 'error'
+          item.parseError = body?.message || '解析失败'
+        }
+      } catch {
+        item.parseState = 'error'
+        // 5xx/代理错误（后端不可用等）：可读文案+弹窗
+        item.parseError = xhr.status >= 500 ? '服务暂不可用，请稍后重试' : '解析响应异常'
+        showToast(item.parseError)
+      }
+      if (watchdog) clearInterval(watchdog)
+      onDone()
+    }
+    xhr.send(form)
+  }
+  startAttempt()
 }
 
 function retryParse(item: UploadedFileItem) {
