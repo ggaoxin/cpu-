@@ -11,6 +11,9 @@ services:
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_0900_ai_ci
+      # 单条语句/结果包上限:任务结果 JSON、解析全文单行可达 ~150MB(utf8mb4 中文约 3B/字符),
+      # 默认 64M 读写双向都会报 1153 Packet too large,256M 覆盖最大单行
+      - --max_allowed_packet=256M
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
