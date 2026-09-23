@@ -1,3 +1,11 @@
+# 后端已开启 X-API-Key 鉴权。客户端自带 X-API-Key 则原样透传（外部 API 调用方，
+# 由后端校验合法性）；未携带时注入内部密钥（网页控制台场景，密钥不外发）。
+# 若直接 proxy_set_header 覆盖，会把外部调用方的密钥也换掉，导致鉴权被绕过。
+map $http_x_api_key $semantic_api_key {
+    default $http_x_api_key;
+    ""      ${NGINX_API_KEY};
+}
+
 server {
     listen 80;
     server_name _;
@@ -21,6 +29,7 @@ server {
 
     location /api/ {
         proxy_pass http://backend:8000/api/;
+        proxy_set_header X-API-Key $semantic_api_key;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

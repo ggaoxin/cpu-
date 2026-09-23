@@ -12,6 +12,8 @@ ARG PUBLIC_BASE=/dma/sem
 RUN npm run build -- --base=${PUBLIC_BASE}/
 
 FROM nginx:1.27-alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# 官方镜像启动时对 templates/*.template 做 envsubst 渲染到 conf.d，
+# 用于把运行期环境变量 NGINX_API_KEY 注入为后端要求的 X-API-Key 请求头
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 80

@@ -39,6 +39,13 @@ services:
       MINERU_BIN: ${MINERU_BIN:-mineru}
       CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
       TZ: Asia/Shanghai
+      # 多 Worker 并发守恒：settings.py 按 WEB_CONCURRENCY 整除 ASYNC_WORKERS/GLM_MAX_CONCURRENCY，
+      # 2 worker 下每进程 2/3，全局仍约 4/6，GLM QPS 不翻倍
+      WEB_CONCURRENCY: "2"
+      # API Key 鉴权（默认关闭）：.env 设 API_AUTH_ENABLED=true 开启；
+      # 请求头 X-API-Key 命中 API_KEYS 任一密钥即放行（/health /docs 豁免）
+      API_AUTH_ENABLED: ${API_AUTH_ENABLED:-false}
+      API_KEYS: ${API_KEYS:-}
     volumes:
       - ./models:/app/models:ro
       - ./rag_store:/app/rag_store:ro
@@ -57,6 +64,9 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    environment:
+      # nginx 经 template 渲染时注入 X-API-Key，网页控制台自身无需携带密钥
+      NGINX_API_KEY: ${NGINX_API_KEY:-}
     ports:
       - "${FRONTEND_PORT:-8080}:80"
 
