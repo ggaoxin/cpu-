@@ -1112,6 +1112,16 @@ body.v699-relation-active .relation-tab-btn { width: 25%; min-width: 0; flex: 1 
 
 /* 实体关系识别:摘要卡片四等分 */
 .relation-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+/* iframe 集成窄容器适配（2026-09-24）：平台 iframe 压缩页面宽度后弹窗随之变窄，
+   但宽度常仍 >900px——窄屏媒体查询不触发，宽表格/固定宽内容被 overflow:hidden
+   裁掉最右列。将表格横向滚动规则提为全局：内容区可横向滚动、表头不折行、
+   表格保最小宽度，任何容器宽度下都不裁内容（字号不变，仅需要滚的表格区域滚动） */
+.visual-modal-body, .visualization-modal-body-v645 { overflow-x: auto; }
+.visualization-modal-body-v645 [class*="table-wrap"],
+.visualization-modal-body-v645 [class*="-scroll"] { overflow-x: auto; max-width: 100%; }
+.visualization-modal-body-v645 table { min-width: min(680px, 100vw); }
+.visualization-modal-body-v645 table th { white-space: nowrap; }
+
 @media (max-width: 900px) { .relation-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
 
 

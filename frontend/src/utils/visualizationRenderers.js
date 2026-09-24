@@ -198,7 +198,7 @@ function renderFundMove(response) {
       ['文本位置', locations],
       ['平均置信度', fixed(average(rows.map(item => item.confidence)))],
     ], 'fund-move-summary-grid-v663', 'fund-move-summary-item-v663', 'fund-move-summary-value-v663', 'fund-move-summary-label-v663')}
-    <div class="fund-move-visual-card-v663"><div class="fund-move-visual-title-v663">项目语步溯源明细</div><div class="fund-move-result-table-wrap-v663"><table class="fund-move-result-table-v663"><colgroup><col style="width:21%"><col style="width:13%"><col style="width:23%"><col style="width:33%"><col style="width:10%"></colgroup><thead><tr><th>项目名称</th><th>类别标签</th><th>文本位置</th><th>原文片段</th><th>置信度评分</th></tr></thead><tbody>${resultRows || '<tr><td colspan="5">当前响应未包含有效项目语步。</td></tr>'}</tbody></table></div></div>
+    <div class="fund-move-visual-card-v663"><div class="fund-move-visual-title-v663">项目语步溯源明细</div><div class="fund-move-result-table-wrap-v663"><table class="fund-move-result-table-v663"><colgroup><col style="width:21%"><col style="width:13%"><col style="width:23%"><col style="width:33%"><col style="width:10%"></colgroup><thead><tr><th>项目名称</th><th>类别标签</th><th>文本位置</th><th>原文片段（原文内容高亮显示）</th><th>置信度评分</th></tr></thead><tbody>${resultRows || '<tr><td colspan="5">当前响应未包含有效项目语步。</td></tr>'}</tbody></table></div></div>
     ${failed ? `<div class="fund-move-batch-failure-note-v663">批量任务中有 ${failed} 条输入处理失败，表格仅展示成功结果。</div>` : ''}
   </div>`
 }
