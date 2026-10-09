@@ -224,7 +224,8 @@ def _group_once(glm, papers: List[Dict[str, Any]], moves: List[Dict[str, List[st
     return groups
 
 
-def _merge_batches(glm, batch_groups: List[List[Dict[str, Any]]], batch_size: int) -> List[Dict[str, Any]]:
+def _merge_batches(glm, batch_groups: List[List[Dict[str, Any]]], batch_size: int,
+                   target_k: int | None = None) -> List[Dict[str, Any]]:
     """跨批合并：把各批的簇（带全局索引）按簇名语义合并（一次 LLM）。"""
     flat = []
     for bi, groups in enumerate(batch_groups):
@@ -242,6 +243,10 @@ def _merge_batches(glm, batch_groups: List[List[Dict[str, Any]]], batch_size: in
         '只输出JSON：{"merged":[{"name":"簇名","docs":[全局编号,...]},...]}，'
         "必须覆盖全部文献编号、不重叠。"
     )
+    # 用户指定类簇数量时，合并粒度同样遵守（软约束 ±1，与 _group_once 同口径；
+    # 2026-10-09 前 >BATCH_SIZE 的分批路径整段丢弃 cluster_count）
+    if target_k:
+        system += f"\n用户要求类簇数量约为 {target_k} 个（允许±1 浮动）。"
     try:
         raw = glm.chat_json(system, "\n".join(lines), temperature=0.0, timeout=180.0, max_tokens=3000)
     except Exception:  # noqa: BLE001
@@ -452,11 +457,88 @@ def anchor_guided_groups(papers, moves, anchor_docs, axis, glm, encoder=None) ->
     return groups
 
 
-def _vector_fallback(papers, moves, axis, encoder, fixed_k=None) -> List[Dict[str, Any]]:
-    """LLM 分组失败兜底：提取句向量 + 层次聚类（fixed_k 或自动 k）。"""
+def _vector_anchor_groups(papers, moves, anchor_docs, axis, glm_client, encoder,
+                          algorithm: str, cluster_count: int | None) -> List[Dict[str, Any]]:
+    """显式算法模式下用户类目的向量归类：类目档案轴句向量最近归类（阈值与
+    LLM 锚点路径共用 ANCHOR_SIM_THRESHOLD），未归入文献用所选算法自由聚类。
+
+    与 anchor_guided_groups 同构（[{name, indices}]）；类目档案为空返回 []
+    （回落纯算法聚类）——显式选择算法时不再走 LLM 归类。
+    """
     import numpy as np
-    from sklearn.cluster import AgglomerativeClustering
-    from sklearn.metrics import silhouette_score
+    profiles = build_anchor_profiles(anchor_docs, glm_client)
+    if not profiles:
+        return []
+    key = "methods" if axis == "technical" else "scenes"
+    cats = [c for c in profiles if [s for s in (profiles[c].get(key) or []) if s]]
+    if not cats:
+        return []
+    doc_axis: List[List[str]] = []
+    for paper, mv in zip(papers, moves):
+        sents = (mv.get("研究方法") or [])[:3] if axis == "technical" else (
+            (mv.get("研究背景") or []) + (mv.get("研究目的") or []))[:3]
+        if not sents:
+            t = str(paper.get("title") or "").strip()
+            sents = [t] if t else []
+        doc_axis.append([s for s in sents if s])
+    arch: Dict[str, List[str]] = {}
+    flat: List[str] = [s for sents in doc_axis for s in sents]
+    for c in cats:
+        arch[c] = [s for s in (profiles[c].get(key) or []) if s]
+        flat.extend(arch[c])
+    vecs = np.asarray(encoder.encode(flat), dtype="float32")
+    vecs = vecs / (np.linalg.norm(vecs, axis=1, keepdims=True) + 1e-9)
+    pos = 0
+    doc_mats: List = []
+    for sents in doc_axis:
+        doc_mats.append(vecs[pos:pos + len(sents)] if sents else None)
+        pos += len(sents)
+    arch_mats = {}
+    for c in cats:
+        arch_mats[c] = vecs[pos:pos + len(arch[c])]
+        pos += len(arch[c])
+    labels: List[str] = []
+    for dv in doc_mats:
+        best_cat, best = "", ANCHOR_SIM_THRESHOLD
+        if dv is not None:
+            for c in cats:
+                # 文献句 × 档案句：每句取最像的档案句，均值作该类目得分
+                score = float(np.mean((dv @ arch_mats[c].T).max(axis=1)))
+                if score >= best:
+                    best_cat, best = c, score
+        labels.append(best_cat)
+    groups: List[Dict[str, Any]] = []
+    for cat in cats:
+        indices = [i for i, x in enumerate(labels) if x == cat]
+        if indices:
+            groups.append({"name": cat, "indices": indices, "keywords": [cat]})
+    leftovers = [i for i, x in enumerate(labels) if not x]
+    if leftovers:
+        if len(leftovers) == 1:
+            groups.append({"name": str(papers[leftovers[0]].get("title") or "其他")[:12],
+                           "indices": leftovers, "keywords": []})
+        else:
+            # 剩余 k 预算 = 目标簇数 − 已用类目数；≤1 时直接单簇（谱聚类 k=1 不可解）
+            budget = (cluster_count - len(groups)) if cluster_count else None
+            if budget is not None and budget <= 1:
+                sub = [{"name": "簇1", "indices": list(range(len(leftovers)))}]
+            else:
+                sub = _vector_cluster([papers[i] for i in leftovers],
+                                      [moves[i] for i in leftovers], axis, encoder,
+                                      algorithm, fixed_k=budget)
+            for g in sub:
+                groups.append({"name": g["name"],
+                               "indices": [leftovers[j] for j in g["indices"]],
+                               "keywords": g.get("keywords") or []})
+    covered = sum(len(g["indices"]) for g in groups)
+    if covered != len(papers):
+        return []
+    return groups
+
+
+def _axis_doc_matrix(papers, moves, axis, encoder):
+    """轴语步句向量均值矩阵（单位化）；该轴无句的文献用题名兜底。"""
+    import numpy as np
 
     def doc_vec(i):
         if axis == "technical":
@@ -466,20 +548,121 @@ def _vector_fallback(papers, moves, axis, encoder, fixed_k=None) -> List[Dict[st
         v = np.asarray(encoder.encode(sents)).mean(axis=0)
         return v / max(float(np.linalg.norm(v)), 1e-9)
 
-    matrix = np.asarray([doc_vec(i) for i in range(len(papers))])
-    if fixed_k:
-        best = AgglomerativeClustering(n_clusters=min(fixed_k, len(matrix) - 1), metric="cosine", linkage="average").fit_predict(matrix)
-    else:
-        best, best_score = None, -2
-        for k in range(2, min(9, len(matrix))):
-            labels = AgglomerativeClustering(n_clusters=k, metric="cosine", linkage="average").fit_predict(matrix)
+    return np.asarray([doc_vec(i) for i in range(len(papers))])
+
+
+_AUTO_K_MAX = 9  # 自动 k 搜索上界（与原向量兜底口径一致）
+
+
+def _fit_vector_labels(matrix, algorithm: str, k: int | None) -> List[int]:
+    """在轴句向量上按指定算法聚类，返回标签列表。
+
+    k=None 时用轮廓系数在 [2, min(9, n)) 搜索自动 k；k 给定为精确簇数
+    （hdbscan 例外——密度聚类无 k 参数，见 _run_hdbscan 的就近搜索）。
+    """
+    from sklearn.metrics import silhouette_score
+
+    n = len(matrix)
+
+    def fit_once(alg: str, kk: int) -> List[int]:
+        if alg == "kmeans":
+            from sklearn.cluster import KMeans
+            return KMeans(n_clusters=kk, n_init=10, random_state=42).fit_predict(matrix).tolist()
+        if alg == "spectral":
+            import numpy as np
+            from sklearn.cluster import SpectralClustering
+            # 谱聚类图权重须非负：余弦相似度矩阵截负作亲和矩阵
+            sim = np.clip(matrix @ matrix.T, 0.0, 1.0)
+            return SpectralClustering(n_clusters=kk, affinity="precomputed",
+                                      assign_labels="kmeans", random_state=42).fit_predict(sim).tolist()
+        # agglomerative / hierarchical 同为凝聚层次聚类（契约保留两个枚举名）
+        from sklearn.cluster import AgglomerativeClustering
+        return AgglomerativeClustering(n_clusters=kk, metric="cosine", linkage="average").fit_predict(matrix).tolist()
+
+    if algorithm == "hdbscan":
+        return _run_hdbscan(matrix, k)
+    if k:
+        return fit_once(algorithm, min(k, n - 1))
+    best, best_score = None, -2.0
+    for kk in range(2, min(_AUTO_K_MAX, n)):
+        labels = fit_once(algorithm, kk)
+        try:
             score = silhouette_score(matrix, labels, metric="cosine")
-            if score > best_score:
-                best_score, best = score, labels
+        except ValueError:
+            continue
+        if score > best_score:
+            best_score, best = score, labels
+    return best if best is not None else fit_once(algorithm, 2)
+
+
+def _run_hdbscan(matrix, k: int | None) -> List[int]:
+    """HDBSCAN（密度聚类）：无 k 参数，k 给定时在 min_cluster_size 网格上搜
+    索簇数最接近目标的配置（软约束）；噪声点（-1）由 _merge_noise_points 并入。
+
+    sklearn>=1.3 自带 HDBSCAN，老环境退独立 hdbscan 包（v2 引擎同款降级链）。
+    min_samples=1 与 v2 口径一致：文献集规模小（4-20 篇），默认值会把几乎全部
+    文献判成噪声。
+    """
+    def _fit_with(cls) -> List[int]:
+        if not k:
+            return cls(min_cluster_size=2, min_samples=1, metric="euclidean").fit_predict(matrix).tolist()
+        best, best_gap = None, None
+        # 网格从小到大：簇数同样接近目标时优先更细粒度（小 min_cluster_size）
+        for mcs in range(2, max(3, len(matrix))):
+            cand = cls(min_cluster_size=mcs, min_samples=1, metric="euclidean").fit_predict(matrix).tolist()
+            gap = abs(len(set(cand) - {-1}) - k)
+            if best_gap is None or gap < best_gap:
+                best, best_gap = cand, gap
+            if gap == 0:
+                break
+        return best  # type: ignore[return-value]
+
+    try:
+        from sklearn.cluster import HDBSCAN  # type: ignore[attr-defined]
+        labels = _fit_with(HDBSCAN)
+    except ImportError:
+        import hdbscan  # type: ignore[import-not-found]
+        labels = _fit_with(hdbscan.HDBSCAN)
+    return _merge_noise_points(labels, matrix)
+
+
+def _merge_noise_points(labels: List[int], matrix) -> List[int]:
+    """HDBSCAN 噪声点（-1）并入余弦最近的簇中心；无有效簇时归为单簇。"""
+    import numpy as np
+
+    noise = [i for i, x in enumerate(labels) if x < 0]
+    clusters = sorted({x for x in labels if x >= 0})
+    if not clusters:
+        return [0] * len(labels)
+    arr = np.asarray(matrix)
+    labels_arr = np.asarray(labels)
+    centroids = np.stack([arr[labels_arr == c].mean(axis=0) for c in clusters])
+    centroids = centroids / (np.linalg.norm(centroids, axis=1, keepdims=True) + 1e-9)
+    out = list(labels)
+    for i in noise:
+        out[i] = clusters[int(np.argmax(centroids @ arr[i]))]
+    return out
+
+
+def _labels_to_groups(labels: List[int]) -> List[Dict[str, Any]]:
     groups: List[Dict[str, Any]] = []
-    for lab in sorted(set(best)):
-        groups.append({"name": f"簇{lab + 1}", "indices": [i for i, x in enumerate(best) if x == lab]})
+    for lab in sorted(set(labels)):
+        groups.append({"name": f"簇{lab + 1}", "indices": [i for i, x in enumerate(labels) if x == lab]})
     return groups
+
+
+def _vector_fallback(papers, moves, axis, encoder, fixed_k=None) -> List[Dict[str, Any]]:
+    """LLM 分组失败兜底：轴句向量 + 层次聚类（fixed_k 或自动 k）。"""
+    matrix = _axis_doc_matrix(papers, moves, axis, encoder)
+    return _labels_to_groups(_fit_vector_labels(matrix, "agglomerative", fixed_k))
+
+
+def _vector_cluster(papers, moves, axis, encoder, algorithm: str, fixed_k=None) -> List[Dict[str, Any]]:
+    """用户显式选择算法的向量聚类（2026-10-09 定稿）：轴句向量 + kmeans/spectral/
+    agglomerative（hierarchical 同算法）/hdbscan。簇名为占位（簇N），代表词由
+    _pad_cluster_terms 从轴语步句补齐。"""
+    matrix = _axis_doc_matrix(papers, moves, axis, encoder)
+    return _labels_to_groups(_fit_vector_labels(matrix, algorithm, fixed_k))
 
 
 _STOPWORDS = frozenset(
@@ -629,12 +812,16 @@ def _pad_cluster_terms(base: Any, moves_list: List[Dict[str, Any]], indices: Lis
 
 
 def run_move_aligned_clustering(papers, *, selected_axis, glm_client, encoder=None,
-                                anchor_docs=None, cluster_count=None) -> Dict[str, Any]:
+                                anchor_docs=None, cluster_count=None,
+                                algorithm=None) -> Dict[str, Any]:
     """主入口：语步提取 → 双轴分组 → 输出轴 payload（与旧管线同构）。
 
     anchor_docs（用户上传训练样本，可选）非空时走锚点引导分组：样本内部先提取
     语步 → 类目档案 → 目标文献按档案归类（未归入的自由分组）；为空时纯 v3
-    自由分组（综述粒度）。返回 {"axis", "clusters", "doc_axis_info", "moves",
+    自由分组（综述粒度）。algorithm 显式指定（非 None/auto，2026-10-09 用户定稿）
+    时跳过 LLM 语义分组，改用轴句向量 + 所选向量聚类算法（质量回退、参数可用性
+    优先），用户类目同步改为向量归类；auto/None 行为与既往完全一致。
+    返回 {"axis", "clusters", "doc_axis_info", "moves",
     "quality", "projection"}；clusters 含 cluster_id/topic_name/size/doc_indices/
     representative_terms/members（members 供 phrase_sets/标签生成）。
     """
@@ -646,26 +833,52 @@ def run_move_aligned_clustering(papers, *, selected_axis, glm_client, encoder=No
 
     groups: List[Dict[str, Any]] = []
     method = ""
-    if anchor_docs:
-        # 锚点引导：用户类目为种子，语步级归类（方法对方法 / 场景对场景）
-        groups = anchor_guided_groups(papers, moves, anchor_docs, selected_axis, glm_client, encoder)
-        method = "llm_anchor_guided_grouping" if groups else ""
-    if not groups:
-        # 自由分组：≤BATCH_SIZE 一次；>BATCH_SIZE 分批 + 跨批合并
-        if n <= BATCH_SIZE:
-            groups = _group_once(glm_client, papers, moves, selected_axis, target_k=cluster_count)
-        else:
-            batches = [papers[i:i + BATCH_SIZE] for i in range(0, n, BATCH_SIZE)]
-            moves_batches = [moves[i:i + BATCH_SIZE] for i in range(0, n, BATCH_SIZE)]
-            with ThreadPoolExecutor(max_workers=3) as pool:
-                batch_groups = list(pool.map(
-                    lambda args: _group_once(glm_client, args[0], args[1], selected_axis),
-                    zip(batches, moves_batches)))
-            groups = _merge_batches(glm_client, batch_groups, BATCH_SIZE) if all(batch_groups) else []
-        method = "llm_move_aligned_grouping"
-    if not groups and encoder is not None:
-        groups = _vector_fallback(papers, moves, selected_axis, encoder, fixed_k=cluster_count)
-        method = "move_vector_fallback"
+    if algorithm and algorithm != "auto":
+        # 显式算法路径（2026-10-09 用户定稿）：kmeans/spectral/agglomerative
+        # （hierarchical 同算法）/hdbscan 真实生效，质量低于 LLM 语义分组（参数
+        # 可用性优先）；用户上传类目同步改向量归类，不再调 LLM 归类。
+        if encoder is None:
+            raise ValueError("clustering_algorithm_type 指定算法依赖向量编码器（当前不可用），请选择 auto(自动选择)。")
+        if cluster_count == 1:
+            groups = [{"name": "单一类簇（用户指定类簇数量=1）",
+                       "indices": list(range(n)), "keywords": []}]
+            method = "single_cluster_requested"
+        elif anchor_docs:
+            groups = _vector_anchor_groups(papers, moves, anchor_docs, selected_axis,
+                                           glm_client, encoder, algorithm, cluster_count)
+            method = f"vector_anchor_{algorithm}" if groups else ""
+        if not groups:
+            groups = _vector_cluster(papers, moves, selected_axis, encoder,
+                                     algorithm, fixed_k=cluster_count)
+            method = f"vector_{algorithm}"
+    else:
+        if anchor_docs:
+            # 锚点引导：用户类目为种子，语步级归类（方法对方法 / 场景对场景）
+            groups = anchor_guided_groups(papers, moves, anchor_docs, selected_axis, glm_client, encoder)
+            method = "llm_anchor_guided_grouping" if groups else ""
+        if not groups:
+            # 用户指定单一类簇（k=1）：LLM 按语义分组必然产出多簇（综述粒度，k=1 语义
+            # 上不可达——2026-10-09 实测要求 1 得 5），直接确定性输出全量单簇，保证
+            # 参数被忠实执行（锚点路径优先于本规则：用户上传类目时以类目为准）
+            if cluster_count == 1:
+                groups = [{"name": "单一类簇（用户指定类簇数量=1）",
+                           "indices": list(range(n)), "keywords": []}]
+                method = "single_cluster_requested"
+            elif n <= BATCH_SIZE:
+                groups = _group_once(glm_client, papers, moves, selected_axis, target_k=cluster_count)
+                method = "llm_move_aligned_grouping"
+            else:
+                batches = [papers[i:i + BATCH_SIZE] for i in range(0, n, BATCH_SIZE)]
+                moves_batches = [moves[i:i + BATCH_SIZE] for i in range(0, n, BATCH_SIZE)]
+                with ThreadPoolExecutor(max_workers=3) as pool:
+                    batch_groups = list(pool.map(
+                        lambda args: _group_once(glm_client, args[0], args[1], selected_axis, target_k=cluster_count),
+                        zip(batches, moves_batches)))
+                groups = _merge_batches(glm_client, batch_groups, BATCH_SIZE, target_k=cluster_count) if all(batch_groups) else []
+                method = "llm_move_aligned_grouping"
+        if not groups and encoder is not None:
+            groups = _vector_fallback(papers, moves, selected_axis, encoder, fixed_k=cluster_count)
+            method = "move_vector_fallback"
     if not groups:
         raise ValueError("语步对齐聚类失败：LLM 分组与向量兜底均未产出有效结果")
 
@@ -732,7 +945,9 @@ def run_move_aligned_clustering(papers, *, selected_axis, glm_client, encoder=No
     quality = {
         "cluster_count": len(clusters),
         "intra_cluster_similarity": round(sum(multi) / len(multi), 3) if multi else None,
-        "algorithm_requested": "move_aligned",
+        # algorithm_requested 如实回显（2026-10-09 起）：显式算法回显算法名，
+        # auto/None 保持 v3 设计名 move_aligned（历史记录口径不变）
+        "algorithm_requested": algorithm if algorithm and algorithm != "auto" else "move_aligned",
         "algorithm_used": method,
     }
     return {

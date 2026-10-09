@@ -101,3 +101,66 @@ def test_mixed_structured_and_plain_text_inputs_return_auditable_modes_and_trend
     assert response.data["input_summary"]["document_count"] == 4
     assert response.data["theme_trend_analysis"]["years"] == [2023, 2024]
     assert all(item["publication_date"] for item in response.data["document_assignments"])
+
+
+_EXPLICIT_ALGORITHM_DOCUMENTS = [
+    {"id": "M1", "title": "临床患者风险预测", "publication_date": "2024-01-01",
+     "text": "Clinical patient risk prediction for hospital care."},
+    {"id": "M2", "title": "医疗患者结局预后研究", "publication_date": "2024-02-01",
+     "text": "Medical patient outcome modeling study."},
+    {"id": "I1", "title": "工业轴承故障诊断方法", "publication_date": "2024-03-01",
+     "text": "Industrial bearing fault diagnosis approach."},
+    {"id": "I2", "title": "工业轴承缺陷检测技术", "publication_date": "2024-04-01",
+     "text": "Industrial bearing defect detection technique."},
+    {"id": "A1", "title": "农业作物病害监测系统", "publication_date": "2024-05-01",
+     "text": "Agricultural crop disease monitoring system."},
+    {"id": "A2", "title": "农业作物长势遥感监测", "publication_date": "2024-06-01",
+     "text": "Agricultural crop health remote sensing."},
+]
+
+
+def _run_explicit_algorithm(algorithm: str, cluster_count=None):
+    params = {"cluster_dimension": "technology", "algorithm": algorithm}
+    if cluster_count is not None:
+        params["cluster_count"] = cluster_count
+    request = SemanticRequest(
+        texts=[json.dumps(item, ensure_ascii=False) for item in _EXPLICIT_ALGORITHM_DOCUMENTS],
+        params=params,
+    )
+    with patch.object(deep_clustering_service, "m3_encoder", _LocalDenseEncoder()):
+        return deep_clustering_service.execute_deep_clustering(
+            "dc_cluster", request, _FunctionalPoint(), glm_client=None,
+        )
+
+
+def test_explicit_kmeans_algorithm_uses_vector_path():
+    # 2026-10-09 起显式算法真实生效：非 auto 跳过 LLM 语义分组，走轴句向量 +
+    # 所选算法（glm 缺失不受影响——向量路径不调 LLM 分组，题名兜底特征）。
+    response = _run_explicit_algorithm("kmeans")
+    assert response.success is True
+    assert response.data["clustering_quality"]["algorithm_requested"] == "kmeans"
+    assert response.data["clustering_quality"]["algorithm_used"] == "vector_kmeans"
+    # 局部编码器三主题两两成组：自动 k（轮廓系数搜索）应得 3 簇
+    assert response.data["clustering_quality"]["cluster_count"] == 3
+    assert sum(c["size"] for c in response.data["clusters"]) == 6
+
+
+def test_explicit_kmeans_respects_exact_cluster_count():
+    # 向量算法路径 cluster_count 为精确簇数（kmeans k=2 → 恰 2 簇，区别于
+    # auto/LLM 路径的 ±1 软约束）
+    response = _run_explicit_algorithm("kmeans", cluster_count=2)
+    assert response.success is True
+    assert response.data["clustering_quality"]["algorithm_used"] == "vector_kmeans"
+    assert response.data["clustering_quality"]["cluster_count"] == 2
+    assert sum(c["size"] for c in response.data["clusters"]) == 6
+
+
+def test_explicit_hdbscan_and_spectral_algorithms_produce_clusters():
+    # hdbscan 无 k 参数（密度聚类，噪声点并入最近簇）；spectral 用余弦亲和矩阵
+    # ——两者均应成功产出全覆盖分组并标记真实算法
+    for algorithm in ("hdbscan", "spectral"):
+        response = _run_explicit_algorithm(algorithm)
+        assert response.success is True, algorithm
+        assert response.data["clustering_quality"]["algorithm_used"] == f"vector_{algorithm}"
+        assert response.data["clusters"], algorithm
+        assert sum(c["size"] for c in response.data["clusters"]) == 6, algorithm

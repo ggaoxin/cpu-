@@ -247,9 +247,11 @@ def _optional_cluster_count(params: dict[str, Any]) -> int | None:
     try:
         parsed = int(value)
     except (TypeError, ValueError) as exc:
-        raise ValueError("cluster_count 必须为大于等于2的整数或 auto。") from exc
-    if parsed < 2:
-        raise ValueError("cluster_count 必须大于等于2。")
+        raise ValueError("cluster_count 必须为大于等于1的整数或 auto。") from exc
+    # 下界 1（2026-10-09 用户定稿：前端步进器"自动确定→1→2…"，1 必须可用——
+    # 此前要求 ≥2，前端放行 1 后端拒绝，输入 1 直接失败）
+    if parsed < 1:
+        raise ValueError("cluster_count 必须大于等于1。")
     return parsed
 
 
@@ -344,7 +346,11 @@ def execute_deep_clustering(
     selected_axis = "application" if dimension in {"application", "application_scenario"} else "technical"
     dimension_name = "应用场景聚类" if selected_axis == "application" else "技术路线聚类"
 
-    # 兼容参数校验（algorithm/cluster_count 对 v3 无实际作用，仅保留契约）
+    # 参数校验（2026-10-09 起 algorithm 真实生效）：显式算法（非 auto）时引擎改用
+    # 轴句向量 + 所选向量聚类（kmeans/spectral/agglomerative/hierarchical/hdbscan，
+    # 用户定稿：质量回退但参数可用优先）；auto 保持 v3 LLM 语义分组不变。
+    # cluster_count：LLM 路径软约束（±1 浮动），向量算法路径为精确簇数
+    # （hdbscan 为 min_cluster_size 就近搜索）。
     requested_algorithm = str(params.get("clustering_algorithm_type") or params.get("cluster_method")
                               or params.get("algorithm") or "auto").strip().lower()
     algorithm = _ALGORITHM_ALIASES.get(requested_algorithm, requested_algorithm)
@@ -352,7 +358,10 @@ def execute_deep_clustering(
         raise ValueError(
             "clustering_algorithm_type 必须为 auto(自动选择)、kmeans、spectral(谱聚类)、"
             "agglomerative(凝聚聚类)、hierarchical(层次聚类) 或 hdbscan。")
-    _optional_cluster_count(params)
+    cluster_count = _optional_cluster_count(params)
+    # 上界守卫（与前端同口径）：类簇数必须小于文献数，否则单簇粒度无意义
+    if cluster_count is not None and cluster_count >= len(papers):
+        raise ValueError(f"cluster_count 必须小于输入文献数量（当前 {len(papers)} 篇，最大 {len(papers) - 1}）。")
 
     from infrastructure.clustering.move_aligned import run_move_aligned_clustering
     from infrastructure.resources.normalize import normalized_rows_for
@@ -384,14 +393,15 @@ def execute_deep_clustering(
             logger.info("深度聚类锚点已加载：%d 条（人工标签 %d 条按编号关联）",
                         len(anchor_docs), joined)
 
-    cluster_count = _optional_cluster_count(params)
+    # cluster_count 已在上方参数校验处解析（含 <文献数 上界守卫）
     output_format = str(params.get("output_format") or "JSON").strip().upper()
 
     result = SemanticResult(code=code, name=functional_point.name)
     try:
         outcome = run_move_aligned_clustering(
             papers, selected_axis=selected_axis, glm_client=glm_client, encoder=encoder,
-            anchor_docs=anchor_docs or None, cluster_count=cluster_count)
+            anchor_docs=anchor_docs or None, cluster_count=cluster_count,
+            algorithm=algorithm)
     except ValueError:
         raise
     except Exception as exc:  # noqa: BLE001

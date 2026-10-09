@@ -287,8 +287,8 @@ export const requirementContracts: Record<string, RequirementContract> = {
       ['document_metadata[].document_id', 'string', 'conditional', '文献编号(批量文本模式必填),如 "DOC001"'],
       ['document_metadata[].publication_date', 'string', 'conditional', '发表时间(批量文本模式必填),格式 "YYYY-MM-DD"'],
       ['document_metadata[].title', 'string', 'required', '文献题目'],
-      ['clustering_algorithm_type', 'string', 'optional', '聚类算法类型。枚举:"auto"(默认)、"kmeans"、"spectral"、"agglomerative"、"hierarchical"、"hdbscan"'],
-      ['cluster_count', 'integer', 'optional', '类簇数量(>=2)。不指定时算法自动选 k;hdbscan 不允许指定'],
+      ['clustering_algorithm_type', 'string', 'optional', '聚类算法类型。枚举:"auto"(默认,语步对齐语义分组)、"kmeans"、"spectral"(谱聚类)、"agglomerative"(凝聚聚类)、"hierarchical"(层次聚类,与 agglomerative 同算法)、"hdbscan";非 auto 时按轴语步句向量执行所选向量聚类,聚类质量低于默认语义分组'],
+      ['cluster_count', 'integer', 'optional', '类簇数量(>=1,且需小于输入文献数量)。不指定时算法自动确定;auto(语义分组)下为软约束(允许±1浮动),指定向量算法下为精确簇数(hdbscan 为就近搜索)'],
       ['output_format', 'string', 'optional', '输出格式(默认 JSON)'],
     ],
     outputs: [

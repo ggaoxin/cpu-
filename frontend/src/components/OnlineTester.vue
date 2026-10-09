@@ -572,6 +572,21 @@ const clusterCountError = computed(() => {
   return ''
 })
 
+// 类簇数量步进（2026-10-09 用户定稿）：「自动确定」（留空）是数值序列的下界档位——
+// 从自动确定点 ＋ 进入 1、2、3…；从 1 点 − 退回自动确定；自动确定时 − 禁用。
+// 此前是裸 number 输入框，min=1 导致一旦离开自动确定就再也回不去。
+const stepClusterCount = (dir: 1 | -1) => {
+  if (props.toolId !== 'deep-cluster') return
+  const raw = form.clusterCount
+  const current = raw === '' || raw === null ? null : Number(raw)
+  if (dir > 0) {
+    form.clusterCount = String(Math.max(1, (Number.isFinite(current as number) ? (current as number) : 0) + 1))
+    return
+  }
+  if (current === null) return // 自动确定已是下界
+  form.clusterCount = current <= 1 ? '' : String(current - 1)
+}
+
 // 分类知识库构建中（用户上传中图分类标准后 bge 向量编码未完成）：点「在线测试」
 // 弹错误提示拦截（2026-09-19 用户定调：按钮保持可点，点击报错提示等待，
 // 构建过程不受影响；进度环到 100% 后即可正常提交）。提示带实时进度，与资源
@@ -1705,7 +1720,7 @@ function downloadResult() {
 
           <template v-if="toolId === 'deep-cluster'">
             <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 聚类维度</span><small>选择本次聚类的语义分析视角</small></label><div class="dimension-options"><label :class="{ active: form.clusterDimension === 'technology' }"><input v-model="form.clusterDimension" type="radio" value="technology" /><span><b>技术路线聚类</b><small>重点分析文献采用的方法、模型结构、算法机制、数据处理流程和实验技术，将技术方案相近的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label><label :class="{ active: form.clusterDimension === 'application_scenario' }"><input v-model="form.clusterDimension" type="radio" value="application_scenario" /><span><b>应用场景聚类</b><small>重点分析文献解决的任务、服务对象、行业领域、实际环境和应用目标，将面向相似使用场景的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label></div></div>
-            <div class="settings-card"><div class="settings-title"><b>算法与输出参数</b><span>可选算法、类簇数量与输出格式</span></div><div class="three-column"><div class="field"><label><span class="label-main">聚类算法类型</span></label><select v-model="form.algorithm" class="select"><option value="auto">自动选择</option><option value="kmeans">K-Means</option><option value="hierarchical">层次聚类</option><option value="hdbscan">HDBSCAN</option></select></div><div class="field"><label><span class="label-main">类簇数量</span></label><input v-model="form.clusterCount" class="input" type="number" min="1" step="1" placeholder="自动确定" /><small v-if="clusterCountError" class="field-error-hint" style="color:#d54949;display:block;margin-top:4px">{{ clusterCountError }}</small></div><div class="field"><label><span class="label-main">输出格式</span></label><select v-model="form.outputFormat" class="select"><option>JSON</option><option>CSV</option><option>数据库写入结构</option></select></div></div></div>
+            <div class="settings-card"><div class="settings-title"><b>算法与输出参数</b><span>可选算法、类簇数量与输出格式</span></div><div class="three-column"><div class="field"><label><span class="label-main">聚类算法类型</span></label><select v-model="form.algorithm" class="select"><option value="auto">自动选择</option><option value="kmeans">K-Means</option><option value="hierarchical">层次聚类</option><option value="hdbscan">HDBSCAN</option></select></div><div class="field"><label><span class="label-main">类簇数量</span></label><div class="numeric-stepper"><input :value="form.clusterCount === '' || form.clusterCount === null ? '自动确定' : String(form.clusterCount)" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="类簇数量" @keydown.up.prevent="stepClusterCount(1)" @keydown.down.prevent="stepClusterCount(-1)" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加类簇数量" title="增加（从自动确定进入 1）" @click="stepClusterCount(1)">▲</button><button type="button" aria-label="减少类簇数量" title="减少（1 时退回自动确定）" :disabled="form.clusterCount === '' || form.clusterCount === null" @click="stepClusterCount(-1)">▼</button></span></div><small v-if="clusterCountError" class="field-error-hint" style="color:#d54949;display:block;margin-top:4px">{{ clusterCountError }}</small></div><div class="field"><label><span class="label-main">输出格式</span></label><select v-model="form.outputFormat" class="select"><option>JSON</option><option>CSV</option><option>数据库写入结构</option></select></div></div></div>
             <ModeSwitch v-model="mode" :modes="modes" :tool="tool" kind="深度聚类数据来源" />
           </template>
 
