@@ -87,12 +87,14 @@ def repair_abstract_text(text: str) -> str:
             if len(tail) < 40 or (len(tokens) >= 6 and cap_ratio >= 0.9):
                 text = text[:_term].rstrip()
     # 末句超短碎片（10.pdf "The COT."）：带句号但 ≤3 个英文词的尾巴整句剪掉
-    # （要求按空格分词且含拉丁字母——中文无空格整句不受影响）
+    # （拉丁字母开头 + ≤40 字符两道护栏：中文句即使混排"Vue Router"等含空格
+    # 拉丁词也是汉字开头且远超 40 字，不会被整句误删——2026-10-08 语步识别
+    # 摘要被清空事故的同型修复，与 result_normalizer 同口径）
     if len(_terms) >= 1:
         _start = _terms[-2] if len(_terms) >= 2 else 0
         _last_sent = text[_start:].strip()
-        if (_last_sent and " " in _last_sent and _tail_re.search(r"[A-Za-z]", _last_sent)
-                and len(_last_sent.split()) <= 3):
+        if (_last_sent and " " in _last_sent and _tail_re.match(r"[A-Za-z]", _last_sent)
+                and len(_last_sent) <= 40 and len(_last_sent.split()) <= 3):
             text = text[:_start].rstrip()
     text = re.sub(r"[ \t]*\n[ \t]*", " ", text)
     text = re.sub(r"[ \t]{2,}", " ", text)

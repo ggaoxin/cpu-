@@ -4668,6 +4668,9 @@ class SemanticApplicationService(ISemanticService):
         summary_prompt = rule.raw.get("summary_prompt", rule.system_prompt)
         system_prompt = self._system_prompt(rule, request)
         aggregated = {mt: [] for mt in move_types}
+        # 分块 LLM 对每语步的原始置信度（含判空 0 与被 <0.8 阈值滤掉的弱信号），
+        # 供空语步判空确信度取值——判空也是有确信度的分类决策（与摘要路径同口径）
+        chunk_move_conf: Dict[str, List[float]] = {mt: [] for mt in move_types}
         all_headings = []  # 全文章节清单（文档顺序去重），供来源汇总按先后排序参考
         n_units = 1  # 单调用=1，切块=块数
         mode = "single_call"
@@ -4751,6 +4754,9 @@ class SemanticApplicationService(ISemanticService):
                 for move in cr["moves"]:
                     mt = move.get("move_type", "").strip()
                     conf = float(move.get("confidence", 0) or 0)
+                    # 先记分块原始置信度（含判空 0 与被下方阈值滤掉的弱信号），再过滤
+                    if mt in move_types:
+                        chunk_move_conf[mt].append(conf)
                     if conf < 0.8 or mt not in move_types:
                         continue
                     # 候选来源剔除结构性章节（参考文献/致谢/附录等与语步无关）
@@ -4875,6 +4881,17 @@ class SemanticApplicationService(ISemanticService):
         # 不计入均值，避免缺失判定拉低整体。
         _per_move_confs = [m["confidence"] for m in out_moves if m.get("confidence") is not None]
         overall_confidence = round(sum(_per_move_confs) / len(_per_move_confs), 3) if _per_move_confs else None
+        # 空语步判空确信度（与摘要路径空语步缺失置信度同口径）：判空也是有确信度的
+        # 分类决策，不再输出 None。默认取整体置信度（算法选择空=认为该语步大概率
+        # 不存在）；分块 LLM 曾给过该语步非 0 置信度但片段未存活（弱信号被 <0.8
+        # 滤掉或 fragments 为空，提示可能漏识别）时降 0.15，下限 0.5。单调用模式
+        # 无分块信号，直接取整体。整体均值仍只含有内容语步（见上），不受此影响。
+        for m in out_moves:
+            if m.get("confidence") is not None:
+                continue
+            _base = overall_confidence if overall_confidence is not None else 0.7
+            _weak = any(c > 0 for c in chunk_move_conf.get(m["move_type"]) or [])
+            m["confidence"] = round(max(0.5, _base - (0.15 if _weak else 0.0)), 3)
         # 从封面提取项目名称，覆盖文件名兜底：result.data.document.title 由 normalizer
         # 的 setdefault 采纳（不覆盖已有值），让弹窗题名列显示真实项目名而非文件名。
         project_name = self._extract_project_name(full_text)

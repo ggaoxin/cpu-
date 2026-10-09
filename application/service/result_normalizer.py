@@ -22,15 +22,20 @@ def strip_non_move_artifacts(text: str) -> str:
     """
     import re as _re
     t = str(text or "")
+    # URL 体字符集：遇空白、CJK 汉字（一-鿿）、CJK 标点（　-〿）、
+    # 全角标点（＀-￯）即停。中文句中 URL 后无空格，裸 \S+ 会把 URL 之后
+    # 整段中文吞掉（2026-10-08 同族问题：英文"空格分隔"假设套中文文本）。
+    _U = r"[^\s一-鿿　-〿＀-￯]"
     # "Code/Source code …(填充词)… at/available at URL" 整短语清除（含悬空 at）
     t = _re.sub(
         r"(?i)\s*(?:code|project\s+page|source\s+code)\b[^.]{0,120}?\s"
-        r"(?:is\s+)?(?:at|available(?:\s+(?:at|online))?|on\s+github)?\s*[:]?\s*https?://\S+\.?",
+        r"(?:is\s+)?(?:at|available(?:\s+(?:at|online))?|on\s+github)?\s*[:]?\s*https?://" + _U + r"+\.?",
         "", t)
-    t = _re.sub(r"(?i)\s*https?://(?:www\.)?(?:github|gitlab|bitbucket|huggingface)\.co(?:m|\.io)/\S+\.?", "", t)
-    t = _re.sub(r"(?i)(?<=\s)(?:at|via|from|see|available\s+at|in)\s+https?://\S+\.?", " ", t)
-    t = _re.sub(r"https?://\S+|www\.\S+\.\w{2,}", " ", t)
-    t = _re.sub(r"[\w.+-]+@[\w-]+\.[\w.]{2,}", " ", t)
+    t = _re.sub(r"(?i)\s*https?://(?:www\.)?(github|gitlab|bitbucket|huggingface)\.co(?:m|\.io)/" + _U + r"+\.?", "", t)
+    t = _re.sub(r"(?i)(?<=\s)(?:at|via|from|see|available\s+at|in)\s+https?://" + _U + r"+\.?", " ", t)
+    t = _re.sub(r"https?://" + _U + r"+|www\." + _U + r"+\.\w{2,}", " ", t)
+    # 邮箱同理限定 ASCII：\w 含汉字，"a@b.com中文"会把中文吞进邮箱尾段
+    t = _re.sub(r"[A-Za-z0-9.+-]+@[A-Za-z0-9-]+\.[A-Za-z0-9.]{2,}", " ", t)
     # 代码开源/可获得性声明句（无 URL 形式）：不属于任何语步——曾被塞进
     # Conclusion（"Our code will be released."，24.pdf 2026-09-12）。短句
     # （≤14词/≤90字符）且只声明代码/模型发布，无实验/方法实义内容才删。
@@ -53,13 +58,19 @@ def strip_non_move_artifacts(text: str) -> str:
     t = _CODE_RELEASE.sub(_drop_code_release, t)
     t = _re.sub(r"[ \t]{2,}", " ", t)
     # 末句超短碎片修剪：URL/邮箱句被清除后可能暴露 ≤3 词残句（10.pdf "The COT."），
-    # 不属于任何语步，整句剪掉（要求空格分词+拉丁字母，中文整句不受影响）
+    # 不属于任何语步，整句剪掉。三重护栏防误杀中文整句（2026-10-08 在线测试事故：
+    # 含"Vue Router"空格拉丁词的中文摘要按空格分词仅 2"词"、又含拉丁字母，整篇
+    # 被当残句剪空 → GLM 收到空摘要报"未返回有效结果"）：
+    # ① 仅前面步骤确实清除过内容才可能有残句，未清除不修剪；
+    # ② 残句须拉丁字母开头（英文短语特征，中文句即使混排拉丁词也是汉字开头）；
+    # ③ 字符上限 40，防止含空格拉丁词的中文长句分词后 ≤3"词"被整句误删。
+    _cleaned_any = t != str(text or "")
     _terms = [m.end() for m in _re.finditer(r"(?<!\d)[.。!?](?=\s|$)", t)]
-    if _terms:
+    if _cleaned_any and _terms:
         _start = _terms[-2] if len(_terms) >= 2 else 0
         _last_sent = t[_start:].strip()
-        if (_last_sent and " " in _last_sent and _re.search(r"[A-Za-z]", _last_sent)
-                and len(_last_sent.split()) <= 3):
+        if (_last_sent and " " in _last_sent and _re.match(r"[A-Za-z]", _last_sent)
+                and len(_last_sent) <= 40 and len(_last_sent.split()) <= 3):
             t = t[:_start].rstrip()
     # 只剥空格/逗号/分号，保留句末句点（原 strip(' ,.;') 会吃掉末句句号）
     return t.strip(" ,;")
@@ -584,7 +595,14 @@ def _align_moves_to_sentences(moves: list, abstract: str) -> None:
                 mv["text"] = ""
                 mv["start"] = None
                 mv["end"] = None
+                # 句子被邻居全部吞并的语步：其句序号已不代表最终归属，一并清除，
+                # 避免前端字符范围列给空语步显示过期的句序号
+                mv.pop("sentence_indices", None)
             continue
+        # 按原文顺序重组：上方"首部未认领句"补派会在 owners 插入序尾部追加更小的
+        # 句序号（如 [1,2,0]），不排序则 s0>s1 → 空切片 → 语步被误清空（2026-10-09
+        # 测试人员"有语步结果但没有句子位置/结果变空"根因之一）
+        sis = sorted(sis)
         s0 = sents[sis[0]][0]
         s1 = sents[sis[-1]][1]
         # strip 首尾空白但保留句末标点，并同步重算精确字符范围
@@ -592,6 +610,8 @@ def _align_moves_to_sentences(moves: list, abstract: str) -> None:
         stripped = raw_seg.strip()
         if not stripped:
             mv["text"], mv["start"], mv["end"] = "", None, None
+            # 与上方置空分支同口径：句序号随文本一并清除，防止空语步残留过期句序号
+            mv.pop("sentence_indices", None)
             continue
         lead = len(raw_seg) - len(raw_seg.lstrip())
         mv["start"] = s0 + lead
@@ -608,6 +628,11 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         data["document_title"] = _ptitle
     overall_confidence = data.get("confidence")
     move_confidence = data.pop("move_confidence", None) or {}
+    # 引擎的句序号（每语步句子在摘要原句序中的位置列表）：非连续语步（句子在原文中
+    # 不相邻，拼接文本无法做字符级定位）唯一忠实的定位方式，供前端字符范围列降级
+    # 展示（charRange 的 sentence_indices 终极回退）。2026-10-09 前只整体 pop 丢弃，
+    # 前端降级通道断裂，非连续语步的字符范围恒显示"—"。
+    _sent_idx_by_move = data.pop("sentence_indices_by_move", None) or {}
     source = _list(data.get("moves", data.get("spans", [])) if data else raw)
     moves = []
     # GLM 按规则库 output_schema 直接输出「类别→文本」扁平 dict（如 {研究方法: "..."}），
@@ -649,8 +674,12 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
                 "text": text or "",
                 "start": start,
                 "end": end,
-                # 空语步不虚构置信度（此前空文本也带 0.8/0.9，误导展示）
-                "confidence": move_confidence.get(label, overall_confidence) if has_text else None,
+                # 空语步置信度：判空本身是有确信度的分类决策（引擎已在 move_confidence
+                # 给出判空确信度，见 semantic_service 空语步缺失置信度），不置 None；
+                # 取不到时回退整体置信度。2026-10-09 前曾置 None，与引擎设计相抵触
+                "confidence": move_confidence.get(label, overall_confidence),
+                **({"sentence_indices": list(_sent_idx_by_move[label])}
+                   if has_text and _sent_idx_by_move.get(label) else {}),
             })
     # fund-move 文本模式：语步内容在原文中的字符位置（与摘要平铺分支同款定位逻辑）
     _fund_src_text = str(payload.get("text") or "").strip() if tool_id == "fund-move" else ""
@@ -681,7 +710,7 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
                       "sources", "n_fragments", "sentence_index", "sentence_indices", "position"):
             moves[-1].pop(_drop, None)
     statistics = data.get("move_statistics")
-    data.pop("sentence_indices_by_move", None)  # 中间字段，不进公开响应
+    # sentence_indices_by_move 已在上方 pop，并按语步分发为 moves[].sentence_indices
     if not statistics:
         # 5 类语步框架完整统计：空语步也以 0 出现，而非被丢弃
         _counter = Counter(item["label"] for item in moves if item.get("label") and item.get("text"))

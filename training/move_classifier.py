@@ -8,6 +8,7 @@
 """
 from __future__ import annotations
 
+import json
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -30,13 +31,31 @@ def _call_llm(abstract: str, rule_lib: RuleLib, temperature: float, client=None)
     system_prompt = rule_lib.render_principles_prompt() + rule_lib.render_few_shot()
     user_prompt = p.classify_user_prompt.format(abstract=abstract)
     model_client = client or glm_client
-    data = model_client.chat_json(system_prompt, user_prompt, temperature=temperature)
-    if isinstance(data, dict) and "data" in data and isinstance(data["data"], dict):
-        data = data["data"]
+    # 模型偶发返回合法 JSON 但五个语步全空（结构漂移/整串双重编码/极低概率抖动，
+    # 2026-10-08 在线测试实测约 1/26 概率）：旧逻辑静默置空，上层只能报
+    # "GLM 未返回有效结果"且无现场可查。这里先拆常见包裹结构，仍全空则原参
+    # 重试一次，并记录原始结构片段供事后定位。
+    data: Any = {}
     spans: Dict[str, str] = {}
-    for m in p.moves:
-        v = data.get(m, "") if isinstance(data, dict) else ""
-        spans[m] = str(v).strip() if v else ""
+    for attempt in range(2):
+        data = model_client.chat_json(system_prompt, user_prompt, temperature=temperature)
+        if isinstance(data, str):  # json_object 模式下偶发整串再包一层引号
+            try:
+                data = json.loads(data)
+            except (json.JSONDecodeError, TypeError):
+                data = {}
+        if isinstance(data, dict) and "data" in data and isinstance(data["data"], dict):
+            data = data["data"]
+        if (isinstance(data, dict) and isinstance(data.get("spans"), dict)
+                and not any(m in data for m in p.moves)):
+            data = data["spans"]
+        spans = {}
+        for m in p.moves:
+            v = data.get(m, "") if isinstance(data, dict) else ""
+            spans[m] = str(v).strip() if v else ""
+        if any(spans.values()):
+            break
+        logger.warning("GLM 返回全空语步（attempt %d/2），原始结构片段：%.300s", attempt + 1, data)
     # LLM 自评的语步级置信度（含判空确信度），作为梯度置信度的基础分，替代固定 0.70
     llm_conf = data.get("move_confidence", {}) if isinstance(data, dict) else {}
     if not isinstance(llm_conf, dict):
