@@ -1029,6 +1029,7 @@ class StructuredReviewEngine:
             pass
 
         hotspots = []
+        _skipped_no_year = 0
         for row in cluster_rows:
             count = row.get("document_count", 0)
             years = [
@@ -1036,6 +1037,12 @@ class StructuredReviewEngine:
                 for doc_id in (row.get("document_ids") or [])
                 if doc_year.get(doc_id)
             ]
+            # 热点与年份强相关（2026-10-11 用户定稿）：簇内文献全无年份 → 不给
+            # 热点（不硬造 0.5 中性值）；部分有年份 → 只用有年份的文献计算，
+            # 无年份文献不参与（跳过即可，years 列表已自然排除 None）
+            if not years:
+                _skipped_no_year += 1
+                continue
             # 年份新鲜度：簇平均年份在时间窗的相对位置
             if years and year_span > 0:
                 freshness = (sum(years) / len(years) - known_years[0]) / year_span
@@ -1047,7 +1054,8 @@ class StructuredReviewEngine:
             else:
                 persistence = 0.5
             rel = relevance.get(str(row.get("cluster_id")), 0.5)
-            count_ratio = (count / max_docs) if max_docs else 0.0
+            # 数量占比也只算有年份的文献（与热点口径一致）
+            count_ratio = (len(years) / max_docs) if max_docs else 0.0
             score = round(max(0.05, min(1.0, 0.4 * freshness + 0.25 * rel
                                         + 0.2 * persistence + 0.15 * count_ratio)), 3)
             if years and len(known_years) > 1:
@@ -1081,6 +1089,8 @@ class StructuredReviewEngine:
         hotspots.sort(key=lambda item: (-item["score"], item.get("cluster_id") or ""))
         # 可靠性提示：小样本/年份集中时如实降级，不硬造区分度
         notes = []
+        if _skipped_no_year:
+            notes.append(f"{_skipped_no_year} 个研究方向因文献均未提供年份，未纳入热点排行")
         if len(documents) < 5:
             notes.append(f"样本量小（{len(documents)}篇），强度与趋势仅供参考")
         if len(known_years) <= 1:

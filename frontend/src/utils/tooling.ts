@@ -169,7 +169,12 @@ function strictRequirementPayload(tool: ToolDefinition, mode: InputMode) {
       ? { ...configOnly, file: '@paper.pdf' }
       : { ...configOnly, files: ['@paper_01.pdf', '@paper_02.pdf'] }
   }
-  const inputs = contract.inputs.filter(row => row[0] !== 'document_title' || mode === 'text' || mode === 'batch-text')
+  // 过滤预声明的嵌套行（xxx[].yyy）：它们是文档说明行，不是独立载荷键——此前
+  // 被当普通键塞进 payload，与父键的动态展开叠加导致参数表同参数出现 2~3 次
+  // （2026-10-11 全工具清查：citation-sentiment 单文本 15 行重复）。
+  const inputs = contract.inputs
+    .filter(row => !row[0].includes('[]'))
+    .filter(row => row[0] !== 'document_title' || mode === 'text' || mode === 'batch-text')
   return Object.fromEntries(inputs.map((row, index) => [row[0], requirementExampleValue(row[0], row[1], mode, tool, index === 0)]))
 }
 
@@ -461,8 +466,11 @@ const nestedParameterTypes: Record<string, string> = {
 function parameterValueType(value: unknown) {
   if (Array.isArray(value)) {
     if (!value.length) return 'string[]'
+    if (value[0] instanceof File) return 'file[]'
     if (typeof value[0] === 'object') return 'object[]'
-    if (typeof value[0] === 'string') return 'string[]'
+    // 元素是 @文件名 占位（批量文件模式的演示载荷）→ file[]，此前误判 string[]
+    // （2026-10-11 测试反馈：批量文件参数表显示 chinese_scientific_abstract string[]）
+    if (typeof value[0] === 'string') return value[0].startsWith('@') ? 'file[]' : 'string[]'
     return 'array'
   }
   if (value === null) return 'null'
@@ -572,7 +580,17 @@ export function requestParameterRowsFor(tool: ToolDefinition, mode: InputMode) {
     const actualType = parameterValueType(value)
     let top = declared_row
     if (declared_row[1] && declared_row[1].includes('|') && actualType && !actualType.includes('|')) {
-      top = [declared_row[0], actualType, declared_row[2], declared_row[3]]
+      // 文件模式描述同步收窄（2026-10-11 用户反馈）：单/批量文件上传的是文献
+      // 文件本体（摘要/文本由系统自动提取），说明不应再写"摘要/文本"——
+      // "中文科技文献摘要"应显示为"中文科技文献文件（上传后自动解析）"
+      let fileDesc = declared_row[3]
+      if (actualType === 'file' || actualType === 'file[]') {
+        // 去掉描述中的"摘要/文本"与尾部"文件"再补文件说明，避免"摘要(含…)文件"
+        // 或"管理文件文件"这类拼接瑕疵
+        const base = declared_row[3].replace(/(摘要|文本|全文文本)/, '').replace(/文件$/, '').trim()
+        fileDesc = `${base}文件（上传 PDF/DOCX/TXT）`
+      }
+      top = [declared_row[0], actualType, declared_row[2], fileDesc]
     }
     if (overrides[key]) top = [top[0], top[1], overrides[key], top[3]]
     return [top, ...nestedParameterRows(value, key, overrides[key] || top[2], toolId)]

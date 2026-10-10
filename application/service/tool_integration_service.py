@@ -1930,10 +1930,13 @@ class ToolIntegrationService:
                 if not isinstance(metadata, list) or len(metadata) != len(documents):
                     return "document_metadata 必须与科技文献文本逐篇对应"
                 for index, item in enumerate(metadata):
-                    # 文献编号认 id 别名（前端历史版本/第三方调用可能发 id）
-                    if not isinstance(item, dict) or not str(item.get("document_id") or item.get("id") or "").strip() or not str(item.get("title") or "").strip() or not str(item.get("publication_date") or "").strip():
-                        return f"第 {index + 1} 篇文献的文献编号、题名和发表时间为必填项"
-                    if str(item.get("publication_date") or "").strip() > _today_str():
+                    # 文献编号认 id 别名（前端历史版本/第三方调用可能发 id）。
+                    # 发表时间选填（2026-10-11 用户定稿：趋势分析只统计填了年份的
+                    # 文献，不填不报错、不参与趋势）
+                    if not isinstance(item, dict) or not str(item.get("document_id") or item.get("id") or "").strip() or not str(item.get("title") or "").strip():
+                        return f"第 {index + 1} 篇文献的文献编号和题名为必填项"
+                    _pub = str(item.get("publication_date") or "").strip()
+                    if _pub and _pub > _today_str():
                         return f"第 {index + 1} 篇文献的发表时间不能晚于今天"
         if contract.tool_id == "structured-review":
             if not str(payload.get("topic_or_keywords") or "").strip():

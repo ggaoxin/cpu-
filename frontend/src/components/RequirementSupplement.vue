@@ -2,6 +2,24 @@
 import { computed, reactive, ref, watch, watchEffect } from 'vue'
 import type { InputMode } from '../types'
 import { parseCitationMetadata, uploadSemanticResource, validateSemanticResource, getIndexStatus } from '../services/api'
+import AppSelect from './AppSelect.vue'
+
+// 统一下拉（问题清单 #2.2）：原 <option> 的文本/值/顺序原样迁移成选项数组。
+// 注意 <option>自动识别</option> 这类无 value 属性写法，原生值=文本内容。
+const textFormatOptions = [
+  { value: '自动识别', label: '自动识别' },
+  { value: '纯文本', label: '纯文本' },
+  { value: '章节结构文本', label: '章节结构文本' },
+  { value: 'JSON 结构文本', label: 'JSON 结构文本' },
+]
+const documentMetadataSourceOptions = [
+  { value: 'embedded', label: '从文献文件自动解析题名、作者、年份、来源、关键词和文献编号' },
+  { value: 'upload', label: '上传元数据文件进行补充或校正' },
+]
+const sourceModeOptions = [
+  { value: 'builtin', label: '内置' },
+  { value: 'upload', label: '用户上传资源' },
+]
 
 type ResourceField = {
   key: string
@@ -455,7 +473,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
 
 <template>
   <div v-if="toolId === 'rq-detect'" class="settings-card requirement-supplement-card">
-    <div class="field"><label><span class="label-main">文本格式要求</span><small>决定下载结果的文件结构：JSON / 文本清单 / 章节分组文本</small></label><select v-model="textFormatRequirement" class="select"><option>自动识别</option><option>纯文本</option><option>章节结构文本</option><option>JSON 结构文本</option></select></div>
+    <div class="field"><label><span class="label-main">文本格式要求</span><small>决定下载结果的文件结构：JSON / 文本清单 / 章节分组文本</small></label><AppSelect v-model="textFormatRequirement" :options="textFormatOptions" /></div>
     
   </div>
 
@@ -491,7 +509,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
           <div class="citation-metadata-form-grid">
             <div class="field"><label><span class="label-main">发表年份</span></label><input v-model="entry.year" class="input" placeholder="例如：2024" /></div>
             <div class="field"><label><span class="label-main">作者</span></label><input v-model="entry.authorsText" class="input" placeholder="多个作者用分号分隔" /></div>
-            <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献题名</span></label><input v-model="entry.title" class="input" placeholder="请输入被引文献题名" /></div>
+            <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献题名</span></label><input v-model="entry.title" class="input" placeholder="请输入被引文献题名" /><small class="char-count-v755">{{ entry.title.length }}/50</small></div>
             <div class="field"><label><span class="label-main">期刊或会议</span></label><input v-model="entry.venue" class="input" placeholder="请输入期刊或会议名称" /></div>
             <div class="field"><label><span class="label-main">DOI</span><small>选填</small></label><input v-model="entry.doi" class="input" placeholder="例如：10.xxxx/xxxxx" /></div>
           </div>
@@ -517,10 +535,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
     <div class="settings-title"><b>文献元数据</b><span>文献文件需同时提供元数据</span></div>
     <div class="field">
       <label><span class="label-main"><span class="required-mark">*</span> 文献元数据</span></label>
-      <select v-model="sourceModes.document_metadata" class="select">
-        <option value="embedded">从文献文件自动解析题名、作者、年份、来源、关键词和文献编号</option>
-        <option value="upload">上传元数据文件进行补充或校正</option>
-      </select>
+      <AppSelect v-model="sourceModes.document_metadata" :options="documentMetadataSourceOptions" />
     </div>
     <div v-if="sourceModes.document_metadata === 'upload'" class="resource-upload-wrap">
       <label class="resource-upload-zone">
@@ -545,10 +560,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         </div>
         <p v-if="field.description">{{ field.description }}</p>
         <div class="requirement-resource-controls">
-          <select v-model="sourceModes[field.key]" class="select resource-source-select" @change="handleSourceModeChange(field.key)">
-            <option value="builtin">内置</option>
-            <option value="upload">用户上传资源</option>
-          </select>
+          <AppSelect v-model="sourceModes[field.key]" :options="sourceModeOptions" @change="handleSourceModeChange(field.key)" />
           <div v-if="sourceModes[field.key] === 'upload'" class="resource-upload-wrap">
             <label class="resource-upload-zone">
               <input :ref="el => setResourceFileInput(field.key, el)" type="file" :accept="field.accept || '.json'" @change="handleResourceUpload($event, field.key)" />

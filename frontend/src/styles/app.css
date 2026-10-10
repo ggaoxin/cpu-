@@ -1186,9 +1186,6 @@ body.v699-relation-active .relation-tab-btn { width: 25%; min-width: 0; flex: 1 
   .hover-copy-btn { min-height: 40px !important; min-width: 40px !important; padding: 0 10px !important; }
   body.figma-ui-v717 .api-mode-btn { min-height: 44px !important; }
   .response-card-actions-v645 button { min-height: 40px; }
-  /* 响应结果操作按钮:窄屏改两行网格——下载/可视化整组居中,清除结果单独一行居中 */
-  .response-card-actions-v645 { display: grid !important; grid-template-columns: auto auto; justify-content: center; column-gap: 10px; row-gap: 6px; }
-  .response-card-actions-v645 #clearBtn { grid-column: 1 / -1; justify-self: center; }
   body.figma-ui-v717 .primary-btn { min-height: 44px !important; }
   .outline-btn, .ghost-btn, .call-type-btn-v770, .api-mode-btn { min-height: 42px !important; }
   .numeric-stepper-controls button { min-height: 34px !important; min-width: 34px !important; font-size: 13px !important; }
@@ -1817,12 +1814,14 @@ body.figma-ui-v717 .api-mode-btn {
   font-weight: 400 !important;
 }
 
+/* 问题清单 #1：选中 tab 文字色固定 #1D2129；白色滑块底由 .api-mode-thumb 承担，
+   按钮自身不再画底色/边框/阴影（否则滑块滑走后旧位置会残留白底）。 */
 body.figma-ui-v717 .call-type-btn-v770.active,
 body.figma-ui-v717 .api-mode-btn.active {
-  color: var(--platform-primary) !important;
-  background: #fff !important;
-  border-color: #d7e1ff !important;
-  box-shadow: 0 1px 3px rgba(36, 84, 255, .1) !important;
+  color: #1D2129 !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
 
 body.figma-ui-v717 .code-box {
@@ -2255,3 +2254,235 @@ body.figma-ui-v717 .code-box {
   scrollbar-width: auto;
 }
 /* 响应示例/响应结果 复制按钮不渲染（2026-09-21 甲方定稿：删除复制按钮） */
+
+/* ── 问题清单 #1：滑块式 tab 切换 ──
+   API/SDK 切换与四种输入方式 tab 的白色滑块由 JS（useSliderThumb）测量
+   .active 按钮几何位置后绝对定位；切换时滑块以 transform 过渡滑动到新位置。
+   按钮自身保持透明（见上方 figma-ui active 规则），滑块从按钮下方滑过。
+   prefers-reduced-motion: reduce 时不加过渡，直接跳到目标位置。 */
+#callTypeSwitchV770,
+.api-mode-switch {
+  position: relative;
+}
+
+.api-mode-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  display: none; /* 首次测量完成前不渲染，避免滑块从 (0,0) 空位飞入 */
+  background: #fff;
+  border: 1px solid #d7e1ff;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(36, 84, 255, .1);
+  pointer-events: none;
+}
+
+.api-mode-thumb[data-ready="true"] { display: block; }
+
+/* 按钮浮在滑块上方；选中态按钮自身已透明，不遮挡滑动中的滑块 */
+#callTypeSwitchV770 > .call-type-btn-v770,
+.api-mode-switch > .api-mode-btn {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .api-mode-thumb[data-ready="true"] {
+    transition: transform .24s cubic-bezier(.4, 0, .2, 1),
+                width .24s cubic-bezier(.4, 0, .2, 1),
+                height .24s cubic-bezier(.4, 0, .2, 1);
+  }
+}
+
+/* ── 问题清单 #2：响应结果操作按钮一致换行 ──
+   按容器实际可用宽度（container query）分三级，替代旧“窄屏两列网格”
+   （旧规则把清除结果单独挤到第二行，形成 2+1 乱序）：
+   1) 容器装得下“标题+按钮组”→ 同一行，组靠右；
+   2) 装不下 → 按钮组作为整体 flex 单元掉到标题下一行，组内仍一行三个；
+   3) 组自身一行放不下三个 → 组改纵向，每行一个、通栏等宽。
+   任何宽度下不出现 2+1 断行、标题与按钮重叠或面板横向溢出。 */
+.response-card {
+  container-type: inline-size;
+}
+
+.response-card .test-card-header {
+  flex-wrap: wrap !important; /* 覆盖原型层 nowrap !important：空间不足时整组掉行 */
+}
+
+.response-card .response-card-actions-v645 {
+  display: flex !important;
+  flex-wrap: nowrap !important; /* 组内禁止逐按钮换行（2+1 的来源） */
+  min-width: 0;
+}
+
+@container (max-width: 372px) {
+  .response-card .test-card-header,
+  body.figma-ui-v717 .response-card .test-card-header {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  .response-card .response-card-actions-v645 {
+    flex-direction: column !important;
+    align-items: stretch;
+  }
+}
+
+/* ===== 统一下拉 AppSelect（问题清单 #2.2 / 第三阶段）=====
+   闭合态沿用原生 select 的字级、单行高度与内边距，保持表单外部占位尺寸；
+   白框、圆角 9px、边框 #dce1e9、文字 #1D2129、右侧箭头；展开菜单白底圆角阴影、
+   选中项蓝色文字、hover 浅灰。菜单 Teleport 到 body，fixed 定位不受
+   .form-grid 等滚动容器 overflow 裁剪。 */
+.app-select {
+  position: relative;
+  width: 100%;
+}
+
+.app-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: auto;
+  min-height: 35px;
+  padding: 6px 11px;
+  box-sizing: border-box;
+  background: #fff;
+  color: #1d2129;
+  text-align: left;
+  border: 1px solid #dce1e9;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 14px;
+  line-height: normal;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.app-select-trigger:hover:not(:disabled) {
+  border-color: #c6cede;
+}
+
+.app-select-trigger:focus {
+  outline: none;
+  border-color: #7fa1ff;
+  box-shadow: 0 0 0 3px rgba(47, 99, 246, .09);
+}
+
+.app-select-trigger:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.app-select-label {
+  flex: 1;
+  min-width: 0;
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.app-select-label.is-placeholder {
+  color: #9aa3b2;
+}
+
+.app-select-arrow {
+  flex: none;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #7b8494;
+  transition: transform .18s ease;
+}
+
+.app-select-trigger[aria-expanded="true"] .app-select-arrow {
+  transform: rotate(180deg);
+}
+
+.app-select-menu {
+  position: fixed;
+  z-index: 2147483000;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #e3e8f0;
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(15, 27, 61, .14), 0 2px 8px rgba(15, 27, 61, .08);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
+}
+
+.app-select-option {
+  padding: 9px 12px;
+  border-radius: 7px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #1d2129;
+  word-break: break-word;
+  cursor: pointer;
+}
+
+.app-select-option + .app-select-option {
+  margin-top: 2px;
+}
+
+.app-select-option.is-active {
+  background: #f2f4f7;
+}
+
+.app-select-option.is-selected {
+  color: var(--platform-primary, #2454ff);
+}
+
+.app-select-option.is-disabled {
+  color: #b3bac6;
+  cursor: not-allowed;
+  background: transparent !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-select-trigger,
+  .app-select-arrow {
+    transition: none;
+  }
+}
+
+/* 中文摘要语步：下载结果格式菜单（2026-10-11）：点下载按钮弹出 JSON/CSV/数据库(SQL)选择 */
+.download-menu-wrap-v751 { position: relative; display: inline-flex; }
+.download-menu-v751 {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 40; min-width: 190px;
+  background: #fff; border: 1px solid #d3dfef; border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(14, 26, 48, .16); padding: 6px; display: flex; flex-direction: column; gap: 2px;
+}
+.download-menu-item-v751 {
+  border: 0; background: transparent; text-align: left; padding: 8px 12px; border-radius: 7px;
+  font-size: 13px; color: #1f3a5f; cursor: pointer; white-space: nowrap;
+}
+.download-menu-item-v751:hover { background: #eef4fc; }
+
+/* 发表时间·年份选择（2026-10-11 定稿）：单年份下拉（AppSelect），选填 */
+.year-picker-v754 { width: 100%; }
+
+/* 题目/文本实时字符计数（2026-10-11）：紧跟输入框右下角，到达上限变红 */
+.char-count-v755 {
+  display: block; text-align: right; margin-top: 3px;
+  font-size: 11px; color: #94a3b8; font-variant-numeric: tabular-nums;
+}
+.char-count-v755:has(+ *) { color: inherit; }
+
+/* 概念定义弹窗列宽（2026-10-11）：编号列收窄（D1~D99 仅需极小空间），
+   概念定义句列占大头；题名列适度、来源/置信度/操作紧凑 */
+.definition-result-table col:nth-child(1) { width: 4%; }  /* 编号 */
+.definition-result-table col:nth-child(2) { width: 12%; } /* 文献题名 */
+.definition-result-table col:nth-child(3) { width: 12%; } /* 概念词 */
+.definition-result-table col:nth-child(4) { width: 40%; } /* 概念定义句 */
+.definition-result-table col:nth-child(5) { width: 12%; } /* 来源 */
+.definition-result-table col:nth-child(6) { width: 8%; }  /* 置信度 */
+.definition-result-table col:nth-child(7) { width: 12%; } /* 操作 */
+.definition-result-table th:nth-child(1),
+.definition-result-table td:nth-child(1) { white-space: nowrap; padding-left: 6px; padding-right: 4px; }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import type { InputMode, ToolDefinition } from '../types'
 import { endpointFor, modesFor, pretty, requestPayloadFor, supportsVisualization } from '../utils/tooling'
 import { ApiRequestError, apiUrl, executeToolRequest, listCompatibleHistory, listDictionaries, listClusterCollections, listDocumentCollections, listSemanticResources, parseCitationMetadata, saveDictionary } from '../services/api'
@@ -9,6 +9,30 @@ import trashIconUrl from '../assets/the-trash.svg'
 import runIconUrl from '../assets/kb.svg'
 import ModeSwitch from './ModeSwitch.vue'
 import RequirementSupplement from './RequirementSupplement.vue'
+import AppSelect from './AppSelect.vue'
+import YearPicker from './YearPicker.vue'
+
+// 统一下拉（问题清单 #2.2）：原 <option> 的文本/值/顺序/禁用态原样迁移成选项数组。
+// 动态历史类下拉的“暂无…”占位在原生里是 value="" 的 disabled option，
+// 这里等价转为 placeholder + 空选项数组（只在列表为空时显示，语义与原生一致）。
+const DOMAIN_NER_DOMAINS = ['医学', '药学', '化学', '化工', '物理', '生物', '计算机', '材料', '农业', '环境', '地学']
+const domainNerDomainOptions = [{ value: '自动识别', label: '自动识别（默认）' }, ...DOMAIN_NER_DOMAINS.map(d => ({ value: d, label: d }))]
+const DEFINITION_DOMAINS: Array<[string, string]> = [
+  ['01', '数学与计算科学'], ['02', '力学与工程力学'], ['03', '物理学与应用物理'], ['04', '化学与化学科学'],
+  ['05', '天文学与空间科学'], ['06', '地球科学与地质资源'], ['07', '测绘遥感与地理信息'], ['08', '气象海洋科学'],
+  ['09', '生物科学与生物技术'], ['10', '医学与卫生健康'], ['11', '药学与毒理学'], ['12', '农业科学与农业工程'],
+  ['13', '林业畜牧兽医与水产'], ['14', '材料科学与材料工程'], ['15', '矿业与矿物加工'], ['16', '石油与天然气工程'],
+  ['17', '冶金与金属加工'], ['18', '机械工程与智能制造'], ['19', '仪器仪表与计量检测'], ['20', '能源与动力工程'],
+  ['21', '核科学与核工程'], ['22', '电气工程与电力系统'], ['23', '电子通信与半导体'], ['24', '自动化与控制工程'],
+  ['25', '人工智能与计算机技术'], ['26', '化学工程与过程工业'], ['27', '轻工食品与纺织'], ['28', '建筑与土木工程'],
+  ['29', '水利与水电工程'], ['30', '交通运输工程'], ['31', '航空航天工程'], ['32', '环境与安全工程'],
+]
+const definitionDomainOptions = [{ value: '自动识别', label: '自动识别' }, ...DEFINITION_DOMAINS.map(([value, label]) => ({ value, label }))]
+const outputFormatOptions = [{ value: 'JSON', label: 'JSON' }, { value: 'CSV', label: 'CSV' }, { value: '数据库写入结构', label: '数据库写入结构' }]
+const algorithmOptions = [{ value: 'auto', label: '自动选择' }, { value: 'kmeans', label: 'K-Means' }, { value: 'hierarchical', label: '层次聚类' }, { value: 'hdbscan', label: 'HDBSCAN' }]
+const anchorTrainModeOptions = [{ value: 'builtin', label: '内置' }, { value: 'upload', label: '用户上传资源' }]
+const labelLanguageTypeOptions = [{ value: 'auto', label: '自动' }, { value: 'zh', label: '中文' }, { value: 'en', label: '英文' }]
+const dictionaryModeOptions = [{ value: 'system', label: '使用系统预置术语词典（默认）' }, { value: 'custom', label: '用户自定义词典' }]
 
 const props = defineProps<{ toolId: string; tool: ToolDefinition }>()
 const emit = defineEmits<{ visualize: [response: unknown]; preview: [mode: InputMode] }>()
@@ -38,6 +62,20 @@ const savingDict = ref(false)
 const clusterTaskOptions = ref<any[]>([])
 const documentCollectionOptions = ref<any[]>([])
 const nerHistoryOptions = ref<any[]>([])
+// 下拉选项（动态历史/数据库列表）：label 拼接方式与原 <option> 插值完全一致；
+// 空列表时返回与原生等价的 value='' 禁用“暂无…”占位 option（不用 placeholder+空数组）
+const nerRecordSelectOptions = computed(() => nerHistoryOptions.value.length
+  ? nerHistoryOptions.value.map(item => ({ value: item.id as string, label: (item.taskName || '未命名记录') as string }))
+  : [{ value: '', label: '暂无已完成的命名实体识别记录', disabled: true }])
+const clusterLabelTaskSelectOptions = computed(() => clusterTaskOptions.value.length
+  ? clusterTaskOptions.value.map(task => ({ value: task.id as string, label: (task.name || '未命名任务') as string }))
+  : [{ value: '', label: '暂无已完成的深度聚类任务', disabled: true }])
+const clusterTaskIdSelectOptions = computed(() => clusterTaskOptions.value.length
+  ? clusterTaskOptions.value.map(task => ({ value: task.id as string, label: `${task.name} · ${task.id}` }))
+  : [{ value: '', label: '暂无已完成的深度聚类任务', disabled: true }])
+const collectionSelectOptions = computed(() => documentCollectionOptions.value.length
+  ? documentCollectionOptions.value.map(c => ({ value: c.id as string, label: `${c.name} · ${c.documentCount} 篇 · ${c.updatedAt ? formatDateTime(c.updatedAt) : '—'}` }))
+  : [{ value: '', label: '暂无文献数据集', disabled: true }])
 type ReviewDocument = {
   id: string
   title: string
@@ -323,8 +361,6 @@ const customDictionaryTerms = ref('')
 const customDictionaryFile = ref<File | null>(null)
 const modes = computed(() => modesFor(props.tool))
 const hasResult = computed(() => result.value !== null)
-// 发表时间不能晚于今天(原生 date 选择器 max 属性)
-const todayDateStr = new Date().toISOString().slice(0, 10)
 const languageMismatch = computed(() => {
   const value = (result.value as Record<string, unknown> | null)?.language_mismatch
   return typeof value === 'string' ? value : ''
@@ -382,7 +418,7 @@ watch(selectedNerRecordId, async recordId => {
   }
 }, { immediate: true })
 const selectedDictionary = computed(() => savedDictionaryOptions.value.find(item => item.id === selectedDictionaryId.value))
-const documentTitleToolIds = new Set(['zh-classify', 'en-classify', 'domain-classify', 'zh-keyword', 'en-keyword', 'rq-detect', 'zh-abstract-move', 'en-abstract-move', 'citation-sentiment', 'citation-intent', 'general-ner', 'research-ner', 'domain-ner', 'relation-extract'])
+const documentTitleToolIds = new Set(['zh-classify', 'en-classify', 'domain-classify', 'zh-keyword', 'en-keyword', 'rq-detect', 'zh-abstract-move', 'en-abstract-move', 'citation-sentiment', 'citation-intent', 'general-ner', 'research-ner', 'domain-ner', 'relation-extract', 'definition-detect'])
 const needsDocumentTitle = computed(() => documentTitleToolIds.has(props.toolId))
 
 // 深度聚类锚点资源已随主题库删除（v3 语步对齐聚类不再使用锚点资源）
@@ -1248,6 +1284,30 @@ function requiredResourceError(): string {
 }
 
 function validateRequiredInputs(): string {
+  // 题目字数校验（2026-10-11 用户定稿：不硬截断，超 50 字点击在线测试时弹窗报错）
+  const TITLE_LIMIT = 50
+  const titleTooLong = (t: string) => t.trim().length > TITLE_LIMIT
+  if (titleTooLong(form.documentTitle)) {
+    return `题目「${form.documentTitle.trim().slice(0, 20)}…」超出 ${TITLE_LIMIT} 字限制（当前 ${form.documentTitle.trim().length} 字），请精简后重试。`
+  }
+  for (const [idx, item] of batchTexts.entries()) {
+    if (titleTooLong(item.title)) {
+      return `第 ${idx + 1} 条文本的题目「${item.title.trim().slice(0, 20)}…」超出 ${TITLE_LIMIT} 字限制（当前 ${item.title.trim().length} 字），请精简后重试。`
+    }
+  }
+  for (const [idx, doc] of docs.entries()) {
+    if (titleTooLong(doc.title)) {
+      return `文献 ${idx + 1} 的题名「${doc.title.trim().slice(0, 20)}…」超出 ${TITLE_LIMIT} 字限制（当前 ${doc.title.trim().length} 字），请精简后重试。`
+    }
+  }
+  if (titleTooLong(form.projectName)) {
+    return `项目名称「${form.projectName.trim().slice(0, 20)}…」超出 ${TITLE_LIMIT} 字限制（当前 ${form.projectName.trim().length} 字），请精简后重试。`
+  }
+  for (const [idx, item] of batchTexts.entries()) {
+    if (titleTooLong(item.projectName)) {
+      return `第 ${idx + 1} 条的项目名称「${item.projectName.trim().slice(0, 20)}…」超出 ${TITLE_LIMIT} 字限制（当前 ${item.projectName.trim().length} 字），请精简后重试。`
+    }
+  }
   if (props.toolId === 'relation-extract') {
     if (!selectedNerRecordId.value) return '请选择一条已完成的命名实体识别记录。'
     // 依存句法预览还在加载中 → 阻止提交（2026-09-11 用户需求：加载完才能点在线测试）
@@ -1289,21 +1349,20 @@ function validateRequiredInputs(): string {
     if (!form.clusterDimension) return '请选择聚类维度。'
     if (mode.value === 'batch-text') {
       if (docs.length < 4) return '深度聚类至少需要4篇科技文献文本。'
-      const invalidIndex = docs.findIndex(item => !item.id.trim() || !item.title.trim() || !item.publication_date || !item.text.trim())
+      const invalidIndex = docs.findIndex(item => !item.id.trim() || !item.title.trim() || !item.text.trim())
       if (invalidIndex >= 0) {
         const doc = docs[invalidIndex]
         const missing = [
           ...(!doc.id.trim() ? ['文献编号'] : []),
           ...(!doc.title.trim() ? ['题名'] : []),
-          ...(!doc.publication_date ? ['发表时间'] : []),
           ...(!doc.text.trim() ? ['文本'] : []),
         ]
         return `文本${invalidIndex + 1}还缺少：${missing.join('、')}（均在每条文本卡片内），请补全后再测试。`
       }
     } else {
       if (uploadedFiles.length < 4) return '深度聚类至少需要上传4个文献文件。'
-      const invalidIndex = uploadedFiles.findIndex(item => !item.documentId.trim() || !item.title.trim() || !item.publicationDate)
-      if (invalidIndex >= 0) return `请完整填写文件${invalidIndex + 1}的文献编号、题名和发表时间。`
+      const invalidIndex = uploadedFiles.findIndex(item => !item.documentId.trim() || !item.title.trim())
+      if (invalidIndex >= 0) return `请完整填写文件${invalidIndex + 1}的文献编号和题名。`
     }
     // 类簇数量约束：最低 1、最大必须小于输入文献数（留空=自动确定）。
     // 越界时同时禁用提交按钮（见 clusterCountError），提交前此处再兜底拦截。
@@ -1627,8 +1686,74 @@ function rqResultAsText(data: Record<string, unknown> | undefined, bySection: bo
   return lines.join('\n')
 }
 
+// 中文摘要语步识别：下载结果格式菜单（2026-10-11 用户需求：JSON/CSV/数据库）。
+// 数据源 = 响应 moves 数组（与响应结果、可视化弹窗同一份数据，字段三者一致）；
+// CSV=弹窗五要素每语步一行；数据库=SQL 插入语句（.sql，DBA 可直接执行导入，
+// 含幂等建表模板+单引号转义+start_pos/end_pos 避保留字）；JSON=完整响应。
+const downloadMenuOpen = ref(false)
+function toggleDownloadMenu() {
+  if (props.toolId !== 'zh-abstract-move') { downloadResult(); return }   // 其他工具行为不变
+  downloadMenuOpen.value = !downloadMenuOpen.value
+}
+function csvCell(value: unknown) {
+  const s = String(value ?? '')
+  return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
+}
+function downloadAbstractMoveCsv() {
+  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
+  const title = ((data?.document as Record<string, unknown>)?.title as string) || ''
+  const moves = ((data?.moves as Array<Record<string, unknown>>) || []).filter(m => m && m.text)
+  const lines = [
+    ['文献题名', '语步类别', '句子位置', '原文片段', '置信度评分'].map(csvCell).join(','),
+    ...moves.map(m => [title, m.label, `${m.start ?? ''}-${m.end ?? ''}`, m.text, m.confidence ?? ''].map(csvCell).join(',')),
+  ]
+  const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob); const a = document.createElement('a')
+  a.href = url; a.download = `${props.toolId}_result.csv`; a.click(); URL.revokeObjectURL(url)
+  downloadMenuOpen.value = false
+}
+function downloadAbstractMoveDatabase() {
+  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
+  const title = ((data?.document as Record<string, unknown>)?.title as string) || ''
+  const moves = ((data?.moves as Array<Record<string, unknown>>) || []).filter(m => m && m.text)
+  const esc = (v: unknown) => v === null || v === undefined ? 'NULL' : `'${String(v).replace(/'/g, "''")}'`
+  const rows = moves.map(m =>
+    `(${esc(title)}, ${esc(m.label)}, ${esc(m.text)}, ${m.start ?? 'NULL'}, ${m.end ?? 'NULL'}, ${m.confidence ?? 'NULL'})`)
+  const sql = [
+    '-- 中文摘要语步识别结果（zh-abstract-move）',
+    '-- 建表模板（首次导入执行一次，已存在则跳过）：',
+    'CREATE TABLE IF NOT EXISTS abstract_move_result (',
+    '  id BIGINT AUTO_INCREMENT PRIMARY KEY,',
+    '  document_title VARCHAR(300),',
+    '  move_label     VARCHAR(50),',
+    '  text           LONGTEXT,',
+    '  start_pos      INT,',
+    '  end_pos        INT,',
+    '  confidence     DECIMAL(4,3),',
+    '  created_at     DATETIME DEFAULT CURRENT_TIMESTAMP',
+    ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;',
+    '',
+    'INSERT INTO abstract_move_result',
+    '  (document_title, move_label, text, start_pos, end_pos, confidence) VALUES',
+    rows.join(',\n') + ';',
+    '',
+  ].join('\n')
+  const blob = new Blob(['\ufeff' + sql], { type: 'application/sql;charset=utf-8' })
+  const url = URL.createObjectURL(blob); const a = document.createElement('a')
+  a.href = url; a.download = `${props.toolId}_result.sql`; a.click(); URL.revokeObjectURL(url)
+  downloadMenuOpen.value = false
+}
+onMounted(() => {
+  document.addEventListener('click', (e) => {
+    if (downloadMenuOpen.value && !(e.target as HTMLElement)?.closest?.('.download-menu-wrap-v751')) {
+      downloadMenuOpen.value = false
+    }
+  })
+})
+
 function downloadResult() {
   if (!result.value) return
+  downloadMenuOpen.value = false
   const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
   const fmt = String((onlineRequestValues.value as Record<string, unknown>).output_format
     ?? (onlineRequestValues.value as Record<string, unknown>).output_format_requirement
@@ -1680,10 +1805,7 @@ function downloadResult() {
             <div class="field-heading"><b><span class="required-mark">*</span> 上游实体记录</b><span>必填；读取句子与实体，自动分析依存句法</span></div>
             <div class="database-selector-panel relation-ner-selector">
               <div class="database-selector-heading"><b>选择已完成的命名实体识别记录</b></div>
-              <select v-model="selectedNerRecordId" class="select">
-                <option v-if="!nerHistoryOptions.length" value="" disabled>暂无已完成的命名实体识别记录</option>
-                <option v-for="item in nerHistoryOptions" :key="item.id" :value="item.id">{{ item.taskName || '未命名记录' }}</option>
-              </select>
+              <AppSelect v-model="selectedNerRecordId" :options="nerRecordSelectOptions" />
               <div v-if="!nerHistoryOptions.length" class="info-banner" style="margin-top:8px"><b>暂无数据</b><span>请先在"中英文通用领域命名实体识别"等工具中完成至少一次识别,再回来选择上游记录</span></div>
               <div v-if="selectedNerRecord" class="database-task-summary relation-record-summary">
                 <span><small>识别类型</small><b>{{ selectedNerRecord.nerType }}</b></span><span><small>文献编号</small><b>{{ selectedNerRecord.documentId }}</b></span><span><small>句子编号</small><b>{{ selectedNerRecord.sentenceId }}</b></span><span><small>完成时间</small><b>{{ formatDateTime(selectedNerRecord.completedAt) }}</b></span>
@@ -1716,12 +1838,16 @@ function downloadResult() {
           </div>
           <div v-if="!['deep-cluster','cluster-label','structured-review','relation-extract'].includes(toolId)" class="field input-mode-field"><label><span class="label-main">输入方式</span><small>{{ inputModeHint }}</small></label><ModeSwitch v-model="mode" :modes="modes" :tool="tool" kind="在线测试输入方式" /></div>
 
-          <div v-if="toolId === 'domain-ner'" class="field"><label><span class="label-main">专业领域</span><small>选填；选择后实体领域标签与统计卡跟随该领域，不选则自动识别</small></label><select v-model="form.domain" class="select"><option value="自动识别">自动识别（默认）</option><option>医学</option><option>药学</option><option>化学</option><option>化工</option><option>物理</option><option>生物</option><option>计算机</option><option>材料</option><option>农业</option><option>环境</option><option>地学</option></select></div>
+          <div v-if="toolId === 'domain-ner'" class="field"><label><span class="label-main">专业领域</span><small>选填；选择后实体领域标签与统计卡跟随该领域，不选则自动识别</small></label><AppSelect v-model="form.domain" :options="domainNerDomainOptions" /></div>
 
           <template v-if="toolId === 'deep-cluster'">
             <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 聚类维度</span><small>选择本次聚类的语义分析视角</small></label><div class="dimension-options"><label :class="{ active: form.clusterDimension === 'technology' }"><input v-model="form.clusterDimension" type="radio" value="technology" /><span><b>技术路线聚类</b><small>重点分析文献采用的方法、模型结构、算法机制、数据处理流程和实验技术，将技术方案相近的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label><label :class="{ active: form.clusterDimension === 'application_scenario' }"><input v-model="form.clusterDimension" type="radio" value="application_scenario" /><span><b>应用场景聚类</b><small>重点分析文献解决的任务、服务对象、行业领域、实际环境和应用目标，将面向相似使用场景的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label></div></div>
-            <div class="settings-card"><div class="settings-title"><b>算法与输出参数</b><span>可选算法、类簇数量与输出格式</span></div><div class="three-column"><div class="field"><label><span class="label-main">聚类算法类型</span></label><select v-model="form.algorithm" class="select"><option value="auto">自动选择</option><option value="kmeans">K-Means</option><option value="hierarchical">层次聚类</option><option value="hdbscan">HDBSCAN</option></select></div><div class="field"><label><span class="label-main">类簇数量</span></label><div class="numeric-stepper"><input :value="form.clusterCount === '' || form.clusterCount === null ? '自动确定' : String(form.clusterCount)" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="类簇数量" @keydown.up.prevent="stepClusterCount(1)" @keydown.down.prevent="stepClusterCount(-1)" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加类簇数量" title="增加（从自动确定进入 1）" @click="stepClusterCount(1)">▲</button><button type="button" aria-label="减少类簇数量" title="减少（1 时退回自动确定）" :disabled="form.clusterCount === '' || form.clusterCount === null" @click="stepClusterCount(-1)">▼</button></span></div><small v-if="clusterCountError" class="field-error-hint" style="color:#d54949;display:block;margin-top:4px">{{ clusterCountError }}</small></div><div class="field"><label><span class="label-main">输出格式</span></label><select v-model="form.outputFormat" class="select"><option>JSON</option><option>CSV</option><option>数据库写入结构</option></select></div></div></div>
+            <div class="settings-card"><div class="settings-title"><b>算法与输出参数</b><span>可选算法、类簇数量与输出格式</span></div><div class="three-column"><div class="field"><label><span class="label-main">聚类算法类型</span></label><AppSelect v-model="form.algorithm" :options="algorithmOptions" /></div><div class="field"><label><span class="label-main">类簇数量</span></label><div class="numeric-stepper"><input :value="form.clusterCount === '' || form.clusterCount === null ? '自动确定' : String(form.clusterCount)" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="类簇数量" @keydown.up.prevent="stepClusterCount(1)" @keydown.down.prevent="stepClusterCount(-1)" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加类簇数量" title="增加（从自动确定进入 1）" @click="stepClusterCount(1)">▲</button><button type="button" aria-label="减少类簇数量" title="减少（1 时退回自动确定）" :disabled="form.clusterCount === '' || form.clusterCount === null" @click="stepClusterCount(-1)">▼</button></span></div><small v-if="clusterCountError" class="field-error-hint" style="color:#d54949;display:block;margin-top:4px">{{ clusterCountError }}</small></div><div class="field"><label><span class="label-main">输出格式</span></label><AppSelect v-model="form.outputFormat" :options="outputFormatOptions" /></div></div></div>
             <ModeSwitch v-model="mode" :modes="modes" :tool="tool" kind="深度聚类数据来源" />
+          </template>
+
+          <template v-if="toolId === 'definition-detect'">
+            <div class="settings-card definition-basic-options two-column"><div class="field"><label><span class="label-main">领域标签</span><small>注入领域语境辅助概念判定</small></label><AppSelect v-model="form.domain" :options="definitionDomainOptions" /></div><div class="field"><label><span class="label-main">输出格式要求</span><small>附输出结构</small></label><AppSelect v-model="form.outputFormat" :options="outputFormatOptions" /></div></div>
           </template>
 
           <template v-if="toolId === 'cluster-label'">
@@ -1729,10 +1855,7 @@ function downloadResult() {
               <div class="settings-title"><b><span class="required-mark">*</span> 类簇短语集合</b><span>必填；从已完成的深度聚类结果获取</span></div>
               <div class="database-selector-panel cluster-task-selector">
                 <div class="database-selector-heading"><b>选择已完成的深度聚类任务</b></div>
-                <select v-model="selectedClusterTaskId" class="select">
-                  <option v-if="!clusterTaskOptions.length" value="" disabled>暂无已完成的深度聚类任务</option>
-                  <option v-for="task in clusterTaskOptions" :key="task.id" :value="task.id">{{ task.name || '未命名任务' }}</option>
-                </select>
+                <AppSelect v-model="selectedClusterTaskId" :options="clusterLabelTaskSelectOptions" />
                 <div v-if="selectedClusterTask" class="database-task-summary">
                   <span><small>聚类维度</small><b>{{ selectedClusterTask.dimension }}</b></span><span><small>文献数量</small><b>{{ selectedClusterTask.documentCount }} 篇</b></span><span><small>类簇数量</small><b>{{ selectedClusterTask.clusterCount }} 个</b></span><span><small>完成时间</small><b>{{ formatDateTime(selectedClusterTask.completedAt) }}</b></span>
                 </div>
@@ -1760,19 +1883,19 @@ function downloadResult() {
                 <div class="settings-title deep-cluster-metadata-title"><b>文献元数据</b><span>与文本一并提交</span></div>
                 <div class="two-column deep-cluster-metadata-grid">
                   <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="doc.id" class="input" placeholder="例如：DOC001" /></div>
-                  <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 发表时间</span></label><input v-model="doc.publication_date" class="input" type="date" :max="todayDateStr" /></div>
-                  <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="doc.title" class="input" placeholder="请输入题名" /></div>
+                  <div class="field"><label><span class="label-main">发表时间</span><small>可选；填写后参与趋势分析</small></label><YearPicker v-model="doc.publication_date" /></div>
+                  <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="doc.title" class="input" maxlength="300" placeholder="请输入题名" /><small class="char-count-v755">{{ doc.title.length }}/50</small></div>
                   <div class="field"><label><span class="label-main">作者</span><small>可选</small></label><input v-model="doc.authors" class="input" placeholder="多人使用逗号分隔" /></div>
                   <div class="field"><label><span class="label-main">文献来源</span><small>可选</small></label><input v-model="doc.source" class="input" placeholder="期刊、会议、报告或其他来源" /></div>
                   <div class="field"><label><span class="label-main">关键词</span><small>可选</small></label><input v-model="doc.keywords" class="input" placeholder="多个关键词使用逗号分隔" /></div>
                 </div>
-                <div class="field deep-cluster-text-field"><label><span class="label-main"><span class="required-mark">*</span> 文本</span><small>支持各类科技文本，最多 8000 字</small></label><textarea v-model="doc.text" class="textarea compact" maxlength="8000" placeholder="请输入完整文本"></textarea></div>
+                <div class="field deep-cluster-text-field"><label><span class="label-main"><span class="required-mark">*</span> 文本</span><small>支持各类科技文本，最多 8000 字</small></label><textarea v-model="doc.text" class="textarea compact" maxlength="8000" placeholder="请输入完整文本"></textarea><small class="char-count-v755">{{ doc.text.length }}/8000</small></div>
               </div>
               <button v-if="docs.length" class="outline-btn deep-cluster-add-doc-btn" type="button" @click="addDoc">＋ 添加文本</button>
               <div class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
                 <div class="field full"><label><span class="label-main">训练样本与人工标注类目标签数据</span><small>可选</small></label>
                   <div class="requirement-resource-controls">
-                    <select v-model="anchorTrainMode" class="select resource-source-select" @change="anchorTrainFile = null"><option value="builtin">内置</option><option value="upload">用户上传资源</option></select>
+                    <AppSelect v-model="anchorTrainMode" :options="anchorTrainModeOptions" @change="anchorTrainFile = null" />
                     <div v-if="anchorTrainMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload($event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传已标注文献集' }}</b><small>仅 .json：title（题名）+ text（文本）+ category（人工标注类目）；编号可选</small></label></div>
                   </div>
                 </div>
@@ -1782,7 +1905,7 @@ function downloadResult() {
           </template>
 
           <template v-else-if="toolId === 'cluster-label' && mode === 'batch-text'">
-            <div class="settings-card"><div class="settings-title"><b>可选标签生成参数</b><span>可选标签长度、语言与差异阈值</span></div><div class="three-column"><div class="field"><label><span class="label-main">标签长度限制</span></label><input v-model="labelLengthLimit" class="input" type="number" min="1" /></div><div class="field"><label><span class="label-main">语言类型</span></label><select v-model="labelLanguageType" class="select"><option value="auto">自动</option><option value="zh">中文</option><option value="en">英文</option></select></div><div class="field"><label><span class="label-main">差异度阈值</span></label><div class="numeric-stepper"><input v-model="form.threshold" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="差异度阈值" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加差异度阈值" :disabled="Number(form.threshold) >= 1" @click="adjustThreshold(1)">▲</button><button type="button" aria-label="减小差异度阈值" :disabled="Number(form.threshold) <= 0" @click="adjustThreshold(-1)">▼</button></span></div></div></div></div>
+            <div class="settings-card"><div class="settings-title"><b>可选标签生成参数</b><span>可选标签长度、语言与差异阈值</span></div><div class="three-column"><div class="field"><label><span class="label-main">标签长度限制</span></label><input v-model="labelLengthLimit" class="input" type="number" min="1" /></div><div class="field"><label><span class="label-main">语言类型</span></label><AppSelect v-model="labelLanguageType" :options="labelLanguageTypeOptions" /></div><div class="field"><label><span class="label-main">差异度阈值</span></label><div class="numeric-stepper"><input v-model="form.threshold" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="差异度阈值" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加差异度阈值" :disabled="Number(form.threshold) >= 1" @click="adjustThreshold(1)">▲</button><button type="button" aria-label="减小差异度阈值" :disabled="Number(form.threshold) <= 0" @click="adjustThreshold(-1)">▼</button></span></div></div></div></div>
           </template>
 
           <template v-else-if="toolId === 'structured-review' && mode === 'batch-text'">
@@ -1794,14 +1917,14 @@ function downloadResult() {
                 <div class="settings-title review-metadata-title"><b>文献元数据</b><span>支撑团队分析、趋势计算与溯源</span></div>
                 <div class="two-column review-document-meta-grid-v637">
                   <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="doc.id" class="input" placeholder="例如：DOC001" /></div>
-                  <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="doc.title" class="input" placeholder="可填写科技文献题名" /></div>
+                  <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="doc.title" class="input" maxlength="300" placeholder="可填写科技文献题名" /><small class="char-count-v755">{{ doc.title.length }}/50</small></div>
                   <div class="field"><label><span class="label-main">作者</span></label><input v-model="doc.authors" class="input" placeholder="多人使用逗号分隔" /></div>
                   <div class="field"><label><span class="label-main">研究团队或机构</span></label><input v-model="doc.institutions" class="input" placeholder="请输入研究团队或机构" /></div>
-                  <div class="field"><label><span class="label-main">发表时间</span></label><input v-model="doc.publication_date" class="input" type="date" :max="todayDateStr" /></div>
+                  <div class="field"><label><span class="label-main">发表时间</span></label><YearPicker v-model="doc.publication_date" /></div>
                   <div class="field"><label><span class="label-main">文献来源</span></label><input v-model="doc.source" class="input" placeholder="期刊、会议、报告或知识库" /></div>
                   <div class="field full"><label><span class="label-main">文献关键词</span><small>多个关键词可使用逗号、顿号或分号分隔</small></label><input v-model="doc.keywords" class="input" placeholder="多个关键词使用逗号、顿号或分号分隔" /></div>
                 </div>
-                <div class="field review-fulltext-v634"><label><span class="label-main"><span class="required-mark">*</span> 文本</span><small>支持各类科技文本，最多 8000 字</small></label><textarea v-model="doc.text" class="textarea compact" maxlength="8000" placeholder="请输入文本内容"></textarea></div>
+                <div class="field review-fulltext-v634"><label><span class="label-main"><span class="required-mark">*</span> 文本</span><small>支持各类科技文本，最多 8000 字</small></label><textarea v-model="doc.text" class="textarea compact" maxlength="8000" placeholder="请输入文本内容"></textarea><small class="char-count-v755">{{ doc.text.length }}/8000</small></div>
               </div>
               <button v-if="docs.length" class="outline-btn deep-cluster-add-doc-btn" type="button" @click="addDoc">＋ 添加文献</button>
             </div>
@@ -1809,8 +1932,8 @@ function downloadResult() {
 
           <template v-else-if="toolId.startsWith('citation-') && mode === 'text'">
             <div class="citation-structured-input">
-              <div class="field document-title-field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识响应结果及可视化弹窗中的当前文献</small></label><input v-model="form.documentTitle" class="input" maxlength="300" placeholder="请输入题目" /></div>
-              <div v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="citationSingle.documentText" class="textarea main-textarea" maxlength="8000" placeholder="请输入文献文本"></textarea></div>
+              <div class="field document-title-field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识响应结果及可视化弹窗中的当前文献</small></label><input v-model="form.documentTitle" class="input" maxlength="300" placeholder="请输入题目" /><small class="char-count-v755">{{ form.documentTitle.length }}/50</small></div>
+              <div v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="citationSingle.documentText" class="textarea main-textarea" maxlength="8000" placeholder="请输入文献文本"></textarea><small class="char-count-v755">{{ citationSingle.documentText.length }}/8000</small></div>
               <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句解析</span><button type="button" class="citation-extract-btn" @click="forceAutoExtractCitation"><i>✦</i>从文献文本自动提取</button></label></div>
               <div v-for="(card, index) in citationCards" :key="card.id" class="document-card citation-card">
                 <div class="document-card-head"><b>引用句 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" @click="removeCitationCard(card.id)">删除</button></div>
@@ -1825,8 +1948,8 @@ function downloadResult() {
               <div class="special-panel-head"><div><strong>批量引用数据</strong><span>已添加 {{ citationBatchItems.length }} 条，每条作为一个独立任务</span></div><button class="outline-btn" type="button" @click="addCitationBatchItem">＋ 添加引用数据</button></div>
               <div v-for="(item,index) in citationBatchItems" :key="item.id" class="document-card batch-text-item-card citation-batch-item-card">
                 <div class="document-card-head"><b>引用数据 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" :disabled="citationBatchItems.length <= 2" @click="removeCitationBatchItem(item.id)">删除</button></div>
-                <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识本条响应结果及可视化弹窗中的文献</small></label><input v-model="item.title" class="input" maxlength="300" placeholder="请输入本条文献题目" /></div>
-                <div v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="item.documentText" class="textarea compact" maxlength="8000" placeholder="请输入本条引用所属的文献文本"></textarea></div>
+                <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识本条响应结果及可视化弹窗中的文献</small></label><input v-model="item.title" class="input" maxlength="300" placeholder="请输入本条文献题目" /><small class="char-count-v755">{{ item.title.length }}/50</small></div>
+                <div v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="item.documentText" class="textarea compact" maxlength="8000" placeholder="请输入本条引用所属的文献文本"></textarea><small class="char-count-v755">{{ item.documentText.length }}/8000</small></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><button v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" type="button" class="citation-extract-btn" @click="autoExtractBatchCitation(item)"><i>✦</i>从文献文本自动提取</button></label><textarea v-model="item.citationSentence" class="textarea compact citation-sentence-area" placeholder="可点击右上按钮从本条文献文本自动提取，也可手动填写"></textarea></div>
                 <div class="field"><label><span class="label-main">局部子片段</span><small>该文献编号对应的局部语义片段；意图/情感识别以此为准，留空则用整句判定</small></label><textarea v-model="item.subSpan" class="textarea compact" placeholder="本条引用对应的局部子片段，可编辑"></textarea></div>
                 <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="item.previousContext" class="textarea compact citation-context-area" placeholder="请输入引用句前文"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="item.nextContext" class="textarea compact citation-context-area" placeholder="请输入引用句后文"></textarea></div></div>
@@ -1842,7 +1965,7 @@ function downloadResult() {
                     <div class="citation-metadata-form-grid">
                       <div class="field"><label><span class="label-main">发表年份</span></label><input v-model="entry.year" class="input" placeholder="例如：2024" /></div>
                       <div class="field"><label><span class="label-main">作者</span></label><input v-model="entry.authorsText" class="input" placeholder="多个作者用分号分隔" /></div>
-                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献题名</span></label><input v-model="entry.title" class="input" placeholder="请输入被引文献题名" /></div>
+                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献题名</span></label><input v-model="entry.title" class="input" placeholder="请输入被引文献题名" /><small class="char-count-v755">{{ entry.title.length }}/50</small></div>
                       <div class="field"><label><span class="label-main">期刊或会议</span></label><input v-model="entry.venue" class="input" placeholder="请输入期刊或会议名称" /></div>
                       <div class="field"><label><span class="label-main">DOI</span><small>选填</small></label><input v-model="entry.doi" class="input" placeholder="例如：10.xxxx/xxxxx" /></div>
                     </div>
@@ -1852,19 +1975,18 @@ function downloadResult() {
             </div>
           </template>
           <template v-else-if="mode === 'text' && toolId !== 'relation-extract'">
-            <div v-if="toolId === 'definition-detect'" class="settings-card definition-basic-options two-column"><div class="field"><label><span class="label-main">领域标签</span><small>注入领域语境辅助概念判定</small></label><select v-model="form.domain" class="select"><option value="自动识别">自动识别</option><option value="01">数学与计算科学</option><option value="02">力学与工程力学</option><option value="03">物理学与应用物理</option><option value="04">化学与化学科学</option><option value="05">天文学与空间科学</option><option value="06">地球科学与地质资源</option><option value="07">测绘遥感与地理信息</option><option value="08">气象海洋科学</option><option value="09">生物科学与生物技术</option><option value="10">医学与卫生健康</option><option value="11">药学与毒理学</option><option value="12">农业科学与农业工程</option><option value="13">林业畜牧兽医与水产</option><option value="14">材料科学与材料工程</option><option value="15">矿业与矿物加工</option><option value="16">石油与天然气工程</option><option value="17">冶金与金属加工</option><option value="18">机械工程与智能制造</option><option value="19">仪器仪表与计量检测</option><option value="20">能源与动力工程</option><option value="21">核科学与核工程</option><option value="22">电气工程与电力系统</option><option value="23">电子通信与半导体</option><option value="24">自动化与控制工程</option><option value="25">人工智能与计算机技术</option><option value="26">化学工程与过程工业</option><option value="27">轻工食品与纺织</option><option value="28">建筑与土木工程</option><option value="29">水利与水电工程</option><option value="30">交通运输工程</option><option value="31">航空航天工程</option><option value="32">环境与安全工程</option></select></div><div class="field"><label><span class="label-main">输出格式要求</span><small>附输出结构</small></label><select v-model="form.outputFormat" class="select"><option>JSON</option><option>CSV</option><option>数据库写入结构</option></select></div></div>
-            <div v-if="toolId === 'fund-move'" class="field fund-project-name-field"><label><span class="label-main"><span class="required-mark">*</span> 项目名称</span><small>必填；用于标识本次基金项目语步识别结果</small></label><input v-model="form.projectName" class="input" maxlength="200" placeholder="请输入项目名称" /></div>
-            <div v-if="needsDocumentTitle" class="field document-title-field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识响应结果及可视化弹窗中的当前文献</small></label><input v-model="form.documentTitle" class="input" maxlength="300" placeholder="请输入题目" /></div>
-            <div class="field primary-text-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}</span><small>最多 8000 字</small></label><textarea v-model="form.text" class="textarea main-textarea primary-textarea" maxlength="8000" :placeholder="textInputPlaceholder"></textarea></div>
+            <div v-if="toolId === 'fund-move'" class="field fund-project-name-field"><label><span class="label-main"><span class="required-mark">*</span> 项目名称</span><small>必填；用于标识本次基金项目语步识别结果</small></label><input v-model="form.projectName" class="input" placeholder="请输入项目名称" /><small class="char-count-v755">{{ form.projectName.length }}/50</small></div>
+            <div v-if="needsDocumentTitle" class="field document-title-field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识响应结果及可视化弹窗中的当前文献</small></label><input v-model="form.documentTitle" class="input" maxlength="300" placeholder="请输入题目" /><small class="char-count-v755">{{ form.documentTitle.length }}/50</small></div>
+            <div class="field primary-text-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}</span><small>最多 8000 字</small></label><textarea v-model="form.text" class="textarea main-textarea primary-textarea" maxlength="8000" :placeholder="textInputPlaceholder"></textarea><small class="char-count-v755">{{ form.text.length }}/8000</small></div>
           </template>
           <template v-else-if="mode === 'batch-text' && toolId !== 'relation-extract'">
             <div class="special-panel batch-text-panel">
               <div class="special-panel-head"><div><strong>{{ textInputLabel }}集合</strong><span>已添加 {{ batchTexts.length }} 条，每条独立提交和返回结果</span></div></div>
               <div v-for="(item,index) in batchTexts" :key="item.id" class="document-card batch-text-item-card">
                 <div class="document-card-head"><b><span class="required-mark">*</span> 文本 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" :disabled="batchTexts.length <= 2" @click="removeBatchText(item.id)">删除</button></div>
-                <div v-if="toolId === 'fund-move'" class="field fund-project-name-field"><label><span class="label-main"><span class="required-mark">*</span> 项目名称</span><small>必填；对应第 {{ index + 1 }} 条文本</small></label><input v-model="item.projectName" class="input" maxlength="200" :placeholder="`请输入第 ${index + 1} 个项目名称`" /></div>
-                <div v-if="needsDocumentTitle" class="field document-title-field" :class="{ 'duplicate-title-field': duplicateBatchTitles.has(item.title.trim()) }"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；对应第 {{ index + 1 }} 条文本{{ duplicateBatchTitles.has(item.title.trim()) ? '；与其他条目重复，请修改为唯一题目' : '' }}</small></label><input v-model="item.title" class="input" maxlength="300" :placeholder="`请输入第 ${index + 1} 篇文献题目`" /></div>
-                <div class="field batch-text-content-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}</span><small>必填；最多 8000 字</small></label><textarea v-model="item.text" class="textarea compact batch-textarea" maxlength="8000" :placeholder="`请输入第 ${index + 1} 条${textInputLabel}`"></textarea></div>
+                <div v-if="toolId === 'fund-move'" class="field fund-project-name-field"><label><span class="label-main"><span class="required-mark">*</span> 项目名称</span><small>必填；对应第 {{ index + 1 }} 条文本</small></label><input v-model="item.projectName" class="input" :placeholder="`请输入第 ${index + 1} 个项目名称`" /><small class="char-count-v755">{{ item.projectName.length }}/50</small></div>
+                <div v-if="needsDocumentTitle" class="field document-title-field" :class="{ 'duplicate-title-field': duplicateBatchTitles.has(item.title.trim()) }"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；对应第 {{ index + 1 }} 条文本{{ duplicateBatchTitles.has(item.title.trim()) ? '；与其他条目重复，请修改为唯一题目' : '' }}</small></label><input v-model="item.title" class="input" maxlength="300" :placeholder="`请输入第 ${index + 1} 篇文献题目`" /><small class="char-count-v755">{{ item.title.length }}/50</small></div>
+                <div class="field batch-text-content-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}</span><small>必填；最多 8000 字</small></label><textarea v-model="item.text" class="textarea compact batch-textarea" maxlength="8000" :placeholder="`请输入第 ${index + 1} 条${textInputLabel}`"></textarea><small class="char-count-v755">{{ item.text.length }}/8000</small></div>
               </div>
               <!-- 添加按钮放在列表末尾右下：点击后新文本框就在按钮处出现，无需回滚顶部 -->
               <div class="batch-text-add-row"><button class="outline-btn" type="button" @click="addBatchText">＋ 添加文本</button></div>
@@ -1887,8 +2009,8 @@ function downloadResult() {
                     <div class="settings-title deep-cluster-metadata-title"><b>文献元数据</b><span>由用户填写，与当前文件一一关联</span></div>
                     <div class="two-column deep-cluster-metadata-grid">
                       <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="item.documentId" class="input" placeholder="例如：DOC001" /></div>
-                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 发表时间</span></label><input v-model="item.publicationDate" class="input" type="date" :max="todayDateStr" /></div>
-                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="item.title" class="input" placeholder="请输入题名" /></div>
+                      <div class="field"><label><span class="label-main">发表时间</span><small>可选；填写后参与趋势分析</small></label><YearPicker v-model="item.publicationDate" /></div>
+                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="item.title" class="input" maxlength="300" placeholder="请输入题名" /><small class="char-count-v755">{{ item.title.length }}/50</small></div>
                       <div class="field"><label><span class="label-main">作者</span><small>可选</small></label><input v-model="item.authors" class="input" placeholder="多人使用逗号分隔" /></div>
                       <div class="field"><label><span class="label-main">文献来源</span><small>可选</small></label><input v-model="item.source" class="input" placeholder="期刊、会议、报告或其他来源" /></div>
                       <div class="field"><label><span class="label-main">关键词</span><small>可选</small></label><input v-model="item.keywords" class="input" placeholder="多个关键词使用逗号分隔" /></div>
@@ -1902,7 +2024,7 @@ function downloadResult() {
               <div v-if="toolId === 'deep-cluster'" class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
                 <div class="field full"><label><span class="label-main">训练样本与人工标注类目标签数据</span><small>可选</small></label>
                   <div class="requirement-resource-controls">
-                    <select v-model="anchorTrainMode" class="select resource-source-select" @change="anchorTrainFile = null"><option value="builtin">内置</option><option value="upload">用户上传资源</option></select>
+                    <AppSelect v-model="anchorTrainMode" :options="anchorTrainModeOptions" @change="anchorTrainFile = null" />
                     <div v-if="anchorTrainMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload($event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传已标注文献集' }}</b><small>仅 .json：title（题名）+ text（文本）+ category（人工标注类目）；编号可选</small></label></div>
                   </div>
                 </div>
@@ -1915,14 +2037,14 @@ function downloadResult() {
               <div class="settings-title"><b>{{ mode === 'existing-result' ? '数据库历史聚类任务' : '指定文献集' }}</b><span>{{ mode === 'collection' ? '数据来源是聚类标签生成工具的簇与簇内文件' : '从系统数据库读取已完成并持久化保存的聚类结果' }}</span></div>
               <div v-if="mode === 'collection'" class="database-selector-panel">
                 <div class="database-selector-heading"><b><span class="required-mark">*</span> 选择已有文献集</b><span>必填</span></div>
-                <select v-model="selectedCollectionId" class="select"><option v-if="!documentCollectionOptions.length" value="" disabled>暂无文献数据集</option><option v-for="collection in documentCollectionOptions" :key="collection.id" :value="collection.id">{{ collection.name }} · {{ collection.documentCount }} 篇 · {{ collection.updatedAt ? formatDateTime(collection.updatedAt) : '—' }}</option></select>
+                <AppSelect v-model="selectedCollectionId" :options="collectionSelectOptions" />
                 <div v-if="!documentCollectionOptions.length" class="info-banner" style="margin-top:8px"><b>暂无数据</b><span>暂无满足数量要求的簇文献集（综述至少需要 2 篇文献，不足 2 篇的簇已过滤）；请先在"聚类标签生成工具"中完成标签生成，或选择包含 2 篇以上文献的簇</span></div>
                 <div v-if="selectedCollection" class="database-task-summary collection-summary"><span><small>数据来源</small><b>{{ selectedCollection.source }}</b></span><span><small>文献数量</small><b>{{ selectedCollection.documentCount }} 篇</b></span><span><small>时间范围</small><b>{{ selectedCollection.timeRange }}</b></span><span><small>更新时间</small><b>{{ formatDateTime(selectedCollection.updatedAt) }}</b></span></div>
                 <div class="info-banner">系统根据文献集编号读取每篇文献的文本和对应元数据；用户不需要手工填写数据库编号或文本。</div>
               </div>
               <div v-else class="database-selector-panel">
                 <div class="database-selector-heading"><b><span class="required-mark">*</span> 选择已完成的深度聚类任务</b><span>必填</span></div>
-                <select v-model="selectedClusterTaskId" class="select"><option v-if="!clusterTaskOptions.length" value="" disabled>暂无已完成的深度聚类任务</option><option v-for="task in clusterTaskOptions" :key="task.id" :value="task.id">{{ task.name }} · {{ task.id }}</option></select>
+                <AppSelect v-model="selectedClusterTaskId" :options="clusterTaskIdSelectOptions" />
                 <div v-if="selectedClusterTask" class="database-task-summary"><span><small>聚类维度</small><b>{{ selectedClusterTask.dimension }}</b></span><span><small>文献数量</small><b>{{ selectedClusterTask.documentCount }} 篇</b></span><span><small>类簇数量</small><b>{{ selectedClusterTask.clusterCount }} 个</b></span><span><small>完成时间</small><b>{{ formatDateTime(selectedClusterTask.completedAt) }}</b></span></div>
                 <div class="info-banner">系统使用任务编号读取关联类簇和短语集合，任务编号仅用于数据库关联。</div>
               </div>
@@ -1933,7 +2055,7 @@ function downloadResult() {
 
 
           <div v-if="toolId === 'zh-keyword'" class="settings-card generic-settings">
-            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="field"><label><span class="label-main">词典使用方式</span><small>区分数据库资源与用户录入</small></label><select v-model="dictionaryMode" class="select" @change="handleDictionaryModeChange"><option value="system">使用系统预置术语词典（默认）</option><option value="custom">用户自定义词典</option></select></div><div v-if="dictionaryMode === 'system'" class="info-banner dictionary-status">✓ 默认状态：使用系统预置术语词典，不提交用户词典参数。</div><div v-else class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>{{ customDictionaryFile?.name || '上传用户词典文件' }}</b><small>支持 JSON/CSV/XLSX/TXT：术语词条</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div></div></div>
+            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="field"><label><span class="label-main">词典使用方式</span><small>区分数据库资源与用户录入</small></label><AppSelect v-model="dictionaryMode" :options="dictionaryModeOptions" @change="handleDictionaryModeChange" /></div><div v-if="dictionaryMode === 'system'" class="info-banner dictionary-status">✓ 默认状态：使用系统预置术语词典，不提交用户词典参数。</div><div v-else class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>{{ customDictionaryFile?.name || '上传用户词典文件' }}</b><small>支持 JSON/CSV/XLSX/TXT：术语词条</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div></div></div>
           </div>
 
         </div>
@@ -1941,7 +2063,7 @@ function downloadResult() {
 
       <div class="test-card response-card">
         <div v-if="languageMismatch" class="info-banner warning" style="margin:0 0 10px"><b>语言不匹配提示</b><span>{{ languageMismatch }}</span></div>
-        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="downloadResult">⇩ 下载结果</button><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)">▦ 查看可视化结果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><img :src="trashIconUrl" class="clear-result-icon" alt="" aria-hidden="true" />清除结果</button></div></div>
+        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><div class="download-menu-wrap-v751"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="toggleDownloadMenu">⇩ 下载结果</button><div v-if="downloadMenuOpen" class="download-menu-v751"><button type="button" class="download-menu-item-v751" @click="downloadResult">JSON（完整响应）</button><button type="button" class="download-menu-item-v751" @click="downloadAbstractMoveCsv">CSV（每语步一行）</button><button type="button" class="download-menu-item-v751" @click="downloadAbstractMoveDatabase">数据库（SQL 插入语句）</button></div></div><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)">▦ 查看可视化结果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><img :src="trashIconUrl" class="clear-result-icon" alt="" aria-hidden="true" />清除结果</button></div></div>
         <div class="response-result-body hover-copy-box"><pre v-if="hasResult" class="console">{{ pretty(result) }}</pre><div v-else-if="running && runProgress" class="console live-progress"><div class="lp-summary"><b>正在处理 {{ runProgress.total }} 篇</b><span>已完成 {{ runProgress.success_count + runProgress.failed_count }}/{{ runProgress.total }}（成功 {{ runProgress.success_count }}<template v-if="runProgress.failed_count">，失败 {{ runProgress.failed_count }}</template>）· 累计 {{ runProgress.elapsed }}s</span></div><div class="lp-rows"><div v-for="it in runProgress.items" :key="it.index" class="lp-row" :data-st="it.status"><i>{{ it.index + 1 }}</i><span class="lp-name" :title="it.file_name">{{ it.file_name }}</span><template v-if="it.status === 'succeeded'"><b class="lp-ok">✓</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template><template v-else-if="it.status === 'failed'"><b class="lp-err">✗</b><span class="lp-time">失败</span></template><template v-else><b class="lp-run">…</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template></div></div></div><div v-else-if="requestError" class="console placeholder request-error">{{ requestError }}</div><div v-else class="console placeholder">等待测试执行...</div></div>
       </div>
     </div>

@@ -3,11 +3,15 @@ import { computed, reactive, ref, watch } from 'vue'
 import type { CallType, InputMode, ToolDefinition } from '../types'
 import { buildCallCode, modesFor, pretty, requestParameterRowsFor, responseFor } from '../utils/tooling'
 import { copyText } from '../utils/clipboard'
+import { useSliderThumb } from '../utils/sliderThumb'
 import ModeSwitch from './ModeSwitch.vue'
 
 const props = defineProps<{ tool: ToolDefinition }>()
 const callType = ref<CallType>('api')
 const mode = ref<InputMode>('text')
+// 滑块式切换：API/SDK 白色滑块随选中项滑动（见 app.css .api-mode-thumb）
+const callTypeEl = ref<HTMLElement | null>(null)
+const { thumbStyle: callTypeThumbStyle, ready: callTypeThumbReady } = useSliderThumb(callTypeEl, () => callType.value)
 const copied = ref('')
 // 代码块复制反馈：按钮本地状态切换（⧉ 复制 → ✔，1200ms 后恢复），每个代码块独立，互不干扰
 const copiedKeys = reactive({ call: false, response: false })
@@ -32,7 +36,8 @@ async function copyWithToast(value: string, name: string) { try { await copyText
   <section class="section">
     <div class="section-header call-sample-header-v773">
       <h2 class="section-title">{{ callType === 'api' ? 'API 调用示例' : 'SDK 调用示例' }}</h2>
-      <div id="callTypeSwitchV770" aria-label="调用方式">
+      <div id="callTypeSwitchV770" ref="callTypeEl" aria-label="调用方式">
+        <span class="api-mode-thumb" aria-hidden="true" :data-ready="callTypeThumbReady" :style="callTypeThumbStyle"></span>
         <button class="call-type-btn-v770" :class="{ active: callType === 'api' }" @click="callType = 'api'">API 调用</button>
         <button class="call-type-btn-v770" :class="{ active: callType === 'sdk' }" @click="callType = 'sdk'">SDK 调用</button>
       </div>

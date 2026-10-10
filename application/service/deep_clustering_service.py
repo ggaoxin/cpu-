@@ -248,8 +248,8 @@ def _optional_cluster_count(params: dict[str, Any]) -> int | None:
         parsed = int(value)
     except (TypeError, ValueError) as exc:
         raise ValueError("cluster_count 必须为大于等于1的整数或 auto。") from exc
-    # 下界 1（2026-10-09 用户定稿：前端步进器"自动确定→1→2…"，1 必须可用——
-    # 此前要求 ≥2，前端放行 1 后端拒绝，输入 1 直接失败）
+    # 下限 1（2026-10-11 与前端步进器/文档口径对齐：允许用户强制 k=1 看整体
+    # 聚为一簇的效果——聚类照常出结果，类内相似度按调整口径如实显示低值）
     if parsed < 1:
         raise ValueError("cluster_count 必须大于等于1。")
     return parsed
@@ -495,36 +495,49 @@ def execute_deep_clustering(
     # ④ 向量辅助诊断（intra/inter/中心相似度）——语义指标的数值佐证
     try:
         import numpy as _np
+        # 指标向量用全文（2026-10-11 定稿）：语步句向量受 LLM 提取非确定性影响，
+        # 完全相同的文献两两仅 ~0.90（措辞噪声），无法体现近重复；全文向量确定
+        # 性好（相同文献=1.0），且是"文档相似度"的忠实口径（聚类仍按语步轴执行，
+        # 此处只做展示指标，不影响任何聚类决策）
         axis_texts = []
-        for i, mv in enumerate(moves):
-            sents = (mv["研究方法"][:6] if selected_axis == "technical"
-                     else (mv["研究背景"] + mv["研究目的"])[:6])
-            if not sents:
-                sents = [str(papers[i].get("title") or f"DOC{i + 1}")]
-            v = _np.asarray(encoder.encode(sents)).mean(axis=0)
+        for i in range(len(papers)):
+            _t = str(papers[i].get("text") or "")[:2000] or str(papers[i].get("title") or f"DOC{i + 1}")
+            v = _np.asarray(encoder.encode([_t]))[0]
             axis_texts.append(v / max(float(_np.linalg.norm(v)), 1e-9))
         matrix = _np.asarray(axis_texts)
         centers = {}
         for c in clusters:
             vecs = matrix[c["doc_indices"]]
             centers[c["cluster_id"]] = vecs.mean(axis=0)
+        # 类内相似度 = 簇内全文两两余弦均值（2026-10-11 定稿：不扣基线不加参考线，
+        # 直接用两两均值——旧口径为到质心相似度，天生虚高 0.1~0.15，不相关文献
+        # 也能到 0.75 是误导根源；换成两两均值后不相关≈0.48、同主题≈0.61、
+        # 近重复≈0.96、完全相同=1.0，区分度自然合理）
+        _sim_matrix = matrix @ matrix.T
         for c in clusters:
             cid = c["cluster_id"]
-            vecs = matrix[c["doc_indices"]]
+            idxs = c["doc_indices"]
+            vecs = matrix[idxs]
             sims = [float(v @ centers[cid]) for v in vecs]
-            intra = float(_np.mean(sims))
+            if len(idxs) >= 2:
+                _pair = [float(_sim_matrix[i, j]) for _a, i in enumerate(idxs) for j in idxs[_a + 1:]]
+                intra = round(float(_np.mean(_pair)), 3)
+                logger.info("簇 %s 类内相似度（两两均值）：%.3f", cid, intra)
+            else:
+                intra = None  # 单篇簇无两两相似度
             inter_vec = float(min(
                 float(centers[cid] @ centers[oc]) for oc in centers if oc != cid
             )) if len(centers) > 1 else 0.0
             # 类间分离度 = margin 口径：簇内相似度 − 最近异簇中心相似度（值域约
             # [-1,1]，正=簇内比最近异簇更近，越大越好）。旧口径 1−cosine 在文本
             # 向量上恒 0.3 左右（不同主题向量仍有 0.5-0.7 基线相似度），margin
-            # 才能体现"本簇相对最近异簇的分离程度"
-            margin = intra - inter_vec
+            # 才能体现"本簇相对最近异簇的分离程度"。margin 仍按裸到质心口径
+            # 计算（分子分母同口径才有可比性）
+            margin = float(_np.mean(sims)) - inter_vec
             c["feature_statistics"] = {
-                "intra_cluster_similarity": round(max(0.0, intra), 3),
+                "intra_cluster_similarity": round(intra, 3) if intra is not None else None,
                 "inter_cluster_separation": round(margin, 3),
-                "semantic_density": round(max(0.0, 1.0 - (max(sims) - min(sims)) if len(sims) >= 2 else intra), 3),
+                "semantic_density": round(max(0.0, 1.0 - (max(sims) - min(sims)) if len(sims) >= 2 else float(_np.mean(sims))), 3),
             }
         sim_by_doc = {}
         for c in clusters:
