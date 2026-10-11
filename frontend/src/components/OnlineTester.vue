@@ -1686,13 +1686,13 @@ function rqResultAsText(data: Record<string, unknown> | undefined, bySection: bo
   return lines.join('\n')
 }
 
-// 中文摘要语步识别：下载结果格式菜单（2026-10-11 用户需求：JSON/CSV/数据库）。
+// 摘要语步识别（中/英）：下载结果格式菜单（2026-10-11 用户需求）。中文含 SQL 选项，英文 JSON/CSV。
 // 数据源 = 响应 moves 数组（与响应结果、可视化弹窗同一份数据，字段三者一致）；
 // CSV=弹窗五要素每语步一行；数据库=SQL 插入语句（.sql，DBA 可直接执行导入，
 // 含幂等建表模板+单引号转义+start_pos/end_pos 避保留字）；JSON=完整响应。
 const downloadMenuOpen = ref(false)
 function toggleDownloadMenu() {
-  if (props.toolId !== 'zh-abstract-move') { downloadResult(); return }   // 其他工具行为不变
+  if (!['zh-abstract-move', 'en-abstract-move', 'zh-classify', 'zh-keyword', 'en-keyword', 'citation-sentiment', 'general-ner'].includes(props.toolId)) { downloadResult(); return }   // 其他工具行为不变
   downloadMenuOpen.value = !downloadMenuOpen.value
 }
 function csvCell(value: unknown) {
@@ -1712,6 +1712,142 @@ function downloadAbstractMoveCsv() {
   a.href = url; a.download = `${props.toolId}_result.csv`; a.click(); URL.revokeObjectURL(url)
   downloadMenuOpen.value = false
 }
+function downloadClassificationCsv() {
+  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
+  const title = ((data?.document as Record<string, unknown>)?.title as string) || ''
+  // 分类结果：classifications 数组（每条含 clc_code/category_name/confidence/role）
+  const cls = ((data?.classifications as Array<Record<string, unknown>>) || []).filter(c => c && c.clc_code)
+  const lines = [
+    ['文献题名', '角色', '中图分类号', '分类名称', '置信度'].map(csvCell).join(','),
+    ...cls.map(c => [title,
+      String(c.role || 'main') === 'secondary' ? '次分类' : '主分类',
+      String(c.clc_code || ''),
+      String(c.category_name || ''),
+      String(c.confidence ?? '')].map(csvCell).join(',')),
+  ]
+  const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob); const a = document.createElement('a')
+  a.href = url; a.download = `${props.toolId}_result.csv`; a.click(); URL.revokeObjectURL(url)
+  downloadMenuOpen.value = false
+}
+
+function downloadKeywordCsv() {
+  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
+  const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
+  const kws = ((data?.keywords as Array<Record<string, unknown>>) || []).filter(k => k && (k.keyword || k.term))
+  const lines = [
+    ['文献题名', '关键词', '权重', '类型', '置信度'].map(csvCell).join(','),
+    ...kws.map(k => [title,
+      String(k.keyword || k.term || ''),
+      String(k.weight ?? ''),
+      String(k.type || k.keyword_type || ''),
+      String(k.prob ?? k.confidence ?? '')].map(csvCell).join(',')),
+  ]
+  const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob); const a = document.createElement('a')
+  a.href = url; a.download = `${props.toolId}_result.csv`; a.click(); URL.revokeObjectURL(url)
+  downloadMenuOpen.value = false
+}
+
+function downloadKeywordXml() {
+  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
+  const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
+  const kws = ((data?.keywords as Array<Record<string, unknown>>) || []).filter(k => k && (k.keyword || k.term))
+  const escXml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  const items = kws.map((k, i) => `    <keyword id="${i + 1}">
+      <term>${escXml(String(k.keyword || k.term || ''))}</term>
+      <weight>${k.weight ?? ''}</weight>
+      <type>${escXml(String(k.type || k.keyword_type || ''))}</type>
+      <confidence>${k.prob ?? k.confidence ?? ''}</confidence>
+    </keyword>`).join('\n')
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<keywordRecognitionResult>
+  <document>
+    <title>${escXml(title)}</title>
+  </document>
+  <keywords count="${kws.length}">
+${items}
+  </keywords>
+</keywordRecognitionResult>`
+  const blob = new Blob(['\ufeff' + xml], { type: 'application/xml;charset=utf-8' })
+  const url = URL.createObjectURL(blob); const a = document.createElement('a')
+  a.href = url; a.download = `${props.toolId}_result.xml`; a.click(); URL.revokeObjectURL(url)
+  downloadMenuOpen.value = false
+}
+
+function downloadCitationCsv() {
+  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
+  const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
+  // 引用结果：citation_sentiment_results 或 results 数组
+  const items = ((data?.citation_sentiment_results || data?.results) as Array<Record<string, unknown>>) || []
+  const lines = [
+    ['文献题名', '引用句', '情感标签', '置信度', '被引文献'].map(csvCell).join(','),
+    ...items.filter(r => r && (r.citation_sentence || r.sentence)).map(r => [
+      title,
+      String(r.citation_sentence || r.sentence || ''),
+      String(r.sentiment || r.sentiment_label || r.label || ''),
+      String(r.confidence ?? ''),
+      String(r.cited_title || r.work_name || ''),
+    ].map(csvCell).join(',')),
+  ]
+  const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob); const a = document.createElement('a')
+  a.href = url; a.download = `${props.toolId}_result.csv`; a.click(); URL.revokeObjectURL(url)
+  downloadMenuOpen.value = false
+}
+
+function downloadNerCsv() {
+  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
+  const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
+  const ents = ((data?.entities || data?.entity_results) as Array<Record<string, unknown>>) || []
+  const lines = [
+    ['文献题名', '实体', '类型', '位置', '置信度'].map(csvCell).join(','),
+    ...ents.filter(e => e && (e.text || e.entity || e.name)).map(e => [
+      title,
+      String(e.text || e.entity || e.name || ''),
+      String(e.entity_type || e.type || ''),
+      e.start != null ? `字符 ${e.start}-${e.end}` : String(e.position || ''),
+      String(e.confidence ?? ''),
+    ].map(csvCell).join(',')),
+  ]
+  const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob); const a = document.createElement('a')
+  a.href = url; a.download = `${props.toolId}_result.csv`; a.click(); URL.revokeObjectURL(url)
+  downloadMenuOpen.value = false
+}
+
+function downloadNerSql() {
+  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
+  const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
+  const ents = ((data?.entities || data?.entity_results) as Array<Record<string, unknown>>) || []
+  const esc = (v: unknown) => v === null || v === undefined ? 'NULL' : `'${String(v).replace(/'/g, "''")}'`
+  const rows = ents.filter(e => e && (e.text || e.entity || e.name)).map(e =>
+    `(${esc(title)}, ${esc(e.text || e.entity || e.name)}, ${esc(e.entity_type || e.type || '')}, ${e.start ?? 'NULL'}, ${e.end ?? 'NULL'}, ${e.confidence ?? 'NULL'})`)
+  const sql = [
+    '-- 通用领域实体识别结果（general-ner）',
+    '-- 建表模板（首次导入执行一次，已存在则跳过）：',
+    'CREATE TABLE IF NOT EXISTS ner_general_result (',
+    '  id BIGINT AUTO_INCREMENT PRIMARY KEY,',
+    '  document_title VARCHAR(300),',
+    '  entity_text    VARCHAR(200),',
+    '  entity_type    VARCHAR(50),',
+    '  start_pos      INT,',
+    '  end_pos        INT,',
+    '  confidence     DECIMAL(4,3),',
+    '  created_at     DATETIME DEFAULT CURRENT_TIMESTAMP',
+    ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;',
+    '',
+    'INSERT INTO ner_general_result',
+    '  (document_title, entity_text, entity_type, start_pos, end_pos, confidence) VALUES',
+    rows.join(',\n') + ';',
+    '',
+  ].join('\n')
+  const blob = new Blob(['\ufeff' + sql], { type: 'application/sql;charset=utf-8' })
+  const url = URL.createObjectURL(blob); const a = document.createElement('a')
+  a.href = url; a.download = `${props.toolId}_result.sql`; a.click(); URL.revokeObjectURL(url)
+  downloadMenuOpen.value = false
+}
+
 function downloadAbstractMoveDatabase() {
   const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
   const title = ((data?.document as Record<string, unknown>)?.title as string) || ''
@@ -2063,7 +2199,7 @@ function downloadResult() {
 
       <div class="test-card response-card">
         <div v-if="languageMismatch" class="info-banner warning" style="margin:0 0 10px"><b>语言不匹配提示</b><span>{{ languageMismatch }}</span></div>
-        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><div class="download-menu-wrap-v751"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="toggleDownloadMenu">⇩ 下载结果</button><div v-if="downloadMenuOpen" class="download-menu-v751"><button type="button" class="download-menu-item-v751" @click="downloadResult">JSON（完整响应）</button><button type="button" class="download-menu-item-v751" @click="downloadAbstractMoveCsv">CSV（每语步一行）</button><button type="button" class="download-menu-item-v751" @click="downloadAbstractMoveDatabase">数据库（SQL 插入语句）</button></div></div><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)">▦ 查看可视化结果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><img :src="trashIconUrl" class="clear-result-icon" alt="" aria-hidden="true" />清除结果</button></div></div>
+        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><div class="download-menu-wrap-v751"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="toggleDownloadMenu">⇩ 下载结果</button><div v-if="downloadMenuOpen" class="download-menu-v751"><button type="button" class="download-menu-item-v751" @click="downloadResult">JSON（完整响应）</button><button v-if="toolId === 'zh-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationCsv">CSV（每篇分类结果）</button><button v-else-if="toolId === 'zh-keyword' || toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordCsv">CSV（每词一行）</button><button v-else-if="toolId === 'citation-sentiment'" type="button" class="download-menu-item-v751" @click="downloadCitationCsv">CSV（每条引用一行）</button><button v-else-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerCsv">CSV（每实体一行）</button><button v-else type="button" class="download-menu-item-v751" @click="downloadAbstractMoveCsv">CSV（每语步一行）</button><button v-if="toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordXml">XML（结构化关键词）</button><button v-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerSql">数据库（SQL 插入语句）</button><button v-if="toolId === 'zh-abstract-move'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveDatabase">数据库（SQL 插入语句）</button></div></div><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)">▦ 查看可视化结果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><img :src="trashIconUrl" class="clear-result-icon" alt="" aria-hidden="true" />清除结果</button></div></div>
         <div class="response-result-body hover-copy-box"><pre v-if="hasResult" class="console">{{ pretty(result) }}</pre><div v-else-if="running && runProgress" class="console live-progress"><div class="lp-summary"><b>正在处理 {{ runProgress.total }} 篇</b><span>已完成 {{ runProgress.success_count + runProgress.failed_count }}/{{ runProgress.total }}（成功 {{ runProgress.success_count }}<template v-if="runProgress.failed_count">，失败 {{ runProgress.failed_count }}</template>）· 累计 {{ runProgress.elapsed }}s</span></div><div class="lp-rows"><div v-for="it in runProgress.items" :key="it.index" class="lp-row" :data-st="it.status"><i>{{ it.index + 1 }}</i><span class="lp-name" :title="it.file_name">{{ it.file_name }}</span><template v-if="it.status === 'succeeded'"><b class="lp-ok">✓</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template><template v-else-if="it.status === 'failed'"><b class="lp-err">✗</b><span class="lp-time">失败</span></template><template v-else><b class="lp-run">…</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template></div></div></div><div v-else-if="requestError" class="console placeholder request-error">{{ requestError }}</div><div v-else class="console placeholder">等待测试执行...</div></div>
       </div>
     </div>

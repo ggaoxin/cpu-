@@ -41,7 +41,7 @@ button:disabled { cursor: not-allowed !important; opacity: .48; transform: none 
 .toast.show { display: block; opacity: 1; transform: translate(-50%,0); }
 .test-card-header { display: flex; min-height: 38px; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .test-card-title { flex: 0 0 auto; white-space: nowrap; }
-.response-card-actions-v645 { display: flex; min-width: 0; align-items: center; justify-content: flex-end; gap: 6px; }
+.response-card-actions-v645 { display: flex; flex-wrap: wrap; min-width: 0; align-items: center; justify-content: center; gap: 6px; row-gap: 4px; }
 .response-card-actions-v645 button { min-height: 31px; padding-left: 8px !important; padding-right: 8px !important; white-space: nowrap; font-size: 11px !important; }
 .visual-btn { display: inline-flex !important; min-height: 31px; align-items: center; color: #2f63f6; background: #f7f9ff; border-color: #cedbfb; }
 .response-card .test-card-header .response-card-actions-v645 > #previewVisualizationBtnReview { display: inline-flex !important; min-height: 31px; align-items: center; color: #8a5700; background: #fff8e8; border: 1px solid #efd59d; border-radius: 8px; cursor: pointer; }

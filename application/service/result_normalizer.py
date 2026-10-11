@@ -231,10 +231,23 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
     if tool_id == "definition-detect":
         data = raw if isinstance(raw, dict) else {}
         defs = _list(data.get("definitions") if data else raw)
+        # 聚合格式检测（2026-10-11：引擎改为按概念聚合输出，同一概念多条定义
+        # 聚合在一起，各定义的来源位置分开）。聚合条目含 definitions 嵌套列表
+        _is_grouped = bool(defs and isinstance(defs[0], dict) and "definitions" in defs[0])
+        if _is_grouped:
+            # 聚合格式：从嵌套中提取平铺列表供 mappings/统计使用
+            _flat = []
+            for _g in defs:
+                if isinstance(_g, dict):
+                    for _d in (_g.get("definitions") or []):
+                        if isinstance(_d, dict):
+                            _flat.append({**_d, "concept": _g.get("concept")})
+        else:
+            _flat = defs
         # 定义句输出契约 = 弹窗读取字段：概念词/定义句/定义内容/置信度/复核状态/
         # 来源位置(positionLabel)。pattern(命中规则内部值)/normalized_concept/
         # context_before/context_after(引擎中间字段)弹窗不读取，不进公开响应
-        for _d in defs:
+        for _d in _flat:
             if isinstance(_d, dict):
                 for _drop in ("pattern", "normalized_concept", "context_before", "context_after"):
                     _d.pop(_drop, None)
@@ -243,9 +256,9 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
             mappings = [{
                 "concept": item.get("concept") or item.get("term") or "",
                 "definition": item.get("definition") or item.get("definition_content") or item.get("sentence") or "",
-            } for item in defs if isinstance(item, dict)]
+            } for item in _flat if isinstance(item, dict)]
         report = data.get("statistical_analysis_report") if isinstance(data.get("statistical_analysis_report"), dict) else {
-            "definition_sentence_count": len(defs),
+            "definition_sentence_count": len(_flat),
             "concept_count": len({item.get("concept") for item in mappings if isinstance(item, dict) and item.get("concept")}),
             "mapping_count": len(mappings),
             "section_distribution": [],

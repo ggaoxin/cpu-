@@ -524,7 +524,16 @@ function renderCitation(response, intent = false) {
 function renderDefinitions(response) {
   const data = dataOf(response)
   const records = recordsOf(response)
-  const definitions = records.flatMap(record => array(record.payload.definitions ?? record.payload.definition_results).map(item => ({ ...item, __record: record })))
+  // 聚合格式兼容（2026-10-11）：引擎改为按概念聚合（{concept, definitions:[...]}），
+  // 弹窗仍按"每条定义一行"展示——从嵌套 definitions 平铺，concept 取父级
+  const definitions = records.flatMap(record => {
+    const raw = array(record.payload.definitions ?? record.payload.definition_results)
+    // 检测聚合格式：首条含 definitions 嵌套数组
+    if (raw.length && typeof raw[0] === 'object' && raw[0] !== null && Array.isArray(raw[0].definitions)) {
+      return raw.flatMap(group => array(group.definitions).map(d => ({ ...d, concept: group.concept ?? d.concept, __record: record })))
+    }
+    return raw.map(item => ({ ...item, __record: record }))
+  })
   const mappings = records.flatMap(record => array(record.payload.concept_definition_mappings ?? record.payload.mappings).map(item => ({ ...item, __record: record })))
   const summary = object(data.summary ?? records[0]?.payload?.summary)
   const report = object(data.statistical_analysis_report ?? records[0]?.payload?.statistical_analysis_report)
@@ -534,9 +543,11 @@ function renderDefinitions(response) {
     const id = valueOf(item, ['definition_id', 'id'], `D${index + 1}`)
     const batchLabel = records.length > 1 ? `${item.__record.index + 1}` : ''
     const key = `${batchLabel}\u0000${section}`
-    const current = sectionCounts.get(key) || { batchLabel, section, ids: [], count: 0 }
+    const current = sectionCounts.get(key) || { batchLabel, section, ids: [], count: 0, concepts: [] }
     current.ids.push(id)
     current.count += 1
+    const _c = (item.concept || '').trim()
+    if (_c && !current.concepts.includes(_c)) current.concepts.push(_c)
     sectionCounts.set(key, current)
   })
   const sectionRows = records.length === 1 && array(report.section_distribution).length
@@ -549,13 +560,20 @@ function renderDefinitions(response) {
   const conceptCount = records.length > 1 ? new Set(definitions.map(item => item.concept)).size : summary.concept_count ?? new Set(definitions.map(item => item.concept)).size
   const mappingCount = records.length > 1 ? mappings.length : summary.mapping_count ?? mappings.length
   const averageConfidence = records.length > 1 ? average(definitions.map(item => item.confidence)) : summary.average_confidence ?? average(definitions.map(item => item.confidence))
-  const mappingCoverage = conceptCount ? mappingCount / conceptCount * 100 : 0
+  const multiDefConcepts = (() => {
+    const counts = new Map()
+    definitions.forEach(item => {
+        const c = (item.concept || '').trim()
+        if (c) counts.set(c, (counts.get(c) || 0) + 1)
+    })
+    return [...counts.values()].filter(n => n > 1).length
+})()
   const reportConclusion = `本次共识别 ${definitionCount} 条概念定义句，提取 ${conceptCount} 个概念词并形成 ${mappingCount} 组结构化映射，平均置信度为 ${fixed(averageConfidence)}。${definitionDistributionTitle}各项统计均依据当前响应结果汇总。`
   return `<div class="definition-result-root" data-viz-group>
     <div class="definition-result-header"><div class="definition-tabs"><button class="definition-tab-btn active" data-viz-tab="results">概念定义句结果</button><button class="definition-tab-btn" data-viz-tab="mapping">概念—定义映射</button><button class="definition-tab-btn" data-viz-tab="statistics">识别统计分析报告</button></div><div class="definition-export-actions"><button class="definition-export-btn" data-viz-export="json">导出 JSON</button><button class="definition-export-btn" data-viz-export="csv">导出 CSV</button></div></div>
     <div class="definition-tab-panel" data-viz-panel="results"><div class="distribution-table-wrap"><table class="distribution-table definition-result-table"><colgroup><col><col><col><col><col><col><col></colgroup><thead><tr><th>编号</th><th>文献题名</th><th>概念词</th><th>概念定义句</th><th>来源</th><th>置信度</th><th>操作</th></tr></thead><tbody>${definitions.map((item, index) => `<tr><td>${escapeHtml(valueOf(item, ['definition_id', 'id'], `D${index + 1}`))}</td><td>${escapeHtml(item.__record?.name || item.__record?.file_name || item.__record?.payload?.document_title || item.document_title || '')}</td><td><span class="definition-concept-badge">${renderTextWithMath(valueOf(item, ['concept', 'term']))}</span></td><td>${renderTextWithMath(valueOf(item, ['definition_sentence', 'definition', 'sentence']))}</td><td>${escapeHtml(positionLabel(item))}</td><td>${confidence(item.confidence)}</td><td><button class="definition-detail-btn" data-viz-detail="definition-${index}">查看详情</button></td></tr><tr id="definition-${index}" class="definition-detail-row" hidden><td colspan="7"><div class="definition-detail-content"><div class="definition-detail-label">概念词</div><div>${renderTextWithMath(valueOf(item, ['concept', 'term']))}</div><div class="definition-detail-label">完整定义句</div><div>${renderTextWithMath(valueOf(item, ['definition_sentence', 'definition', 'sentence']))}</div><div class="definition-detail-label">来源</div><div>${escapeHtml(positionLabel(item))}</div></div></td></tr>`).join('') || '<tr><td colspan="7">未识别到概念定义句。</td></tr>'}</tbody></table></div></div>
     <div class="definition-tab-panel" data-viz-panel="mapping" hidden><section class="definition-mapping-board"><header class="definition-mapping-board-head"><div><span>结构化映射结果</span><h3>概念—定义结构化映射</h3><p>按“概念词—定义内容”呈现当前响应中的结构化对应关系。</p></div><div class="definition-mapping-total"><b>${mappingCount}</b><span>组有效映射</span></div></header><div class="definition-mapping-list">${mappings.map((item, index) => `<article class="definition-mapping-card"><div class="definition-mapping-index">${String(index + 1).padStart(2, '0')}</div><div class="definition-mapping-concept"><strong>${renderTextWithMath(item.concept || '—')}</strong></div><div class="definition-mapping-arrow"><span>对应定义</span><i>→</i></div><div class="definition-mapping-text"><small>定义内容</small><p>${renderTextWithMath(item.definition || '—')}</p></div></article>`).join('') || '<div class="definition-mapping-empty">暂无概念—定义映射。</div>'}</div></section></div>
-    <div class="definition-tab-panel" data-viz-panel="statistics" hidden><article class="definition-analysis-report"><header class="definition-report-cover"><div><h3>识别统计分析报告</h3><p>汇总当前概念定义识别的任务概况、识别质量与来源章节分布。</p></div></header><section class="definition-report-section"><h4><i>一</i>任务概况</h4><div class="definition-report-summary"><span><b>${definitionCount}</b><small>识别定义句</small></span><span><b>${conceptCount}</b><small>提取概念词</small></span><span><b>${mappingCount}</b><small>结构化映射</small></span></div></section><div class="definition-report-columns"><section class="definition-report-section"><h4><i>二</i>识别质量分析</h4><dl class="definition-report-definition"><div><dt>平均置信度</dt><dd>${fixed(averageConfidence)}</dd></div><div><dt>概念映射覆盖率</dt><dd>${fixed(mappingCoverage, 1)}%</dd></div><div><dt>${coverageLabel}</dt><dd>${sectionRows.length}</dd></div></dl></section><section class="definition-report-section"><h4><i>三</i>${definitionDistributionTitle}</h4><div class="distribution-table-wrap"><table class="distribution-table definition-report-table"><thead><tr>${records.length > 1 ? '<th>编号</th>' : ''}<th>${definitionSourceHeading}</th><th>定义句数量</th><th>占比</th></tr></thead><tbody>${sectionRows.map(item => `<tr>${records.length > 1 ? `<td>${escapeHtml((item.ids || []).join('、') || '—')}</td>` : ''}<td>${escapeHtml(item.section || item.name || '未返回位置')}</td><td>${number(item.count)}</td><td>${fixed(item.percentage != null ? item.percentage : number(item.ratio) * 100, 1)}%</td></tr>`).join('') || `<tr><td colspan="${records.length > 1 ? 4 : 3}">暂无位置分布统计。</td></tr>`}</tbody></table></div></section></div><section class="definition-report-section definition-report-conclusion"><h4><i>四</i>分析结论</h4><p>${renderTextWithMath(reportConclusion)}</p></section></article></div>
+    <div class="definition-tab-panel" data-viz-panel="statistics" hidden><article class="definition-analysis-report"><header class="definition-report-cover"><div><h3>识别统计分析报告</h3><p>汇总当前概念定义识别的任务概况、识别质量与来源章节分布。</p></div></header><section class="definition-report-section"><h4><i>一</i>任务概况</h4><div class="definition-report-summary"><span><b>${definitionCount}</b><small>识别定义句</small></span><span><b>${conceptCount}</b><small>提取概念词</small></span><span><b>${mappingCount}</b><small>结构化映射</small></span></div></section><div class="definition-report-columns"><section class="definition-report-section"><h4><i>二</i>识别质量分析</h4><dl class="definition-report-definition"><div><dt>平均置信度</dt><dd>${fixed(averageConfidence)}</dd></div><div><dt>多定义概念词</dt><dd>${multiDefConcepts} 个</dd></div><div><dt>${coverageLabel}</dt><dd>${sectionRows.length}</dd></div></dl></section><section class="definition-report-section"><h4><i>三</i>${definitionDistributionTitle}</h4><div class="distribution-table-wrap"><table class="distribution-table definition-report-table"><thead><tr>${records.length > 1 ? '<th>编号</th>' : ''}<th>概念词</th><th>${definitionSourceHeading}</th><th>定义句数量</th><th>占比</th></tr></thead><tbody>${sectionRows.map(item => `<tr>${records.length > 1 ? `<td>${escapeHtml((item.ids || []).join('、') || '—')}</td>` : ''}<td>${escapeHtml((item.concepts || []).join('、') || '—')}</td><td>${escapeHtml(item.section || item.name || '未返回位置')}</td><td>${number(item.count)}</td><td>${fixed(item.percentage != null ? item.percentage : number(item.ratio) * 100, 1)}%</td></tr>`).join('') || `<tr><td colspan="${records.length > 1 ? 5 : 4}">暂无位置分布统计。</td></tr>`}</tbody></table></div></section></div><section class="definition-report-section definition-report-conclusion"><h4><i>四</i>分析结论</h4><p>${renderTextWithMath(reportConclusion)}</p></section></article></div>
   </div>`
 }
 

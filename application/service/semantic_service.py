@@ -5204,6 +5204,22 @@ class SemanticApplicationService(ISemanticService):
         else:
             citations = []
 
+        # ②b 确定性参考文献条目过滤（2026-10-11 用户实测：参考文献列表条目
+        # 被当成引用句输出——LLM 判定倾向保留 + 章节截取可能漏截 双重失守）。
+        # 参考文献条目特征：以 [n] 开头 + 含 [J]/[M]/[C]/[D]/[N] 类型标记 +
+        # 含年份卷期格式；或以 [n] 开头 + 作者名列表 + 句号 + 题名（无完整主谓）
+        _ref_entry = _re.compile(
+            r'^\s*\[\d+(?:[-–,，]\d+)*\]\s*'                # [n] 或 [n,m] 或 [n-m] 开头
+            r'.*(?:\[[JMCDN]\]|'                              # 含 [J]/[M]/[C]/[D]/[N] 类型标记
+            r'\d{4}\s*[,，]\s*\d+\s*\(|'                   # 或 2025,44( 年卷期
+            r'\d{4}\s*[,，]\s*\(|'                           # 或 2025,( 
+            r'\[J\]\[M\]\[C\])'                            # 或连续类型标记
+        )
+        _pre_count = len(citations)
+        citations = [c for c in citations if not _ref_entry.match(str(c.get('sentence', '')))]
+        if len(citations) < _pre_count:
+            logger.info("确定性参考文献过滤：%d 条被剔除（剩 %d）", _pre_count - len(citations), len(citations))
+
         if not citations:
             # 规则未命中不等于可以跳过模型。正则覆盖不到的引用格式（作者-年份、
             # 罕见标记等）由 GLM 从全文分块提取引用句——不再只探前 3000 字符
@@ -5936,7 +5952,15 @@ class SemanticApplicationService(ISemanticService):
                 return self._glm.chat_json(system_prompt, _p, temperature=temperature,
                                            timeout=timeout, max_tokens=max_tokens)
             except Exception:  # noqa: BLE001
-                return None
+                # 限流退避重试一次（2026-10-11：Coding Plan 并发额度低，4 路并发
+                # 2~3 路被 429/1302 拒绝；等 2 秒重试可救回大部分）
+                import time as _time
+                _time.sleep(2)
+                try:
+                    return self._glm.chat_json(system_prompt, _p, temperature=temperature,
+                                                timeout=timeout, max_tokens=max_tokens)
+                except Exception:  # noqa: BLE001
+                    return None
 
         with ThreadPoolExecutor(max_workers=min(max_workers, len(user_prompts))) as _ex:
             return list(_ex.map(_one, user_prompts))
@@ -6234,6 +6258,28 @@ class SemanticApplicationService(ISemanticService):
                 "confidence": item["confidence"],
             })
 
+        # 按概念词聚合（2026-10-11 用户需求：同一概念的多条定义聚合在一起，
+        # 各定义的来源位置分开）。LSTM 在论文中被定义两次 → 一条聚合记录含两个定义
+        _grouped: list = []
+        _by_concept: dict = {}
+        for _item in out:
+            _ck = str(_item.get("concept") or "").strip().casefold()
+            if _ck not in _by_concept:
+                _by_concept[_ck] = {
+                    "concept": _item["concept"],
+                    "definition_count": 0,
+                    "definitions": [],
+                }
+                _grouped.append(_by_concept[_ck])
+            _by_concept[_ck]["definitions"].append({
+                "sentence": _item["sentence"],
+                "definition": _item["definition"],
+                "source_position": _item["source_position"],
+                "confidence": _item["confidence"],
+            })
+            _by_concept[_ck]["definition_count"] += 1
+        out = _grouped  # 替换原平铺列表为聚合结构
+
         # 需规参数回传与输出格式化:domain_label 随结果返回;output_format_requirement
         # 决定附加输出结构(CSV 文本 / 数据库写入结构记录)。out 原为定义条目列表,
         # 带需规参数时包装为 {definitions: [...], ...附加字段} 的 dict。
@@ -6272,8 +6318,21 @@ class SemanticApplicationService(ISemanticService):
         result.success = True
         result.data = out
         defs_for_conf = out.get("definitions") if isinstance(out, dict) else out
-        result.confidence = sum(x["confidence"] for x in defs_for_conf or []) / max(len(defs_for_conf or []), 1)
-        result.raw = json.dumps({"n_definitions": len(defs_for_conf or []),
+        # 聚合格式的 confidence 在嵌套 definitions 内，平铺提取
+        _all_conf = []
+        _n_defs = 0
+        for _x in (defs_for_conf or []):
+            if isinstance(_x, dict) and "definitions" in _x:
+                for _dd in _x["definitions"]:
+                    _n_defs += 1
+                    if isinstance(_dd, dict) and "confidence" in _dd:
+                        _all_conf.append(_dd["confidence"])
+            elif isinstance(_x, dict):
+                _n_defs += 1
+                if "confidence" in _x:
+                    _all_conf.append(_x["confidence"])
+        result.confidence = sum(_all_conf) / max(len(_all_conf), 1)
+        result.raw = json.dumps({"n_definitions": _n_defs,
                                  "domain_label": domain_label, "output_format": output_format}, ensure_ascii=False)
         return result
 
@@ -6322,7 +6381,18 @@ class SemanticApplicationService(ISemanticService):
             if _re.match(r"^\s*!?\[.*\]\(images/.*\)\s*$", line):
                 continue
             keep.append(line)
-        return "\n".join(keep)
+        # 换行重拼（2026-10-11 修复）：双栏 PDF 提取时句子被换行切断
+        # （"LSTM 本质\n上是一种…"），LLM 分块看到碎片无法识别定义句。
+        # 不以句末标点（。！？.!?）或右括号结尾的行与下一行拼接，还原完整句子。
+        _merged = []
+        for _line in keep:
+            if _merged:
+                _prev = _merged[-1].rstrip()
+                if _prev and not _re.search(r'[。！？.!?：:；;）)\]」』]$', _prev):
+                    _merged[-1] = _prev + _line.lstrip()
+                    continue
+            _merged.append(_line)
+        return "\n".join(_merged)
 
     def _definition_chunks(self, text: str, chunk_size: int = 5000) -> list:
         r"""按句末边界切分（中英双语），聚合成 ≤chunk_size 的块（供 LLM 批量抽取定义句）。
