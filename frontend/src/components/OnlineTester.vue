@@ -2081,7 +2081,7 @@ function downloadResult() {
                 <div class="settings-title deep-cluster-metadata-title"><b>文献元数据</b><span>与文本一并提交</span></div>
                 <div class="two-column deep-cluster-metadata-grid">
                   <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="doc.id" class="input" placeholder="例如：DOC001" /></div>
-                  <div class="field"><label><span class="label-main">发表时间</span><small>可选；填写后参与趋势分析</small></label><YearPicker v-model="doc.publication_date" /></div>
+                  <div class="field"><label><span class="label-main">发表时间</span><small>可选</small></label><YearPicker v-model="doc.publication_date" /></div>
                   <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="doc.title" class="input" maxlength="300" placeholder="请输入题名" /><small class="char-count-v755">{{ smartCount(doc.title) }}/50</small></div>
                   <div class="field"><label><span class="label-main">作者</span><small>可选</small></label><input v-model="doc.authors" class="input" placeholder="多人使用逗号分隔" /></div>
                   <div class="field"><label><span class="label-main">文献来源</span><small>可选</small></label><input v-model="doc.source" class="input" placeholder="期刊、会议、报告或其他来源" /></div>
@@ -2207,7 +2207,7 @@ function downloadResult() {
                     <div class="settings-title deep-cluster-metadata-title"><b>文献元数据</b><span>由用户填写，与当前文件一一关联</span></div>
                     <div class="two-column deep-cluster-metadata-grid">
                       <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="item.documentId" class="input" placeholder="例如：DOC001" /></div>
-                      <div class="field"><label><span class="label-main">发表时间</span><small>可选；填写后参与趋势分析</small></label><YearPicker v-model="item.publicationDate" /></div>
+                      <div class="field"><label><span class="label-main">发表时间</span><small>可选</small></label><YearPicker v-model="item.publicationDate" /></div>
                       <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="item.title" class="input" maxlength="300" placeholder="请输入题名" /><small class="char-count-v755">{{ smartCount(item.title) }}/50</small></div>
                       <div class="field"><label><span class="label-main">作者</span><small>可选</small></label><input v-model="item.authors" class="input" placeholder="多人使用逗号分隔" /></div>
                       <div class="field"><label><span class="label-main">文献来源</span><small>可选</small></label><input v-model="item.source" class="input" placeholder="期刊、会议、报告或其他来源" /></div>
