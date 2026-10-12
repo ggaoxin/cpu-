@@ -1971,8 +1971,8 @@ class ToolIntegrationService:
         parsed = int(parsed)
         if parsed < 1:
             return "cluster_count 必须大于等于 1。"
-        if item_count > 1 and parsed >= item_count:
-            return f"cluster_count 必须小于输入文献数量（当前 {item_count} 篇，最大 {item_count - 1}）。"
+        if item_count > 1 and parsed > item_count:
+            return f"cluster_count 不能超过输入文献数量（当前 {item_count} 篇，最大 {item_count}）。"
         return None
 
     @staticmethod

@@ -628,15 +628,27 @@ const duplicateBatchTitles = computed<Set<string>>(() => {
   return new Set([...counts.entries()].filter(([, n]) => n > 1).map(([t]) => t))
 })
 
-// 深度聚类「类簇数量」越界判定：最低 1、最大类簇数量必须小于输入文献总数
-// （如 4 篇文献最多 3 簇）。非空且越界时给出提示并禁用「在线测试」按钮。
+// 深度聚类「类簇数量」越界判定：最低 1、最大等于输入文献总数（2026-10-12 定稿：
+// 4 篇文献最多 4 簇）。上限在步进器上物理拦截（▲ 到顶即灰掉，见 clusterCountMaxHit），
+// 此处提示只兜底手动输入等旁路场景。
 const clusterCountError = computed(() => {
   if (props.toolId !== 'deep-cluster' || form.clusterCount === '' || form.clusterCount === null) return ''
   const count = Number(form.clusterCount)
   const total = mode.value === 'batch' ? uploadedFiles.length : docs.length
   if (!Number.isInteger(count) || count < 1) return '类簇数量必须是不小于 1 的整数（留空时自动确定）。'
-  if (total > 1 && count >= total) return `类簇数量必须小于输入文献数量（当前 ${total} 篇，最大 ${total - 1}）。`
+  if (total >= 1 && count > total) return `类簇数量不能超过输入文献数量（当前 ${total} 篇，最大 ${total}）。`
   return ''
+})
+
+// 类簇数量已达文献数上限：▲ 按钮直接 disabled（2026-10-12 用户定稿：到了上限
+// 不要弹提示，而是根本加不上去）。没有输入（total=0）时不拦，上限未知。
+const clusterCountMaxHit = computed(() => {
+  if (props.toolId !== 'deep-cluster') return false
+  const raw = form.clusterCount
+  if (raw === '' || raw === null) return false
+  const count = Number(raw)
+  const total = mode.value === 'batch' ? uploadedFiles.length : docs.length
+  return total >= 1 && Number.isFinite(count) && count >= total
 })
 
 // 类簇数量步进（2026-10-09 用户定稿）：「自动确定」（留空）是数值序列的下界档位——
@@ -647,6 +659,7 @@ const stepClusterCount = (dir: 1 | -1) => {
   const raw = form.clusterCount
   const current = raw === '' || raw === null ? null : Number(raw)
   if (dir > 0) {
+    if (clusterCountMaxHit.value) return // 已达文献数上限，键盘 ↑ 同样拦住
     form.clusterCount = String(Math.max(1, (Number.isFinite(current as number) ? (current as number) : 0) + 1))
     return
   }
@@ -2040,7 +2053,7 @@ function downloadResult() {
 
           <template v-if="toolId === 'deep-cluster'">
             <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 聚类维度</span><small>选择本次聚类的语义分析视角</small></label><div class="dimension-options"><label :class="{ active: form.clusterDimension === 'technology' }"><input v-model="form.clusterDimension" type="radio" value="technology" /><span><b>技术路线聚类</b><small>重点分析文献采用的方法、模型结构、算法机制、数据处理流程和实验技术，将技术方案相近的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label><label :class="{ active: form.clusterDimension === 'application_scenario' }"><input v-model="form.clusterDimension" type="radio" value="application_scenario" /><span><b>应用场景聚类</b><small>重点分析文献解决的任务、服务对象、行业领域、实际环境和应用目标，将面向相似使用场景的文献聚合到<span class="dimension-term">同一类簇</span>。</small></span></label></div></div>
-            <div class="settings-card"><div class="settings-title"><b>算法与输出参数</b><span>可选算法、类簇数量与输出格式</span></div><div class="three-column"><div class="field"><label><span class="label-main">聚类算法类型</span></label><AppSelect v-model="form.algorithm" :options="algorithmOptions" /></div><div class="field"><label><span class="label-main">类簇数量</span></label><div class="numeric-stepper"><input :value="form.clusterCount === '' || form.clusterCount === null ? '自动确定' : String(form.clusterCount)" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="类簇数量" @keydown.up.prevent="stepClusterCount(1)" @keydown.down.prevent="stepClusterCount(-1)" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加类簇数量" title="增加（从自动确定进入 1）" @click="stepClusterCount(1)">▲</button><button type="button" aria-label="减少类簇数量" title="减少（1 时退回自动确定）" :disabled="form.clusterCount === '' || form.clusterCount === null" @click="stepClusterCount(-1)">▼</button></span></div><small v-if="clusterCountError" class="field-error-hint" style="color:#d54949;display:block;margin-top:4px">{{ clusterCountError }}</small></div><div class="field"><label><span class="label-main">输出格式</span></label><AppSelect v-model="form.outputFormat" :options="outputFormatOptions" /></div></div></div>
+            <div class="settings-card"><div class="settings-title"><b>算法与输出参数</b><span>可选算法、类簇数量与输出格式</span></div><div class="three-column"><div class="field"><label><span class="label-main">聚类算法类型</span></label><AppSelect v-model="form.algorithm" :options="algorithmOptions" /></div><div class="field"><label><span class="label-main">类簇数量</span></label><div class="numeric-stepper"><input :value="form.clusterCount === '' || form.clusterCount === null ? '自动确定' : String(form.clusterCount)" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="类簇数量" @keydown.up.prevent="stepClusterCount(1)" @keydown.down.prevent="stepClusterCount(-1)" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加类簇数量" title="增加（从自动确定进入 1；已达文献数上限时不可再增）" :disabled="clusterCountMaxHit" @click="stepClusterCount(1)">▲</button><button type="button" aria-label="减少类簇数量" title="减少（1 时退回自动确定）" :disabled="form.clusterCount === '' || form.clusterCount === null" @click="stepClusterCount(-1)">▼</button></span></div><small v-if="clusterCountError" class="field-error-hint" style="color:#d54949;display:block;margin-top:4px">{{ clusterCountError }}</small></div><div class="field"><label><span class="label-main">输出格式</span></label><AppSelect v-model="form.outputFormat" :options="outputFormatOptions" /></div></div></div>
             <ModeSwitch v-model="mode" :modes="modes" :tool="tool" kind="深度聚类数据来源" />
           </template>
 

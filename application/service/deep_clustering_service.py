@@ -360,8 +360,8 @@ def execute_deep_clustering(
             "agglomerative(凝聚聚类)、hierarchical(层次聚类) 或 hdbscan。")
     cluster_count = _optional_cluster_count(params)
     # 上界守卫（与前端同口径）：类簇数必须小于文献数，否则单簇粒度无意义
-    if cluster_count is not None and cluster_count >= len(papers):
-        raise ValueError(f"cluster_count 必须小于输入文献数量（当前 {len(papers)} 篇，最大 {len(papers) - 1}）。")
+    if cluster_count is not None and cluster_count > len(papers):
+        raise ValueError(f"cluster_count 不能超过输入文献数量（当前 {len(papers)} 篇，最大 {len(papers)}）。")
 
     from infrastructure.clustering.move_aligned import run_move_aligned_clustering
     from infrastructure.resources.normalize import normalized_rows_for
