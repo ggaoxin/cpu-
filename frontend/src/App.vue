@@ -91,6 +91,7 @@ function previewVisualization(mode: InputMode) {
               <p>{{ tool.description }}</p>
               <div class="tag-row"><div class="tag-box"><b>功能特点</b><i aria-hidden="true"></i><span>{{ tool.features }}</span></div><div class="tag-box"><b>适用场景</b><i aria-hidden="true"></i><span>{{ tool.scenarios }}</span></div></div>
             </div>
+            <div v-if="activeId === 'domain-classify'" class="clc-tree-link-v756"><a href="/clc-tree.html" target="_blank" rel="noopener">查看专业领域中图分类法（CLC）标准分类体系 ↗</a><small>覆盖 22 个一级 / 182 个二级 / 35,000+ 个三级类目</small></div>
             <DocumentationPanel :key="`${activeId}-docs`" :tool="tool" />
             <OnlineTester :key="`${activeId}-test`" :tool-id="activeId" :tool="tool" @visualize="visualize" @preview="previewVisualization" />
           </section>

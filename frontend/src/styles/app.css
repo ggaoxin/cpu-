@@ -2723,7 +2723,7 @@ body.figma-ui-v717 .citation-request-card .citation-extract-btn:hover {
 .char-count-v755.char-over-v757 { color: #d54949 !important; font-weight: 600 !important; }
 
 /* CLC 分类体系入口链接 */
-.clc-tree-link-v756 { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; background: #f0f6ff; border: 1px solid #c8d6e8; border-radius: 10px; margin-bottom: 8px; }
+.clc-tree-link-v756 { display: flex !important; flex-direction: column; gap: 4px; padding: 10px 14px; background: #f0f6ff; border: 1px solid #c8d6e8; border-radius: 10px; margin-bottom: 8px; margin-top: 8px; }
 .clc-tree-link-v756 a { color: #2563eb; font-size: 13.5px; font-weight: 600; text-decoration: none; }
 .clc-tree-link-v756 a:hover { text-decoration: underline; }
 .clc-tree-link-v756 small { color: #7a889b; font-size: 11px; }

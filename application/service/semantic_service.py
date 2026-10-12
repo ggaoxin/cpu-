@@ -5453,7 +5453,7 @@ class SemanticApplicationService(ISemanticService):
                     "start": start if start >= 0 else None,
                     "end": start + len(sent) if start >= 0 else None,
                 },
-                label_field: label.removeprefix("用于"),
+                label_field: label,
                 "confidence": max(min(1.0, float(it.get("confidence", 0.5) or 0.5))
                                   for it in items),
             }
