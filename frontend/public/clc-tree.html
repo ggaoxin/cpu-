@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>中图分类法（CLC）标准分类体系 · 语义计算工具库</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f4f9;color:#1f3a5f}
+.header{background:#fff;border-bottom:1px solid #d3dfef;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.header h1{font-size:18px;font-weight:600}
+.header .sub{font-size:12px;color:#7a889b;margin-top:2px}
+.toolbar{display:flex;gap:10px;padding:14px 24px;max-width:960px;margin:0 auto;align-items:center}
+.toolbar input{flex:1;padding:8px 14px;border:1px solid #c8d6e8;border-radius:8px;font-size:13px;outline:none;background:#fff}
+.toolbar input:focus{border-color:#2563eb}
+.toolbar select{padding:8px 12px;border:1px solid #c8d6e8;border-radius:8px;font-size:13px;background:#fff;min-width:200px}
+.toolbar button{padding:8px 16px;border:1px solid #2563eb;border-radius:8px;background:#2563eb;color:#fff;font-size:13px;cursor:pointer}
+.toolbar button:hover{background:#1e4fc4}
+.body{max-width:960px;margin:0 auto;padding:0 24px 40px}
+.tree-container{background:#fff;border:1px solid #d3dfef;border-radius:12px;overflow:hidden}
+.loading,.empty{padding:48px;text-align:center;color:#7a889b;font-size:14px}
+.l1{padding:12px 18px;cursor:pointer;font-weight:600;font-size:14px;border-bottom:1px solid #eef2f8;display:flex;align-items:center;gap:10px;user-select:none}
+.l1:hover{background:#f0f6ff}
+.l1 .arrow{min-width:14px;color:#94a3b8;transition:transform .15s}
+.l1.open .arrow{transform:rotate(90deg)}
+.l1 .code{font-family:monospace;color:#2563eb;min-width:36px}
+.l1 .count{margin-left:auto;font-size:11px;color:#94a3b8;font-weight:400}
+.l2-group{padding-left:22px}
+.l2{padding:8px 18px;cursor:pointer;font-size:13px;border-bottom:1px solid #f5f8fc;display:flex;align-items:center;gap:8px;user-select:none}
+.l2:hover{background:#f8faff}
+.l2 .arrow{min-width:12px;color:#94a3b8}
+.l2 .code{font-family:monospace;color:#2563eb;min-width:48px}
+.l2 .count{margin-left:auto;font-size:11px;color:#94a3b8}
+.l3-group{padding-left:30px;max-height:420px;overflow-y:auto}
+.l3{padding:4px 12px;font-size:12.5px;color:#64748b;display:flex;gap:8px;align-items:center}
+.l3 .code{font-family:monospace;color:#2563eb;min-width:68px}
+.more{padding:6px 12px;font-size:12px;color:#2563eb;cursor:pointer}
+.more:hover{text-decoration:underline}
+.l3::-webkit-scrollbar{width:4px}.l3::-webkit-scrollbar-thumb{background:#c8d6e8;border-radius:2px}
+.stats{padding:10px 18px;font-size:11px;color:#94a3b8;border-top:1px solid #eef2f8;display:flex;gap:16px}
+.stats b{color:#2563eb}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><h1>中图分类法（CLC）标准分类体系</h1><div class="sub">专业领域科技文献自动分类 · 覆盖 22 个一级 / 182 个二级 / 35,000+ 个三级类目</div></div>
+  <button onclick="history.back()" style="padding:6px 14px;border:1px solid #c8d6e8;border-radius:8px;background:#fff;cursor:pointer;font-size:13px;color:#334a68">返回</button>
+</div>
+<div class="toolbar">
+  <input id="search" placeholder="搜索分类号或名称（如 TP3、计算机）" />
+  <select id="domain"></select>
+  <button id="expandBtn">展开全部</button>
+</div>
+<div class="body"><div class="tree-container" id="tree"><div class="loading">加载中…</div></div></div>
+<script>
+const DOMAIN_LIST=[["01","数学与计算科学",["O1"]],["02","力学与工程力学",["O3","TB1"]],["03","物理学与应用物理",["O4"]],["04","化学与化学科学",["O6"]],["05","天文学与空间科学",["P1"]],["06","地球科学与地质资源",["P5","P6"]],["07","测绘遥感与地理信息",["P2"]],["08","气象海洋科学",["P4","P7"]],["09","生物科学与生物技术",["Q"]],["10","医学与卫生健康",["R"]],["11","药学与毒理学",["R9"]],["12","农业科学与农业工程",["S"]],["13","林业畜牧兽医与水产",["S7","S8","S9"]],["14","材料科学与材料工程",["TB3","TG"]],["15","矿业与矿物加工",["TD"]],["16","石油与天然气工程",["TE"]],["17","冶金与金属加工",["TF","TG1"]],["18","机械工程与智能制造",["TH"]],["19","仪器仪表与计量检测",["TH7","TB9"]],["20","能源与动力工程",["TK"]],["21","核科学与核工程",["TL"]],["22","电气工程与电力系统",["TM"]],["23","电子通信与半导体",["TN"]],["24","自动化与控制工程",["TP2","TP27"]],["25","人工智能与计算机技术",["TP"]],["26","化学工程与过程工业",["TQ"]],["27","轻工食品与纺织",["TS"]],["28","建筑与土木工程",["TU"]],["29","水利与水电工程",["TV"]],["30","交通运输工程",["U"]],["31","航空航天工程",["V"]],["32","环境与安全工程",["X"]]];
+let DATA={},expanded=new Set(),showAll=new Set(),search="",domainFilter="",expandAllFlag=false;
+const $=id=>document.getElementById(id);
+const sel=$("domain");sel.innerHTML='<option value="">全部领域</option>'+DOMAIN_LIST.map(d=>`<option value="${d[0]}">${d[0]} ${d[1]}</option>`).join("");
+sel.onchange=e=>{domainFilter=e.target.value;render()};sel.addEventListener("change",e=>{domainFilter=e.target.value;render()});
+$("search").oninput=e=>{search=e.target.value.toLowerCase().trim();render()};
+$("expandBtn").onclick=()=>{expandAllFlag=!expandAllFlag;$("expandBtn").textContent=expandAllFlag?"全部收起":"展开全部";if(expandAllFlag){for(const[k,v]of Object.entries(DATA)){expanded.add(k);for(const[k2]of Object.keys(v.children||{}))expanded.add(k2)}}else{expanded.clear()}render()};
+function matchDomain(code){if(!domainFilter)return true;const prefixes=DOMAIN_LIST.find(d=>d[0]===domainFilter)?.[2]||[];return prefixes.some(p=>code.startsWith(p))}
+function matchSearch(code,name){if(!search)return true;return code.toLowerCase().includes(search)||name.toLowerCase().includes(search)}
+function render(){
+  const c=$("tree");let html="";
+  let totalL1=0,totalL2=0,totalL3=0;
+  for(const[code,node]of Object.entries(DATA).sort((a,b)=>a[0].localeCompare(b[0]))){
+    const children=node.children||{};
+    if(!matchDomain(code)){
+      const l2match=Object.keys(children).some(l2=>matchDomain(l2));
+      if(!l2match)continue;
+    }
+    if(search&&!matchSearch(code,node.name)){
+      const childMatch=Object.entries(children).some(([l2c,l2])=>{
+        if(matchSearch(l2c,l2.name))return true;
+        const l3c=l2.children||{};
+        return Object.entries(l3c).some(([k,v])=>matchSearch(k,typeof v==="string"?v:(v.name||"")));
+      });
+      if(!childMatch)continue;
+    }
+    totalL1++;
+    const isOpen=expanded.has(code);
+    const l2Keys=Object.keys(children).sort();
+    totalL2+=l2Keys.length;
+    let l2Html="";
+    for(const l2c of l2Keys){
+      const l2=children[l2c];
+      const l2Open=expanded.has(l2c);
+      const l3Children=l2.children||{};
+      const l3Keys=Object.keys(l3Children).sort();
+      totalL3+=l3Keys.length;
+      let visibleL3=search?l3Keys.filter(k=>matchSearch(k,typeof l3Children[k]==="string"?l3Children[k]:(l3Children[k].name||""))):l3Keys;
+      const maxShow=showAll.has(l2c)?l3Keys.length:20;
+      let l3Html=visibleL3.slice(0,maxShow).map(k=>{const v=l3Children[k];const name=typeof v==="string"?v:(v.name||"");return`<div class="l3"><span class="code">${k}</span><span>${name}</span></div>`}).join("");
+      if(visibleL3.length>maxShow)l3Html+=`<div class="more" onclick="showAllL3('${l2c}')">显示全部 ${l3Keys.length} 个三级类目 ▾</div>`;
+      l2Html+=`<div class="l2" onclick="toggleNode(event,'${l2c}')"><span class="arrow">${l2Open?"▾":"▸"}</span><span class="code">${l2c}</span><span>${l2.name}</span><span class="count">${l3Keys.length} 个三级</span></div>${l2Open?`<div class="l3-group">${l3Html}</div>`:""}`;
+    }
+    html+=`<div class="l1${isOpen?" open":""}" onclick="toggleNode(event,'${code}')"><span class="arrow">▸</span><span class="code">${code}</span><span>${node.name}</span><span class="count">${l2Keys.length} 个二级</span></div>${isOpen?`<div class="l2-group">${l2Html}</div>`:""}`;
+  }
+  if(!html)html='<div class="empty">未找到匹配的分类体系</div>';
+  else html+=`<div class="stats"><span>一级类目 <b>${totalL1}</b></span><span>二级类目 <b>${totalL2}</b></span><span>三级类目 <b>${totalL3}</b></span><span>数据来源：中图分类法标准知识库（40,912 条）</span></div>`;
+  c.innerHTML=html;
+}
+window.toggleNode=(e,code)=>{e.stopPropagation();expanded.has(code)?expanded.delete(code):expanded.add(code);render()};
+window.showAllL3=code=>{showAll.add(code);render()};
+fetch("./clc-tree-data.json").then(r=>r.json()).then(d=>{DATA=d;$("tree").innerHTML="";render()}).catch(()=>{$("tree").innerHTML='<div class="empty">数据加载失败</div>'});
+</script>
+</body>
+</html>

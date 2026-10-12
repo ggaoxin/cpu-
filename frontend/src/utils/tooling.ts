@@ -618,7 +618,7 @@ export function responseFor(tool: ToolDefinition, mode: InputMode) {
   // 这里不再单独选择旧的 API fixture，避免文本位置、文件章节、
   // 批量条数和数据库记录与弹窗不一致。
   const demo = demoResponseForMode(tool.requirementKey || '', tool, mode)
-  return filterDemoByWhitelist(tool.requirementKey || '', demo)
+  return cleanExampleText(filterDemoByWhitelist(tool.requirementKey || '', demo))
 }
 
 /** 响应示例按弹窗渲染器白名单过滤 data 顶层字段（与后端 public_viz_result 同源） */
@@ -631,9 +631,22 @@ function filterDemoByWhitelist(toolId: string, response: any): any {
   return { ...response, data: Object.fromEntries(Object.entries(response.data).filter(([key]) => allowSet.has(key))) }
 }
 
+function cleanExampleText(obj: unknown): unknown {
+  if (typeof obj === 'string') {
+    return obj.replace(/[\n\r\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim()
+  }
+  if (Array.isArray(obj)) return obj.map(cleanExampleText)
+  if (obj && typeof obj === 'object') {
+    const out: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(obj)) out[k] = cleanExampleText(v)
+    return out
+  }
+  return obj
+}
+
 export function buildCallCode(tool: ToolDefinition, mode: InputMode, callType: CallType) {
   const endpoint = endpointFor(tool, mode)
-  const payload = payloadFor(tool, mode)
+  const payload = cleanExampleText(payloadFor(tool, mode)) as Record<string, unknown>
   if (tool.documentType === 'structured-review' && callType === 'api' && mode === 'batch') {
     return `import json
 import mimetypes

@@ -1558,12 +1558,6 @@ body.figma-ui-v717 .main-card {
   box-shadow: none !important;
 }
 
-.clear-result-icon {
-  display: block; width: 16px; height: 16px; flex: 0 0 16px;
-  background: currentColor;
-  -webkit-mask: var(--clear-icon-url) center / contain no-repeat;
-  mask: var(--clear-icon-url) center / contain no-repeat;
-}
 .online-test-run-btn { gap: 8px !important; }
 .online-test-run-icon { display: block; width: 16px; height: 16px; flex: 0 0 16px; }
 
@@ -2503,6 +2497,7 @@ body.figma-ui-v717 .document-page-header .breadcrumb {
   flex: 0 0 auto;
 }
 .algorithm-directory .app-select-trigger {
+  -webkit-tap-highlight-color: transparent;
   min-height: 36px;
   padding: 6px 12px;
   gap: 8px;
@@ -2517,21 +2512,43 @@ body.figma-ui-v717 .document-page-header .breadcrumb {
   color: #86909c;
   font-weight: 400;
 }
-.algorithm-directory-menu .app-select-option {
+.algorithm-directory-menu .algorithm-directory-node {
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   padding: 9px 16px;
-  border-radius: 6px;
-  font-weight: 500;
-}
-.algorithm-directory-menu .app-select-option.is-active {
+  color: #1d2129;
   background: transparent;
+  border: 0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
 }
-.algorithm-directory-menu .app-select-option:hover:not(.is-disabled),
-.algorithm-directory-menu .app-select-option.is-active:not(.is-selected):not(.is-disabled) {
+.algorithm-directory-menu .algorithm-directory-node.is-group {
+  color: #a5b2ca;
+}
+.algorithm-directory-menu .algorithm-directory-node.is-leaf {
+  padding-left: 28px;
+}
+.algorithm-directory-menu .algorithm-directory-node:hover,
+.algorithm-directory-menu .algorithm-directory-node:focus-visible {
   background: #f7f8fa;
 }
-.algorithm-directory-menu .app-select-option.is-selected {
+.algorithm-directory-menu .algorithm-directory-node:focus-visible {
+  outline: 1px solid #c9cdd4;
+  outline-offset: -1px;
+}
+.algorithm-directory-menu .algorithm-directory-node.is-selected {
   color: var(--platform-primary, #2454ff);
 }
+.algorithm-directory-chevron { width: 12px; height: 12px; flex: 0 0 12px; }
+.algorithm-directory-chevron.expanded { transform: rotate(90deg); }
 body.figma-ui-v717 .call-type-btn-v770,
 body.figma-ui-v717 .api-mode-btn {
   font-size: 14px !important;
@@ -2561,7 +2578,7 @@ body.figma-ui-v717 .response-card-actions-v645 :is(#downloadResultBtnV732, #view
   transform: none !important;
 }
 body.figma-ui-v717 .response-card-actions-v645 #clearBtn {
-  gap: 4px;
+  gap: 0;
   cursor: pointer;
 }
 body.figma-ui-v717 .response-card-actions-v645 :is(#downloadResultBtnV732, #viewVisualizationBtnV645, #clearBtn):is(:hover, :active, :focus-visible):not(:disabled) {
@@ -2573,7 +2590,7 @@ body.figma-ui-v717 .response-card-actions-v645 :is(#downloadResultBtnV732, #view
   outline: 2px solid #165dff !important;
   outline-offset: 2px;
 }
-.visualization-action-icon {
+.result-action-icon {
   width: 16px; height: 16px; flex: 0 0 16px; margin-right: 4px;
 }
 @container (max-width: 372px) {
@@ -2701,3 +2718,12 @@ body.figma-ui-v717 .citation-request-card .citation-extract-btn:hover {
   color: #86909c; font-size: 12px; line-height: 18px; text-align: right;
 }
 .citation-request-card .requirement-resource-controls { grid-column: 1 / -1; }
+
+/* 字符计数超限红色提示 */
+.char-count-v755.char-over-v757 { color: #d54949 !important; font-weight: 600 !important; }
+
+/* CLC 分类体系入口链接 */
+.clc-tree-link-v756 { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; background: #f0f6ff; border: 1px solid #c8d6e8; border-radius: 10px; margin-bottom: 8px; }
+.clc-tree-link-v756 a { color: #2563eb; font-size: 13.5px; font-weight: 600; text-decoration: none; }
+.clc-tree-link-v756 a:hover { text-decoration: underline; }
+.clc-tree-link-v756 small { color: #7a889b; font-size: 11px; }
