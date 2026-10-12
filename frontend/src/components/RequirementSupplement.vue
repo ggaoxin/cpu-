@@ -490,6 +490,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         <div v-if="citationReferenceSource === 'paste'" class="field full citation-reference-paste-field">
           <label><span class="label-main">粘贴参考文献条目</span><small>支持一次粘贴多条（每行一条），中英文格式均可</small></label>
           <textarea v-model="citationRawReference" class="textarea compact" rows="5" placeholder="每行一条参考文献，例如：&#10;[1] 张三，李四. 科技文献语义分析研究[J]. 情报学报，2024，43(2)：120-130.&#10;[2] Smith J, et al. A survey of NLP. ACL, 2020."></textarea>
+          <small class="char-count-v755">{{ citationRawReference.length }}/8000</small>
         </div>
         <div v-else class="resource-upload-wrap">
           <label class="resource-upload-zone citation-reference-upload-zone">

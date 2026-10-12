@@ -4,6 +4,7 @@ import { groups as generatedGroups } from './data/prototype.generated.js'
 import { tools } from './data/tool-overrides'
 import type { InputMode, ToolGroup } from './types'
 import ToolSidebar from './components/ToolSidebar.vue'
+import AppSelect from './components/AppSelect.vue'
 import DocumentationPanel from './components/DocumentationPanel.vue'
 import OnlineTester from './components/OnlineTester.vue'
 import VisualizationModal from './components/VisualizationModal.vue'
@@ -17,6 +18,10 @@ const groups = (generatedGroups as ToolGroup[]).map((group) => ({
   ...group,
   items: group.items.map(([id, label]) => [id, tools[id]?.title || label] as [string, string])
 }))
+const directoryOptions = groups.flatMap(group => [
+  { value: `group:${group.name}`, label: group.name, disabled: true },
+  ...group.items.map(([value, label]) => ({ value, label })),
+])
 
 // 每个工具一个独立路由 /tool/<toolId>：页面加载时按 URL 解析当前工具，
 // 直链打开、刷新、浏览器回退/前进都按路由渲染对应工具页。
@@ -80,7 +85,12 @@ function previewVisualization(mode: InputMode) {
       <ToolSidebar :groups="groups" :active-id="activeId" @select="selectTool" />
       <main ref="content" class="content-wrap">
         <div class="page-shell">
-          <div class="breadcrumb"><span>算法中心</span><span class="slash">/</span><span>语义计算工具库</span><span class="slash">/</span><strong>{{ tool.title }}</strong></div>
+          <div class="document-page-header">
+            <div class="breadcrumb"><span>算法中心</span><span class="slash">/</span><span>语义计算工具库</span><span class="slash">/</span><strong>{{ tool.title }}</strong></div>
+            <AppSelect class="algorithm-directory" :model-value="activeId" :options="directoryOptions" menu-class="algorithm-directory-menu" @update:model-value="selectTool">
+              <template #prefix><span class="algorithm-directory-prefix">算法目录</span></template>
+            </AppSelect>
+          </div>
           <section class="main-card">
             <div class="hero">
               <h1>{{ tool.title }}</h1>

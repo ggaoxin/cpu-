@@ -1558,40 +1558,12 @@ body.figma-ui-v717 .main-card {
   box-shadow: none !important;
 }
 
-body.figma-ui-v717 #clearBtn {
-  display: flex !important;
-  width: auto !important;
-  height: 22px !important;
-  min-height: 0 !important;
-  align-items: center !important;
-  gap: 4px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  color: #1d2129 !important;
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  outline: 0 !important;
-  font-size: 14px !important;
-  font-weight: 400 !important;
-  line-height: 22px !important;
-  cursor: pointer !important;
-  transform: none !important;
+.clear-result-icon {
+  display: block; width: 16px; height: 16px; flex: 0 0 16px;
+  background: currentColor;
+  -webkit-mask: var(--clear-icon-url) center / contain no-repeat;
+  mask: var(--clear-icon-url) center / contain no-repeat;
 }
-body.figma-ui-v717 #clearBtn:hover,
-body.figma-ui-v717 #clearBtn:active,
-body.figma-ui-v717 #clearBtn:focus,
-body.figma-ui-v717 #clearBtn:focus-visible {
-  color: #3c49dd !important;
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  outline: 0 !important;
-  transform: none !important;
-}
-.clear-result-icon { display: block; width: 16px; height: 16px; flex: 0 0 16px; }
 .online-test-run-btn { gap: 8px !important; }
 .online-test-run-icon { display: block; width: 16px; height: 16px; flex: 0 0 16px; }
 
@@ -2486,3 +2458,246 @@ body.figma-ui-v717 .code-box {
 .definition-result-table col:nth-child(7) { width: 12%; } /* 操作 */
 .definition-result-table th:nth-child(1),
 .definition-result-table td:nth-child(1) { white-space: nowrap; padding-left: 6px; padding-right: 4px; }
+
+/* 会议批注与 Word 参考：外层框、目录、Tab 与结果操作的最终样式。 */
+body.figma-ui-v717 .platform-frame-v640 .content-wrap {
+  padding: 12px !important;
+}
+body.figma-ui-v717 .page-shell {
+  height: calc(100vh - 24px) !important;
+  height: calc(100dvh - 24px) !important;
+  padding: 12px !important;
+  background: rgba(255, 255, 255, .02) !important;
+  border: 1px solid #fff !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+}
+body.figma-ui-v717 .page-shell::before {
+  display: none !important;
+}
+body.figma-ui-v717 .main-card {
+  height: auto !important;
+  flex: 1 1 auto !important;
+  background: #f8faff !important;
+}
+.document-page-header {
+  display: flex;
+  min-width: 0;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+body.figma-ui-v717 .document-page-header .breadcrumb {
+  min-width: 0 !important;
+  margin: 0 !important;
+  flex: 1 1 auto !important;
+  flex-wrap: wrap;
+  overflow: visible;
+  white-space: normal;
+}
+.algorithm-directory {
+  width: 300px;
+  max-width: 100%;
+  flex: 0 0 auto;
+}
+.algorithm-directory .app-select-trigger {
+  min-height: 36px;
+  padding: 6px 12px;
+  gap: 8px;
+  border-radius: 20px;
+  background: transparent;
+  font-size: 14px;
+}
+.algorithm-directory-prefix {
+  flex: none;
+  padding-right: 8px;
+  border-right: 1px solid #c9cdd4;
+  color: #86909c;
+  font-weight: 400;
+}
+.algorithm-directory-menu .app-select-option {
+  padding: 9px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+.algorithm-directory-menu .app-select-option.is-active {
+  background: transparent;
+}
+.algorithm-directory-menu .app-select-option:hover:not(.is-disabled),
+.algorithm-directory-menu .app-select-option.is-active:not(.is-selected):not(.is-disabled) {
+  background: #f7f8fa;
+}
+.algorithm-directory-menu .app-select-option.is-selected {
+  color: var(--platform-primary, #2454ff);
+}
+body.figma-ui-v717 .call-type-btn-v770,
+body.figma-ui-v717 .api-mode-btn {
+  font-size: 14px !important;
+}
+body.figma-ui-v717 .reference-copy-btn,
+body.figma-ui-v717 .reference-copy-btn:hover,
+body.figma-ui-v717 .reference-copy-btn:active,
+body.figma-ui-v717 .reference-copy-btn:focus-visible {
+  box-shadow: none !important;
+}
+body.figma-ui-v717 .response-card-actions-v645 :is(#downloadResultBtnV732, #viewVisualizationBtnV645, #clearBtn) {
+  display: inline-flex !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 8px !important;
+  color: #1d2129 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 22px !important;
+  outline: 0 !important;
+  transform: none !important;
+}
+body.figma-ui-v717 .response-card-actions-v645 #clearBtn {
+  gap: 4px;
+  cursor: pointer;
+}
+body.figma-ui-v717 .response-card-actions-v645 :is(#downloadResultBtnV732, #viewVisualizationBtnV645, #clearBtn):is(:hover, :active, :focus-visible):not(:disabled) {
+  /* 同栏交互统一；蓝色沿用 Word 可视化文字的估计还原值。 */
+  color: #165dff !important;
+  background: #f2f3f5 !important;
+}
+body.figma-ui-v717 .response-card-actions-v645 :is(#downloadResultBtnV732, #viewVisualizationBtnV645, #clearBtn):focus-visible:not(:disabled) {
+  outline: 2px solid #165dff !important;
+  outline-offset: 2px;
+}
+.visualization-action-icon {
+  width: 16px; height: 16px; flex: 0 0 16px; margin-right: 4px;
+}
+@container (max-width: 372px) {
+  .response-card .download-menu-wrap-v751,
+  body.figma-ui-v717 .response-card-actions-v645 #downloadResultBtnV732 {
+    width: 100% !important;
+  }
+}
+@media (max-width: 900px) {
+  body.figma-ui-v717 .platform-frame-v640 .content-wrap {
+    padding: 8px !important;
+  }
+  body.figma-ui-v717 .page-shell {
+    height: calc(100vh - 16px) !important;
+    height: calc(100dvh - 16px) !important;
+    padding: 8px !important;
+  }
+}
+@media (max-width: 640px) {
+  .document-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .algorithm-directory {
+    width: 100%;
+  }
+}
+
+/* Word 全部截图：参数表与引用表单。限定作用域，代码示例仍使用等宽字体。 */
+body.figma-ui-v717 .request-params-table th,
+body.figma-ui-v717 .request-params-table td {
+  color: #1d2129 !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
+}
+body.figma-ui-v717 .request-params-table th {
+  font-weight: 500 !important;
+  background: #f7f8fa !important;
+}
+.request-params-table .parameter-name { font: inherit; }
+body.figma-ui-v717 .request-params-table .pill {
+  height: 22px !important;
+  min-height: 22px !important;
+  padding: 1px 8px !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 20px !important;
+  white-space: nowrap !important;
+}
+body.figma-ui-v717 .request-params-table .pill.required {
+  color: #fff !important;
+  background: #2454ff !important;
+}
+body.figma-ui-v717 .request-params-table .pill.optional {
+  color: #1d2129 !important;
+  background: #e5e6eb !important;
+}
+body.figma-ui-v717 .request-params-table .pill.conditional {
+  color: #fff !important;
+  background: #ff7d00 !important;
+}
+.citation-label { display: inline-flex; align-items: center; gap: 6px; }
+.citation-help-trigger {
+  display: inline-flex;
+  width: 14px; height: 14px; min-width: 14px; min-height: 14px;
+  padding: 0; align-items: center; justify-content: center;
+  color: #86909c; border: 1px solid currentColor; border-radius: 50%;
+  background: transparent; font: 10px/1 sans-serif; cursor: help;
+}
+.citation-help-trigger:hover,
+.citation-help-trigger:focus-visible { color: #2454ff; outline: 0; }
+.citation-help-tooltip {
+  position: fixed; z-index: 2147483001;
+  padding: 8px 10px; border-radius: 3px;
+  color: #fff; background: #353e49;
+  font: 12px/18px 'PingFang SC', 'Segoe UI', sans-serif;
+  white-space: normal; overflow-wrap: anywhere; pointer-events: none;
+  box-sizing: border-box;
+}
+body.figma-ui-v717 .citation-request-card .citation-extract-btn {
+  min-height: 32px; padding: 0 12px; gap: 6px;
+  color: #fff; background: #2454ff; border: 0; border-radius: 5px;
+  font-size: 14px; font-weight: 400;
+}
+.citation-extract-icon {
+  width: 16px; height: 16px; flex: 0 0 16px;
+}
+body.figma-ui-v717 .citation-request-card .citation-extract-btn:hover {
+  color: #fff; background: #4080ff;
+}
+.citation-request-card .citation-structured-input .main-textarea {
+  min-height: 160px;
+}
+.citation-request-card .requirement-supplement-card,
+.citation-request-card .citation-manual-metadata-panel,
+.citation-request-card .citation-reference-parser {
+  padding: 0; background: transparent; border: 0; box-shadow: none;
+}
+.citation-request-card .citation-metadata-card > .settings-title,
+.citation-request-card .citation-manual-metadata-panel > .citation-metadata-section-head {
+  display: none;
+}
+.citation-request-card .citation-parsed-metadata:not(:has(.citation-metadata-entry)),
+.citation-request-card .citation-parser-action-row:empty { display: none; }
+.citation-request-card .citation-reference-source-switch {
+  background: #f2f3f5; border: 1px solid #e5e6eb; border-radius: 6px;
+}
+.citation-request-card .citation-reference-source-switch button {
+  color: #86909c; font-size: 14px; font-weight: 400; border-radius: 4px;
+}
+.citation-request-card .citation-reference-source-switch button.active {
+  color: #1d2129; box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.citation-request-card .requirement-resource-item {
+  display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px;
+  padding: 0; background: transparent; border: 0; border-radius: 0;
+}
+.citation-request-card .requirement-resource-heading { grid-column: 1; margin: 0; }
+.citation-request-card .requirement-resource-item > p {
+  grid-column: 2; grid-row: 1; margin: 0;
+  color: #86909c; font-size: 12px; line-height: 18px; text-align: right;
+}
+.citation-request-card .requirement-resource-controls { grid-column: 1 / -1; }

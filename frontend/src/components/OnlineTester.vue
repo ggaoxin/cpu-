@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import type { InputMode, ToolDefinition } from '../types'
 import { endpointFor, modesFor, pretty, requestPayloadFor, supportsVisualization } from '../utils/tooling'
 import { ApiRequestError, apiUrl, executeToolRequest, listCompatibleHistory, listDictionaries, listClusterCollections, listDocumentCollections, listSemanticResources, parseCitationMetadata, saveDictionary } from '../services/api'
@@ -40,6 +40,37 @@ const mode = ref<InputMode>('text')
 const running = ref(false)
 const result = ref<unknown | null>(null)
 const requestError = ref('')
+const citationHelpText = '被引文献元数据由用户上传；参考文献原始条目选填，可选择粘贴或上传，提供时作为判定辅助因素'
+const citationHelpOpen = ref(false)
+const citationHelpAnchor = ref<HTMLButtonElement | null>(null)
+const citationHelpBubble = ref<HTMLElement | null>(null)
+const citationHelpStyle = ref({ left: '8px', top: '8px', width: '260px' })
+
+async function showCitationHelp() {
+  citationHelpOpen.value = true
+  citationHelpStyle.value.width = `${Math.min(260, window.innerWidth - 16)}px`
+  await nextTick()
+  if (!citationHelpOpen.value || !citationHelpAnchor.value || !citationHelpBubble.value) return
+  const anchor = citationHelpAnchor.value.getBoundingClientRect()
+  const bubble = citationHelpBubble.value.getBoundingClientRect()
+  const left = Math.max(8, Math.min(anchor.left - bubble.width / 2, window.innerWidth - bubble.width - 8))
+  const top = anchor.top >= bubble.height + 16 ? anchor.top - bubble.height - 8 : anchor.bottom + 8
+  citationHelpStyle.value = { left: `${left}px`, top: `${Math.max(8, Math.min(top, window.innerHeight - bubble.height - 8))}px`, width: citationHelpStyle.value.width }
+}
+function hideCitationHelp() { citationHelpOpen.value = false }
+function leaveCitationHelp() { if (document.activeElement !== citationHelpAnchor.value) hideCitationHelp() }
+function dismissCitationHelp(event: MouseEvent) { if (!citationHelpAnchor.value?.contains(event.target as Node)) hideCitationHelp() }
+onMounted(() => {
+  document.addEventListener('click', dismissCitationHelp)
+  window.addEventListener('scroll', hideCitationHelp, true)
+  window.addEventListener('resize', hideCitationHelp)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', dismissCitationHelp)
+  window.removeEventListener('scroll', hideCitationHelp, true)
+  window.removeEventListener('resize', hideCitationHelp)
+})
+watch(mode, hideCitationHelp)
 // 输入侧校验提示（2 秒淡出小弹窗）：不占用响应结果区——响应区只显示
 // 真实接口返回/失败；文件超限、批次超量、必填缺失等边界报错走这里
 const toastMessage = ref('')
@@ -1934,7 +1965,7 @@ function downloadResult() {
       <button class="primary-btn online-test-run-btn" type="button" :disabled="running || !!clusterCountError" :title="clusterCountError || undefined" @click="run"><img v-if="!running" :src="runIconUrl" class="online-test-run-icon" alt="" aria-hidden="true" /><span>{{ running ? '正在测试…' : '在线测试' }}</span></button>
     </div>
     <div class="test-panel">
-      <div class="test-card request-card">
+      <div class="test-card request-card" :class="{ 'citation-request-card': toolId === 'citation-intent' || toolId === 'citation-sentiment' }">
         <div class="test-card-header"><div class="test-card-title">请求参数</div></div>
         <div class="form-grid">
           <div v-if="toolId === 'relation-extract'" class="relation-source-card relation-source-first">
@@ -2070,7 +2101,7 @@ function downloadResult() {
             <div class="citation-structured-input">
               <div class="field document-title-field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识响应结果及可视化弹窗中的当前文献</small></label><input v-model="form.documentTitle" class="input" maxlength="300" placeholder="请输入题目" /><small class="char-count-v755">{{ form.documentTitle.length }}/50</small></div>
               <div v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="citationSingle.documentText" class="textarea main-textarea" maxlength="8000" placeholder="请输入文献文本"></textarea><small class="char-count-v755">{{ citationSingle.documentText.length }}/8000</small></div>
-              <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句解析</span><button type="button" class="citation-extract-btn" @click="forceAutoExtractCitation"><i>✦</i>从文献文本自动提取</button></label></div>
+              <div class="field"><label><span class="label-main citation-label"><span class="required-mark">*</span> 引用句解析<button ref="citationHelpAnchor" type="button" class="citation-help-trigger" aria-label="引用句解析说明" :aria-describedby="citationHelpOpen ? 'citation-help-tooltip' : undefined" @mouseenter="showCitationHelp" @mouseleave="leaveCitationHelp" @focus="showCitationHelp" @blur="hideCitationHelp" @click="showCitationHelp" @keydown.esc.prevent="hideCitationHelp">?</button></span><button type="button" class="citation-extract-btn" @click="forceAutoExtractCitation"><svg class="citation-extract-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M10.5 5.5 12.6 11.4 18.5 13.5 12.6 15.6 10.5 21.5 8.4 15.6 2.5 13.5 8.4 11.4Z"/><path d="m19 1 1.1 3.9L24 6l-3.9 1.1L19 11l-1.1-3.9L14 6l3.9-1.1Z"/><path d="m3 17 .7 2.3L6 20l-2.3.7L3 23l-.7-2.3L0 20l2.3-.7Z"/></svg>从文献文本自动提取</button></label></div>
               <div v-for="(card, index) in citationCards" :key="card.id" class="document-card citation-card">
                 <div class="document-card-head"><b>引用句 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" @click="removeCitationCard(card.id)">删除</button></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><small>保留完整原句供上下文核对；句内多文献引用已按编号拆分为多张卡片</small></label><textarea v-model="card.sentence" class="textarea compact" placeholder="包含引文标记的引用句" @input="markCitationCardsEdited"></textarea></div>
@@ -2086,7 +2117,7 @@ function downloadResult() {
                 <div class="document-card-head"><b>引用数据 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" :disabled="citationBatchItems.length <= 2" @click="removeCitationBatchItem(item.id)">删除</button></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识本条响应结果及可视化弹窗中的文献</small></label><input v-model="item.title" class="input" maxlength="300" placeholder="请输入本条文献题目" /><small class="char-count-v755">{{ item.title.length }}/50</small></div>
                 <div v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="item.documentText" class="textarea compact" maxlength="8000" placeholder="请输入本条引用所属的文献文本"></textarea><small class="char-count-v755">{{ item.documentText.length }}/8000</small></div>
-                <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><button v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" type="button" class="citation-extract-btn" @click="autoExtractBatchCitation(item)"><i>✦</i>从文献文本自动提取</button></label><textarea v-model="item.citationSentence" class="textarea compact citation-sentence-area" placeholder="可点击右上按钮从本条文献文本自动提取，也可手动填写"></textarea></div>
+                <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><button v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" type="button" class="citation-extract-btn" @click="autoExtractBatchCitation(item)"><svg class="citation-extract-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M10.5 5.5 12.6 11.4 18.5 13.5 12.6 15.6 10.5 21.5 8.4 15.6 2.5 13.5 8.4 11.4Z"/><path d="m19 1 1.1 3.9L24 6l-3.9 1.1L19 11l-1.1-3.9L14 6l3.9-1.1Z"/><path d="m3 17 .7 2.3L6 20l-2.3.7L3 23l-.7-2.3L0 20l2.3-.7Z"/></svg>从文献文本自动提取</button></label><textarea v-model="item.citationSentence" class="textarea compact citation-sentence-area" placeholder="可点击右上按钮从本条文献文本自动提取，也可手动填写"></textarea></div>
                 <div class="field"><label><span class="label-main">局部子片段</span><small>该文献编号对应的局部语义片段；意图/情感识别以此为准，留空则用整句判定</small></label><textarea v-model="item.subSpan" class="textarea compact" placeholder="本条引用对应的局部子片段，可编辑"></textarea></div>
                 <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="item.previousContext" class="textarea compact citation-context-area" placeholder="请输入引用句前文"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="item.nextContext" class="textarea compact citation-context-area" placeholder="请输入引用句后文"></textarea></div></div>
                 <div class="citation-card-metadata">
@@ -2199,10 +2230,13 @@ function downloadResult() {
 
       <div class="test-card response-card">
         <div v-if="languageMismatch" class="info-banner warning" style="margin:0 0 10px"><b>语言不匹配提示</b><span>{{ languageMismatch }}</span></div>
-        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><div class="download-menu-wrap-v751"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="toggleDownloadMenu">⇩ 下载结果</button><div v-if="downloadMenuOpen" class="download-menu-v751"><button type="button" class="download-menu-item-v751" @click="downloadResult">JSON（完整响应）</button><button v-if="toolId === 'zh-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationCsv">CSV（每篇分类结果）</button><button v-else-if="toolId === 'zh-keyword' || toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordCsv">CSV（每词一行）</button><button v-else-if="toolId === 'citation-sentiment'" type="button" class="download-menu-item-v751" @click="downloadCitationCsv">CSV（每条引用一行）</button><button v-else-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerCsv">CSV（每实体一行）</button><button v-else type="button" class="download-menu-item-v751" @click="downloadAbstractMoveCsv">CSV（每语步一行）</button><button v-if="toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordXml">XML（结构化关键词）</button><button v-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerSql">数据库（SQL 插入语句）</button><button v-if="toolId === 'zh-abstract-move'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveDatabase">数据库（SQL 插入语句）</button></div></div><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)">▦ 查看可视化结果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><img :src="trashIconUrl" class="clear-result-icon" alt="" aria-hidden="true" />清除结果</button></div></div>
+        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><div class="download-menu-wrap-v751"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="toggleDownloadMenu">⇩ 下载结果</button><div v-if="downloadMenuOpen" class="download-menu-v751"><button type="button" class="download-menu-item-v751" @click="downloadResult">JSON（完整响应）</button><button v-if="toolId === 'zh-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationCsv">CSV（每篇分类结果）</button><button v-else-if="toolId === 'zh-keyword' || toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordCsv">CSV（每词一行）</button><button v-else-if="toolId === 'citation-sentiment'" type="button" class="download-menu-item-v751" @click="downloadCitationCsv">CSV（每条引用一行）</button><button v-else-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerCsv">CSV（每实体一行）</button><button v-else type="button" class="download-menu-item-v751" @click="downloadAbstractMoveCsv">CSV（每语步一行）</button><button v-if="toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordXml">XML（结构化关键词）</button><button v-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerSql">数据库（SQL 插入语句）</button><button v-if="toolId === 'zh-abstract-move'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveDatabase">数据库（SQL 插入语句）</button></div></div><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)"><svg class="visualization-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 20H5V3h9l4 4v4M14 3v4h4M8 8h3M8 11h4"/><circle cx="16" cy="16" r="3.5"/><path d="m18.5 18.5 3 3"/></svg>查看可视化效果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><span class="clear-result-icon" :style="{ '--clear-icon-url': `url(${JSON.stringify(trashIconUrl)})` }" aria-hidden="true"></span>清除结果</button></div></div>
         <div class="response-result-body hover-copy-box"><pre v-if="hasResult" class="console">{{ pretty(result) }}</pre><div v-else-if="running && runProgress" class="console live-progress"><div class="lp-summary"><b>正在处理 {{ runProgress.total }} 篇</b><span>已完成 {{ runProgress.success_count + runProgress.failed_count }}/{{ runProgress.total }}（成功 {{ runProgress.success_count }}<template v-if="runProgress.failed_count">，失败 {{ runProgress.failed_count }}</template>）· 累计 {{ runProgress.elapsed }}s</span></div><div class="lp-rows"><div v-for="it in runProgress.items" :key="it.index" class="lp-row" :data-st="it.status"><i>{{ it.index + 1 }}</i><span class="lp-name" :title="it.file_name">{{ it.file_name }}</span><template v-if="it.status === 'succeeded'"><b class="lp-ok">✓</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template><template v-else-if="it.status === 'failed'"><b class="lp-err">✗</b><span class="lp-time">失败</span></template><template v-else><b class="lp-run">…</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template></div></div></div><div v-else-if="requestError" class="console placeholder request-error">{{ requestError }}</div><div v-else class="console placeholder">等待测试执行...</div></div>
       </div>
     </div>
     <RequirementSupplement v-if="toolId === 'deep-cluster'" :tool-id="toolId" :mode="mode" />
   </section>
+  <Teleport to="body">
+    <div v-if="citationHelpOpen" id="citation-help-tooltip" ref="citationHelpBubble" class="citation-help-tooltip" role="tooltip" :style="citationHelpStyle">{{ citationHelpText }}</div>
+  </Teleport>
 </template>

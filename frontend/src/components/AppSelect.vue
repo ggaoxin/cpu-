@@ -19,6 +19,7 @@ const props = withDefaults(defineProps<{
   options: Opt[]
   disabled?: boolean
   placeholder?: string
+  menuClass?: string
 }>(), { disabled: false, placeholder: '' })
 
 const emit = defineEmits<{ 'update:modelValue': [value: string]; change: [value: string] }>()
@@ -197,11 +198,12 @@ defineExpose({ close })
       @click="toggle"
       @keydown="onTriggerKeydown"
     >
+      <slot name="prefix"></slot>
       <span class="app-select-label" :class="{ 'is-placeholder': isPlaceholder }">{{ displayLabel }}</span>
       <i class="app-select-arrow" aria-hidden="true"></i>
     </button>
     <Teleport to="body">
-      <ul v-if="open" ref="menuEl" :id="listId" class="app-select-menu" role="listbox" :style="menuStyle">
+      <ul v-if="open" ref="menuEl" :id="listId" class="app-select-menu" :class="menuClass" role="listbox" :style="menuStyle">
         <!-- 与原生一致：仅剩“暂无…”占位时，菜单里显示一行不可选的占位项 -->
         <li v-if="!options.length && placeholder" :id="`${listId}-opt-empty`" class="app-select-option is-disabled" role="option" :aria-disabled="true" aria-selected="false">{{ placeholder }}</li>
         <li
