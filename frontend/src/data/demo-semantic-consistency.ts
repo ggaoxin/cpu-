@@ -883,7 +883,6 @@ const deepClusterResponse = {
         "feature_statistics": {
           "intra_cluster_similarity": 0.947,
           "inter_cluster_separation": 0.294,
-          "semantic_density": 1.0,
           "semantic_coherence": 0.95
         },
         "ratio": 0.2,
@@ -926,7 +925,6 @@ const deepClusterResponse = {
         "feature_statistics": {
           "intra_cluster_similarity": 0.918,
           "inter_cluster_separation": 0.245,
-          "semantic_density": 1.0,
           "semantic_coherence": 0.95
         },
         "ratio": 0.2,
@@ -962,7 +960,6 @@ const deepClusterResponse = {
         "feature_statistics": {
           "intra_cluster_similarity": 1.0,
           "inter_cluster_separation": 0.326,
-          "semantic_density": 1.0,
           "semantic_coherence": 1.0
         },
         "ratio": 0.1,
@@ -994,7 +991,6 @@ const deepClusterResponse = {
         "feature_statistics": {
           "intra_cluster_similarity": 1.0,
           "inter_cluster_separation": 0.366,
-          "semantic_density": 1.0,
           "semantic_coherence": 1.0
         },
         "ratio": 0.1,
@@ -1026,7 +1022,6 @@ const deepClusterResponse = {
         "feature_statistics": {
           "intra_cluster_similarity": 1.0,
           "inter_cluster_separation": 0.346,
-          "semantic_density": 1.0,
           "semantic_coherence": 1.0
         },
         "ratio": 0.1,
@@ -1058,7 +1053,6 @@ const deepClusterResponse = {
         "feature_statistics": {
           "intra_cluster_similarity": 1.0,
           "inter_cluster_separation": 0.338,
-          "semantic_density": 1.0,
           "semantic_coherence": 1.0
         },
         "ratio": 0.1,
@@ -1090,7 +1084,6 @@ const deepClusterResponse = {
         "feature_statistics": {
           "intra_cluster_similarity": 1.0,
           "inter_cluster_separation": 0.338,
-          "semantic_density": 1.0,
           "semantic_coherence": 1.0
         },
         "ratio": 0.1,
@@ -1122,7 +1115,6 @@ const deepClusterResponse = {
         "feature_statistics": {
           "intra_cluster_similarity": 1.0,
           "inter_cluster_separation": 0.366,
-          "semantic_density": 1.0,
           "semantic_coherence": 1.0
         },
         "ratio": 0.1,
@@ -1599,8 +1591,8 @@ export const demoDeepClusterPayload = {
     { id: 'DOC-EN-018', publication_date: '2026-04-01', title: enPapers[0].title, text: enPapers[0].abstract },
     { id: 'DOC-EN-024', publication_date: '2026-03-20', title: enPapers[1].title, text: enPapers[1].abstract },
     { id: 'DOC-EN-028', publication_date: '2026-01-30', title: enPapers[2].title, text: enPapers[2].abstract },
-    { id: 'DOC-EN-026', publication_date: '2026-02-15', title: 'Can Slow-Thinking LLMs Reason Over Time?', text: 'TimeReasoner reformulates time-series forecasting as an inference-time conditional reasoning process with hybrid instructions and rollout-based multi-step reasoning.' },
-    { id: 'DOC-EN-030', publication_date: '2026-02-06', title: 'FVG-PT: Adaptive Foreground View-Guided Pre-Training', text: 'Foreground views guide adaptive visual pre-training so representations focus on semantically relevant object regions.' },
+    { id: 'DOC-EN-026', title: 'Can Slow-Thinking LLMs Reason Over Time?', text: 'TimeReasoner reformulates time-series forecasting as an inference-time conditional reasoning process with hybrid instructions and rollout-based multi-step reasoning.' },
+    { id: 'DOC-EN-030', title: 'FVG-PT: Adaptive Foreground View-Guided Pre-Training', text: 'Foreground views guide adaptive visual pre-training so representations focus on semantically relevant object regions.' },
   ],
   output_format: 'JSON',
 }

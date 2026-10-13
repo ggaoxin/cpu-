@@ -2209,8 +2209,19 @@ class SemanticApplicationService(ISemanticService):
                     continue
                 if self._ws_substr_find(searchable_text.casefold(), _ph.casefold()) < 0:
                     continue
+                # 短单词候选须以独立词形态出现在原文（2026-10-13 "els" 案例：LLM
+                # 改写摘要产生"mod els"类碎片被挖成候选，子串校验 els⊂models 放行，
+                # 补齐路径把碎片顶到 rank 1 且带原始高分——与 _clean_keywords 的
+                # "tion" 防线同口径，补上补齐路径缺口；URL 碎片 io 同拦）
+                if is_en and len(_ph.split()) == 1 and len(_ph) <= 5:
+                    import re as _re2
+                    if not _re2.search(rf"(?:^|[^A-Za-z]){_re2.escape(_ph)}(?:[^A-Za-z]|$)",
+                                       searchable_text, _re2.IGNORECASE):
+                        continue
                 _have.add(_ph.casefold())
-                cleaned.append({"keyword": _ph, "weight": round(float(_c.get("score", 0) or 0), 3)})
+                # 补齐词置信度同样封顶 0.95（与 fitness 路径一致：非词典词不过
+                # 0.95——此前补齐词直取候选原始分，出现过 0.965 虚高）
+                cleaned.append({"keyword": _ph, "weight": round(min(float(_c.get("score", 0) or 0), 0.95), 3)})
         # 最终置信度=内容适配度 fitness；用户词典 boost 经 weight_change 叠加
         #（custom_terms 无 fitness，保留 boost 后的 weight 不变）
         # 词典命中词封顶 1.0（用户显式收录=确定性知识）；非词典词封顶 0.95（防LLM过度自信）

@@ -626,7 +626,6 @@ def format_axis_result(
             "feature_statistics": {
                 "intra_cluster_similarity": round(float(np.mean(np.clip(similarities, 0.0, 1.0))), 6),
                 "inter_cluster_separation": round(float(np.clip(1.0 - max_inter, 0.0, 1.0)), 6),
-                "semantic_density": round(float(np.clip(1.0 - np.std(similarities), 0.0, 1.0)), 6),
             },
         })
         for local_pos, document_index in enumerate(members):
@@ -646,7 +645,7 @@ def format_axis_result(
             "ratio": round(len(outlier_indices) / max(total, 1), 6),
             "representative_terms": [], "representative_documents": [],
             "members": [{"document_id": papers[index]["document_id"], "title": papers[index]["title"]} for index in outlier_indices],
-            "feature_statistics": {"intra_cluster_similarity": 0.0, "inter_cluster_separation": 0.0, "semantic_density": 0.0},
+            "feature_statistics": {"intra_cluster_similarity": 0.0, "inter_cluster_separation": 0.0},
         })
         for index in outlier_indices:
             axis_info[index] = {

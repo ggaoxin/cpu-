@@ -537,7 +537,6 @@ def execute_deep_clustering(
             c["feature_statistics"] = {
                 "intra_cluster_similarity": round(intra, 3) if intra is not None else None,
                 "inter_cluster_separation": round(margin, 3),
-                "semantic_density": round(max(0.0, 1.0 - (max(sims) - min(sims)) if len(sims) >= 2 else float(_np.mean(sims))), 3),
             }
         sim_by_doc = {}
         for c in clusters:

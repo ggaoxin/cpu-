@@ -421,16 +421,16 @@ export const alignedDeepClusterDemo: Record<string, any> = {
     clusters: [
       { cluster_id: 'C01', topic_name: 'Reasoning model training', size: 2, ratio: 0.4,
         representative_terms: ['reverse-perplexity curriculum', 'SFT', 'synthetic data'],
-        feature_statistics: { intra_cluster_similarity: 0.89, semantic_density: 1.0 },
+        feature_statistics: { intra_cluster_similarity: 0.89 },
         representative_documents: [
           { document_id: 'DOC003', title: '11.pdf' }, { document_id: 'DOC004', title: '12.pdf' }] },
       { cluster_id: 'C02', topic_name: 'Autoregressive entity retrieval', size: 1, ratio: 0.2,
         representative_terms: ['GENRE', 'autoregressive formulation'],
-        feature_statistics: { intra_cluster_similarity: 1.0, semantic_density: 1.0 },
+        feature_statistics: { intra_cluster_similarity: 1.0 },
         representative_documents: [{ document_id: 'DOC001', title: '1.pdf' }] },
       { cluster_id: 'C03', topic_name: 'Unsupervised contrastive learning', size: 2, ratio: 0.4,
         representative_terms: ['Divide and Contrast', 'Di-COT', 'unsupervised framework'],
-        feature_statistics: { intra_cluster_similarity: 0.84, semantic_density: 0.96 },
+        feature_statistics: { intra_cluster_similarity: 0.84 },
         representative_documents: [
           { document_id: 'DOC002', title: '10.pdf' }, { document_id: 'DOC005', title: '15.pdf' }] },
     ],

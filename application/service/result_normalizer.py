@@ -429,6 +429,74 @@ _MOVE_CATEGORIES_EN = ["Background", "Objective", "Methods", "Results", "Conclus
 _NORM_CACHE: dict = {}
 
 
+def _locate_fund_move_span(abstract: str, content: str) -> tuple:
+    """基金归纳语步的片段级回退定位（2026-10-13，文本位置为空修复）。
+
+    基金语步文本是 LLM 归纳改写（增删「的/拟/项目」等虚词、语序微调），
+    整段与逐句匹配（_move_char_range/_locate_spliced_move）都会落空。
+    与前端 renderFundMoveContent 同款贪心片段匹配：从当前位置向下取最长
+    可命中子串（≥4 字，含数字/英文 3 字起），命中段记录区间；结束取
+    首尾命中段并成覆盖区间（该语步内容来源于原文的区段）。
+    命中总长不足内容 30% 视为定位失败（避免只蹭到通用短语误定位）。
+    性能护栏：单语步 find 尝试上限 3000 次（约 0.1s 量级），超限停止。
+    """
+    import re as _re
+    if not abstract or not content:
+        return None, None
+    # 复用 _move_char_range 的归一化缓存（同源文本多语步共享一次归一化）
+    _move_char_range(abstract, "\x00预热缓存")
+    cache = _NORM_CACHE
+    norm_abs, map_to_original = cache["norm"], cache["map"]
+    if not norm_abs or not map_to_original:
+        return None, None
+    lower_abs = norm_abs.lower()
+    _flat = lambda s: "".join(ch for ch in s if not ch.isspace() and ch != "　")
+    flat_content = _flat(content)
+    if not flat_content:
+        return None, None
+
+    def _min_len(seg: str) -> int:
+        return 3 if any(c.isdigit() or (c.isascii() and c.isalpha()) for c in seg) else 4
+
+    def _find(seg: str):
+        pos = norm_abs.find(seg)
+        if pos < 0:
+            pos = lower_abs.find(seg.lower())
+        return pos
+
+    i, n = 0, len(content)
+    spans = []
+    matched_total = 0
+    attempts = 0
+    while i < n and attempts < 3000:
+        matched_len = 0
+        for ln in range(n - i, 2, -1):
+            attempts += 1
+            if attempts >= 3000:
+                break
+            seg = _flat(content[i:i + ln])
+            if len(seg) < _min_len(seg):
+                continue
+            pos = _find(seg)
+            if pos >= 0:
+                matched_len = ln
+                s0 = map_to_original[pos]
+                s1 = map_to_original[min(pos + len(seg) - 1, len(map_to_original) - 1)] + 1
+                spans.append((s0, s1))
+                matched_total += len(seg)
+                break
+        if matched_len:
+            i += matched_len
+        else:
+            rest = content[i:]
+            m = _re.search(r"[。！？；，、：]", rest)
+            i += m.end() if m else len(rest)
+    if not spans or matched_total < 0.3 * len(flat_content):
+        return None, None
+    spans.sort()
+    return spans[0][0], spans[-1][1]
+
+
 def _move_char_range(abstract: str, text: str) -> tuple:
     """语步文本在摘要中的字符范围（与前端 charRange 同款两级匹配）。
 
@@ -694,8 +762,11 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
                 **({"sentence_indices": list(_sent_idx_by_move[label])}
                    if has_text and _sent_idx_by_move.get(label) else {}),
             })
-    # fund-move 文本模式：语步内容在原文中的字符位置（与摘要平铺分支同款定位逻辑）
-    _fund_src_text = str(payload.get("text") or "").strip() if tool_id == "fund-move" else ""
+    # fund-move 文本模式：语步内容在原文中的字符位置（与摘要平铺分支同款定位逻辑）。
+    # 基金工具文本字段是 project_document_text（text 是其他工具的键；文件模式
+    # preparsed 后 text 为全量解析文本）——2026-10-13 修复：此前只读 text，
+    # 文本模式定位源恒空 → moves[].start/end 全 None → 弹窗「文本位置」列全空
+    _fund_src_text = str(payload.get("text") or payload.get("project_document_text") or "").strip() if tool_id == "fund-move" else ""
 
     for index, item in enumerate(source):
         if not isinstance(item, dict):
@@ -705,6 +776,9 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         _f_start = _f_end = None
         if _fund_src_text and content:
             _f_start, _f_end = _move_char_range(_fund_src_text, str(content))
+            if _f_start is None:
+                # 基金语步是 LLM 归纳改写文本，整段匹配常落空 → 片段级贪心回退
+                _f_start, _f_end = _locate_fund_move_span(_fund_src_text, str(content))
         moves.append({
             **item,
             "start": item.get("start") if item.get("start") is not None else _f_start,
@@ -1746,11 +1820,9 @@ def _clusters(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
         intra = (sum(scores) / len(scores)) / 0.6 if scores else 0.0
         intra = min(1.0, max(0.0, intra))
         inter = 1.0 - max((_jaccard(all_rep[i], all_rep[j]) for j in range(len(clusters)) if j != i), default=0.0)
-        density = 1.0 - min(1.0, (max(scores) - min(scores)) / 0.6) if len(scores) >= 2 else intra
         c["feature_statistics"] = {
             "intra_cluster_similarity": round(intra, 3),
             "inter_cluster_separation": round(inter, 3),
-            "semantic_density": round(density, 3),
         }
     # 文献归属：优先用引擎输出的 document_assignments（v3 已带真实中心相似度与
     # 证据句）；引擎未输出时（旧管线）从 documents 重建

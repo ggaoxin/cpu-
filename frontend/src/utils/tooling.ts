@@ -257,7 +257,8 @@ function payloadForImpl(tool: ToolDefinition, mode: InputMode): Record<string, u
       scientific_document_texts: ['@paper_01.pdf', '@paper_02.docx'],
       document_metadata: base.document_metadata || [
         { document_id: 'DOC001', publication_date: '2025-03-18', title: '工业表面缺陷检测研究' },
-        { document_id: 'DOC002', publication_date: '2025-06-09', title: '复杂场景视觉识别方法' },
+        // 发表时间为选填：无该字段的文献可不提供（DOC002 即省略示例）
+        { document_id: 'DOC002', title: '复杂场景视觉识别方法' },
       ],
       cluster_dimension: base.cluster_dimension || 'technology',
       clustering_algorithm_type: base.clustering_algorithm_type || base.algorithm || 'auto',
@@ -272,14 +273,18 @@ function payloadForImpl(tool: ToolDefinition, mode: InputMode): Record<string, u
       document_id: item.document_id || item.id || `DOC${String(index + 1).padStart(3, '0')}`,
       text: item.text || '',
     }))
-    const documentMetadata = base.document_metadata || rawDocuments.map((item, index) => ({
-      document_id: item.document_id || item.id || `DOC${String(index + 1).padStart(3, '0')}`,
-      publication_date: item.publication_date || '',
-      title: item.title || '',
-      authors: item.authors || [],
-      source: item.source || '',
-      keywords: item.keywords || [],
-    }))
+    const documentMetadata = base.document_metadata || rawDocuments.map((item, index) => {
+      const meta: Record<string, unknown> = {
+        document_id: item.document_id || item.id || `DOC${String(index + 1).padStart(3, '0')}`,
+        title: item.title || '',
+        authors: item.authors || [],
+        source: item.source || '',
+        keywords: item.keywords || [],
+      }
+      // 发表时间选填：仅有值时写入示例（省略而非空串，体现可选项）
+      if (item.publication_date) meta.publication_date = item.publication_date
+      return meta
+    })
     return {
       scientific_document_texts: documents,
       document_metadata: documentMetadata,
@@ -498,10 +503,9 @@ function nestedParameterRows(
     const childPath = `${prefix}.${key}`
     let childStatus = status
     if (['resource_id', 'file', 'dictionary_name', 'weight_boost', 'terms', 'raw_reference', 'project_name', 'document_title'].includes(key)) childStatus = 'conditional'
-    if (['doi', 'title', 'authors', 'institutions', 'venue', 'work_name', 'publication_year', 'keywords'].includes(key)) childStatus = 'optional'
+    if (['doi', 'title', 'authors', 'institutions', 'venue', 'work_name', 'publication_year', 'keywords', 'publication_date'].includes(key)) childStatus = 'optional'
     if (key === 'title' && ['deep-cluster', 'structured-review'].includes(toolId)) childStatus = 'required' // 题名在这两个工具为必填
     if (key === 'source') childStatus = 'optional'
-    if (key === 'publication_date') childStatus = toolId === 'deep-cluster' ? 'required' : 'optional'
     if (key === 'id') childStatus = ['deep-cluster', 'structured-review'].includes(toolId) ? 'required' : 'optional'
     if (key === 'document_id' || key === 'text' || key === 'citation_sentence' || key === 'previous_context' || key === 'next_context' || key === 'citation_marker') childStatus = 'required'
     const row: [string, string, string, string] = [
