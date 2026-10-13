@@ -103,7 +103,11 @@ _UNIVERSAL_VIZ_KEEP = frozenset({
 })
 
 _VIZ_KEEP_FIELDS: Dict[str, frozenset] = {
-    "fund-move": frozenset({"moves"}),
+    # input_type 必须保留（2026-10-13 修复）：弹窗 renderFundMovePosition 按
+    # input_type 分流位置口径——文件模式显示章节树、文本模式显示字符 X-Y。
+    # 此前白名单漏了该键，公开响应被剥掉后前端一律按文本模式渲染，文件模式
+    # 显示成"字符 1437-24208"且空值混杂
+    "fund-move": frozenset({"moves", "input_type"}),
     "zh-abstract-move": frozenset({"moves", "sentence_count"}),
     "en-abstract-move": frozenset({"moves", "sentence_count"}),
     "zh-classify": frozenset({
@@ -427,6 +431,49 @@ _MOVE_CATEGORIES_EN = ["Background", "Objective", "Methods", "Results", "Conclus
 # _move_char_range 去空白归一化的单槽缓存（键=源字符串对象 id+len），
 # 同一原文的重复定位只做一次逐字符归一化（见函数内注释）
 _NORM_CACHE: dict = {}
+
+
+def _fund_heading_sections(text: str, pos) -> list:
+    """文件模式章节回退（2026-10-13）：LLM 未给某语步 source_sections 时，
+    按该语步内容在全文中的字符起点反查所在章节路径。
+
+    章节标题形态（基金申请书通用）：
+    一级「（一）立项依据：」/ 二级「1．研究背景与动机」/ 三级「3.1 xxx」。
+    三级先判（"3.1" 也匹配二级的点号形态）；编号限制 1-2 位数字，
+    排除专利号（202310427585.4）与年份（2024..）误判。
+    路径拼接与 LLM 输出同款："（一）立项依据： / 2．研究意义"。
+    """
+    import re as _re
+    if not text or pos is None or not isinstance(pos, int) or pos < 0 or pos >= len(text):
+        return []
+    _LEVELS = [
+        (3, _re.compile(r"^\d{1,2}\.\d{1,2}\s*\S.{0,40}$")),
+        (1, _re.compile(r"^[（(][一二三四五六七八九十]{1,3}[)）][^（）()]{1,30}[：:]?\s*$")),
+        (2, _re.compile(r"^\d{1,2}[．.、]\s*\S.{0,40}$")),
+    ]
+    heads = []  # (offset, level, title) —— offset 按整串累计（含换行），与字符定位同口径
+    offset = 0
+    for line in text.split("\n"):
+        s = line.strip()
+        if 3 <= len(s) <= 45 and not s.endswith(("。", "；", "，", "！", "？")):
+            for lv, pat in _LEVELS:
+                if pat.match(s):
+                    heads.append((offset, lv, s))
+                    break
+        offset += len(line) + 1
+    before = [h for h in heads if h[0] <= pos]
+    if not before:
+        return []
+    # 从最贴近的标题向上收集父链（层级严格递减）
+    chain = []
+    cur_level = None
+    for off, lv, title in reversed(before):
+        if cur_level is None or lv < cur_level:
+            chain.append(title)
+            cur_level = lv
+            if lv == 1:
+                break
+    return [" / ".join(reversed(chain))]
 
 
 def _locate_fund_move_span(abstract: str, content: str) -> tuple:
@@ -779,6 +826,11 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
             if _f_start is None:
                 # 基金语步是 LLM 归纳改写文本，整段匹配常落空 → 片段级贪心回退
                 _f_start, _f_end = _locate_fund_move_span(_fund_src_text, str(content))
+        # 章节回退：LLM 未给该语步 source_sections（如应用价值常缺）→ 按内容
+        # 字符起点反查所在章节路径，文件模式弹窗「文本位置」不再落空
+        _f_sections = _list(item.get("source_sections") or item.get("source_section"))
+        if not _f_sections and _fund_src_text and _f_start is not None:
+            _f_sections = _fund_heading_sections(_fund_src_text, _f_start)
         moves.append({
             **item,
             "start": item.get("start") if item.get("start") is not None else _f_start,
@@ -787,7 +839,7 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
             "text": content,
             # sentence_index/sentence_indices/position 为内部定位数据，弹窗不展示，
             # 不进公开响应；定位信息统一由 start/end + source_sections 表达
-            "source_sections": _list(item.get("source_sections") or item.get("source_section")),
+            "source_sections": _f_sections,
             "confidence": _confidence(item, move_confidence.get(label, overall_confidence)),
         })
         # 引擎/上游中间字段不进公开响应：move_code/move_name(与 label 同值冗余)、
@@ -1043,27 +1095,21 @@ def _domain_classification(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _derive_application_domain(primary: Any) -> List[Dict[str, Any]]:
-    """从主分类派生"应用场景领域"标签。
+    """领域标签从中图分类路径派生（2026-10-13 定稿）：一律取二级类名。
 
-    ac_zh 核心规则：主分类 = 应用场景。故应用场景领域取主分类的大类名——
-    T 工业技术是人为聚合大类，其下二级类（TM 电工 / TP 自动化计算机 / TQ 化工…）
-    才是学科边界，故 T 下取 path_names[1]；其余大类取 path_names[0]（一级类名）。
-    与 _is_cross_discipline 的学科边界判定保持一致。
+    一级类里"文化、科学、教育、体育 / 工业技术 / 数理科学和化学"等是人为聚合
+    大类，二级才是学科边界（G8 体育 / TP 自动化技术、计算机技术 / O4 物理…）；
+    单一学科大类的二级信息量也更足（I2 中国文学 / Q3 遗传学），故不再区分
+    聚合/单一，统一取 path_names[1]。路径只判到一级时退一级（全库 939 处路径
+    实测仅"T 工业技术"级保守输出出现过 2 次）；空路径 0 次，不做更深兜底。
     """
     src = primary if isinstance(primary, dict) else {}
-    if not src:
-        return []
-    code = str(src.get("clc_code") or src.get("code") or "")
     path_names = _list(src.get("path_names"))
-    if code.startswith("T") and len(path_names) >= 2:
+    label = ""
+    if len(path_names) >= 2:
         label = str(path_names[1]).strip()
     elif path_names:
         label = str(path_names[0]).strip()
-    else:
-        # 兜底：从 classification_path 字符串取首段
-        full = str(src.get("classification_path") or "")
-        label = full.split(">")[0].strip() if full else ""
-    label = label or str(src.get("clc_name") or src.get("label") or "").strip()
     if not label:
         return []
     return [{"label": label, "confidence": _confidence(src)}]
@@ -1179,9 +1225,17 @@ def _classification(raw: Any, tool_id: str) -> Dict[str, Any]:
         domains = _list(data.get("domain_labels"))
     candidates_raw = _list(data.get("rag_top_k_candidates"))[:5]
     primary = items[0] if items else None
-    # 应用场景领域：主分类=应用场景，从主分类大类派生（ac_zh/en-classify 后端不产出 domain_labels）
+    # 应用场景领域：主分类派生（ac_zh/en-classify 后端不产出 domain_labels），
+    # 一律取二级类名（_derive_application_domain，2026-10-13 定稿）
     if not domains and primary:
         domains = _derive_application_domain(primary)
+        # 交叉学科：次分类同样派生领域标签 → 主领域+次领域双标签（同名去重）。
+        # 非交叉的次分类与主分类同域，不额外加标签
+        secondary = items[1] if len(items) > 1 else None
+        if secondary and data.get("is_interdisciplinary"):
+            _have = {str(d.get("label")) for d in domains if isinstance(d, dict)}
+            domains = domains + [d for d in _derive_application_domain(secondary)
+                                 if isinstance(d, dict) and str(d.get("label")) not in _have]
 
     # 候选分类（供前端"候选分类与人工确认"下拉框）：以 (主,次) 组合为单元。
     # 后端 _execute_classification 产出 candidate_combinations（1-3 组）；旧结果无此字段时
@@ -1814,8 +1868,11 @@ def _clusters(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
     for i, c in enumerate(clusters):
         scores = c.pop("_in_scores", [])
         # 引擎已算好真实向量指标（v3 语步句向量）→ 尊重真值；仅旧引擎无指标时
-        # 用主题匹配分派生（避免 0 值假象）
-        if isinstance(c.get("feature_statistics"), dict) and c["feature_statistics"].get("intra_cluster_similarity"):
+        # 用主题匹配分派生（避免 0 值假象）。判"键是否存在"而非真值——单篇簇
+        # 引擎合法输出 intra=None（无两两相似度），此前真值判断把 None 当
+        # "没算"用派生值覆盖成 0.0/1.0（2026-10-13 类内相似度为 0 根因）
+        _fs = c.get("feature_statistics") if isinstance(c.get("feature_statistics"), dict) else None
+        if _fs is not None and "intra_cluster_similarity" in _fs:
             continue
         intra = (sum(scores) / len(scores)) / 0.6 if scores else 0.0
         intra = min(1.0, max(0.0, intra))

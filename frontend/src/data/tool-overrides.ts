@@ -53,7 +53,10 @@ function enrichPositionPreview(value: unknown, mode: PositionPreviewMode) {
     : nextPath().join(' > ')
 
   const data = result?.data && typeof result.data === 'object' ? result.data : result
-  if (data && typeof data === 'object') data.input_type = mode === 'text' ? 'text' : 'file'
+  // input_type 仅在缺失时按模式补齐（真实快照带精确值：files/batch 等，不覆写）
+  if (data && typeof data === 'object' && typeof data.input_type !== 'string') {
+    data.input_type = mode === 'text' ? 'text' : 'file'
+  }
 
   const visit = (node: any, parentKey = '') => {
     if (Array.isArray(node)) {
@@ -69,7 +72,9 @@ function enrichPositionPreview(value: unknown, mode: PositionPreviewMode) {
     }
 
     const handled = new Set<string>()
-    if (typeof node.input_type === 'string') node.input_type = mode === 'text' ? 'text' : 'file'
+    // input_type 节点级不再注入/覆写（2026-10-13）：真实快照自带精确值（text/
+    // texts/file/files），注入会污染 results 条目等非负载节点；缺失时仅上方
+    // data 级兜底
     for (const obsoleteKey of ['source_pages', 'page_number', 'page_index', 'paragraph_index']) {
       if (obsoleteKey in node) delete node[obsoleteKey]
     }
@@ -83,23 +88,14 @@ function enrichPositionPreview(value: unknown, mode: PositionPreviewMode) {
         handled.add(key)
       }
     }
+    // 2026-10-13 契约更新（文本位置 B 方案）：source_sections/source_section 是
+    // 真实章节定位——文本模式（粘贴章节全文）与文件模式都保留展示，不再按演示
+    // 模式删改或换成假路径。空值兜底补齐仅在下方"无任何定位字段"分支处理。
     if (Array.isArray(node.source_sections) && node.source_sections.length) {
-      if (mode === 'text') {
-        delete node.source_sections
-        if (!node.source_position && !node.position) node.position = nextCharacterPosition()
-      } else {
-        node.source_sections = [nextPath().join(' > ')]
-        handled.add('source_sections')
-      }
+      handled.add('source_sections')
     }
     if (typeof node.source_section === 'string' && node.source_section.trim()) {
-      if (mode === 'text') {
-        delete node.source_section
-        if (!node.source_position && !node.position) node.position = nextCharacterPosition()
-      } else {
-        node.source_section = nextPath().join(' > ')
-        handled.add('source_section')
-      }
+      handled.add('source_section')
     }
     if (typeof node.section === 'string' && ('count' in node || 'percentage' in node || 'ratio' in node)) {
       node.section = nextPositionText()

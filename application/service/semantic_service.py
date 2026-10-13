@@ -1993,9 +1993,11 @@ class SemanticApplicationService(ISemanticService):
         _lib_prompt_terms = [f for f in (_lib_hits or []) if f.casefold() in _user_lib_cf][:10]
 
         # 2. LLM 选/精炼（带 few-shot + 候选）
+        # 数量口径（2026-10-13 用户定稿）：默认最多 4 个、且最终置信度须 >0.7
+        # （阈值过滤在最终置信度计算后执行）；min/max 仍可经参数覆盖
         system_prompt = self._system_prompt(rule, request)
-        _min_kw = max(1, min(50, int(params.get("min_keywords", 5) or 5)))
-        _max_kw = max(_min_kw, min(50, int((request.params or {}).get("max_keywords", 8) or 8)))
+        _min_kw = max(1, min(50, int(params.get("min_keywords", 4) or 4)))
+        _max_kw = max(_min_kw, min(50, int((request.params or {}).get("max_keywords", 4) or 4)))
         # 正文语境实验（2026-09-09 用户提议，A/B 开关）：KEYWORD_BODY_CONTEXT=1 时
         # 选词 LLM 额外读全文前 5000 字——正文含研究对象/方法/结论/创新点（规范亦要求
         # "从正文核心内容提炼"），C 类 gold（需通读全文拟词）召回 0.583 为三层最低。
@@ -2185,7 +2187,7 @@ class SemanticApplicationService(ISemanticService):
         _lex_zh = _keyword_lexicon("zh")
         # 数量下限补齐（min_keywords 接线）：LLM 输出不足下限时（如只给 4 个），
         # 从未入选的高分候选按特征分补齐——字面须在原文（不引入幻觉词）、非停用词
-        minimum_keywords = max(1, min(50, int((request.params or {}).get("min_keywords", 5) or 5)))
+        minimum_keywords = max(1, min(50, int((request.params or {}).get("min_keywords", 4) or 4)))
         if len(cleaned) < minimum_keywords:
             _have = {str(c.get("keyword", "")).casefold() for c in cleaned}
             for _c in cands:
@@ -2234,6 +2236,17 @@ class SemanticApplicationService(ISemanticService):
                 if _item.get("custom_dictionary_hit"):
                     _item["weight"] = max(_item["weight"], 0.75)
 
+        # 置信度阈值过滤（2026-10-13 用户定稿：只要高置信关键词）：最终置信度
+        # （fitness + 词典加成后的 weight）不高于阈值即剔除——宁少勿滥，先过滤
+        # 后截断，存活数可能小于 max_keywords（含 0 个的极端情形）。阈值可经
+        # confidence_threshold 参数覆盖，设 0 关闭过滤
+        try:
+            _conf_th = min(1.0, max(0.0, float((request.params or {}).get("confidence_threshold", 0.7))))
+        except (TypeError, ValueError):
+            _conf_th = 0.7
+        if _conf_th > 0:
+            cleaned = [i for i in cleaned if float(i.get("weight") or 0) > _conf_th]
+
         # 排序：preserve_order=true 时置信度按 0.05 分档降序为主，档内按摘要出现顺序（稳定）；
         #       false 时纯置信度降序。
         if preserve_order:
@@ -2246,7 +2259,7 @@ class SemanticApplicationService(ISemanticService):
             cleaned.sort(key=lambda item: (-int(_number_or_default(item.get("weight"), 0) * 20 + 1e-9), _appear_pos(item)))
         else:
             cleaned.sort(key=lambda item: _number_or_default(item.get("weight"), 0), reverse=True)
-        maximum_keywords = max(1, min(50, int((request.params or {}).get("max_keywords", 8) or 8)))
+        maximum_keywords = max(1, min(50, int((request.params or {}).get("max_keywords", 4) or 4)))
         # 数量上限只约束模型候选：词典命中词是用户显式收录的术语，全部保留
         # （否则命中数被 max_keywords 截断，词典形同虚设）。
         _dict_kept = [item for item in cleaned if item.get("custom_dictionary_hit")]

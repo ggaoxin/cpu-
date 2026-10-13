@@ -1767,7 +1767,7 @@ function rqResultAsText(data: Record<string, unknown> | undefined, bySection: bo
 // 含幂等建表模板+单引号转义+start_pos/end_pos 避保留字）；JSON=完整响应。
 const downloadMenuOpen = ref(false)
 function toggleDownloadMenu() {
-  if (!['zh-abstract-move', 'en-abstract-move', 'zh-classify', 'zh-keyword', 'en-keyword', 'citation-sentiment', 'general-ner'].includes(props.toolId)) { downloadResult(); return }   // 其他工具行为不变
+  if (!['zh-abstract-move', 'en-abstract-move', 'zh-classify', 'en-classify', 'zh-keyword', 'en-keyword', 'citation-sentiment', 'general-ner'].includes(props.toolId)) { downloadResult(); return }   // 其他工具行为不变
   downloadMenuOpen.value = !downloadMenuOpen.value
 }
 function csvCell(value: unknown) {
@@ -1789,20 +1789,61 @@ function downloadAbstractMoveCsv() {
 }
 function downloadClassificationCsv() {
   const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const title = ((data?.document as Record<string, unknown>)?.title as string) || ''
-  // 分类结果：classifications 数组（每条含 clc_code/category_name/confidence/role）
+  const title = ((data?.document as Record<string, unknown>)?.title as string)
+    || String(data?.document_title || '')
+  // 分类结果：classifications 数组（每条含 clc_code/category_name/label/confidence/role；
+  // zh 用 category_name，en 用 label，两者兼容）
   const cls = ((data?.classifications as Array<Record<string, unknown>>) || []).filter(c => c && c.clc_code)
   const lines = [
     ['文献题名', '角色', '中图分类号', '分类名称', '置信度'].map(csvCell).join(','),
     ...cls.map(c => [title,
       String(c.role || 'main') === 'secondary' ? '次分类' : '主分类',
       String(c.clc_code || ''),
-      String(c.category_name || ''),
+      String(c.category_name || c.label || ''),
       String(c.confidence ?? '')].map(csvCell).join(',')),
   ]
   const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
   a.href = url; a.download = `${props.toolId}_result.csv`; a.click(); URL.revokeObjectURL(url)
+  downloadMenuOpen.value = false
+}
+
+// 英文科技文献分类：XML（结构化分类结果）——文档信息 + 主/次分类（含路径）+ 领域标签
+function downloadClassificationXml() {
+  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
+  const title = ((data?.document as Record<string, unknown>)?.title as string)
+    || String(data?.document_title || '')
+  const escXml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  const cls = ((data?.classifications as Array<Record<string, unknown>>) || []).filter(c => c && c.clc_code)
+  const pathOf = (c: Record<string, unknown>) => {
+    const p = c.classification_path
+    return Array.isArray(p) ? p.join(' > ') : String(p || '')
+  }
+  const items = cls.map((c, i) => `    <classification id="${i + 1}" role="${c.role === 'secondary' ? 'secondary' : 'primary'}">
+      <clc_code>${escXml(String(c.clc_code || ''))}</clc_code>
+      <name>${escXml(String(c.category_name || c.label || ''))}</name>
+      <confidence>${c.confidence ?? ''}</confidence>
+      <path>${escXml(pathOf(c))}</path>
+    </classification>`).join('\n')
+  const domainList = (data?.domain_labels as Array<Record<string, unknown>>) || []
+  const domains = domainList
+    .map(d => `    <domain confidence="${d.confidence ?? ''}">${escXml(String(d.label || d.name || ''))}</domain>`).join('\n')
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<classificationResult>
+  <document>
+    <title>${escXml(title)}</title>
+    <is_interdisciplinary>${data?.is_interdisciplinary === true ? 'true' : 'false'}</is_interdisciplinary>
+  </document>
+  <classifications count="${cls.length}">
+${items}
+  </classifications>
+  <domain_labels count="${domainList.length}">
+${domains}
+  </domain_labels>
+</classificationResult>`
+  const blob = new Blob(['﻿' + xml], { type: 'application/xml;charset=utf-8' })
+  const url = URL.createObjectURL(blob); const a = document.createElement('a')
+  a.href = url; a.download = `${props.toolId}_result.xml`; a.click(); URL.revokeObjectURL(url)
   downloadMenuOpen.value = false
 }
 
@@ -2274,7 +2315,7 @@ function downloadResult() {
 
       <div class="test-card response-card">
         <div v-if="languageMismatch" class="info-banner warning" style="margin:0 0 10px"><b>语言不匹配提示</b><span>{{ languageMismatch }}</span></div>
-        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><div class="download-menu-wrap-v751"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="toggleDownloadMenu"><ResultActionIcon kind="download" />下载结果</button><div v-if="downloadMenuOpen" class="download-menu-v751"><button type="button" class="download-menu-item-v751" @click="downloadResult">JSON（完整响应）</button><button v-if="toolId === 'zh-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationCsv">CSV（每篇分类结果）</button><button v-else-if="toolId === 'zh-keyword' || toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordCsv">CSV（每词一行）</button><button v-else-if="toolId === 'citation-sentiment'" type="button" class="download-menu-item-v751" @click="downloadCitationCsv">CSV（每条引用一行）</button><button v-else-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerCsv">CSV（每实体一行）</button><button v-else type="button" class="download-menu-item-v751" @click="downloadAbstractMoveCsv">CSV（每语步一行）</button><button v-if="toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordXml">XML（结构化关键词）</button><button v-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerSql">数据库（SQL 插入语句）</button><button v-if="toolId === 'zh-abstract-move'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveDatabase">数据库（SQL 插入语句）</button></div></div><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)"><ResultActionIcon kind="visualize" />查看可视化效果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><ResultActionIcon kind="clear" />清除结果</button></div></div>
+        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><div class="download-menu-wrap-v751"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="toggleDownloadMenu"><ResultActionIcon kind="download" />下载结果</button><div v-if="downloadMenuOpen" class="download-menu-v751"><button type="button" class="download-menu-item-v751" @click="downloadResult">JSON（完整响应）</button><button v-if="toolId === 'zh-classify' || toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationCsv">CSV（每篇分类结果）</button><button v-else-if="toolId === 'zh-keyword' || toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordCsv">CSV（每词一行）</button><button v-else-if="toolId === 'citation-sentiment'" type="button" class="download-menu-item-v751" @click="downloadCitationCsv">CSV（每条引用一行）</button><button v-else-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerCsv">CSV（每实体一行）</button><button v-else type="button" class="download-menu-item-v751" @click="downloadAbstractMoveCsv">CSV（每语步一行）</button><button v-if="toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationXml">XML（结构化分类结果）</button><button v-if="toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordXml">XML（结构化关键词）</button><button v-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerSql">数据库（SQL 插入语句）</button><button v-if="toolId === 'zh-abstract-move'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveDatabase">数据库（SQL 插入语句）</button></div></div><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)"><ResultActionIcon kind="visualize" />查看可视化效果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><ResultActionIcon kind="clear" />清除结果</button></div></div>
         <div class="response-result-body hover-copy-box"><pre v-if="hasResult" class="console">{{ pretty(result) }}</pre><div v-else-if="running && runProgress" class="console live-progress"><div class="lp-summary"><b>正在处理 {{ runProgress.total }} 篇</b><span>已完成 {{ runProgress.success_count + runProgress.failed_count }}/{{ runProgress.total }}（成功 {{ runProgress.success_count }}<template v-if="runProgress.failed_count">，失败 {{ runProgress.failed_count }}</template>）· 累计 {{ runProgress.elapsed }}s</span></div><div class="lp-rows"><div v-for="it in runProgress.items" :key="it.index" class="lp-row" :data-st="it.status"><i>{{ it.index + 1 }}</i><span class="lp-name" :title="it.file_name">{{ it.file_name }}</span><template v-if="it.status === 'succeeded'"><b class="lp-ok">✓</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template><template v-else-if="it.status === 'failed'"><b class="lp-err">✗</b><span class="lp-time">失败</span></template><template v-else><b class="lp-run">…</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template></div></div></div><div v-else-if="requestError" class="console placeholder request-error">{{ requestError }}</div><div v-else class="console placeholder">等待测试执行...</div></div>
       </div>
     </div>

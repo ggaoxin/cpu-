@@ -1539,8 +1539,10 @@ function cleanClassificationResponse(toolId: string, response: AnyRecord, mode: 
 function realResponseForMode(toolId: string, mode: InputMode): AnyRecord | null {
   const entry = (realResponses as AnyRecord)?.[toolId]
   if (!entry) return null
-  const key = mode === 'text' || mode === 'file' ? 'text' : 'batch-text'
-  const real = entry[key]
+  // 优先取该模式的专属快照（fund-move 2026-10-13 起四种模式各有真实采集：
+  // 文件模式响应结构与文本不同——input_type=file/files、results 包装、章节定位）；
+  // 其余工具无专属快照时回退旧映射：file→text、batch→batch-text
+  const real = entry[mode] ?? entry[mode === 'file' ? 'text' : mode === 'batch' ? 'batch-text' : mode]
   if (!real) return null
   return clone(real)
 }

@@ -189,6 +189,7 @@
     "document_title",
     "file_name",
     "input",
+    "input_type",
     "manual_confirmation",
     "moves",
     "project_name",

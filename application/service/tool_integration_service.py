@@ -1351,6 +1351,11 @@ class ToolIntegrationService:
                         f"文件解析失败，无法执行引用识别：{exc}。请上传含文本层的 PDF/DOCX/TXT 文件（扫描版请先转为文字版）。"
                     ) from exc
                 raise
+            # 解析结果写回 item（2026-10-13 修复）：_result_payload 的
+            # setdefault("text", group[0].text) 供 normalizer 做定位/摘要回填。
+            # 此前懒解析后 item.text 仍是文件路径，基金语步等按 payload.text
+            # 定位时拿到的是路径字符串 → start/end 全 None、章节回退失效。
+            _item.text = _text
         text = self._backend_text(contract, _text, payload)
         effective_params = dict(params)
         if source_pdf_path:
@@ -1704,13 +1709,15 @@ class ToolIntegrationService:
                 if dtd_mode == "saved" and dtd.get("resource_id"):
                     payload.setdefault("dictionary_id", dtd.get("resource_id"))
                 elif dtd_mode == "custom":
-                    custom_terms = dtd.get("terms") or []
-                    # 词典文件接线（2026-09-05）：手填术语为空时解析上传文件
-                    # （规则 4 格式 + LLM 兜底抽取），文件不再静默无效
-                    if not custom_terms and (dtd.get("text_content") or dtd.get("storage_uri")):
+                    custom_terms = list(dtd.get("terms") or [])
+                    # 词典文件接线（2026-09-05）：解析上传文件（规则 4 格式 + LLM 兜底抽取）。
+                    # 2026-10-13 修复：手填术语与文件术语是并集而非二选一——此前手填
+                    # 非空就永不解析文件，用户同时提供两者时文件词条被静默丢弃
+                    if dtd.get("text_content") or dtd.get("storage_uri"):
                         parsed = self._dictionary_terms_from_upload(dtd)
                         if parsed:
-                            custom_terms = parsed
+                            custom_terms = list(dict.fromkeys(
+                                [str(t).strip() for t in custom_terms + parsed if str(t).strip()]))
                     payload.setdefault("custom_dictionary", {
                         "dictionary_name": dtd.get("dictionary_name") or dtd.get("name"),
                         "weight_boost": dtd.get("weight_boost", 0.08),
@@ -1739,18 +1746,22 @@ class ToolIntegrationService:
             }
         elif contract.tool_id == "zh-keyword" and isinstance(payload.get("custom_dictionary"), dict):
             custom = dict(payload["custom_dictionary"])
-            terms = custom.get("terms") or []
-            if not terms and custom.get("text_content"):
+            # 2026-10-13 修复：手填术语与上传文件术语取并集（此前手填非空就跳过
+            # 文件解析，两者同传时文件词条被静默丢弃），去重后建词典
+            terms = [str(t).strip() for t in (custom.get("terms") or []) if str(t).strip()]
+            if custom.get("text_content"):
                 raw_text = str(custom["text_content"])
+                file_terms: list = []
                 try:
                     decoded = json.loads(raw_text)
                     if isinstance(decoded, list):
-                        terms = decoded
+                        file_terms = decoded
                     elif isinstance(decoded, dict):
                         # 领域术语资源嵌套格式：{domain_term_resource:{领域:{term_list,base_weight}}, general_sci_term}
-                        terms = _extract_domain_term_entries(decoded) or decoded.get("terms") or []
+                        file_terms = _extract_domain_term_entries(decoded) or decoded.get("terms") or []
                 except json.JSONDecodeError:
-                    terms = [item.strip() for item in re.split(r"[\r\n,，;；]+", raw_text) if item.strip()]
+                    file_terms = [item.strip() for item in re.split(r"[\r\n,，;；]+", raw_text) if item.strip()]
+                terms = list(dict.fromkeys(terms + [str(t).strip() for t in file_terms if str(t).strip()]))
             if terms:
                 created = self.resource_repository.create_dictionary(
                     settings.DEFAULT_WORKSPACE_ID,
