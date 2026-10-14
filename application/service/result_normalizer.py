@@ -136,10 +136,14 @@ _VIZ_KEEP_FIELDS: Dict[str, frozenset] = {
     }),
     "citation-sentiment": frozenset({"citation_sentiment_results", "citations"}),
     "citation-intent": frozenset({"citation_intent_results", "citations"}),
+    # domain_label/domain_name/csv_content/database_records/output_format 是
+    # 需规参数（领域标签/输出格式要求）的产出（2026-10-14 修复：此前被白名单
+    # 剥掉，参数在引擎层生效但公开响应看不到——csv/数据库格式完全失效）
     "definition-detect": frozenset({
         "definitions", "definition_results",
         "concept_definition_mappings", "mappings",
         "summary", "statistical_analysis_report",
+        "domain_label", "domain_name", "csv_content", "database_records", "output_format",
     }),
     "general-ner": frozenset({"entities", "entity_results", "entity_mappings", "mappings", "summary", "selected_domain"}),
     "research-ner": frozenset({"entities", "entity_results", "standard_term_mappings", "mappings", "summary", "selected_domain"}),

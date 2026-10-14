@@ -6573,6 +6573,7 @@ class SemanticApplicationService(ISemanticService):
             _by_concept[_ck]["definitions"].append({
                 "sentence": _item["sentence"],
                 "definition": _item["definition"],
+                "pattern": _item.get("pattern", ""),
                 "source_position": _item["source_position"],
                 "confidence": _item["confidence"],
             })
@@ -6598,20 +6599,26 @@ class SemanticApplicationService(ISemanticService):
                 buf = _io.StringIO()
                 writer = _csv.writer(buf)
                 writer.writerow(["concept", "definition_sentence", "pattern", "confidence"])
-                for item in out:
-                    writer.writerow([item.get("concept"), item.get("sentence"),
-                                     item.get("pattern"), item.get("confidence")])
+                # out 为概念聚合结构（概念 → definitions[]）：展平为每条定义一行
+                _rows = [(item.get("concept"), sub.get("sentence"), sub.get("pattern"), sub.get("confidence"))
+                         for item in out if isinstance(item, dict)
+                         for sub in (item.get("definitions") or [item]) if isinstance(sub, dict)]
+                for _r in _rows:
+                    writer.writerow(list(_r))
                 packed["csv_content"] = buf.getvalue()
                 packed["output_format"] = "csv"
             elif ("数据库" in output_format or "DATABASE" in fmt) and out:
+                _db_rows = [
+                    {"concept": item.get("concept"), "definition_sentence": sub.get("sentence"),
+                     "definition_pattern": sub.get("pattern"), "confidence": sub.get("confidence")}
+                    for item in out if isinstance(item, dict)
+                    for sub in (item.get("definitions") or [item]) if isinstance(sub, dict)
+                ]
                 packed["database_records"] = [{
                     "concept_id": f"cdef_{index:04d}",
-                    "concept": item.get("concept"),
-                    "definition_sentence": item.get("sentence"),
-                    "definition_pattern": item.get("pattern"),
-                    "confidence": item.get("confidence"),
+                    **_r,
                     "domain_label": domain_label or None,
-                } for index, item in enumerate(out, start=1)]
+                } for index, _r in enumerate(_db_rows, start=1)]
                 packed["output_format"] = "database"
             out = packed
         result.success = True

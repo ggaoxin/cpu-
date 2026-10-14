@@ -201,6 +201,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
   // ==================== 概念定义识别 ==================== #
   'definition-detect': {
     inputs: [
+      ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
       ['scientific_document_fragment_or_batch_text', 'string | string[] | file | file[]', 'required', '科技文献全文片段或文本'],
       ['domain_label', 'string', 'optional', '领域标签。枚举:"自动识别"(默认)或 "01"–"32"。注入识别提示词作为领域语境,概念判定优先考虑该领域术语;随结果返回'],
       ['output_format_requirement', 'string', 'optional', '输出格式要求。枚举:"JSON"(默认)、"CSV"(结果附 csv_content 字段)、"数据库写入结构"(结果附 database_records 字段,含 concept_id 等 DB 就绪字段)'],

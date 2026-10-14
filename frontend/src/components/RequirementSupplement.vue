@@ -488,14 +488,14 @@ watchEffect(() => emit('update:payload', requestPayload.value))
           <button type="button" :class="{ active: citationReferenceSource === 'upload' }" @click="switchCitationReferenceSource('upload')">上传条目</button>
         </div>
         <div v-if="citationReferenceSource === 'paste'" class="field full citation-reference-paste-field">
-          <label><span class="label-main">粘贴参考文献条目</span><small>支持一次粘贴多条（每行一条），中英文格式均可</small></label>
+          <label><span class="label-main">引用元数据</span><small>参考文献，支持一次粘贴多条（每行一条），中英文格式均可</small></label>
           <textarea v-model="citationRawReference" class="textarea compact" rows="5" placeholder="每行一条参考文献，例如：&#10;[1] 张三，李四. 科技文献语义分析研究[J]. 情报学报，2024，43(2)：120-130.&#10;[2] Smith J, et al. A survey of NLP. ACL, 2020."></textarea>
           <small class="char-count-v755">{{ citationRawReference.length }}/8000</small>
         </div>
         <div v-else class="resource-upload-wrap">
           <label class="resource-upload-zone citation-reference-upload-zone">
             <input ref="citationReferenceFileInput" type="file" accept=".txt,.json,.jsonl,.csv" @change="handleCitationReferenceFile" />
-            <span>⇧</span><b>{{ citationUploadName || '点击上传参考文献条目' }}</b><small>支持 TXT/JSON/JSONL/CSV：参考文献条目原文</small>
+            <span>⇧</span><b>{{ citationUploadName || '点击上传引用元数据条目' }}</b><small>支持 TXT/JSON/JSONL/CSV</small>
           </label>
             <button v-if="citationUploadName" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearCitationReferenceFile">✕ 取消</button>
           </div>

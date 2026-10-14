@@ -40,7 +40,7 @@ const mode = ref<InputMode>('text')
 const running = ref(false)
 const result = ref<unknown | null>(null)
 const requestError = ref('')
-const citationHelpText = '被引文献元数据由用户上传；参考文献原始条目选填，可选择粘贴或上传，提供时作为判定辅助因素'
+const citationHelpText = '引用元数据（参考文献）由用户上传；条目选填，可选择粘贴或上传，提供时作为判定辅助因素'
 const citationHelpOpen = ref(false)
 const citationHelpAnchor = ref<HTMLButtonElement | null>(null)
 const citationHelpBubble = ref<HTMLElement | null>(null)
@@ -1767,6 +1767,14 @@ function rqResultAsText(data: Record<string, unknown> | undefined, bySection: bo
 // 含幂等建表模板+单引号转义+start_pos/end_pos 避保留字）；JSON=完整响应。
 const downloadMenuOpen = ref(false)
 function toggleDownloadMenu() {
+  // 概念定义句识别（2026-10-14 定稿）：下载结果不弹格式菜单，直接按请求参数
+  // 「输出格式要求」的当前选择输出——JSON→完整响应 / CSV→csv / 数据库写入结构→SQL
+  // （须在通用白名单判断之前，否则会先被下方的 downloadResult 直落 JSON）
+  if (props.toolId === 'definition-detect') {
+    if (form.outputFormat === 'CSV') { downloadDefinitionCsv(); return }
+    if (form.outputFormat === '数据库写入结构') { downloadDefinitionSql(); return }
+    downloadResult(); return
+  }
   if (!['zh-abstract-move', 'en-abstract-move', 'zh-classify', 'en-classify', 'zh-keyword', 'en-keyword', 'citation-sentiment', 'general-ner'].includes(props.toolId)) { downloadResult(); return }   // 其他工具行为不变
   downloadMenuOpen.value = !downloadMenuOpen.value
 }
@@ -1929,6 +1937,58 @@ function downloadNerCsv() {
   const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
   a.href = url; a.download = `${props.toolId}_result.csv`; a.click(); URL.revokeObjectURL(url)
+  downloadMenuOpen.value = false
+}
+
+// 概念定义句识别：CSV 下载（与输出格式要求联动）——优先用后端 csv_content，
+// 无则客户端从聚合 definitions 展平生成（概念,定义句,句式,置信度）
+function downloadDefinitionCsv() {
+  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
+  const csv = String(data?.csv_content || '')
+  let content = csv
+  if (!content) {
+    const defs = ((data?.definitions || data?.definition_results) as Array<Record<string, unknown>>) || []
+    const rows = [['概念', '定义句', '句式', '置信度'].join(',')]
+    for (const item of defs) {
+      const subs = Array.isArray(item?.definitions) && item.definitions.length ? item.definitions : [item]
+      for (const sub of subs as Array<Record<string, unknown>>) {
+        rows.push([item.concept || '', sub.sentence || sub.definition || '', sub.pattern || '', sub.confidence ?? ''].map(csvCell).join(','))
+      }
+    }
+    content = rows.join('\r\n')
+  }
+  const blob = new Blob(['\ufeff' + content], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob); const a = document.createElement('a')
+  a.href = url; a.download = `${props.toolId}_result.csv`; a.click(); URL.revokeObjectURL(url)
+  downloadMenuOpen.value = false
+}
+
+// 概念定义句识别：数据库写入结构下载（SQL 插入语句）——优先用后端 database_records
+function downloadDefinitionSql() {
+  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
+  const recs = ((data?.database_records) as Array<Record<string, unknown>>) || []
+  const title = form.documentTitle || String(data?.document_title || '')
+  const esc = (v: unknown) => v === null || v === undefined ? 'NULL' : `'${String(v).replace(/'/g, "''")}'`
+  const values = recs.filter(r => r && r.concept).map(r =>
+    `(${esc(title)}, ${esc(r.concept_id || '')}, ${esc(r.concept)}, ${esc(r.definition_sentence)}, ${esc(r.definition_pattern)}, ${r.confidence ?? 'NULL'}, ${esc(r.domain_label || null)})`)
+  const sql = [
+    '-- 概念定义句识别结果（definition-detect）',
+    'CREATE TABLE IF NOT EXISTS definition_detect_result (',
+    '  id BIGINT AUTO_INCREMENT PRIMARY KEY,',
+    '  document_title    VARCHAR(300),',
+    '  concept_id        VARCHAR(20),',
+    '  concept           VARCHAR(200),',
+    '  definition_sentence TEXT,',
+    '  definition_pattern  VARCHAR(50),',
+    '  confidence        DECIMAL(4,3),',
+    '  domain_label      VARCHAR(10),',
+    '  created_at        DATETIME DEFAULT CURRENT_TIMESTAMP',
+    ');',
+    ...(values.length ? ['INSERT INTO definition_detect_result (document_title, concept_id, concept, definition_sentence, definition_pattern, confidence, domain_label) VALUES', values.join(',\n') + ';'] : []),
+  ].join('\n')
+  const blob = new Blob(['\ufeff' + sql], { type: 'text/sql;charset=utf-8' })
+  const url = URL.createObjectURL(blob); const a = document.createElement('a')
+  a.href = url; a.download = `${props.toolId}_result.sql`; a.click(); URL.revokeObjectURL(url)
   downloadMenuOpen.value = false
 }
 
@@ -2190,7 +2250,6 @@ function downloadResult() {
               <div v-for="(card, index) in citationCards" :key="card.id" class="document-card citation-card">
                 <div class="document-card-head"><b>引用句 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" @click="removeCitationCard(card.id)">删除</button></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><small>保留完整原句供上下文核对；句内多文献引用已按编号拆分为多张卡片</small></label><textarea v-model="card.sentence" class="textarea compact" placeholder="包含引文标记的引用句" @input="markCitationCardsEdited"></textarea></div>
-                <div class="field"><label><span class="label-main">引用元数据</span><small>该文献编号对应的局部语义片段；意图/情感识别以此为准，留空则用整句判定</small></label><textarea v-model="card.subSpan" class="textarea compact" placeholder="本条引用对应的引用元数据，可编辑" @input="markCitationCardsEdited"></textarea></div>
                 <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="card.previousContext" class="textarea compact citation-context-area" placeholder="引用句前文" @input="markCitationCardsEdited"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="card.nextContext" class="textarea compact citation-context-area" placeholder="引用句后文" @input="markCitationCardsEdited"></textarea></div></div>
               </div>
             </div>
@@ -2203,10 +2262,9 @@ function downloadResult() {
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题目</span><small>必填；用于标识本条响应结果及可视化弹窗中的文献</small></label><input v-model="item.title" class="input" maxlength="300" placeholder="请输入本条文献题目" /><small class="char-count-v755">{{ smartCount(item.title) }}/50</small></div>
                 <div v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献文本</span><small>最多 8000 字</small></label><textarea v-model="item.documentText" class="textarea compact" maxlength="8000" placeholder="请输入本条引用所属的文献文本"></textarea><small class="char-count-v755">{{ smartCount(item.documentText) }}/8000</small></div>
                 <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span><button v-if="toolId === 'citation-sentiment' || toolId === 'citation-intent'" type="button" class="citation-extract-btn" @click="autoExtractBatchCitation(item)"><svg class="citation-extract-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M10.5 5.5 12.6 11.4 18.5 13.5 12.6 15.6 10.5 21.5 8.4 15.6 2.5 13.5 8.4 11.4Z"/><path d="m19 1 1.1 3.9L24 6l-3.9 1.1L19 11l-1.1-3.9L14 6l3.9-1.1Z"/><path d="m3 17 .7 2.3L6 20l-2.3.7L3 23l-.7-2.3L0 20l2.3-.7Z"/></svg>从文献文本自动提取</button></label><textarea v-model="item.citationSentence" class="textarea compact citation-sentence-area" placeholder="可点击右上按钮从本条文献文本自动提取，也可手动填写"></textarea></div>
-                <div class="field"><label><span class="label-main">引用元数据</span><small>该文献编号对应的局部语义片段；意图/情感识别以此为准，留空则用整句判定</small></label><textarea v-model="item.subSpan" class="textarea compact" placeholder="本条引用对应的引用元数据，可编辑"></textarea></div>
                 <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="item.previousContext" class="textarea compact citation-context-area" placeholder="请输入引用句前文"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="item.nextContext" class="textarea compact citation-context-area" placeholder="请输入引用句后文"></textarea></div></div>
                 <div class="citation-card-metadata">
-                  <div class="citation-metadata-section-head"><b><span class="required-mark">*</span> 被引文献元数据</b><span>粘贴本条引用的参考文献条目，支持多条；粘贴后自动解析</span></div>
+                  <div class="citation-metadata-section-head"><b><span class="required-mark">*</span> 引用元数据</b><span>参考文献</span></div>
                   <textarea v-model="item.refsText" class="textarea compact citation-refs-area" placeholder="每行一条参考文献条目，例如：&#10;[3] Wang F, Li H. Neural Message Passing. ICML, 2020." @input="scheduleBatchRefsParse(item)"></textarea>
                   <div class="citation-parser-action-row">
                     <span v-if="item.refsParsing" class="citation-parse-status">解析中…</span>
@@ -2315,7 +2373,7 @@ function downloadResult() {
 
       <div class="test-card response-card">
         <div v-if="languageMismatch" class="info-banner warning" style="margin:0 0 10px"><b>语言不匹配提示</b><span>{{ languageMismatch }}</span></div>
-        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><div class="download-menu-wrap-v751"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="toggleDownloadMenu"><ResultActionIcon kind="download" />下载结果</button><div v-if="downloadMenuOpen" class="download-menu-v751"><button type="button" class="download-menu-item-v751" @click="downloadResult">JSON（完整响应）</button><button v-if="toolId === 'zh-classify' || toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationCsv">CSV（每篇分类结果）</button><button v-else-if="toolId === 'zh-keyword' || toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordCsv">CSV（每词一行）</button><button v-else-if="toolId === 'citation-sentiment'" type="button" class="download-menu-item-v751" @click="downloadCitationCsv">CSV（每条引用一行）</button><button v-else-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerCsv">CSV（每实体一行）</button><button v-else type="button" class="download-menu-item-v751" @click="downloadAbstractMoveCsv">CSV（每语步一行）</button><button v-if="toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationXml">XML（结构化分类结果）</button><button v-if="toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordXml">XML（结构化关键词）</button><button v-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerSql">数据库（SQL 插入语句）</button><button v-if="toolId === 'zh-abstract-move'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveDatabase">数据库（SQL 插入语句）</button></div></div><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)"><ResultActionIcon kind="visualize" />查看可视化效果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><ResultActionIcon kind="clear" />清除结果</button></div></div>
+        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><div class="download-menu-wrap-v751"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="toggleDownloadMenu"><ResultActionIcon kind="download" />下载结果</button><div v-if="downloadMenuOpen" class="download-menu-v751"><button type="button" class="download-menu-item-v751" @click="downloadResult">JSON（完整响应）</button><button v-if="toolId === 'zh-classify' || toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationCsv">CSV（每篇分类结果）</button><button v-else-if="toolId === 'zh-keyword' || toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordCsv">CSV（每词一行）</button><button v-else-if="toolId === 'citation-sentiment'" type="button" class="download-menu-item-v751" @click="downloadCitationCsv">CSV（每条引用一行）</button><button v-else-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerCsv">CSV（每实体一行）</button><button v-else-if="toolId !== 'definition-detect'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveCsv">CSV（每语步一行）</button><button v-if="toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationXml">XML（结构化分类结果）</button><button v-if="toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordXml">XML（结构化关键词）</button><button v-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerSql">数据库（SQL 插入语句）</button><button v-if="toolId === 'zh-abstract-move'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveDatabase">数据库（SQL 插入语句）</button></div></div><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)"><ResultActionIcon kind="visualize" />查看可视化效果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><ResultActionIcon kind="clear" />清除结果</button></div></div>
         <div class="response-result-body hover-copy-box"><pre v-if="hasResult" class="console">{{ pretty(result) }}</pre><div v-else-if="running && runProgress" class="console live-progress"><div class="lp-summary"><b>正在处理 {{ runProgress.total }} 篇</b><span>已完成 {{ runProgress.success_count + runProgress.failed_count }}/{{ runProgress.total }}（成功 {{ runProgress.success_count }}<template v-if="runProgress.failed_count">，失败 {{ runProgress.failed_count }}</template>）· 累计 {{ runProgress.elapsed }}s</span></div><div class="lp-rows"><div v-for="it in runProgress.items" :key="it.index" class="lp-row" :data-st="it.status"><i>{{ it.index + 1 }}</i><span class="lp-name" :title="it.file_name">{{ it.file_name }}</span><template v-if="it.status === 'succeeded'"><b class="lp-ok">✓</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template><template v-else-if="it.status === 'failed'"><b class="lp-err">✗</b><span class="lp-time">失败</span></template><template v-else><b class="lp-run">…</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template></div></div></div><div v-else-if="requestError" class="console placeholder request-error">{{ requestError }}</div><div v-else class="console placeholder">等待测试执行...</div></div>
       </div>
     </div>
