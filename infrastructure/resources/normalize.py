@@ -188,8 +188,33 @@ def _normalize_ontology_rows(rows: List[Any]) -> List[Dict[str, Any]]:
     2026-09-16 从配置型升级行型（全资源统一 LLM 重构兜底）：顶层 types 数组解包后
     每行 {code, name, description, examples}——code 必需，其余保留。无 types 包装的
     平铺数组同样接受。
+    2026-10-14 类型行可带 standard_terms（该类型标准词簇，供实体映射 KB 编号）：
+    {term 标准词, term_en 英文, variants 变体}——键名做确定性别名归一
+    （标准词表/entries → standard_terms；标准词/canonical → term），随行存活。
     """
     out: List[Dict[str, Any]] = []
+    # 平铺词表适配（2026-10-14）：无 code 但有 标准词/term + 类别/type 的行——
+    # 用户把词表直接当本体传。按类别分组确定性合成类型行（TYPE_1..，name=类别），
+    # 词表行转为该类型的 standard_terms（不需要 LLM，规则层完成）
+    _flat: Dict[str, Dict[str, Any]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        code = _first_present(row, ("code", "type_code", "类型码", "编码"))
+        if code:
+            continue
+        _term = _first_present(row, ("标准词", "canonical", "term", "词条", "text", "name"))
+        _cat = _first_present(row, ("类别", "type", "类型", "category"))
+        if _term and _cat:
+            _g = _flat.setdefault(_cat, {"code": "", "name": _cat, "standard_terms": []})
+            _g["standard_terms"].append({
+                "term": _term,
+                "term_en": _first_present(row, ("英文", "译名", "canonical_en", "en", "英文标准词", "term_en")) or "",
+                "variants": [str(v).strip() for v in (row.get("同义词") or row.get("变体") or row.get("别名") or []) if str(v).strip()],
+            })
+    for _i, (_cat, _g) in enumerate(_flat.items(), start=1):
+        _g["code"] = f"TYPE_{_i}"
+        out.append(_g)
     for row in rows:
         if not isinstance(row, dict):
             continue
@@ -201,6 +226,30 @@ def _normalize_ontology_rows(rows: List[Any]) -> List[Dict[str, Any]]:
         name = _first_present(row, ("name", "label", "类型名", "名称"))
         if name:
             new.setdefault("name", name)
+        _st = (row.get("standard_terms") or row.get("标准词表") or row.get("entries")
+               or row.get("词条") or row.get("词条列表") or row.get("terms"))
+        if isinstance(_st, list) and _st:
+            _norm_st = []
+            for t in _st:
+                if isinstance(t, str) and t.strip():
+                    _norm_st.append({"term": t.strip(), "term_en": "", "variants": []})
+                    continue
+                if not isinstance(t, dict):
+                    continue
+                term = _first_present(t, ("term", "canonical", "标准词", "词条名",
+                                          "text", "name", "中文名", "词"))
+                if not term:
+                    continue
+                _vars = (t.get("variants") or t.get("变体") or t.get("别名")
+                         or t.get("同义词") or t.get("简称") or [])
+                _norm_st.append({
+                    "term": term,
+                    "term_en": _first_present(t, ("term_en", "canonical_en", "en", "英文标准词",
+                                                  "译名", "英文", "english")) or "",
+                    "variants": [str(v).strip() for v in _vars if str(v).strip()],
+                })
+            if _norm_st:
+                new["standard_terms"] = _norm_st
         out.append(new)
     return out
 
@@ -450,7 +499,7 @@ ROW_FIELD_CONFIG: Dict[str, Dict[str, Any]] = {
     "preprocessed_training_set": {"fn": _normalize_citation_training_rows, "label": "引用意图训练集",
         "expect": "JSON 数组，每条含 citation_sentence（引用句）+ intent（意图标签：背景介绍/引入研究方法/结果比较；可带 previous_context 上下文）"},
     "ontology_classification_system": {"fn": _normalize_ontology_rows, "label": "专业领域本体",
-        "expect": "JSON 对象 {types:[...]} 或平铺数组，每个类型含 code（类型码）+ name（类型名），可带 description（判定标准）+ examples（示例词）"},
+        "expect": "JSON 对象 {types:[...]} 或平铺数组，每个类型含 code（类型码）+ name（类型名），可带 description（判定标准）+ examples（示例词）+ standard_terms（该类型标准词簇数组，每条 {term 标准词, term_en 英文标准词, variants 变体列表}——实体命中标准词/变体时映射到该条并给 KB 编号）"},
     "domain_classification_rules": {"fn": _normalize_clc_rows, "label": "专业领域分类规则",
         "expect": "JSON 数组，每条含 clc_code（分类号）+ clc_name（类目名），可带 parent_code（父级分类号，构成三级树）"},
 }

@@ -312,7 +312,7 @@ const resourceFieldHints: Record<string, string> = {
   manually_labeled_category_data: '仅 .json：编号 + 人工标注类目标签',
   domain_classification_rules: '仅 .json：clc_code（分类号）+ clc_name（类目名）+ parent_code（父级分类号，构成三级树）',
   preprocessed_training_set: '仅 .json：document_title（题目）+ document_text（含引用句的文本）+ intent（分类结果：背景介绍/引入研究方法/结果比较）；reference_entries（参考文献条目）选填',
-  ontology_classification_system: '仅 .json：types（类型数组：code 类型码 + name 中文名 + description 判定标准 + examples 示例词）；领域在请求参数下拉里选',
+  ontology_classification_system: '仅 .json：types（类型数组：code 类型码 + name 中文名 + description 判定标准 + examples 示例词 + standard_terms 标准词簇（term 标准词 + term_en 英文 + variants 变体，命中时输出映射ID）；也可只传平铺词表：标准词 + 英文 + 同义词 + 类别）；领域在请求参数下拉里选',
 }
 function fieldHint(key: string): string {
   // 映射表字段两个工具共用但格式不同（2026-09-19 用户反馈：两种格式混在一条

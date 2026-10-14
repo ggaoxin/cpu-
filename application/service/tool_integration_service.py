@@ -1211,7 +1211,16 @@ class ToolIntegrationService:
                                  if isinstance(doc_metadata, list) and index < len(doc_metadata)
                                  and isinstance(doc_metadata[index], dict) else {})
                 if isinstance(value, dict):
-                    text = self._document_text(value)
+                    # JSON 输入工具（分类/聚类/综述：引擎解析 paper JSON 取 ch_name 等）
+                    # 保留结构化包装；平铺文本工具（语步/关键词/NER/定义等）只取正文
+                    # 纯文本——结构化包装会让它们把元数据当正文（2026-10-14 用户反馈：
+                    # 批量文本语步识别的 moves.text 出现 {"document_id":...} 符号串）
+                    if contract.tool_id in {"zh-classify", "en-classify", "domain-classify",
+                                            "deep-cluster", "structured-review", "cluster-label"}:
+                        text = self._document_text(value)
+                    else:
+                        text = str(value.get("text") or value.get("content")
+                                   or value.get("abstract") or "").strip()
                     input_id = str(value.get("document_id") or value.get("id") or value.get("input_id")
                                     or item_metadata.get("document_id") or f"text{index + 1}")
                     source = {**item_metadata, **value, "input_id": input_id}

@@ -217,6 +217,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
   // ==================== 命名实体识别 ==================== #
   'general-ner': {
     inputs: [
+      ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
       ['bilingual_scientific_document_text', 'string | string[] | file | file[]', 'required', '中英文科技文献文本'],
       ...resourceDescriptorRows('general_domain_annotated_corpus',
         '通用领域标注语料引用。实体标准术语归一/映射(standard_term_mappings)的依据;用户上传自定义版本可改变实体抽取规范',
@@ -226,6 +227,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
   },
   'research-ner': {
     inputs: [
+      ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
       ['academic_abstract_or_technical_report_text', 'string | string[] | file | file[]', 'required', '中英文学术论文摘要或技术报告文本'],
       ...resourceDescriptorRows('multi_domain_scientific_corpus',
         '领域示例语料(可选上传)。传入你领域的示例文本+实体标注,作为 few-shot 校准识别——识别更准,实体类型体系不变(仍为方法/数据/仪器/理论/问题五类)。JSON 数组,每条字段:{"text":"示例文本","entities":[{"text":"实体","type":"METHOD|DATASET|INSTRUMENT|THEORY|TOPIC"}]}',
@@ -243,10 +245,11 @@ export const requirementContracts: Record<string, RequirementContract> = {
   },
   'domain-ner': {
     inputs: [
+      ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
       ['domain_scientific_document_text', 'string | string[] | file | file[]', 'required', '专业科研文献文本'],
       ...resourceDescriptorRows('ontology_classification_system',
-        '本体分类体系引用。实体类型体系的答案空间:限定可识别的实体类型、类型层级与标准知识库映射(ontology_mappings)。更换本体即更换实体类型体系',
-        '自定义本体 JSON 文件(entity_types 数组 + 标注规范说明)'),
+        '本体分类体系引用。实体类型体系的答案空间:限定可识别的实体类型、类型层级与标准知识库映射(ontology_mappings)。更换本体即更换实体类型体系。类型行可带 standard_terms 标准词簇({term,term_en,variants}),实体命中标准词/变体时映射到该条并输出 KB 编号(类型码-序号)',
+        '自定义本体 JSON 文件(types 数组,每个类型含 code+name+可选 description/examples/standard_terms)'),
       ...resourceDescriptorRows('domain_labeled_training_data',
         '领域标注训练数据引用。领域实体判定规则(各实体类型的关键词/模式),是领域实体识别与本体映射的规则来源',
         '自定义领域实体规则文件'),
@@ -262,6 +265,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
   // ==================== 实体关系识别 ==================== #
   'relation-extract': {
     inputs: [
+      ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
       ['upstream_ner_record_id', 'string', 'required', '上游实体记录编号。数据库中已完成的命名实体识别结果记录(rec_ 前缀),后端据此读取原始句子和实体列表,在其上抽取实体间关系三元组'],
       ['dependency_parse', 'object[]', 'optional', '依存句法分析结果。选择上游实体记录后系统自动生成并展示;包含句子编号、中心词、依存关系和依存词,用于支撑关系抽取的句法分析'],
       ['dependency_parse[].sentence_id', 'string', 'optional', '句子编号(如 "SENT-001")'],

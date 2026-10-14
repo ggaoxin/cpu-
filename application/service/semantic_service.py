@@ -6817,11 +6817,14 @@ class SemanticApplicationService(ISemanticService):
             if not uri:
                 return {}
             from config.settings import settings as _settings
-            from infrastructure.resources.normalize import resource_path
+            from infrastructure.resources.normalize import resource_path, normalized_rows_for
             path = resource_path(uri, _settings.PROJECT_ROOT)
             if path is None:
                 return {}
-            doc = json.loads(path.read_text(encoding="utf-8-sig", errors="replace"))
+            # 优先读归一化注册表（上传/预检已做键名标准化：类型码→code、
+            # 标准词表→standard_terms）——直读原文件会漏中文别名结构
+            _reg_rows = normalized_rows_for(path)
+            doc = _reg_rows if _reg_rows else json.loads(path.read_text(encoding="utf-8-sig", errors="replace"))
         except Exception:  # noqa: BLE001 - 本体不可解析时走内置类型体系
             return {}
         types: list = []
@@ -6846,9 +6849,51 @@ class SemanticApplicationService(ISemanticService):
             _collect(doc.get("types") or doc.get("类型") or doc)
         elif isinstance(doc, list):
             _collect(doc)
+        # 标准词表（2026-10-14 定稿，链路对齐版）：标准词簇挂在**类型行内**
+        # （types[].standard_terms——行内字段天然过归一化链路；顶层字段会被
+        # 解包丢弃，故顶层旧格式仅直传路径兼容）。KB 编号 = 类型码-序号
+        # （TREATMENT-001，可回用户文件核查），条目 {term, term_en, variants}
+        std_terms: list = []
+        _seq: dict = {}
+        _source_rows: list = []
+        if isinstance(doc, dict):
+            _source_rows = doc.get("types") or doc.get("类型") or []
+            # 顶层平铺旧格式（直传未归一化时）兼容
+            for _i, _t in enumerate(doc.get("standard_terms") or [], start=1):
+                if isinstance(_t, dict):
+                    _canon = str(_t.get("canonical") or _t.get("term") or "").strip()
+                    if _canon:
+                        std_terms.append({
+                            "kb_id": str(_t.get("id") or f"KB-{_i:03d}"),
+                            "zh": _canon,
+                            "en": str(_t.get("canonical_en") or _t.get("en") or "").strip(),
+                            "type": str(_t.get("type") or "").strip(),
+                            "variants": [str(v).strip() for v in (_t.get("variants") or []) if str(v).strip()],
+                        })
+        elif isinstance(doc, list):
+            _source_rows = doc
+        for _row in _source_rows:
+            if not isinstance(_row, dict):
+                continue
+            _code = str(_row.get("code") or "").strip()
+            for _t in (_row.get("standard_terms") or []):
+                if not isinstance(_t, dict):
+                    continue
+                _canon = str(_t.get("term") or _t.get("canonical") or "").strip()
+                if not _canon:
+                    continue
+                _seq[_code] = _seq.get(_code, 0) + 1
+                std_terms.append({
+                    "kb_id": str(_t.get("kb_id") or f"{_code}-{_seq[_code]:03d}"),
+                    "zh": _canon,
+                    "en": str(_t.get("term_en") or _t.get("canonical_en") or _t.get("en") or "").strip(),
+                    "type": _code,
+                    "variants": [str(v).strip() for v in (_t.get("variants") or []) if str(v).strip()],
+                })
         return {"domain": (str(doc.get("domain") or doc.get("领域") or "").strip()
                            if isinstance(doc, dict) else ""),
-                "types": types}
+                "types": types,
+                "standard_terms": std_terms}
 
     @classmethod
     def _custom_ontology_types(cls, descriptor) -> set:
@@ -6864,10 +6909,17 @@ class SemanticApplicationService(ISemanticService):
             if not uri:
                 return set()
             from config.settings import settings as _settings
-            from infrastructure.resources.normalize import resource_path
+            from infrastructure.resources.normalize import resource_path, normalized_rows_for
             path = resource_path(uri, _settings.PROJECT_ROOT)
             if path is None:
                 return set()
+            # 优先读归一化注册表（与 _load_custom_ontology 同口径，2026-10-14 平铺
+            # 词表修复）：平铺结构经确定性归一成 TYPE_N 类型行——直读原文件解析
+            # 不出类型 → 白名单空 → 走内置 13 类 → 用户类型实体全被滤光
+            _reg_rows = normalized_rows_for(path)
+            if _reg_rows:
+                return {str(r.get("code") or "").strip()
+                        for r in _reg_rows if isinstance(r, dict) and r.get("code")}
             doc = json.loads(path.read_text(encoding="utf-8-sig", errors="replace"))
         except Exception:  # noqa: BLE001 - 本体不可解析时走内置白名单
             return set()
@@ -7457,7 +7509,13 @@ class SemanticApplicationService(ISemanticService):
             if _onto_extra:
                 # 用户本体 = 答案空间替换（2026-09-16 用户定调）：类型体系整体换成
                 # 用户的（而非并入内置）——内置类型（如 DRUG）在用户体系下不是合法
-                # 答案，应被过滤；提示词已同步注入用户类型定义
+                # 答案，应被过滤；提示词已同步注入用户类型定义。
+                # 类型名并入白名单（2026-10-14 平铺词表修复）：合成 TYPE_N code
+                # 语义弱，GLM 常回类型名（治疗方法）→ 名称与 code 同为合法答案
+                for _t in (_ontology.get("types") or []):
+                    _nm = str(_t.get("name") or "").strip()
+                    if _nm:
+                        _onto_extra.add(_nm)
                 _domain_types = _onto_extra
             elif _builtin_types:
                 # 内置领域类型体系（2026-09-16）：选了领域未传本体 → 该领域专属
@@ -7691,8 +7749,31 @@ class SemanticApplicationService(ISemanticService):
                 for e in _ents:
                     if not e.get("standard_names"):
                         e["mapping_status"] = "未映射"
-                    if code == 'ner_domain':
-                        e["standard_kb_id"] = "用户本体体系" if _onto_extra else "内置知识库"
+                if code == 'ner_domain':
+                    # 标准知识库映射ID（2026-10-14 用户定稿）：本体带 standard_terms
+                    # 时确定性查表——命中变体/标准词 → 归一 + standard_kb_id=条目映射
+                    # ID（KB-001..可回用户文件核查）；未命中/无表走 LLM → 显示"未命中"
+                    _kb_index: dict = {}
+                    for _t in (_ontology.get("standard_terms") or []):
+                        for _v in [_t["zh"]] + _t["variants"]:
+                            _kb_index.setdefault(str(_v).casefold(), _t)
+                    for e in _ents:
+                        if _kb_index:
+                            _cf = str(e.get("text") or "").strip().casefold()
+                            _hit = _kb_index.get(_cf)
+                            if _hit is None:
+                                for _v, _info in _kb_index.items():
+                                    if _v and (_v in _cf or _cf in _v) and min(len(_v), len(_cf)) >= 2:
+                                        _hit = _info
+                                        break
+                            if _hit is not None:
+                                e["standard_names"] = {"zh": _hit["zh"], "en": _hit["en"] or "—"}
+                                e["mapping_status"] = "已映射"
+                                e["mapping_confidence"] = 1.0
+                                e["mapping_source"] = "用户标准词表"
+                                e["standard_kb_id"] = _hit["kb_id"]
+                                continue
+                        e["standard_kb_id"] = "未命中"
 
         if code == 'ner_relation' and isinstance(out, dict) and text:
             # 全文随结果透出（2026-09-20：归一化层计算三元组句子字符范围需要原文，
