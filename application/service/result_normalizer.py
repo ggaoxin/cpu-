@@ -1193,18 +1193,32 @@ def _en_cross_language_mapping(result: Dict[str, Any], payload: Dict[str, Any]) 
     "映射源术语"显示在状态上方是噪声）；仅用户映射规则命中时才列命中术语。
     """
     primary = result.get("primary_classification") or {}
-    return {
+    pair = result.get("cross_language_pair") if isinstance(result.get("cross_language_pair"), dict) else {}
+    pair_sec = result.get("cross_language_pair_secondary") if isinstance(result.get("cross_language_pair_secondary"), dict) else {}
+    aux = result.get("auxiliary_classifications") or []
+    sec_obj = aux[0] if aux and isinstance(aux[0], dict) else {}
+    out = {
         # 2026-09-15 用户定稿：区分映射来源——内置向量永远在映射，"已映射"无信息量；
         # 内置显示机制名（内置向量映射），用户映射规则命中才显示"已映射（…命中）"
         "status": "内置向量映射",
         "source_language": "en",
         "target_language": "zh",
         "source_terms": [],
-        "target_classification": {
-            "clc_code": str(primary.get("clc_code") or primary.get("code") or "").strip(),
-            "clc_name": str(primary.get("clc_name") or primary.get("label") or "").strip(),
-        },
+        # 跨语言代表术语对（2026-10-14 定稿）：最能代表文献中图分类的
+        # "英文源术语—标准中文术语"（如 structural health monitoring—结构健康监测），
+        # 引擎按用户表命中（显式翻译）或 GLM 选取+译名给出
+        "source_term": str(pair.get("source_term") or ""),
+        "zh_term": str(pair.get("zh_term") or ""),
     }
+    # 交叉学科（B 方案 2026-10-14）：次分类自己的代表术语对，弹窗次分类行显示。
+    # 只给"英文源术语—标准中文术语"本身，不带目标类目（分类号/类目名已在
+    # classifications 列，映射格里重复是噪声）
+    if pair_sec and sec_obj:
+        out["secondary"] = {
+            "source_term": str(pair_sec.get("source_term") or ""),
+            "zh_term": str(pair_sec.get("zh_term") or ""),
+        }
+    return out
 
 
 def _classification(raw: Any, tool_id: str) -> Dict[str, Any]:

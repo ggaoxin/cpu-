@@ -24,11 +24,28 @@ def create_app() -> FastAPI:
     @asynccontextmanager
     async def lifespan(_: FastAPI):
         if settings.DATABASE_AUTO_CREATE:
-            try:
-                database.initialize()
-                logging.getLogger(__name__).info("数据库结构初始化完成：%s", database.dialect)
-            except Exception:
-                logging.getLogger(__name__).exception("数据库初始化失败")
+            # 多 worker 并发建表会撞 MySQL 死锁（1213，2026-10-14 实测把整个
+            # 启动拖垮）——死锁是瞬态错误，指数退避重试 3 次
+            import time as _time
+            _init_ok = False
+            for _attempt in range(3):
+                try:
+                    database.initialize()
+                    logging.getLogger(__name__).info("数据库结构初始化完成：%s", database.dialect)
+                    _init_ok = True
+                    break
+                except Exception as _exc:
+                    if "Deadlock" in str(_exc) or "1213" in str(_exc):
+                        logging.getLogger(__name__).warning(
+                            "数据库初始化撞死锁（第 %d 次），%.1fs 后重试", _attempt + 1, 1.5 * (_attempt + 1))
+                        _time.sleep(1.5 * (_attempt + 1))
+                        continue
+                    logging.getLogger(__name__).exception("数据库初始化失败")
+                    if settings.DATABASE_REQUIRED:
+                        raise
+                    break
+            if not _init_ok:
+                logging.getLogger(__name__).exception("数据库初始化重试后仍失败（死锁）")
                 if settings.DATABASE_REQUIRED:
                     raise
         # 用户CLC索引缓存清扫（2026-09-14：闲置TTL+数量上限，索引=纯缓存）

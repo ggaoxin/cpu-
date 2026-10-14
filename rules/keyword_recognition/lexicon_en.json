@@ -1,6 +1,6 @@
 {
   "version": "2026-09-09",
-  "note": "英文关键词过滤词表（数据驱动：改文件即生效，无需改代码/重启）。function_words=闭类虚词+泛意学术词+词缀碎片合并拦截表；acronym_whitelist=2~3字母全大写公认缩写放行表；auto_learned=垃圾词沉淀闭环自动晋升（scripts/tools/keyword_lexicon_mine.py --promote 写入，人工可审删）。改动后建议跑关键词 gold 评估回归。 | generic_content_words: 裸用无领域区分度的实义泛词——单单词且本批存在以其为成分的更长术语时让位（组合词不受影响）。",
+  "note": "英文关键词过滤词表（数据驱动：改文件即生效，无需改代码/重启）。function_words=闭类虚词+泛意学术词+词缀碎片合并拦截表；acronym_whitelist=2~3字母全大写公认缩写放行表；auto_learned=垃圾词沉淀闭环自动晋升（scripts/tools/keyword_lexicon_mine.py --promote 写入，人工可审删）。改动后建议跑关键词 gold 评估回归。 | generic_content_words: 裸用无领域区分度的实义泛词——单单词且本批存在以其为成分的更长术语时让位（组合词不受影响）。 | 2026-10-14 增补 URL/域名后缀词（com/org/net/www 等）——邮箱与网址的 nltk 切词碎片（gmail.com→com）不再进关键词",
   "function_words": [
     "a",
     "agents",
@@ -211,7 +211,17 @@
     "yet",
     "you",
     "your",
-    "yours"
+    "yours",
+    "com",
+    "org",
+    "net",
+    "www",
+    "edu",
+    "gov",
+    "http",
+    "https",
+    "doi",
+    "url"
   ],
   "acronym_whitelist": [
     "AI",

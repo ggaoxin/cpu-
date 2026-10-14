@@ -1148,6 +1148,120 @@ class SemanticApplicationService(ISemanticService):
             "paths_copied_from_clc_meta": True,
             "path_not_generated_by_model": True,
         }
+        # ── 跨语言代表术语对（2026-10-14 用户定稿）──
+        # 跨语言类目映射表 = 最能代表文献中图分类的"英文源术语—标准中文术语"对
+        # （如 structural health monitoring—结构健康监测）。交叉学科（B 方案）主、
+        # 次分类各选一对，各自语义对位。取值：
+        # ① 用户映射表命中 → 命中对中"表内类目号与目标分类对口"者优先，其次
+        #    相似度最高（词面 1.0 天然靠前）；
+        # ② 内置向量（无表/未命中）→ GLM 轻量调用读题名+摘要，选"最能代表该
+        #    文献归入目标类别的英文术语"并给标准中文译名，回原文校验防幻觉。
+        def _pick_xl_pair(_t_code: str, _t_name: str, _used: set,
+                          _avoid_concept: str = "") -> Dict[str, Any]:
+            def _near_dup(a: str, b: str) -> bool:
+                """内容词重叠 ≥50% 视为同一概念变体（次分类不得复用主分类概念）"""
+                if not a or not b:
+                    return False
+                _wa = {w for w in a.casefold().replace("-", " ").split() if len(w) > 2}
+                _wb = {w for w in b.casefold().replace("-", " ").split() if len(w) > 2}
+                if not _wa or not _wb:
+                    return False
+                return len(_wa & _wb) / min(len(_wa), len(_wb)) >= 0.5
+
+            if _mapping_hits:
+                _best_zh, _best_rank = None, (-1, -1.0)
+                for _zh, _en in _mapping_hits.items():
+                    if _en.casefold() in _used or _near_dup(_en, _avoid_concept):
+                        continue
+                    _code = str(_mapping_row_codes.get(_zh, "") or "").strip().upper()
+                    _sim = float((_mapping_hit_meta.get(_zh) or {}).get("similarity") or 0.0)
+                    _hit = 1 if (_code and _t_code
+                                 and (_t_code.startswith(_code) or _code.startswith(_t_code))) else 0
+                    if (_hit, _sim) > _best_rank:
+                        _best_rank, _best_zh = (_hit, _sim), _zh
+                if _best_zh:
+                    return {"source_term": _mapping_hits[_best_zh], "zh_term": _best_zh,
+                            "source": "user_mapping_table"}
+            if cross_lingual:
+                # 泛词黑名单（2026-10-14 "classification—分类" 案例）：单泛词+
+                # 逐词直译不是映射关系，真正的对 = 领域术语→中文标准术语
+                _generic = {"classification", "learning", "method", "model", "detection",
+                            "recognition", "network", "system", "study", "approach",
+                            "framework", "algorithm", "analysis", "research", "prediction",
+                            "optimization", "application", "technology", "survey",
+                            "training", "evaluation", "generation", "representation"}
+                # 次分类维度提示：主分类=应用场景维度的词已用过，次分类应选
+                # 方法/技术维度的词（CLC 主次配对规则），不得返回主词近义变体
+                _dim_note = ""
+                if _avoid_concept:
+                    _dim_note = (f"\nIMPORTANT: '{_avoid_concept}' was already used to explain the"
+                                 f" paper's PRIMARY category (the application domain). This SECONDARY"
+                                 f" category reflects a DIFFERENT dimension of the paper — usually the"
+                                 f" METHOD / TECHNOLOGY / algorithm used. Pick a term from that"
+                                 f" dimension (e.g. a model architecture or technique). Do NOT return"
+                                 f" a synonym or variant of '{_avoid_concept}'.\n")
+                for _attempt in (1, 2):  # 泛词/近义变体命中 → 重试一次
+                    _sel = self._glm.chat_json(
+                        "You map English scientific terms to standard Chinese technical terms. Output only JSON.",
+                        f"The paper is classified into the Chinese Library Classification category"
+                        f" \"{_t_code} {_t_name}\".\nFrom the paper's TITLE and ABSTRACT below, pick"
+                        f" the ONE domain-specific English technical term (a concrete concept like"
+                        f" 'structural health monitoring' or 'reinforcement learning'; NEVER a generic"
+                        f" single word like classification/learning/model/method) that best explains"
+                        f" WHY the paper belongs to that category.\nzh_term = the standard Chinese"
+                        f" technical term for it as used in Chinese literature (NOT a word-by-word"
+                        f" dictionary translation; it may closely relate to the category name"
+                        f" \"{_t_name}\").\n"
+                        + _dim_note
+                        + f"Title: {str(title or '')[:300]}\n"
+                        + f"Abstract: {str(abstract or '')[:2000]}\n"
+                        + 'Output JSON: {"source_term": "...", "zh_term": "..."}',
+                        timeout=30.0, max_tokens=120)
+                    _sel = _sel.get("data", _sel) if isinstance(_sel, dict) else {}
+                    _st = str(_sel.get("source_term") or "").strip()
+                    _zt = str(_sel.get("zh_term") or "").strip()
+                    if _st.casefold() not in _generic and not _near_dup(_st, _avoid_concept):
+                        break
+                # 校验：术语必须出自文献原文（下方两级：整串/词级变形）、非泛词、
+                # 不与已用术语重复、且不是主分类概念的近义变体
+                # 校验放宽（2026-10-14 UI 复现修复）：GLM 会把原文动词形式归一成
+                # 名词短语（"integrates multi-omics data"→"multi-omics data
+                # integration"），整串包含必失败。两级校验：①整串在题名/摘要/
+                # 关键词/全文前 30k 中；②内容词（去复数变形）≥80% 命中原文词集
+                import re as _re4
+                _src_hay = (f"{title} {abstract} "
+                            f"{' '.join(keywords if isinstance(keywords, list) else [])} "
+                            f"{str(full_text or '')[:30000]}").casefold()
+                _stem = lambda _w: _w[:-1] if _w.endswith("s") and len(_w) > 3 else _w
+                _src_words = {_stem(_w) for _w in _re4.split(r"[^a-z0-9\-]+", _src_hay) if len(_w) > 2}
+                _term_words = {_stem(_w) for _w in _st.casefold().split() if len(_w) > 2}
+                _in_src = (_st.casefold() in _src_hay
+                           or (_term_words and len(_term_words & _src_words) >= 0.8 * len(_term_words)))
+                if (_st and _zt and _in_src
+                        and _st.casefold() not in _used and _st.casefold() not in _generic
+                        and not _near_dup(_st, _avoid_concept)):
+                    return {"source_term": _st, "zh_term": _zt, "source": "builtin"}
+            return {}
+
+        _xl_pair: Dict[str, Any] = {}
+        _xl_pair_sec: Dict[str, Any] = {}
+        try:
+            _p_code = str(main_obj.get("clc_code") or "").strip().upper()
+            _p_name = str(main_obj.get("clc_name") or main_obj.get("label") or "")
+            _xl_pair = _pick_xl_pair(_p_code, _p_name, set())
+            # 交叉学科：次分类选方法/技术维度的代表术语对（主词作为已用概念
+            # 传入——避开同概念变体，保证主次两对各自解释各自维度）
+            if aux_objs:
+                _a = aux_objs[0] or {}
+                _p_term = str(_xl_pair.get("source_term") or "")
+                _xl_pair_sec = _pick_xl_pair(
+                    str(_a.get("clc_code") or "").strip().upper(),
+                    str(_a.get("clc_name") or _a.get("label") or ""),
+                    {_p_term.casefold()},
+                    _avoid_concept=_p_term)
+        except Exception:  # noqa: BLE001 - 代表术语失败不影响分类结果
+            logger.warning("en分类跨语言代表术语选取失败", exc_info=True)
+            logger.warning("en分类跨语言代表术语选取失败", exc_info=True)
         out = {
             # 文献题目回传：前端 recordsOf 第一列取 document_title，缺失会落到 file_name/input_id
             "document_title": title,
@@ -1157,6 +1271,8 @@ class SemanticApplicationService(ISemanticService):
             "auxiliary_classifications": aux_objs,
             "is_interdisciplinary": primary["is_interdisciplinary"],
             "selection_reason": primary["reason"],
+            **({"cross_language_pair": _xl_pair} if _xl_pair else {}),
+            **({"cross_language_pair_secondary": _xl_pair_sec} if _xl_pair_sec else {}),
             "alignment_check": alignment_check,
         }
         # 映射规则命中透出（出口层既有契约 user_mapping_applied →
@@ -1624,10 +1740,18 @@ class SemanticApplicationService(ISemanticService):
             except Exception:  # noqa: BLE001
                 return []
         # 2026-09-15 定稿：en分类的映射规则=纯翻译表（英文术语→中文术语），
-        # 分类号在分类工具里没有意义（分类由语义定案），行内带码也忽略
-        return [r for r in (rows or [])
-                if isinstance(r, dict) and str(r.get("term") or "").strip()
-                and str(r.get("clc_name") or r.get("label") or "").strip()]
+        # 分类号在分类工具里没有意义（分类由语义定案），行内带码也忽略。
+        # 中文列兼容 clc_name/label/zh_term 三种字段名（translation-only 表用 zh_term）
+        _out_rows: list = []
+        for _r in (rows or []):
+            if not isinstance(_r, dict):
+                continue
+            _t = str(_r.get("term") or "").strip()
+            _zh = str(_r.get("clc_name") or _r.get("label") or _r.get("zh_term") or "").strip()
+            if _t and _zh:
+                _out_rows.append({"term": _t, "clc_code": str(_r.get("clc_code") or "").strip(),
+                                  "clc_name": _zh})
+        return _out_rows
 
     @staticmethod
     def _entry_to_obj(entry: dict, candidates) -> dict:
@@ -1996,8 +2120,11 @@ class SemanticApplicationService(ISemanticService):
         # 数量口径（2026-10-13 用户定稿）：默认最多 4 个、且最终置信度须 >0.7
         # （阈值过滤在最终置信度计算后执行）；min/max 仍可经参数覆盖
         system_prompt = self._system_prompt(rule, request)
-        _min_kw = max(1, min(50, int(params.get("min_keywords", 4) or 4)))
-        _max_kw = max(_min_kw, min(50, int((request.params or {}).get("max_keywords", 4) or 4)))
+        _min_kw = max(1, min(50, int(params.get("min_keywords", 3) or 3)))
+        _max_kw = max(_min_kw, min(50, int((request.params or {}).get("max_keywords", 5) or 5)))
+        # 内部超采样（2026-10-14 数量口径 3≤N≤5、置信度>0.75）：选词轮多要
+        # 一倍的候选做池（3-8 个），阈值过滤有伤亡时池内有替补，输出端再截到 5
+        _prompt_max = max(_max_kw, min(12, _max_kw * 2 - 2))
         # 正文语境实验（2026-09-09 用户提议，A/B 开关）：KEYWORD_BODY_CONTEXT=1 时
         # 选词 LLM 额外读全文前 5000 字——正文含研究对象/方法/结论/创新点（规范亦要求
         # "从正文核心内容提炼"），C 类 gold（需通读全文拟词）召回 0.583 为三层最低。
@@ -2007,7 +2134,7 @@ class SemanticApplicationService(ISemanticService):
         _body_excerpt = (full_text or paste_full_text or text or "")[:5000] if _body_ctx else ""
         user_prompt = self._render_keyword_user_prompt(
             title, abstract, top_cands, model.get("few_shot", []), lang=getattr(rule, "lang", ""),
-            preserve_original_form=preserve_original_form, count_min=_min_kw, count_max=_max_kw,
+            preserve_original_form=preserve_original_form, count_min=_min_kw, count_max=_prompt_max,
             body_excerpt=_body_excerpt, library_terms=_lib_prompt_terms)
         # 低温采样：关键词选词要稳定可复现（高温导致同文档跑次间 0.8↔0.2 波动），与 fitness 评分轮一致
         # A/B 开关（2026-09-09）：KEYWORD_MERGED_SELECT=1 时选词调用同时输出每词的
@@ -2097,6 +2224,7 @@ class SemanticApplicationService(ISemanticService):
         #     打破"，不进入置信度。逐词独立送各自上下文（不拼全候选防 term 信号淹没）；
         #     要绝对概率非排名（防机械递减 1.0/0.9/0.8）；不带同任务 few-shot（防泄漏）。
         _merged_scenes: dict = {}
+        _kw_domains_scoring: dict = {}
         if cleaned:
             # 合并模式（A/B）：选词轮已带出 prob/scene 且覆盖全部入选词 → 跳过独立评分轮；
             # 覆盖不全（LLM 未按 schema 输出）→ 回退原两轮路径，质量不降级
@@ -2107,8 +2235,13 @@ class SemanticApplicationService(ISemanticService):
                                   for c in cleaned if c["keyword"] in _merged_scene}
             else:
                 _sem_ctxs = {c["keyword"]: self._term_context(c["keyword"], searchable_text) for c in cleaned}
-                _sem_scores, _merged_scenes = self._llm_keyword_scores_and_scenes(
-                    [c["keyword"] for c in cleaned], _sem_ctxs, title, abstract)
+                if is_en:
+                    _sem_scores, _merged_scenes, _kw_domains_scoring = self._llm_keyword_scores_and_scenes(
+                        [c["keyword"] for c in cleaned], _sem_ctxs, title, abstract,
+                        domain_list=self._DOMAIN_LABEL_NAMES)
+                else:
+                    _sem_scores, _merged_scenes = self._llm_keyword_scores_and_scenes(
+                        [c["keyword"] for c in cleaned], _sem_ctxs, title, abstract)
             for _item in cleaned:
                 _stat = float(_item.get("weight") or 0)                          # 统计显著性(仅平局打破)
                 _sem = _sem_scores.get(_item["keyword"])
@@ -2187,7 +2320,7 @@ class SemanticApplicationService(ISemanticService):
         _lex_zh = _keyword_lexicon("zh")
         # 数量下限补齐（min_keywords 接线）：LLM 输出不足下限时（如只给 4 个），
         # 从未入选的高分候选按特征分补齐——字面须在原文（不引入幻觉词）、非停用词
-        minimum_keywords = max(1, min(50, int((request.params or {}).get("min_keywords", 4) or 4)))
+        minimum_keywords = max(1, min(50, int((request.params or {}).get("min_keywords", 3) or 3)))
         if len(cleaned) < minimum_keywords:
             _have = {str(c.get("keyword", "")).casefold() for c in cleaned}
             for _c in cands:
@@ -2236,14 +2369,15 @@ class SemanticApplicationService(ISemanticService):
                 if _item.get("custom_dictionary_hit"):
                     _item["weight"] = max(_item["weight"], 0.75)
 
-        # 置信度阈值过滤（2026-10-13 用户定稿：只要高置信关键词）：最终置信度
+        # 置信度阈值过滤（2026-10-14 定稿：数量 3≤N≤5、置信度>0.75；不足 3 个
+        # 达标时以置信度为主、输出实际数量，不用低置信度凑数）：最终置信度
         # （fitness + 词典加成后的 weight）不高于阈值即剔除——宁少勿滥，先过滤
         # 后截断，存活数可能小于 max_keywords（含 0 个的极端情形）。阈值可经
         # confidence_threshold 参数覆盖，设 0 关闭过滤
         try:
-            _conf_th = min(1.0, max(0.0, float((request.params or {}).get("confidence_threshold", 0.7))))
+            _conf_th = min(1.0, max(0.0, float((request.params or {}).get("confidence_threshold", 0.75))))
         except (TypeError, ValueError):
-            _conf_th = 0.7
+            _conf_th = 0.75
         if _conf_th > 0:
             cleaned = [i for i in cleaned if float(i.get("weight") or 0) > _conf_th]
 
@@ -2259,7 +2393,7 @@ class SemanticApplicationService(ISemanticService):
             cleaned.sort(key=lambda item: (-int(_number_or_default(item.get("weight"), 0) * 20 + 1e-9), _appear_pos(item)))
         else:
             cleaned.sort(key=lambda item: _number_or_default(item.get("weight"), 0), reverse=True)
-        maximum_keywords = max(1, min(50, int((request.params or {}).get("max_keywords", 4) or 4)))
+        maximum_keywords = max(1, min(50, int((request.params or {}).get("max_keywords", 5) or 5)))
         # 数量上限只约束模型候选：词典命中词是用户显式收录的术语，全部保留
         # （否则命中数被 max_keywords 截断，词典形同虚设）。
         _dict_kept = [item for item in cleaned if item.get("custom_dictionary_hit")]
@@ -2340,14 +2474,35 @@ class SemanticApplicationService(ISemanticService):
             if _missing:
                 _en_scenes.update(self._llm_scene_rewrite_batch(_missing, _en_ctxs, title))
             from infrastructure.rag.clc_retriever import clc_retriever as _clc_r
+            # ① 批量定域（2026-10-14 两段式设计：术语→LLM 判领域→域内检索分类号）：
+            #    全库检索对跨域概念会错位（Vision-Language Models 撞 O235 模式识别
+            #    理论而非 TP18 人工智能理论），先按论文语境判 32 领域之一
+            # 定域：优先用评分轮顺带产出的领域（省一次 GLM 调用，2026-10-14 耗时
+            # 优化）；评分轮未覆盖的词（词典注入/补齐进来的）缺失时整体兜底一次
+            _kw_domains = dict(_kw_domains_scoring or {}) if (is_en and _kw_domains_scoring) else {}
+            _missing_dom = [t for t in _en_terms if t not in _kw_domains]
+            if _missing_dom:
+                _kw_domains.update(self._llm_keyword_domains(_missing_dom, _en_scenes, title))
+            _dom_fallback_flags: Dict[str, bool] = {}
             _en_clc_map: Dict[str, Any] = {}
             _rerank_jobs: list = []
             _cand_by_term: Dict[str, list] = {}
             _en_scenes_having = [_kw for _kw in _en_terms if _en_scenes.get(_kw)]
-            _q_en = list(_en_terms)
-            _q_zh = [_en_scenes[_kw] for _kw in _en_scenes_having]
-            _en_results = _clc_r.retrieve_batch(_q_en, k=8, cross_lingual=True) if _q_en else []
-            _zh_results = _clc_r.retrieve_batch(_q_zh, k=8, cross_lingual=False) if _q_zh else []
+            # 查询增强（两段式核心）：查询拼上领域中文名，dense 向量被拉向该领域
+            # 的类目区（"Group Relative Policy Optimization"裸检索飘向 O 群论，
+            # 拼"人工智能与计算机技术"后 TP 候选才能进池）
+            _dom_name_of = lambda _k: (self._DOMAIN_LABEL_NAMES.get(_kw_domains.get(_k, ""))
+                                       if _kw_domains.get(_k, "") in self._DOMAIN_LABEL_NAMES else "")
+            _q_en = [f"{t} {_dom_name_of(t)}".strip() for t in _en_terms]
+            _q_zh = [(_en_scenes[_kw] + (f" 领域：{_dom_name_of(_kw)}" if _dom_name_of(_kw) else "")).strip()
+                     for _kw in _en_scenes_having]
+            # 中英两组检索并行（bge CPU 编码各 1-2s，并行省一次串行等待）
+            from concurrent.futures import ThreadPoolExecutor as _TPE
+            with _TPE(max_workers=2) as _pool:
+                _fut_en = _pool.submit(lambda: _clc_r.retrieve_batch(_q_en, k=8, cross_lingual=True)) if _q_en else None
+                _fut_zh = _pool.submit(lambda: _clc_r.retrieve_batch(_q_zh, k=8, cross_lingual=False)) if _q_zh else None
+                _en_results = _fut_en.result() if _fut_en else []
+                _zh_results = _fut_zh.result() if _fut_zh else []
             _zh_by_term = dict(zip(_en_scenes_having, _zh_results))
             for _ki, _kw in enumerate(_en_terms):
                 try:
@@ -2366,8 +2521,31 @@ class SemanticApplicationService(ISemanticService):
                     _uniq = sorted(_best.values(), key=lambda x: -float(x.get("score") or 0))[:6]
                     if not _uniq or float(_uniq[0].get("score") or 0) < 0.40:
                         continue
+                    # ② 域内优先（两段式第二段）：候选先过滤到 LLM 判定领域的中图
+                    #    前缀内（O235 模式识别理论 被 TP 域过滤掉）；域内无候选才
+                    #    跨域回退（域判定为 00/未判时不过滤）
+                    _dom = _kw_domains.get(_kw, "")
+                    _prefixes = self._DOMAIN_CLC_PREFIXES.get(_dom) if _dom else None
+                    _from_domain_core = False
+                    if _prefixes:
+                        _in_dom = [c for c in _uniq
+                                   if str(c.get("clc_code") or "").upper().startswith(_prefixes)]
+                        if _in_dom:
+                            _uniq = _in_dom
+                        else:
+                            # 域内空 → 域核心类目兜底（用户两段式设计：术语→领域
+                            # →该领域的 CLC 核心类目，如 AI 域 → 人工智能理论），
+                            # 不再跨域回退放行群论/系统论类垃圾
+                            _core = self._domain_core_clc(_dom, _clc_r)
+                            if _core is not None:
+                                _uniq = [_core]
+                                _from_domain_core = True
+                                _dom_fallback_flags[_kw] = True
                     _cand_by_term[_kw] = _uniq
-                    _rerank_jobs.append({"term": _kw, "context": _ctx + (" [场景]" + _scene if _scene else ""), "candidates": _uniq})
+                    _rerank_jobs.append({"term": _kw,
+                                          "context": _ctx + (" [场景]" + _scene if _scene else ""),
+                                          "domain_name": self._DOMAIN_LABEL_NAMES.get(_dom, ""),
+                                          "candidates": _uniq})
                 except Exception:  # noqa: BLE001
                     continue
             _batch_rerank = self._llm_rerank_clc_batch(_rerank_jobs)
@@ -2384,7 +2562,8 @@ class SemanticApplicationService(ISemanticService):
                     "label": _c.get("clc_name"),
                     "classification_path": _c.get("path_names") or [],
                     "confidence": round(min(1.0, _conf), 4),
-                    "mapping_engine": "clc_retriever+batch_rerank",
+                    "mapping_engine": ("domain_core+batch_rerank" if _dom_fallback_flags.get(_kw)
+                                       else "clc_retriever+batch_rerank"),
                     "dense_score": round(float(_c.get("score") or 0), 4),
                     "scene": _en_scenes.get(_kw, ""),
                 }
@@ -2790,9 +2969,11 @@ class SemanticApplicationService(ISemanticService):
         if not jobs:
             return {}
         sysp = (
-            "你是科技文献分类专家。下面有多条术语，每条带其上下文与若干中图法候选类目。"
-            "对每条术语独立判断其在此语境下最可能属于的类目。\n"
+            "你是科技文献分类专家。下面有多条术语，每条带其上下文（可能含判定领域）与"
+            "若干中图法候选类目。对每条术语独立判断其在此语境下最可能属于的类目。\n"
             "- 从该条的候选中选最接近的一个（覆盖优先）\n"
+            "- 上下文标注了所属领域时，优先选该领域下的类目（术语字面相似的异域"
+            "类目不算：Language 在 AI 语境是自然语言/模型而非形式语言理论）\n"
             "- 只有当该条所有候选都与术语学科完全无关时才 chosen=-1\n"
             "- confidence 反映把握（0.0-1.0）\n"
             "只输出JSON：{\"items\":[{\"term\":\"原词\",\"chosen\":0,\"confidence\":0.85},...]}"
@@ -2804,7 +2985,10 @@ class SemanticApplicationService(ISemanticService):
             for i, c in enumerate(cands):
                 path = " > ".join(c.get("path_names") or []) or ""
                 lines.append(f"  [{i}] {c.get('clc_code')} {c.get('clc_name')}" + (f" | {path}" if path else ""))
-            parts.append(f"({ji}) 术语：{job.get('term')}\n  上下文：{str(job.get('context') or '')[:150]}\n  候选:\n" + "\n".join(lines))
+            _dom_hint = ""
+            if job.get("domain_name"):
+                _dom_hint = f"\n  判定领域：{job.get('domain_name')}"
+            parts.append(f"({ji}) 术语：{job.get('term')}\n  上下文：{str(job.get('context') or '')[:150]}{_dom_hint}\n  候选:\n" + "\n".join(lines))
         user = "\n\n".join(parts)
         out_map = {}
         try:
@@ -2875,26 +3059,43 @@ class SemanticApplicationService(ISemanticService):
         scores, _ = self._llm_keyword_scores_and_scenes(terms, contexts, document_title, abstract)
         return scores
 
-    def _llm_keyword_scores_and_scenes(self, terms: list, contexts: dict, document_title: str = "", abstract: str = "") -> tuple:
-        """轮次合并：评分+场景一次调用。"""
+    def _llm_keyword_scores_and_scenes(self, terms: list, contexts: dict, document_title: str = "", abstract: str = "",
+                                       domain_list: dict = None) -> tuple:
+        """轮次合并：评分+场景（+可选领域判定）一次调用。
+
+        domain_list 非空时（en 关键词走此路），同轮输出每个术语的 32 领域编号，
+        供 CLC 映射域内过滤——省一次独立 GLM 调用（2026-10-14 耗时优化）。
+        返回 (scores, scenes) 或 (scores, scenes, domains)。
+        """
         if not terms:
-            return {}, {}
+            return ({}, {}, {}) if domain_list else ({}, {})
         sysp = (
             "你是科技文献主题分析专家。给定文献标题、摘要、若干候选术语（每个带其原文上下文片段），"
-            "对每个术语同时完成两项独立判定：\n"
+            "对每个术语同时完成独立判定：\n"
             "1) prob：该术语是否本文献的核心主题术语的 0-1 概率。独立判定，不互相比较、不按输入顺序递减；"
-            "泛化功能词即使频高也给低分；核心术语给高分，即便只出现一次。\n"
+            "泛化功能词即使频高也给低分；核心术语给高分，即便只出现一次。"
+            "⚠️ 必须是领域术语：网址/邮箱碎片（com、www、org、edu）、单词残片（els、tion）"
+            "一律 prob=0，无论出现多少次。\n"
             "2) scene：该术语在此文献中的应用场景中文描述（用于中图法类目锚定学科）。"
             "必须带应用场景（如\"罗非鱼水产养殖指标\"），不能只重复关键词字面。\n"
-            "只输出JSON：{\"items\":[{\"term\":\"原词\",\"prob\":0.0-1.0,\"scene\":\"中文场景描述\"},...]}"
+            "3) domain（仅当 domain_list 非空时输出）：该术语在此论文语境下所属的领域编号，"
+            "判定依据**论文语境>术语字面**——Group/Policy/Optimization 字面像数学，在 AI 论文"
+            "里仍属 25。\n"
+            "只输出JSON：{\"items\":[{\"term\":\"原词\",\"prob\":0.0-1.0,\"scene\":\"中文场景描述\",\"domain\":\"编号\"},...]}"
         )
         listing = []
         for t in terms:
             ctx = (contexts.get(t) or "")[:150]
             listing.append(f"- {t} | 上下文：{ctx}")
-        user = f"文献标题：{document_title or '（无标题）'}\n摘要：{(abstract or '')[:500]}\n候选术语列表：\n" + "\n".join(listing)
+        _dom_note = ""
+        if domain_list:
+            _dom_note = ("\n领域编号表（domain 字段用）：\n"
+                         + "\n".join(f"{k}: {v}" for k, v in domain_list.items()) + "\n")
+        user = (f"文献标题：{document_title or '（无标题）'}\n摘要：{(abstract or '')[:500]}\n"
+                f"候选术语列表：\n" + "\n".join(listing) + _dom_note)
         scores: dict = {}
         scenes: dict = {}
+        domains: dict = {}
         try:
             out = self._glm.chat_json(sysp, user, temperature=0.2, timeout=60.0, max_tokens=1800)
             data = out.get("data", out) if isinstance(out, dict) else {}
@@ -2913,8 +3114,14 @@ class SemanticApplicationService(ISemanticService):
                         sc = str(it.get("scene") or "").strip()
                         if sc:
                             scenes[t] = sc
+                        if domain_list:
+                            dv = str(it.get("domain") or "").strip()
+                            if dv in domain_list:
+                                domains[t] = dv
         except Exception as exc:  # noqa: BLE001
             logger.warning("关键词评分+场景合并调用失败: %s", exc)
+        if domain_list:
+            return scores, scenes, domains
         return scores, scenes
         if not terms:
             return {}
@@ -6045,6 +6252,74 @@ class SemanticApplicationService(ISemanticService):
         "25": "人工智能与计算机技术", "26": "化学工程与过程工业", "27": "轻工食品与纺织", "28": "建筑与土木工程",
         "29": "水利与水电工程", "30": "交通运输工程", "31": "航空航天工程", "32": "环境与安全工程",
     }
+
+    # 32 领域 → 中图分类号前缀（英文关键词 CLC 映射的域内过滤用，与中图树
+    # 页面的领域划分同源）。跨域概念（模式识别在 O 与 TP 两代类目并存）靠
+    # 全库检索会错位，先定域再域内检索（2026-10-14 设计定稿）
+    _DOMAIN_CLC_PREFIXES = {
+        "01": ("O1",), "02": ("O3", "TB1"), "03": ("O4",), "04": ("O6",),
+        "05": ("P1",), "06": ("P5", "P6"), "07": ("P2",), "08": ("P4", "P7"),
+        "09": ("Q",), "10": ("R",), "11": ("R9",), "12": ("S",),
+        "13": ("S7", "S8", "S9"), "14": ("TB3", "TG"), "15": ("TD",), "16": ("TE",),
+        "17": ("TF", "TG1"), "18": ("TH",), "19": ("TH7", "TB9"), "20": ("TK",),
+        "21": ("TL",), "22": ("TM",), "23": ("TN",), "24": ("TP2", "TP27"),
+        "25": ("TP",), "26": ("TQ",), "27": ("TS",), "28": ("TU",),
+        "29": ("TV",), "30": ("U",), "31": ("V",), "32": ("X",),
+    }
+
+    _domain_core_cache: Dict[str, Any] = {}
+
+    def _domain_core_clc(self, domain: str, retriever) -> Any:
+        """域核心类目：用领域名检索 CLC 取 top-1（如「人工智能与计算机技术」→
+        人工智能理论类）。按领域缓存（一篇内同域词共享）。"""
+        if not domain or domain not in self._DOMAIN_LABEL_NAMES:
+            return None
+        if domain in self._domain_core_cache:
+            return self._domain_core_cache[domain]
+        try:
+            _res = retriever.retrieve(title=self._DOMAIN_LABEL_NAMES[domain], k=3) or []
+            _core = _res[0] if _res and _res[0].get("clc_code") else None
+        except Exception:  # noqa: BLE001
+            _core = None
+        self._domain_core_cache = {**self._domain_core_cache, domain: _core}
+        return _core
+
+    def _llm_keyword_domains(self, terms: List[str], scenes: Dict[str, str], title: str) -> Dict[str, str]:
+        """英文关键词 → 32 领域批量判定（一次 GLM 调用，供 CLC 映射域内过滤）。
+
+        带论文语境（题名 + 每词场景句）判定：同一词在不同论文语境可属不同领域
+        （divergent thinking 在 AI 论文属人工智能，在心理学论文属哲学/心理——
+        32 领域表无哲社类时给 "00"=其他，不过滤放行全库检索）。
+        """
+        if not terms:
+            return {}
+        _list = "\n".join(f'{k}: {v}' for k, v in self._DOMAIN_LABEL_NAMES.items())
+        _items = "\n".join(
+            f"- {t}（语境：{scenes.get(t, '') or title}）" for t in terms[:30])
+        try:
+            _r = self._glm.chat_json(
+                "你是科技文献领域分类专家。Output only JSON.",
+                f"判断每个英文关键词属于哪个科技领域。\n"
+                f"⚠️ 判定依据：**论文语境 > 术语字面**。术语字面像数学的 AI 算法名"
+                f"（Group/Policy/Optimization/Learning）在人工智能论文里仍属 25，"
+                f"不是数学群论/最优化/控制论；思维类词（thinking/reasoning）在 AI"
+                f"论文里属 25，在纯哲学/心理学语境才给 00。\n"
+                f"示例：\n"
+                f"- 论文《Deep RL for Robotics》中 \"policy gradient\" → 25（语境是"
+                f"强化学习算法，不是数学梯度）\n"
+                f"- 论文《Bridge Vibration Analysis》中 \"finite element method\" → 02"
+                f"（工程语境的数值方法）\n"
+                f"领域编号表：\n{_list}\n"
+                f"论文题目：{str(title or '')[:200]}\n关键词：\n{_items}\n"
+                f'都不合适时给 "00"。输出 JSON：{{"domains": {{"关键词": "领域编号"}}}}',
+                timeout=45.0, max_tokens=600)
+            _r = _r.get("data", _r) if isinstance(_r, dict) else {}
+            _doms = _r.get("domains") if isinstance(_r.get("domains"), dict) else {}
+            return {str(k): str(v).strip() for k, v in _doms.items()
+                    if str(v).strip() in self._DOMAIN_LABEL_NAMES}
+        except Exception:  # noqa: BLE001 - 定域失败退回全库检索
+            logger.warning("en关键词领域判定失败，回退全库检索", exc_info=True)
+            return {}
 
     def _execute_concept_definition(self, code: str, request: SemanticRequest, fp, rule) -> SemanticResult:
         """概念定义识别：极速版取全文→清洗→按句号分块→批量 LLM 抽取定义句

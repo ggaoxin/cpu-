@@ -1065,18 +1065,12 @@
      "domain_label_scope": "primary_only"
     },
     "cross_language_mapping": {
-     "status": "已映射",
+     "status": "内置向量映射",
      "source_language": "en",
      "target_language": "zh",
-     "source_terms": [
-      {
-       "label": "Divergent Thinking Through Reinforcement Learning in Vision-Language Models"
-      }
-     ],
-     "target_classification": {
-      "clc_code": "TP181",
-      "clc_name": "自动推理、机器学习"
-     }
+     "source_terms": [],
+     "source_term": "Reinforcement Learning",
+     "zh_term": "强化学习"
     }
    },
    "meta": {
@@ -1208,18 +1202,12 @@
         "domain_label_scope": "primary_only"
        },
        "cross_language_mapping": {
-        "status": "已映射",
+        "status": "内置向量映射",
         "source_language": "en",
         "target_language": "zh",
-        "source_terms": [
-         {
-          "label": "Divergent Thinking Through Reinforcement Learning in Vision-Language Models"
-         }
-        ],
-        "target_classification": {
-         "clc_code": "TP181",
-         "clc_name": "自动推理、机器学习"
-        }
+        "source_terms": [],
+        "source_term": "Reinforcement Learning",
+        "zh_term": "强化学习"
        }
       }
      }
