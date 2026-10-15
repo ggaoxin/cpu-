@@ -275,6 +275,9 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
                 "mappings": mappings, "concept_definition_mappings": mappings,
                 "statistics": report, "statistical_analysis_report": report,
                 "document": {"title": payload.get("document_title") or payload.get("title") or ""},
+                # 顶层 document_title 与其他工具同口径（2026-10-15 对齐修复：
+                # 弹窗文献题名列与响应示例此前读不到顶层题目）
+                "document_title": payload.get("document_title") or payload.get("title") or "",
                 "input_type": payload.get("input_type")}
     if tool_id in {"general-ner", "research-ner", "domain-ner"}:
         return _entities(raw, payload)
@@ -430,6 +433,17 @@ def _detect_language(text: Any) -> str:
         return ""
     return "zh" if cjk >= latin else "en"
 _MOVE_CATEGORIES_EN = ["Background", "Objective", "Methods", "Results", "Conclusion"]
+# 英文摘要语步输出统一中文标签（2026-10-15 用户定稿）：引擎按规则库产
+# Background/Objective/…，公开响应的 label 与中文工具同口径显示中文五类
+_MOVE_LABEL_EN_ZH = {
+    "Background": "背景", "Objective": "目的", "Methods": "方法",
+    "Results": "结果", "Conclusion": "结论",
+}
+
+
+def _move_label_zh(label: Any) -> Any:
+    """en-abstract-move 语步标签 → 中文（其余工具原样返回）。"""
+    return _MOVE_LABEL_EN_ZH.get(str(label).strip(), label)
 
 
 # _move_char_range 去空白归一化的单槽缓存（键=源字符串对象 id+len），
@@ -765,6 +779,13 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     # 展示（charRange 的 sentence_indices 终极回退）。2026-10-09 前只整体 pop 丢弃，
     # 前端降级通道断裂，非连续语步的字符范围恒显示"—"。
     _sent_idx_by_move = data.pop("sentence_indices_by_move", None) or {}
+    # en-abstract-move 标签中文化（2026-10-15）：置信度/句序号/统计的键都是引擎
+    # 英文标签，先统一映射成中文，下方两处 append 的 label 查找/输出才能对上
+    if tool_id == "en-abstract-move":
+        move_confidence = {_move_label_zh(k): v for k, v in move_confidence.items()}
+        _sent_idx_by_move = {_move_label_zh(k): v for k, v in _sent_idx_by_move.items()}
+        if isinstance(data.get("move_statistics"), dict):
+            data["move_statistics"] = {_move_label_zh(k): v for k, v in data["move_statistics"].items()}
     source = _list(data.get("moves", data.get("spans", [])) if data else raw)
     moves = []
     # GLM 按规则库 output_schema 直接输出「类别→文本」扁平 dict（如 {研究方法: "..."}），
@@ -798,20 +819,22 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
                     # 非连续拼接定位失败（语步句子在原文中不相邻，或 LLM 拼接时丢空格）：
                     # 按句切分逐句定位，用原文句子重组 text（恢复句间空格），位置取首句
                     start, end, text = _locate_spliced_move(abstract_text, str(text))
+            # 英文类别 → 中文标签（raw 取值仍用英文键，输出统一中文）
+            _label_out = _move_label_zh(label)
             moves.append({
                 # moves 输出契约 = 弹窗四要素：语步类别(label) + 原文片段(text) +
                 # 句子位置(start/end) + 置信度评分(confidence)。move_code/move_name
                 # 与 label 同值冗余，不输出；句序号等内部定位数据同样不进公开响应
-                "label": label,
+                "label": _label_out,
                 "text": text or "",
                 "start": start,
                 "end": end,
                 # 空语步置信度：判空本身是有确信度的分类决策（引擎已在 move_confidence
                 # 给出判空确信度，见 semantic_service 空语步缺失置信度），不置 None；
                 # 取不到时回退整体置信度。2026-10-09 前曾置 None，与引擎设计相抵触
-                "confidence": move_confidence.get(label, overall_confidence),
-                **({"sentence_indices": list(_sent_idx_by_move[label])}
-                   if has_text and _sent_idx_by_move.get(label) else {}),
+                "confidence": move_confidence.get(_label_out, overall_confidence),
+                **({"sentence_indices": list(_sent_idx_by_move[_label_out])}
+                   if has_text and _sent_idx_by_move.get(_label_out) else {}),
             })
     # fund-move 文本模式：语步内容在原文中的字符位置（与摘要平铺分支同款定位逻辑）。
     # 基金工具文本字段是 project_document_text（text 是其他工具的键；文件模式
@@ -823,6 +846,8 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         if not isinstance(item, dict):
             item = {"text": str(item)}
         label = item.get("label") or item.get("move_name") or item.get("move_type") or item.get("move") or item.get("type")
+        # 英文摘要语步 spans 路径同样中文化（键已在上方统一重映射）
+        label = _move_label_zh(label)
         content = item.get("content") or item.get("text") or item.get("sentence") or ""
         _f_start = _f_end = None
         if _fund_src_text and content:
@@ -1601,6 +1626,9 @@ def _research_questions(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
     statistics = {"sentence_count": len(sentences), "phrase_count": len(phrases), "expression_types": expression_types}
     return {
         "document": {"title": payload.get("document_title") or payload.get("title") or ""},
+        # 顶层 document_title 与其他工具同口径（2026-10-15 对齐修复：弹窗文献
+        # 题名列与响应示例此前读不到顶层题目）
+        "document_title": payload.get("document_title") or payload.get("title") or "",
         "input_type": payload.get("input_type"),
         "research_question_sentences": sentences,
         "research_question_phrases": phrases,

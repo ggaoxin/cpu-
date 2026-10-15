@@ -226,7 +226,42 @@ export const CUSTOM_BATCH_PAYLOADS: Record<string, Record<string, unknown>> = {
 }
 
 export function payloadFor(tool: ToolDefinition, mode: InputMode): Record<string, unknown> {
-  return stripEmptyResourceDescriptors(payloadForImpl(tool, mode))
+  return alignDemoPayloadWithApi(tool.requirementKey || '', mode, stripEmptyResourceDescriptors(payloadForImpl(tool, mode)))
+}
+
+/** 调用示例载荷与在线测试实际提交严格对齐（2026-10-15 用户定稿）。演示载荷是
+ *  采集脚本快照，与在线测试构建逻辑平行实现、会无声漂移，统一在此收敛（调用
+ *  示例与参数表同源于 payloadFor，一处收敛两处生效）：
+ *  ① 剔除 input_type——后端按路由自行判定，前端在线测试不发送；
+ *  ② citation 批量文本：citation_metadata 实为"每篇一组"的嵌套数组（在线测试
+ *     按篇构建），旧示例是平铺多条；citation_sentence_and_context 剔除 id 键；
+ *  ③ 通用工具批量文本：主字段对象数组逐条补 title（在线测试每条含 title，
+ *     与 document_title 数组按序对应，fund-move 的 project_name 同理在对象内） */
+function alignDemoPayloadWithApi(toolId: string, mode: InputMode, payload: Record<string, unknown>) {
+  const out: Record<string, unknown> = { ...payload }
+  delete out.input_type
+  if (mode === 'batch-text') {
+    if (toolId === 'citation-sentiment' || toolId === 'citation-intent') {
+      if (Array.isArray(out.citation_metadata) && out.citation_metadata.length
+          && !Array.isArray((out.citation_metadata as unknown[])[0])) {
+        out.citation_metadata = (out.citation_metadata as unknown[]).map(item => [item])
+      }
+      if (Array.isArray(out.citation_sentence_and_context)) {
+        out.citation_sentence_and_context = (out.citation_sentence_and_context as Array<Record<string, unknown>>)
+          .map(item => { if (item && typeof item === 'object' && 'id' in item) { const { id: _id, ...rest } = item; return rest } return item })
+      }
+    } else {
+      const titles = Array.isArray(out.document_title) ? out.document_title as unknown[] : []
+      for (const [key, value] of Object.entries(out)) {
+        if (Array.isArray(value) && value.length && typeof value[0] === 'object' && value[0] !== null) {
+          out[key] = value.map((item, i) =>
+            item && typeof item === 'object' && !((item as Record<string, unknown>).title) && typeof titles[i] === 'string'
+              ? { ...item, title: titles[i] } : item)
+        }
+      }
+    }
+  }
+  return out
 }
 
 function payloadForImpl(tool: ToolDefinition, mode: InputMode): Record<string, unknown> {
@@ -611,7 +646,7 @@ export function requestParameterRowsFor(tool: ToolDefinition, mode: InputMode) {
     if (!rows.some(item => item[0] === field)) {
       rows.push([field, 'file (.json)', status || 'optional', status === 'required'
         ? desc
-        : `可选上传资源：${desc}。内置模式不提交该字段（使用系统预置资源）`])
+        : `可选上传资源：${desc}`])
     }
   }
   return rows
@@ -622,7 +657,102 @@ export function responseFor(tool: ToolDefinition, mode: InputMode) {
   // 这里不再单独选择旧的 API fixture，避免文本位置、文件章节、
   // 批量条数和数据库记录与弹窗不一致。
   const demo = demoResponseForMode(tool.requirementKey || '', tool, mode)
-  return cleanExampleText(filterDemoByWhitelist(tool.requirementKey || '', demo))
+  return cleanExampleText(alignDemoExampleWithApi(tool, mode, filterDemoByWhitelist(tool.requirementKey || '', demo)))
+}
+
+/** 演示响应与真实 API 输出严格对齐（2026-10-15 用户定稿：开发者按文档调用
+ *  必须得到与在线测试一致的结果）。生成文件（prototype.generated.js 等）由
+ *  采集脚本再生，漂移在这里收敛而不是改生成物：
+ *  ① 分类三工具剔除后端已下线的候选确认系列字段（2026-09-09 移除人工确认，
+ *     实际响应不再返回，演示富化遗留）；
+ *  ② document.title 镜像补顶层 document_title（真实响应按白名单带该键标识
+ *     当前文献，旧演示缺）；
+ *  ③ en-abstract-move 语步标签统一中文五类（后端 2026-10-15 起输出
+ *     背景/目的/方法/结果/结论，旧演示是英文标签） */
+const DEMO_STALE_CLASSIFY_KEYS = ['candidate_classifications', 'manual_confirmation', 'confirmation_status', 'candidates']
+const DEMO_EN_MOVE_LABEL_ZH: Record<string, string> = {
+  Background: '背景', Objective: '目的', Methods: '方法', Results: '结果', Conclusion: '结论',
+  研究背景: '背景', 研究目的: '目的', 研究方法: '方法', 研究结果: '结果', 研究结论: '结论',
+}
+/** 文件模式示例载荷里的上传文件名（'@path/file.pdf' 或其数组），供响应示例
+ *  document_title 兜底——与后端"解析标题、文件名兜底"同口径 */
+function exampleFileNames(tool: ToolDefinition, mode: InputMode): string[] {
+  const names: string[] = []
+  for (const value of Object.values(payloadFor(tool, mode))) {
+    const pick = (v: unknown) => (typeof v === 'string' && v.startsWith('@')
+      ? v.replace(/^@+/, '').split('/').pop() || null : null)
+    const single = pick(value)
+    if (single) { names.push(single); continue }
+    if (Array.isArray(value)) {
+      const list = value.map(pick).filter((x): x is string => !!x)
+      if (list.length) names.push(...list)
+    }
+  }
+  return names
+}
+
+function alignDemoExampleWithApi(tool: ToolDefinition, mode: InputMode, response: any) {
+  const toolId = tool.requirementKey || ''
+  if (!response || typeof response !== 'object' || !response.data || typeof response.data !== 'object') return response
+  let data: Record<string, unknown> = { ...response.data }
+  if (toolId === 'zh-classify' || toolId === 'en-classify' || toolId === 'domain-classify') {
+    for (const key of DEMO_STALE_CLASSIFY_KEYS) delete data[key]
+  }
+  const allowed = (vizWhitelist as Record<string, string[]>)[toolId] || []
+  if (Array.isArray(data.results)) {
+    // 批量（批量文本/批量文件）：真实成功响应是 batch_id 信封（batch_id/input_
+    // type/total/success_count/failed_count/error_summary + results[]，元素含
+    // index/status=succeeded/code/record_id/result）。旧演示只有 results——补齐
+    // 信封键；每条 result 内的 document_title 按单篇同口径镜像（信封顶层无题目）
+    const payload = payloadFor(tool, mode) as Record<string, unknown>
+    const titles = Array.isArray(payload.document_title) ? payload.document_title as unknown[] : []
+    const fileNames = exampleFileNames(tool, mode)
+    const items = data.results as Array<Record<string, unknown>>
+    data.results = items.map((item, i) => {
+      if (!item || typeof item !== 'object' || !item.result || typeof item.result !== 'object') return item
+      const result = { ...(item.result as Record<string, unknown>) }
+      if (allowed.includes('document_title') && result.document_title == null) {
+        const title = (result.document as Record<string, unknown> | undefined)?.title
+          || (typeof titles[i] === 'string' ? titles[i] : null)
+          || fileNames[i]
+        if (typeof title === 'string' && title.trim()) result.document_title = title
+      }
+      return { ...item, result }
+    })
+    const env: Record<string, unknown> = {
+      batch_id: data.batch_id || 'tsk_c25d1f30a9b14d2f9e91ac64ac0d8f7f',
+      input_type: mode === 'batch' ? 'files' : 'texts',
+      total: typeof data.total === 'number' ? data.total : items.length,
+      success_count: typeof data.success_count === 'number' ? data.success_count : items.length,
+      failed_count: typeof data.failed_count === 'number' ? data.failed_count : 0,
+      error_summary: data.error_summary ?? null,
+    }
+    // 旧演示可能残留的任务/进度形状键（成功同步响应不带）
+    for (const stale of ['task_id', 'tool_id', 'status', 'progress', 'code', 'message']) delete data[stale]
+    data = { ...env, results: data.results }
+  } else if (allowed.includes('document_title') && data.document_title == null) {
+    // 单篇：title 回退链与真实响应同语义——请求带什么 document_title 响应就
+    // 标识什么；文件模式下后端用解析标题（文件名兜底），示例取调用示例文件名
+    const title = (data.document as Record<string, unknown> | undefined)?.title
+      || (payloadFor(tool, mode) as Record<string, unknown>).document_title
+      || exampleFileNames(tool, mode)[0]
+    if (typeof title === 'string' && title.trim()) data.document_title = title
+  }
+  if (toolId === 'domain-classify' && data.document == null && typeof data.document_title === 'string' && data.document_title.trim()) {
+    // 反向镜像（仅 domain-classify：其真实响应带 document.title，旧演示缺；
+    // zh/en-classify 实际响应无 document，不补）
+    data.document = { title: data.document_title }
+  }
+  if (toolId === 'en-abstract-move' && Array.isArray(data.moves)) {
+    data.moves = (data.moves as Array<Record<string, unknown>>).map(move =>
+      move && typeof move === 'object' && typeof move.label === 'string' && move.label in DEMO_EN_MOVE_LABEL_ZH
+        ? { ...move, label: DEMO_EN_MOVE_LABEL_ZH[move.label] } : move)
+    if (data.move_statistics && typeof data.move_statistics === 'object') {
+      data.move_statistics = Object.fromEntries(Object.entries(data.move_statistics as Record<string, unknown>)
+        .map(([key, value]) => [DEMO_EN_MOVE_LABEL_ZH[key] || key, value]))
+    }
+  }
+  return { ...response, data }
 }
 
 /** 响应示例按弹窗渲染器白名单过滤 data 顶层字段（与后端 public_viz_result 同源） */

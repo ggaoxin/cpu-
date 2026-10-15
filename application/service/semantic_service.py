@@ -6884,7 +6884,7 @@ class SemanticApplicationService(ISemanticService):
                     continue
                 _seq[_code] = _seq.get(_code, 0) + 1
                 std_terms.append({
-                    "kb_id": str(_t.get("kb_id") or f"{_code}-{_seq[_code]:03d}"),
+                    "kb_id": str(_t.get("kb_id") or _t.get("id") or f"{_code}-{_seq[_code]:03d}"),
                     "zh": _canon,
                     "en": str(_t.get("term_en") or _t.get("canonical_en") or _t.get("en") or "").strip(),
                     "type": _code,
@@ -7758,22 +7758,28 @@ class SemanticApplicationService(ISemanticService):
                         for _v in [_t["zh"]] + _t["variants"]:
                             _kb_index.setdefault(str(_v).casefold(), _t)
                     for e in _ents:
-                        if _kb_index:
-                            _cf = str(e.get("text") or "").strip().casefold()
-                            _hit = _kb_index.get(_cf)
-                            if _hit is None:
-                                for _v, _info in _kb_index.items():
-                                    if _v and (_v in _cf or _cf in _v) and min(len(_v), len(_cf)) >= 2:
-                                        _hit = _info
-                                        break
-                            if _hit is not None:
-                                e["standard_names"] = {"zh": _hit["zh"], "en": _hit["en"] or "—"}
-                                e["mapping_status"] = "已映射"
-                                e["mapping_confidence"] = 1.0
-                                e["mapping_source"] = "用户标准词表"
-                                e["standard_kb_id"] = _hit["kb_id"]
-                                continue
-                        e["standard_kb_id"] = "未命中"
+                        _cf = str(e.get("text") or "").strip().casefold()
+                        _hit = _kb_index.get(_cf) if _kb_index else None
+                        if _hit is None and _kb_index:
+                            for _v, _info in _kb_index.items():
+                                if _v and (_v in _cf or _cf in _v) and min(len(_v), len(_cf)) >= 2:
+                                    _hit = _info
+                                    break
+                        if _hit is not None:
+                            e["standard_names"] = {"zh": _hit["zh"], "en": _hit["en"] or "—"}
+                            e["mapping_status"] = "已映射"
+                            e["mapping_confidence"] = 1.0
+                            e["mapping_source"] = "用户标准词表"
+                            e["standard_kb_id"] = _hit["kb_id"]
+                        else:
+                            # 未命中（含无用户表场景）：无映射——LLM 生成的标准词
+                            # 不再透出（2026-10-14 用户定稿：未命中了就是没有映射），
+                            # 状态/ID 统一"未命中"，标准词置空
+                            e["standard_names"] = None
+                            e["mapping_status"] = "未命中"
+                            e["mapping_confidence"] = 0.0
+                            e["mapping_source"] = ""
+                            e["standard_kb_id"] = "未命中"
 
         if code == 'ner_relation' and isinstance(out, dict) and text:
             # 全文随结果透出（2026-09-20：归一化层计算三元组句子字符范围需要原文，

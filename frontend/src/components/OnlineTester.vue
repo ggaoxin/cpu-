@@ -82,7 +82,7 @@ function showToast(message: string) {
   const duration = Math.min(6000, 2000 + Math.max(0, message.length - 20) * 50)
   toastTimer = setTimeout(() => { toastMessage.value = '' }, duration)
 }
-const dictionaryMode = ref('system')
+const dictionaryMode = ref('custom')
 const weightBoost = ref('0.08')
 const selectedDictionaryId = ref('')
 const selectedClusterTaskId = ref('')
@@ -591,8 +591,8 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
   if (props.toolId === 'domain-ner' && form.domain && form.domain !== '自动识别') values.domain = form.domain
   if (props.toolId === 'zh-keyword') {
     // 系统预置模式不携带词典字段（后端 dictionary_usage=null、全部未命中属预期）
-    if (dictionaryMode.value === 'system') {
-      // 无词典参数
+    if (!customDictionaryTerms.value.trim() && !customDictionaryFile.value) {
+      // 未填词条/未上传词典 → 不提交词典参数（与原"系统预置"等效）
     } else {
       values.custom_dictionary = {
         dictionary_name: customDictionaryName.value,
@@ -829,7 +829,7 @@ watch(() => props.toolId, () => {
   mode.value = modes.value[0]
   result.value = null
   requestError.value = ''
-  dictionaryMode.value = 'system'
+  dictionaryMode.value = 'custom'
   selectedClusterTaskId.value = ''
   selectedCollectionId.value = ''
   selectedNerRecordId.value = ''
@@ -1243,6 +1243,11 @@ function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
         if (body.code === 0 && row) {
           item.parseId = row.parse_id
           item.parsedChars = row.char_count
+          item.parsedTitle = row.parsed_title || ''
+          // 自动题名：解析出的论文题名覆盖文件名兜底值（用户可再改）
+          if (item.parsedTitle && (!item.title || item.title === item.name)) {
+            item.title = item.parsedTitle
+          }
           item.parseState = 'done'
         } else {
           item.parseState = 'error'
@@ -1516,10 +1521,8 @@ function validateRequiredInputs(): string {
   if (mode.value === 'file' && !uploadedFiles.length) return '请选择一个文件。'
   if (mode.value === 'batch' && !uploadedFiles.length) return '请至少上传一个文件。'
 
-  if (props.toolId === 'zh-keyword' && dictionaryMode.value === 'custom') {
-    const terms = customDictionaryTerms.value.split(/[,，;；\n]/).map(item => item.trim()).filter(Boolean)
-    if (!terms.length && !customDictionaryFile.value) return '已选择自定义领域词典，请填写词典术语或上传词典文件。'
-  }
+  // zh-keyword 词典为可选资源（2026-10-15 与资源直传改造同口径）：未填词条且未选
+  // 文件 → 提交时不带词典参数（见 currentRequestPayload 的跳过逻辑），不再拦截
   return requiredResourceError()
 }
 
@@ -1800,15 +1803,33 @@ function downloadClassificationCsv() {
   const title = ((data?.document as Record<string, unknown>)?.title as string)
     || String(data?.document_title || '')
   // 分类结果：classifications 数组（每条含 clc_code/category_name/label/confidence/role；
-  // zh 用 category_name，en 用 label，两者兼容）
+  // zh 用 category_name，en 用 label，两者兼容）。列与可视化弹窗对齐（2026-10-15
+  // 用户定稿：下载要完整记录弹窗输出字段）——补分类路径、领域标签，en 补跨语言映射对
   const cls = ((data?.classifications as Array<Record<string, unknown>>) || []).filter(c => c && c.clc_code)
+  const isEn = props.toolId === 'en-classify'
+  const domainLabels = (data?.domain_labels as Array<Record<string, unknown>>) || []
+  const clm = (data?.cross_language_mapping || {}) as Record<string, unknown>
+  const pathOf = (c: Record<string, unknown>) => Array.isArray(c.classification_path)
+    ? (c.classification_path as unknown[]).join(' > ') : String(c.classification_path || '')
+  const pairOf = (rowIndex: number) => {
+    const pair = ((rowIndex > 0 ? clm.secondary : clm) || {}) as Record<string, unknown>
+    const s = String(pair.source_term || '').trim(); const z = String(pair.zh_term || '').trim()
+    return s && z ? `${s}—${z}` : ''
+  }
+  const header = ['文献题名', '角色', '中图分类号', '分类名称', '分类路径', '置信度',
+    ...(isEn ? ['跨语言类目映射'] : []), '领域标签']
   const lines = [
-    ['文献题名', '角色', '中图分类号', '分类名称', '置信度'].map(csvCell).join(','),
-    ...cls.map(c => [title,
-      String(c.role || 'main') === 'secondary' ? '次分类' : '主分类',
+    header.map(csvCell).join(','),
+    ...cls.map((c, rowIndex) => [
+      title,
+      String(c.role || 'main') === 'secondary' || rowIndex > 0 ? '次分类' : '主分类',
       String(c.clc_code || ''),
       String(c.category_name || c.label || ''),
-      String(c.confidence ?? '')].map(csvCell).join(',')),
+      pathOf(c),
+      String(c.confidence ?? ''),
+      ...(isEn ? [pairOf(rowIndex)] : []),
+      (() => { const l = domainLabels[rowIndex] as unknown; return l == null ? '' : String((l as Record<string, unknown>).label || (l as Record<string, unknown>).name || l) })(),
+    ].map(csvCell).join(',')),
   ]
   const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
@@ -1859,13 +1880,31 @@ function downloadKeywordCsv() {
   const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
   const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
   const kws = ((data?.keywords as Array<Record<string, unknown>>) || []).filter(k => k && (k.keyword || k.term))
+  // 列与可视化弹窗对齐（2026-10-15）：中文=排序/关键词/置信度/词典命中/权重变化；
+  // 英文=排序/关键词/规范化形式/置信度/科研分类标签
+  const isEn = props.toolId === 'en-keyword'
+  const header = isEn
+    ? ['文献题名', '排序', '关键词/主题短语', '规范化形式', '置信度', '科研分类标签']
+    : ['文献题名', '排序', '关键词/短语', '置信度', '词典命中', '权重变化']
   const lines = [
-    ['文献题名', '关键词', '权重', '类型', '置信度'].map(csvCell).join(','),
-    ...kws.map(k => [title,
-      String(k.keyword || k.term || ''),
-      String(k.weight ?? ''),
-      String(k.type || k.keyword_type || ''),
-      String(k.prob ?? k.confidence ?? '')].map(csvCell).join(',')),
+    header.map(csvCell).join(','),
+    ...kws.map((k, index) => {
+      if (isEn) {
+        const mapping = (k.classification_mapping || {}) as Record<string, unknown>
+        return [title,
+          String(k.rank ?? index + 1),
+          String(k.term || k.keyword || ''),
+          String(k.normalized_term || ''),
+          String(k.prob ?? k.confidence ?? ''),
+          Object.keys(mapping).length ? `${mapping.code || ''} ${mapping.label || ''}`.trim() : '未映射'].map(csvCell).join(',')
+      }
+      return [title,
+        String(k.rank ?? index + 1),
+        String(k.keyword || k.term || ''),
+        String(k.prob ?? k.confidence ?? ''),
+        k.custom_dictionary_hit || k.adaptive_resource_match ? '用户词典命中' : '未命中',
+        Number(k.weight_change) > 0 ? `+${Number(k.weight_change).toFixed(2)}` : '0.00'].map(csvCell).join(',')
+    }),
   ]
   const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
@@ -1877,13 +1916,17 @@ function downloadKeywordXml() {
   const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
   const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
   const kws = ((data?.keywords as Array<Record<string, unknown>>) || []).filter(k => k && (k.keyword || k.term))
+  // 字段与可视化弹窗对齐（2026-10-15）：规范化形式 + 科研分类标签
   const escXml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-  const items = kws.map((k, i) => `    <keyword id="${i + 1}">
+  const items = kws.map((k, i) => {
+    const mapping = (k.classification_mapping || {}) as Record<string, unknown>
+    return `    <keyword id="${i + 1}">
       <term>${escXml(String(k.keyword || k.term || ''))}</term>
-      <weight>${k.weight ?? ''}</weight>
-      <type>${escXml(String(k.type || k.keyword_type || ''))}</type>
+      <normalized_term>${escXml(String(k.normalized_term || ''))}</normalized_term>
       <confidence>${k.prob ?? k.confidence ?? ''}</confidence>
-    </keyword>`).join('\n')
+      <classification_mapping>${Object.keys(mapping).length ? `${escXml(String(mapping.code || ''))} ${escXml(String(mapping.label || ''))}`.trim() : '未映射'}</classification_mapping>
+    </keyword>`
+  }).join('\n')
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <keywordRecognitionResult>
   <document>
@@ -1902,17 +1945,23 @@ ${items}
 function downloadCitationCsv() {
   const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
   const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
-  // 引用结果：citation_sentiment_results 或 results 数组
+  // 引用结果：citation_sentiment_results 或 results 数组。列与可视化弹窗对齐
+  // （2026-10-15）：主表四要素 + 上下文页签的前文/后文
   const items = ((data?.citation_sentiment_results || data?.results) as Array<Record<string, unknown>>) || []
   const lines = [
-    ['文献题名', '引用句', '情感标签', '置信度', '被引文献'].map(csvCell).join(','),
-    ...items.filter(r => r && (r.citation_sentence || r.sentence)).map(r => [
-      title,
-      String(r.citation_sentence || r.sentence || ''),
-      String(r.sentiment || r.sentiment_label || r.label || ''),
-      String(r.confidence ?? ''),
-      String(r.cited_title || r.work_name || ''),
-    ].map(csvCell).join(',')),
+    ['文献题名', '引用句', '情感标签', '置信度', '前文', '后文', '被引文献'].map(csvCell).join(','),
+    ...items.filter(r => r && (r.citation_sentence || r.sentence)).map(r => {
+      const ctx = (r.context || {}) as Record<string, unknown>
+      return [
+        title,
+        String(r.citation_sentence || r.sentence || ''),
+        String(r.sentiment || r.sentiment_label || r.label || ''),
+        String(r.confidence ?? ''),
+        String(ctx.before || ctx.previous_sentence || ''),
+        String(ctx.after || ctx.next_sentence || ''),
+        String(r.cited_title || r.work_name || ''),
+      ].map(csvCell).join(',')
+    }),
   ]
   const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
@@ -1924,13 +1973,16 @@ function downloadNerCsv() {
   const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
   const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
   const ents = ((data?.entities || data?.entity_results) as Array<Record<string, unknown>>) || []
+  // 列与可视化弹窗对齐（2026-10-15）：补编号（实体编号）与语境片段
   const lines = [
-    ['文献题名', '实体', '类型', '位置', '置信度'].map(csvCell).join(','),
-    ...ents.filter(e => e && (e.text || e.entity || e.name)).map(e => [
+    ['文献题名', '编号', '实体名称', '实体类别', '实体位置', '语境片段', '置信度'].map(csvCell).join(','),
+    ...ents.filter(e => e && (e.text || e.entity || e.name)).map((e, index) => [
       title,
+      String(e.entity_id || e.id || `E${index + 1}`),
       String(e.text || e.entity || e.name || ''),
       String(e.entity_type || e.type || ''),
       e.start != null ? `字符 ${e.start}-${e.end}` : String(e.position || ''),
+      String(e.context || ''),
       String(e.confidence ?? ''),
     ].map(csvCell).join(',')),
   ]
@@ -1940,37 +1992,88 @@ function downloadNerCsv() {
   downloadMenuOpen.value = false
 }
 
-// 概念定义句识别：CSV 下载（与输出格式要求联动）——优先用后端 csv_content，
-// 无则客户端从聚合 definitions 展平生成（概念,定义句,句式,置信度）
+// 概念定义句识别：CSV 下载（与输出格式要求联动）。列与可视化弹窗对齐（2026-10-15
+// 用户定稿：下载要完整记录弹窗输出字段）——编号/文献题名/概念词/定义句/来源/句式/
+// 置信度；后端 csv_content 只有四列，改由客户端从聚合 definitions 展平生成
+function definitionSourceLabel(sub: Record<string, unknown>): string {
+  const pos = (sub.position || sub.source_position) as Record<string, unknown> | undefined
+  if (pos) {
+    const chapters = pos.chapter_path as unknown[] | undefined
+    if (Array.isArray(chapters) && chapters.length) return chapters.join(' > ')
+    if (pos.start != null) return `字符 ${pos.start}-${pos.end ?? ''}`
+  }
+  if (sub.start != null) return `字符 ${sub.start}-${sub.end ?? ''}`
+  return ''
+}
 function downloadDefinitionCsv() {
   const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const csv = String(data?.csv_content || '')
-  let content = csv
-  if (!content) {
-    const defs = ((data?.definitions || data?.definition_results) as Array<Record<string, unknown>>) || []
-    const rows = [['概念', '定义句', '句式', '置信度'].join(',')]
-    for (const item of defs) {
-      const subs = Array.isArray(item?.definitions) && item.definitions.length ? item.definitions : [item]
-      for (const sub of subs as Array<Record<string, unknown>>) {
-        rows.push([item.concept || '', sub.sentence || sub.definition || '', sub.pattern || '', sub.confidence ?? ''].map(csvCell).join(','))
-      }
+  const title = form.documentTitle || String(data?.document_title || ((data?.document as Record<string, unknown>)?.title as string) || '')
+  const defs = ((data?.definitions || data?.definition_results) as Array<Record<string, unknown>>) || []
+  const rows = [['编号', '文献题名', '概念词', '概念定义句', '来源', '句式', '置信度'].map(csvCell).join(',')]
+  let seq = 0
+  for (const item of defs) {
+    const subs = Array.isArray(item?.definitions) && item.definitions.length ? item.definitions : [item]
+    for (const sub of subs as Array<Record<string, unknown>>) {
+      seq += 1
+      rows.push([
+        String(sub.definition_id || item.definition_id || `D${seq}`),
+        title,
+        String(item.concept || sub.concept || ''),
+        String(sub.sentence || sub.definition || ''),
+        definitionSourceLabel(sub),
+        String(sub.pattern || ''),
+        String(sub.confidence ?? ''),
+      ].map(csvCell).join(','))
     }
-    content = rows.join('\r\n')
   }
+  const content = rows.join('\r\n')
   const blob = new Blob(['\ufeff' + content], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
   a.href = url; a.download = `${props.toolId}_result.csv`; a.click(); URL.revokeObjectURL(url)
   downloadMenuOpen.value = false
 }
 
-// 概念定义句识别：数据库写入结构下载（SQL 插入语句）——优先用后端 database_records
+// 概念定义句识别：数据库写入结构下载（SQL 插入语句）。database_records 由后端在
+// 输出格式=数据库写入结构时产出；未选该格式时为空——2026-10-15 修复：从聚合
+// definitions 展平兜底生成（此前 recs 为空 → 下载的 SQL 只有建表语句没有数据），
+// 并补齐弹窗字段（编号/来源字符位置）
 function downloadDefinitionSql() {
   const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const recs = ((data?.database_records) as Array<Record<string, unknown>>) || []
   const title = form.documentTitle || String(data?.document_title || '')
   const esc = (v: unknown) => v === null || v === undefined ? 'NULL' : `'${String(v).replace(/'/g, "''")}'`
-  const values = recs.filter(r => r && r.concept).map(r =>
-    `(${esc(title)}, ${esc(r.concept_id || '')}, ${esc(r.concept)}, ${esc(r.definition_sentence)}, ${esc(r.definition_pattern)}, ${r.confidence ?? 'NULL'}, ${esc(r.domain_label || null)})`)
+  // definitions 聚合平铺（含来源字符位置，与弹窗"来源"列同源）；后端 database_records
+  // 与之同序生成（semantic_service 同一循环），按下标配对补齐位置/编号
+  const defs = ((data?.definitions || data?.definition_results) as Array<Record<string, unknown>>) || []
+  const flat: Array<Record<string, unknown>> = []
+  for (const item of defs) {
+    const subs = Array.isArray(item?.definitions) && item.definitions.length ? item.definitions : [item]
+    for (const sub of subs as Array<Record<string, unknown>>) {
+      const pos = (sub.position || sub.source_position) as Record<string, unknown> | undefined
+      flat.push({
+        concept: item.concept || sub.concept,
+        definition_sentence: sub.sentence || sub.definition,
+        definition_pattern: sub.pattern,
+        confidence: sub.confidence,
+        source_start: pos?.start ?? sub.start ?? null,
+        source_end: pos?.end ?? sub.end ?? null,
+      })
+    }
+  }
+  const dbRecs = ((data?.database_records) as Array<Record<string, unknown>>) || []
+  const recs = flat.length
+    ? flat.map((f, i) => {
+        const rec = dbRecs[i] || {}
+        return {
+          concept_id: rec.concept_id || `cdef_${String(i + 1).padStart(4, '0')}`,
+          ...f,
+          ...(rec.concept ? { concept: rec.concept, definition_sentence: rec.definition_sentence,
+                              definition_pattern: rec.definition_pattern, confidence: rec.confidence } : {}),
+          domain_label: rec.domain_label ?? data?.domain_label ?? null,
+        }
+      })
+    : dbRecs.map((r, i) => ({ source_start: null, source_end: null, ...r, concept_id: r.concept_id || `cdef_${String(i + 1).padStart(4, '0')}` }))
+  const values = recs.filter(r => r && (r.concept || r.definition_sentence)).map(r =>
+    `(${esc(title)}, ${esc(r.concept_id || '')}, ${esc(r.concept)}, ${esc(r.definition_sentence)}, ${esc(r.definition_pattern)}, ${r.source_start ?? 'NULL'}, ${r.source_end ?? 'NULL'}, ${r.confidence ?? 'NULL'}, ${esc(r.domain_label || null)})`)
   const sql = [
     '-- 概念定义句识别结果（definition-detect）',
     'CREATE TABLE IF NOT EXISTS definition_detect_result (',
@@ -1980,11 +2083,13 @@ function downloadDefinitionSql() {
     '  concept           VARCHAR(200),',
     '  definition_sentence TEXT,',
     '  definition_pattern  VARCHAR(50),',
+    '  source_start      INT,',
+    '  source_end        INT,',
     '  confidence        DECIMAL(4,3),',
     '  domain_label      VARCHAR(10),',
     '  created_at        DATETIME DEFAULT CURRENT_TIMESTAMP',
     ');',
-    ...(values.length ? ['INSERT INTO definition_detect_result (document_title, concept_id, concept, definition_sentence, definition_pattern, confidence, domain_label) VALUES', values.join(',\n') + ';'] : []),
+    ...(values.length ? ['INSERT INTO definition_detect_result (document_title, concept_id, concept, definition_sentence, definition_pattern, source_start, source_end, confidence, domain_label) VALUES', values.join(',\n') + ';'] : []),
   ].join('\n')
   const blob = new Blob(['\ufeff' + sql], { type: 'text/sql;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
@@ -1997,24 +2102,27 @@ function downloadNerSql() {
   const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
   const ents = ((data?.entities || data?.entity_results) as Array<Record<string, unknown>>) || []
   const esc = (v: unknown) => v === null || v === undefined ? 'NULL' : `'${String(v).replace(/'/g, "''")}'`
-  const rows = ents.filter(e => e && (e.text || e.entity || e.name)).map(e =>
-    `(${esc(title)}, ${esc(e.text || e.entity || e.name)}, ${esc(e.entity_type || e.type || '')}, ${e.start ?? 'NULL'}, ${e.end ?? 'NULL'}, ${e.confidence ?? 'NULL'})`)
+  // 字段与可视化弹窗对齐（2026-10-15）：补实体编号 + 语境片段
+  const rows = ents.filter(e => e && (e.text || e.entity || e.name)).map((e, index) =>
+    `(${esc(title)}, ${esc(e.entity_id || e.id || `E${index + 1}`)}, ${esc(e.text || e.entity || e.name)}, ${esc(e.entity_type || e.type || '')}, ${e.start ?? 'NULL'}, ${e.end ?? 'NULL'}, ${esc(e.context || null)}, ${e.confidence ?? 'NULL'})`)
   const sql = [
     '-- 通用领域实体识别结果（general-ner）',
     '-- 建表模板（首次导入执行一次，已存在则跳过）：',
     'CREATE TABLE IF NOT EXISTS ner_general_result (',
     '  id BIGINT AUTO_INCREMENT PRIMARY KEY,',
     '  document_title VARCHAR(300),',
+    '  entity_id      VARCHAR(30),',
     '  entity_text    VARCHAR(200),',
     '  entity_type    VARCHAR(50),',
     '  start_pos      INT,',
     '  end_pos        INT,',
+    '  context        TEXT,',
     '  confidence     DECIMAL(4,3),',
     '  created_at     DATETIME DEFAULT CURRENT_TIMESTAMP',
     ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;',
     '',
     'INSERT INTO ner_general_result',
-    '  (document_title, entity_text, entity_type, start_pos, end_pos, confidence) VALUES',
+    '  (document_title, entity_id, entity_text, entity_type, start_pos, end_pos, context, confidence) VALUES',
     rows.join(',\n') + ';',
     '',
   ].join('\n')
@@ -2207,8 +2315,9 @@ function downloadResult() {
               <div class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
                 <div class="field full"><label><span class="label-main">训练样本与人工标注类目标签数据</span><small>可选</small></label>
                   <div class="requirement-resource-controls">
-                    <AppSelect v-model="anchorTrainMode" :options="anchorTrainModeOptions" @change="anchorTrainFile = null" />
-                    <div v-if="anchorTrainMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload($event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传已标注文献集' }}</b><small>仅 .json：title（题名）+ text（文本）+ category（人工标注类目）；编号可选</small></label></div>
+                    <div class="resource-upload-wrap"><label class="resource-upload-zone" title='[
+  {"title":"文献题名","text":"文献正文……","category":"人工标注类目"}
+]'><input type="file" accept=".json" @change="handleAnchorUpload($event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传已标注文献集' }}</b></label></div>
                   </div>
                 </div>
               </div>
@@ -2312,7 +2421,22 @@ function downloadResult() {
               <div class="batch-file-queue">
                 <div class="batch-file-queue-head"><b>待处理文件队列</b><span>{{ uploadedFiles.length }} 个文件</span></div>
                 <div v-if="!uploadedFiles.length" class="batch-file-empty">选择文件后，将在这里逐项显示文件名称、大小和处理状态。</div>
-                <template v-if="toolId === 'deep-cluster'">
+                <template v-if="toolId === 'structured-review'">
+                  <article v-for="(item,index) in uploadedFiles" :key="item.id" class="document-card review-document-card-v634">
+                    <div class="document-card-head"><b>文件 {{ index + 1 }} · {{ item.name }}</b><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></div>
+                    <div class="selected-file-summary"><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成（{{ item.parsedChars }} 字）</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">{{ parseFailLabel(item) }}，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span></div>
+                    <div class="settings-title review-metadata-title"><b>文献元数据</b><span>题名自动解析，其余可编辑</span></div>
+                    <div class="two-column review-document-meta-grid-v637">
+                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="item.documentId" class="input" placeholder="例如：DOC001" /></div>
+                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="item.title" class="input" maxlength="300" placeholder="解析后自动填充" /><small v-if="item.parsedTitle" class="char-count-v755">已自动解析</small></div>
+                      <div class="field"><label><span class="label-main">作者</span></label><input v-model="item.authors" class="input" placeholder="可选" /></div>
+                      <div class="field"><label><span class="label-main">发表时间</span></label><YearPicker v-model="item.publicationDate" /></div>
+                      <div class="field"><label><span class="label-main">文献来源</span></label><input v-model="item.source" class="input" placeholder="期刊、会议等" /></div>
+                      <div class="field"><label><span class="label-main">关键词</span></label><input v-model="item.keywords" class="input" placeholder="可选" /></div>
+                    </div>
+                  </article>
+                </template>
+                <template v-else-if="toolId === 'deep-cluster'">
                   <article v-for="(item,index) in uploadedFiles" :key="item.id" class="document-card deep-cluster-file-card">
                     <div class="document-card-head"><b>文件 {{ index + 1 }} · {{ item.name }}</b><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></div>
                     <div class="selected-file-summary"><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">{{ parseFailLabel(item) }}，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span></div>
@@ -2334,8 +2458,9 @@ function downloadResult() {
               <div v-if="toolId === 'deep-cluster'" class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
                 <div class="field full"><label><span class="label-main">训练样本与人工标注类目标签数据</span><small>可选</small></label>
                   <div class="requirement-resource-controls">
-                    <AppSelect v-model="anchorTrainMode" :options="anchorTrainModeOptions" @change="anchorTrainFile = null" />
-                    <div v-if="anchorTrainMode === 'upload'" class="resource-upload-wrap"><label class="resource-upload-zone"><input type="file" accept=".json" @change="handleAnchorUpload($event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传已标注文献集' }}</b><small>仅 .json：title（题名）+ text（文本）+ category（人工标注类目）；编号可选</small></label></div>
+                    <div class="resource-upload-wrap"><label class="resource-upload-zone" title='[
+  {"title":"文献题名","text":"文献正文……","category":"人工标注类目"}
+]'><input type="file" accept=".json" @change="handleAnchorUpload($event)" /><span>⇧</span><b>{{ anchorTrainFile?.name || '点击上传已标注文献集' }}</b></label></div>
                   </div>
                 </div>
               </div>
@@ -2365,7 +2490,7 @@ function downloadResult() {
 
 
           <div v-if="toolId === 'zh-keyword'" class="settings-card generic-settings">
-            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="field"><label><span class="label-main">词典使用方式</span><small>区分数据库资源与用户录入</small></label><AppSelect v-model="dictionaryMode" :options="dictionaryModeOptions" @change="handleDictionaryModeChange" /></div><div v-if="dictionaryMode === 'system'" class="info-banner dictionary-status">✓ 默认状态：使用系统预置术语词典，不提交用户词典参数。</div><div v-else class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>{{ customDictionaryFile?.name || '上传用户词典文件' }}</b><small>支持 JSON/CSV/XLSX/TXT：术语词条</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div></div></div>
+            <div class="dictionary-card"><div class="field-heading"><b>可选领域术语词典</b><span>用户词典为可选输入</span></div><div class="two-column dictionary-custom"><div class="field"><label><span class="label-main">用户词典名称</span><small>用于识别和管理词典</small></label><input v-model="customDictionaryName" class="input" /></div><div class="field"><label><span class="label-main">命中权重增量</span></label><div class="numeric-stepper"><input v-model="weightBoost" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="命中权重增量" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加命中权重增量" :disabled="Number(weightBoost) >= 0.5" @click="adjustWeightBoost(1)">▲</button><button type="button" aria-label="减小命中权重增量" :disabled="Number(weightBoost) <= 0" @click="adjustWeightBoost(-1)">▼</button></span></div></div><div class="field full"><label><span class="label-main">词典术语</span><small>每行一个术语</small></label><textarea v-model="customDictionaryTerms" class="textarea compact"></textarea></div><div class="field full dictionary-upload-field"><label class="resource-upload-zone"><input ref="dictionaryFileInput" type="file" accept=".json,.csv,.xlsx,.txt" @change="handleDictionaryFile" /><span>⇧</span><b>{{ customDictionaryFile?.name || '上传用户词典文件' }}</b><small>支持 JSON/CSV/XLSX/TXT：术语词条</small></label><button v-if="customDictionaryFile" class="hover-copy-btn dictionary-cancel-btn" type="button" @click="clearDictionaryFile">✕ 取消</button></div></div></div>
           </div>
 
         </div>
@@ -2373,7 +2498,7 @@ function downloadResult() {
 
       <div class="test-card response-card">
         <div v-if="languageMismatch" class="info-banner warning" style="margin:0 0 10px"><b>语言不匹配提示</b><span>{{ languageMismatch }}</span></div>
-        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><div class="download-menu-wrap-v751"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="toggleDownloadMenu"><ResultActionIcon kind="download" />下载结果</button><div v-if="downloadMenuOpen" class="download-menu-v751"><button type="button" class="download-menu-item-v751" @click="downloadResult">JSON（完整响应）</button><button v-if="toolId === 'zh-classify' || toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationCsv">CSV（每篇分类结果）</button><button v-else-if="toolId === 'zh-keyword' || toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordCsv">CSV（每词一行）</button><button v-else-if="toolId === 'citation-sentiment'" type="button" class="download-menu-item-v751" @click="downloadCitationCsv">CSV（每条引用一行）</button><button v-else-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerCsv">CSV（每实体一行）</button><button v-else-if="toolId !== 'definition-detect'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveCsv">CSV（每语步一行）</button><button v-if="toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationXml">XML（结构化分类结果）</button><button v-if="toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordXml">XML（结构化关键词）</button><button v-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerSql">数据库（SQL 插入语句）</button><button v-if="toolId === 'zh-abstract-move'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveDatabase">数据库（SQL 插入语句）</button></div></div><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)"><ResultActionIcon kind="visualize" />查看可视化效果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><ResultActionIcon kind="clear" />清除结果</button></div></div>
+        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><div class="download-menu-wrap-v751"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="toggleDownloadMenu"><ResultActionIcon kind="download" />下载结果</button><div v-if="downloadMenuOpen" class="download-menu-v751"><button type="button" class="download-menu-item-v751" @click="downloadResult">JSON</button><button v-if="toolId === 'zh-classify' || toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationCsv">CSV</button><button v-else-if="toolId === 'zh-keyword' || toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordCsv">CSV</button><button v-else-if="toolId === 'citation-sentiment'" type="button" class="download-menu-item-v751" @click="downloadCitationCsv">CSV</button><button v-else-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerCsv">CSV</button><button v-else-if="toolId !== 'definition-detect'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveCsv">CSV</button><button v-if="toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationXml">XML</button><button v-if="toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordXml">XML</button><button v-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerSql">数据库</button><button v-if="toolId === 'zh-abstract-move'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveDatabase">数据库</button></div></div><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)"><ResultActionIcon kind="visualize" />查看可视化效果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><ResultActionIcon kind="clear" />清除结果</button></div></div>
         <div class="response-result-body hover-copy-box"><pre v-if="hasResult" class="console">{{ pretty(result) }}</pre><div v-else-if="running && runProgress" class="console live-progress"><div class="lp-summary"><b>正在处理 {{ runProgress.total }} 篇</b><span>已完成 {{ runProgress.success_count + runProgress.failed_count }}/{{ runProgress.total }}（成功 {{ runProgress.success_count }}<template v-if="runProgress.failed_count">，失败 {{ runProgress.failed_count }}</template>）· 累计 {{ runProgress.elapsed }}s</span></div><div class="lp-rows"><div v-for="it in runProgress.items" :key="it.index" class="lp-row" :data-st="it.status"><i>{{ it.index + 1 }}</i><span class="lp-name" :title="it.file_name">{{ it.file_name }}</span><template v-if="it.status === 'succeeded'"><b class="lp-ok">✓</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template><template v-else-if="it.status === 'failed'"><b class="lp-err">✗</b><span class="lp-time">失败</span></template><template v-else><b class="lp-run">…</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template></div></div></div><div v-else-if="requestError" class="console placeholder request-error">{{ requestError }}</div><div v-else class="console placeholder">等待测试执行...</div></div>
       </div>
     </div>

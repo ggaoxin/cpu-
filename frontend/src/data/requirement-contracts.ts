@@ -22,7 +22,7 @@ export type RequirementContract = {
 
 /** 资源引用结构的公共字段说明(展开在每个资源参数之后) */
 const resourceDescriptorRows = (field: string, resourceDesc: string, uploadHint: string, status: 'optional' | 'required' = 'optional'): RequirementInputRow[] => [
-  [field, 'object', status, resourceDesc + '。内置模式不提交该字段（使用系统预置资源），仅用户上传时携带'],
+  [field, 'object', status, resourceDesc],
   [`${field}.file`, 'file', 'conditional', '用户上传资源时必填(仅 multipart 表单模式)。' + uploadHint],
 ]
 
@@ -248,8 +248,8 @@ export const requirementContracts: Record<string, RequirementContract> = {
       ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
       ['domain_scientific_document_text', 'string | string[] | file | file[]', 'required', '专业科研文献文本'],
       ...resourceDescriptorRows('ontology_classification_system',
-        '本体分类体系引用。实体类型体系的答案空间:限定可识别的实体类型、类型层级与标准知识库映射(ontology_mappings)。更换本体即更换实体类型体系。类型行可带 standard_terms 标准词簇({term,term_en,variants}),实体命中标准词/变体时映射到该条并输出 KB 编号(类型码-序号)',
-        '自定义本体 JSON 文件(types 数组,每个类型含 code+name+可选 description/examples/standard_terms)'),
+        '本体分类体系引用。实体类型体系的答案空间:限定可识别的实体类型与标准知识库映射。类型行可带 standard_terms 标准词簇(id 唯一标识+term+term_en+variants),实体命中时输出该 id 作为映射ID',
+        '自定义本体 JSON 文件(types 数组,每个类型含 code+name+可选 standard_terms)'),
       ...resourceDescriptorRows('domain_labeled_training_data',
         '领域标注训练数据引用。领域实体判定规则(各实体类型的关键词/模式),是领域实体识别与本体映射的规则来源',
         '自定义领域实体规则文件'),

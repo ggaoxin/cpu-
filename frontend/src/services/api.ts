@@ -198,7 +198,7 @@ export async function listDocumentCollections(topic?: string) {
 }
 
 export async function listCompatibleHistory(downstreamTool: string, upstreamType: string) {
-  const query = new URLSearchParams({ downstream_tool: downstreamTool, upstream_type: upstreamType, limit: '200' })
+  const query = new URLSearchParams({ downstream_tool: downstreamTool, upstream_type: upstreamType, limit: '10' })
   return parseResponse(await fetchWithApiKey(apiUrl(`/api/v1/history/compatible?${query}`), { headers: { Accept: 'application/json' } }))
 }
 

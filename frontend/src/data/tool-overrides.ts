@@ -815,7 +815,7 @@ const reviewerSupplementParams: Record<string, ToolDefinition['params']> = {
   ],
   'rq-detect': [
     ['document_title', 'string|string[]', 'required', '文献题目；标识响应结果与可视化弹窗中的当前文献'],
-    ['text_format_requirement', 'string', 'optional', '选填，文本格式要求。【直接影响溯源方式】纯文本跳过章节解析；章节结构文本启用标题路径溯源；JSON 结构文本按章节精确归属'],
+    ['text_format_requirement', 'string', 'optional', '选填，输出格式要求。【直接影响溯源方式】纯文本跳过章节解析；章节结构文本启用标题路径溯源；JSON 结构文本按章节精确归属'],
   ],
   'citation-sentiment': [
     ['document_title', 'string|string[]', 'required', '文献题目；标识响应结果与可视化弹窗中的当前文献'],

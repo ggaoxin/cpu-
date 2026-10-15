@@ -811,9 +811,60 @@ def _pad_cluster_terms(base: Any, moves_list: List[Dict[str, Any]], indices: Lis
     return terms
 
 
+def _name_fallback_groups(glm_client, papers, groups, moves=None,
+                           language_type="auto", label_length_limit=10) -> None:
+    """向量兜底/显式算法路径 LLM 生成语义簇名（2026-10-15：兜底不再只叫"簇N"）。
+
+    按 language_type 和 label_length_limit 生成语义名 + 关键词。
+    题名可能是文件名（4.pdf），补语步句做语境；失败时保留"簇N"占位名。
+    """
+    if not groups or not glm_client:
+        return
+    _lang_note = ""
+    if language_type == "en":
+        _lang_note = " 标签用英文。"
+    elif language_type == "zh":
+        _lang_note = " 标签用中文。"
+    def _ctx(idx):
+        title = str(papers[idx].get('title') or f'DOC{idx + 1}')
+        if moves and idx < len(moves):
+            mv = moves[idx] or {}
+            sent = (mv.get("研究方法") or mv.get("研究背景") or [""])[0]
+            if sent:
+                return f"{title}（{str(sent)[:60]}）"
+        return title
+    listing = "\n".join(
+        f"簇{i}: {'；'.join(_ctx(j) for j in g['indices'][:5])}"
+        for i, g in enumerate(groups, 1))
+    try:
+        out = glm_client.chat_json(
+            f"你是文献聚类命名专家。根据每簇的文献题名，为每个簇起一个"
+            f" {label_length_limit} 字以内的语义名（概括该簇的共同研究方向）{_lang_note}，"
+            "并给 2-3 个关键词。只输出JSON："
+            '{"named":[{"index":1,"name":"簇名","keywords":["词1","词2"]},...]}',
+            f"聚类结果（题名即簇内文献）：\n{listing}\n请按簇序号逐一命名。\n\n"
+            '只输出JSON：{"named":[{"index":1,"name":"...","keywords":["...","..."]},...]}',
+            timeout=45.0, max_tokens=800, temperature=0.0)
+        rows = out.get("data", out).get("named", []) if isinstance(out, dict) else []
+        for r in rows:
+            if not isinstance(r, dict):
+                continue
+            try:
+                idx = int(r.get("index", 0)) - 1
+            except (TypeError, ValueError):
+                continue
+            if 0 <= idx < len(groups):
+                nm = str(r.get("name") or "").strip()
+                if nm and not re.fullmatch(r"(簇|孤立文献|文献|未分组)\s*\d*", nm):
+                    groups[idx]["name"] = nm
+                    groups[idx]["keywords"] = [str(k).strip() for k in (r.get("keywords") or []) if str(k).strip()]
+    except Exception:  # noqa: BLE001 - 命名失败保留占位名
+        pass
+
+
 def run_move_aligned_clustering(papers, *, selected_axis, glm_client, encoder=None,
                                 anchor_docs=None, cluster_count=None,
-                                algorithm=None) -> Dict[str, Any]:
+                                algorithm=None, language_type="auto") -> Dict[str, Any]:
     """主入口：语步提取 → 双轴分组 → 输出轴 payload（与旧管线同构）。
 
     anchor_docs（用户上传训练样本，可选）非空时走锚点引导分组：样本内部先提取
@@ -879,6 +930,10 @@ def run_move_aligned_clustering(papers, *, selected_axis, glm_client, encoder=No
         if not groups and encoder is not None:
             groups = _vector_fallback(papers, moves, selected_axis, encoder, fixed_k=cluster_count)
             method = "move_vector_fallback"
+            _name_fallback_groups(glm_client, papers, groups, moves)
+    # 直采路径 language_type=en 时重命名（深度聚类给的是中文簇名）
+    if groups and glm_client and language_type == "en":
+        _name_fallback_groups(glm_client, papers, groups, moves, language_type="en")
     if not groups:
         raise ValueError("语步对齐聚类失败：LLM 分组与向量兜底均未产出有效结果")
 

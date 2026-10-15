@@ -243,6 +243,9 @@ def _normalize_ontology_rows(rows: List[Any]) -> List[Dict[str, Any]]:
                 _vars = (t.get("variants") or t.get("变体") or t.get("别名")
                          or t.get("同义词") or t.get("简称") or [])
                 _norm_st.append({
+                    # 显式唯一标识透传（2026-10-14 用户定稿：映射 ID 直引用户文件
+                    # 里的 id，Ctrl+F 可搜、词条插入不漂移；无 id 才自动编号）
+                    "id": _first_present(t, ("id", "kb_id", "标准词ID")) or "",
                     "term": term,
                     "term_en": _first_present(t, ("term_en", "canonical_en", "en", "英文标准词",
                                                   "译名", "英文", "english")) or "",
@@ -681,6 +684,24 @@ def resource_path(storage_uri: str, project_root: Path) -> Optional[Path]:
     return path if path.is_file() else None
 
 
+def _try_syntax_repair(text: str) -> Optional[str]:
+    """常见复制损伤的确定性修复（2026-10-15）：尾逗号、单引号键值。
+
+    聊天窗口/网页复制出的 JSON 常带这两类损伤，此前直接判损坏 → LLM 重构
+    兜底 → 重构可能丢 standard_terms 等扩展字段（用户实测映射ID全未命中根因）。
+    修完仍非法返回 None（维持原 LLM 兜底链路）。
+    """
+    fixed = text
+    fixed = re.sub(r",(\s*[\]}])", r"\1", fixed)
+    if "'" in fixed:
+        fixed = re.sub(r"'([^'\n]*)'", r'"\1"', fixed)
+    try:
+        json.loads(fixed)
+        return fixed
+    except (json.JSONDecodeError, ValueError):
+        return None
+
+
 def inspect_user_resource(path: Path, *, field: str) -> List[Dict[str, Any]]:
     """读取并归一化用户资源文件；JSON 损坏或零有效条目抛 ResourceParseError。
 
@@ -693,6 +714,11 @@ def inspect_user_resource(path: Path, *, field: str) -> List[Dict[str, Any]]:
     try:
         raw = json.loads(text)
     except json.JSONDecodeError as exc:
+        _repaired = _try_syntax_repair(text)
+        if _repaired is not None:
+            raw = json.loads(_repaired)
+        else:
+            raise exc
         raise ResourceParseError(
             f"资源文件 JSON 解析失败（{field}）：第 {exc.lineno} 行 {exc.msg}。"
             f"请上传标准 JSON 文件（CSV、JSONL、TXT 暂不支持）。"

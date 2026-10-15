@@ -1509,7 +1509,19 @@ async def parse_files(
     for item in parsed_pairs:
         text = str(item.get("text") or "")
         parse_id = parse_store.put(str(item.get("file_name") or "file"), str(item.get("media_type") or ""), text)
-        results.append({"parse_id": parse_id, "file_name": item.get("file_name"), "char_count": len(text)})
+        # 2026-10-15 结构化综述等批量文件需要展示元数据：解析后从文本头部
+        # 自动提取论文题名（前 500 字内首个 ≥8 字的连续行，去掉文件名噪声）
+        _title = ""
+        try:
+            _head = (text or "")[:500]
+            for _line in _head.split("\n"):
+                _s = _line.strip()
+                if len(_s) >= 8 and not _s.startswith(("#", "摘要", "Abstract", "关键词", "Keywords", "http", "DOI", "收稿", "作者")):
+                    _title = _s[:200]
+                    break
+        except Exception:
+            _title = ""
+        results.append({"parse_id": parse_id, "file_name": item.get("file_name"), "char_count": len(text), "parsed_title": _title})
     return {"code": 0, "message": "解析完成", "data": {"tool_id": effective_tool, "results": results}}
 
 
@@ -2027,9 +2039,16 @@ def compatible_history(
     downstream_tool: str,
     upstream_type: str,
     workspace_id: str = Query(settings.DEFAULT_WORKSPACE_ID),
-    limit: int = Query(50, ge=1, le=200),
+    limit: int = Query(10, ge=1, le=50),
     service: ToolIntegrationService = Depends(get_integration_service),
 ) -> Dict[str, Any]:
+    """下游工具的可选上游历史记录（下拉框数据源）。
+
+    2026-10-15 性能修复：limit 默认 10（用户定稿：只显示最新 10 个）+
+    批量取各任务最新结果（latest_results_batch），替代此前逐任务 get_task
+    +list_results 的 N+1 全量加载（200 任务时 ~20s → 亚秒级）。
+    记录名 = 功能点 · 实体数 · 时间（数据多时用户可按实体数定位）。
+    """
     repository = service.repository
     allowed = {
         "entity": {"general-ner", "research-ner", "domain-ner", "upstream-entity"},
@@ -2037,96 +2056,63 @@ def compatible_history(
         "cluster": {"deep-cluster"},
         "review_source": {"deep-cluster", "cluster-label"},
     }.get(upstream_type, set())
-    tasks = [task for task in repository.list_tasks(workspace_id, limit=200)
+    tasks = [task for task in repository.list_tasks(workspace_id, limit=50)
              if task.get("tool_id") in allowed and task.get("status") == "succeeded"][:limit]
+    # 批量取各任务最新结果（一次 IN 查询替代 N 次 list_results）
+    task_ids = [t["id"] for t in tasks]
+    latest_results, _record_ids = repository.latest_results_batch(task_ids)
+    _NER_TYPE_ZH = {
+        "general-ner": "通用命名实体识别",
+        "research-ner": "科研命名实体识别",
+        "domain-ner": "专业领域命名实体识别",
+        "upstream-entity": "实体识别",
+        "upstream-dependency": "依存句法",
+        "deep-cluster": "深度聚类",
+        "cluster-label": "标签生成",
+    }
     options = []
-    for task_summary in tasks:
-        # list_tasks intentionally omits request_payload; load the complete
-        # task only for the selected compatible history rows.
-        task = repository.get_task(task_summary["id"]) or task_summary
-        for record in repository.list_results(task["id"]):
-            result = record.get("result") if isinstance(record.get("result"), dict) else {}
-            request_payload = task.get("request_payload") if isinstance(task.get("request_payload"), dict) else {}
-            # 记录命名:文本输入用题目,文件输入用文件名,方便用户选择
-            _rp = request_payload
-            _name = ""
-            if isinstance(_rp, dict):
-                # 文件输入:file_inputs 或 files 里的 file_name
-                _files = _rp.get("files") or []
-                if isinstance(_files, list) and _files:
-                    _first = _files[0]
-                    if isinstance(_first, dict):
-                        _name = str(_first.get("file_name") or "")[:60]
-                if not _name:
-                    _titles = _rp.get("document_title") or _rp.get("title")
-                    if isinstance(_titles, list) and _titles:
-                        _name = str(_titles[0] or "")[:60]
-                    elif isinstance(_titles, str):
-                        _name = _titles[:60]
-                if not _name:
-                    # 从结果回填的 document.title
-                    _name = str((result.get("document") or {}).get("title") or "")[:60]
-            # NER 记录名格式（2026-09-11 用户定稿）：文件名 · 命名实体识别类型 · 北京时间
-            # created_at 已是 Asia/Shanghai（北京标准时间），截到分钟
-            _NER_TYPE_ZH = {
-                "general-ner": "通用命名实体识别",
-                "research-ner": "科研命名实体识别",
-                "domain-ner": "专业领域命名实体识别",
-                "upstream-entity": "实体识别",
-                "upstream-dependency": "依存句法",
-                "deep-cluster": "深度聚类",
-                "cluster-label": "标签生成",
-            }
-            _type_zh = _NER_TYPE_ZH.get(task["tool_id"], task["tool_id"])
-            _time = str(task.get("created_at") or "")[:16].replace("T", " ")
-            if not _name:
-                _name = f"{_type_zh} · {_time}" if _time else _type_zh
-            else:
-                _parts = [_name, _type_zh]
-                if _time:
-                    _parts.append(_time)
-                _name = " · ".join(_parts)
-            option = {
-                "task_id": task["id"], "record_id": record["id"], "tool_id": task["tool_id"],
-                "status": task["status"], "created_at": task["created_at"],
-                "label": _name,
-            }
-            if upstream_type == "entity":
-                task_item = repository.get_task_item(str(record.get("task_item_id") or ""))
-                source_text = service._text_from_task_item(task_item)
-                if not source_text:
-                    source_text = service._text_from_task_payload(
-                        request_payload,
-                        task_item.get("input_index") if task_item else None,
-                        str(task.get("tool_id") or ""),
-                    )
-                if not source_text:
-                    public_field = get_vue_contract(task["tool_id"]).primary_input_field
-                    source_text = request_payload.get(public_field) or request_payload.get("text") or ""
-                    if isinstance(source_text, list):
-                        source_text = source_text[0].get("text", "") if source_text and isinstance(source_text[0], dict) else (source_text[0] if source_text else "")
-                option.update({
-                    "sentence": str(source_text),
-                    "entities": result.get("entities") or [],
-                    "document_title": (result.get("document") or {}).get("title"),
-                })
-            elif upstream_type == "cluster":
-                # 与标签生成实际输入同源：候选类目分布（锚定+双候选票数）构建短语集，
-                # 未锚定簇由方法内部回退代表短语——前端预览即标签生成真正吃到的内容
-                from application.service.tool_integration_service import ToolIntegrationService as _TIS
-                phrase_sets = _TIS._cluster_phrase_sets(result)
-                _dim = str(result.get("cluster_dimension") or result.get("dimension") or "")
-                _dim_label = "技术路线聚类" if _dim.startswith("tech") else ("应用场景聚类" if _dim.startswith("app") else "深度聚类")
-                _doc_count = (result.get("input_summary") or {}).get("document_count") or len(phrase_sets)
-                _time = str(task.get("created_at") or "")[:16].replace("T", " ")
-                option.update({
-                    "dimension": result.get("cluster_dimension") or result.get("dimension"),
-                    "document_count": _doc_count,
-                    "cluster_count": len(phrase_sets),
-                    "phrase_sets": phrase_sets,
-                    "label": f"{_dim_label}({_doc_count}篇) · {_time}",
-                })
-            options.append(option)
+    for task in tasks:
+        _record = latest_results.get(task["id"]) or {}
+        result = _record.get("result") if isinstance(_record.get("result"), dict) else {}
+        _type_zh = _NER_TYPE_ZH.get(task["tool_id"], task["tool_id"])
+        _time = str(task.get("created_at") or "")[:16].replace("T", " ")
+        _ent_count = 0
+        _ents = result.get("entities") or result.get("entity_results")
+        if isinstance(_ents, list):
+            _ent_count = len(_ents)
+        elif isinstance(result.get("summary"), dict):
+            _ent_count = int(result["summary"].get("entity_count") or 0)
+        _parts = [_type_zh]
+        if _ent_count:
+            _parts.append(f"{_ent_count}个实体")
+        if _time:
+            _parts.append(_time)
+        option = {
+            "task_id": task["id"],
+            "record_id": _record_ids.get(task["id"], ""),
+            "tool_id": task["tool_id"],
+            "status": task["status"],
+            "created_at": task.get("created_at"),
+            "label": " · ".join(_parts),
+        }
+        if upstream_type == "entity":
+            # 实体预览从最新结果取（已批量加载，不再逐条 get_task_item）
+            source_text = str(result.get("original_sentence") or "")
+            _entities = result.get("entities") or result.get("entity_results") or []
+            option["sentence"] = source_text[:500]
+            option["entities"] = _entities[:5]
+        elif upstream_type == "cluster":
+            # 聚类下游需要簇数/篇数/phrase_sets（弹窗"类簇预览"读这些字段）
+            clusters = result.get("clusters") or []
+            option["cluster_count"] = len(clusters)
+            option["document_count"] = sum(len(c.get("doc_indices") or c.get("members") or []) for c in clusters if isinstance(c, dict))
+            option["phrase_sets"] = [
+                {"cluster_id": c.get("cluster_id"),
+                 "phrases": c.get("representative_terms") or [],
+                 "linked_document_ids": [m.get("document_id") for m in (c.get("members") or [])]}
+                for c in clusters if isinstance(c, dict)
+            ]
+        options.append(option)
     return {"code": 0, "data": options, "meta": {"downstream_tool": downstream_tool, "upstream_type": upstream_type}}
 
 

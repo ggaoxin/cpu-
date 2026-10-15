@@ -364,6 +364,7 @@ def execute_deep_clustering(
         raise ValueError(f"cluster_count 不能超过输入文献数量（当前 {len(papers)} 篇，最大 {len(papers)}）。")
 
     from infrastructure.clustering.move_aligned import run_move_aligned_clustering
+    _lang_param = str((request.params or {}).get("language_type") or "auto").strip().lower()
     from infrastructure.resources.normalize import normalized_rows_for
     encoder = m3_encoder
 
@@ -401,7 +402,7 @@ def execute_deep_clustering(
         outcome = run_move_aligned_clustering(
             papers, selected_axis=selected_axis, glm_client=glm_client, encoder=encoder,
             anchor_docs=anchor_docs or None, cluster_count=cluster_count,
-            algorithm=algorithm)
+            algorithm=algorithm, language_type=_lang_param)
     except ValueError:
         raise
     except Exception as exc:  # noqa: BLE001

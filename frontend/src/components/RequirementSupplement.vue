@@ -17,7 +17,7 @@ const documentMetadataSourceOptions = [
   { value: 'upload', label: '上传元数据文件进行补充或校正' },
 ]
 const sourceModeOptions = [
-  { value: 'builtin', label: '内置' },
+  { value: 'builtin', label: '不使用（默认）' },
   { value: 'upload', label: '用户上传资源' },
 ]
 
@@ -38,61 +38,61 @@ const resourceGroups: Record<string, { title: string; description: string; field
     title: '分类标准数据配置',
     description: '选择标准中图分类号标注数据',
     fields: [
-      { key: 'clc_labeled_data', label: '标准中图分类号标注数据', description: '支撑分类号判定、路径展示与校验', placeholder: '请选择标注数据版本', required: true },
+      { key: 'clc_labeled_data', label: '标准中图分类号标注数据', description: '可选上传', placeholder: '请选择标注数据版本', required: false },
     ],
   },
   'en-classify': {
     title: '分类标准与映射规则',
     description: '跨语言映射后输出中图分类结果',
     fields: [
-      { key: 'clc_labeled_data', label: '中图分类标准', description: '分类号与类目体系', placeholder: '请选择分类标准版本', required: true },
-      { key: 'classification_standard_mapping_table', label: '映射规则', description: '英文术语对应中文标准表达', placeholder: '请选择映射规则版本', required: true },
+      { key: 'clc_labeled_data', label: '中图分类标准', description: '可选上传', placeholder: '请选择分类标准版本', required: false },
+      { key: 'classification_standard_mapping_table', label: '映射规则', description: '可选上传', placeholder: '请选择映射规则版本', required: false },
     ],
   },
   'domain-classify': {
     title: '专业领域分类支撑资源',
     description: '选择专业分类规则与人工标注数据',
     fields: [
-      { key: 'domain_classification_rules', label: '领域分类规则', description: '定义三级专业类目与判定规则', placeholder: '请选择领域分类规则', required: true },
-      { key: 'manually_labeled_training_data', label: '人工标注训练数据', description: '支撑训练、校验与低置信排序', placeholder: '请选择人工标注数据', required: true },
+      { key: 'domain_classification_rules', label: '领域分类规则', description: '可选上传', placeholder: '请选择领域分类规则', required: false },
+      { key: 'manually_labeled_training_data', label: '人工标注训练数据', description: '可选上传', placeholder: '请选择人工标注数据', required: false },
     ],
   },
   'en-keyword': {
     title: '英文关键词识别资源',
     description: '用于术语消歧、规范化与标签映射',
     fields: [
-      { key: 'domain_terminology_library', label: '领域术语库', description: '补充术语、缩写、别名与规范表达', placeholder: '请选择领域术语库', required: true },
-      { key: 'classification_standard_mapping_table', label: '分类标准映射表', description: '将英文术语映射为科研分类标签', placeholder: '请选择分类标准映射表', required: true },
+      { key: 'domain_terminology_library', label: '领域术语库', description: '可选上传', placeholder: '请选择领域术语库', required: false },
+      { key: 'classification_standard_mapping_table', label: '分类标准映射表', description: '可选上传', placeholder: '请选择分类标准映射表', required: false },
     ],
   },
   'citation-intent': {
     title: '引用意图训练资源',
     description: '选择清洗、统一且平衡的训练集',
     fields: [
-      { key: 'preprocessed_training_set', label: '预处理后的训练集', description: '支撑意图判定与训练证据匹配', placeholder: '请选择训练集版本', required: true },
+      { key: 'preprocessed_training_set', label: '预处理后的训练集', description: '可选上传', placeholder: '请选择训练集版本', required: false },
     ],
   },
   'general-ner': {
     title: '通用实体语料配置',
     description: '选择匹配语言和实体类型的标注语料',
     fields: [
-      { key: 'general_domain_annotated_corpus', label: '通用领域标注语料', description: '支撑通用实体识别与校验', placeholder: '请选择通用领域标注语料', required: true },
+      { key: 'general_domain_annotated_corpus', label: '通用领域标注语料', description: '可选上传', placeholder: '请选择通用领域标注语料', required: false },
     ],
   },
   'research-ner': {
     title: '科研实体语料配置',
     description: '科研语料与标注数据配套使用',
     fields: [
-      { key: 'multi_domain_scientific_corpus', label: '多领域科研语料', description: '覆盖论文、报告与项目科研表达', placeholder: '请选择多领域科研语料', required: true },
-      { key: 'manually_labeled_data', label: '人工标注数据', description: '监督科研实体识别', placeholder: '请选择人工标注数据', required: true },
+      { key: 'multi_domain_scientific_corpus', label: '多领域科研语料', description: '可选上传', placeholder: '请选择多领域科研语料', required: false },
+      { key: 'manually_labeled_data', label: '人工标注数据', description: '可选上传', placeholder: '请选择人工标注数据', required: false },
     ],
   },
   'domain-ner': {
     title: '专业实体知识资源',
     description: '本体限定分类，标注数据支撑识别',
     fields: [
-      { key: 'ontology_classification_system', label: '本体分类体系', description: '限定实体类型与分类层级', placeholder: '请选择当前本体分类体系', required: true },
-      { key: 'domain_labeled_training_data', label: '领域标注训练数据', description: '支撑实体识别与本体映射', placeholder: '请选择当前领域标注训练数据', required: true },
+      { key: 'ontology_classification_system', label: '本体分类体系', description: '可选上传', placeholder: '请选择当前本体分类体系', required: false },
+      { key: 'domain_labeled_training_data', label: '领域标注训练数据', description: '可选上传', placeholder: '请选择当前领域标注训练数据', required: false },
     ],
   },
   'structured-review': {
@@ -104,7 +104,6 @@ const resourceGroups: Record<string, { title: string; description: string; field
   },
 }
 
-const sourceModes = reactive<Record<string, string>>({})
 const uploadedResources = reactive<Record<string, File | null>>({})
 const citationRawReference = ref('')
 const citationParseState = ref<'idle' | 'parsed' | 'partial' | 'empty'>('idle')
@@ -155,16 +154,11 @@ const requestPayload = computed<Record<string, unknown>>(() => {
   }
 
   currentGroup.value?.fields.forEach(field => {
-    // 内置 = 不提交该资源字段，后端使用系统预置资源；仅用户上传时携带文件
-    if (sourceModes[field.key] !== 'upload') return
+    // 直接上传模式（2026-10-15 移除"内置/用户上传"下拉）：选了文件即随请求
+    // 提交；未选文件不提交该字段 → 后端用系统预置资源。资源均为选填，
+    // 无"切了上传却没选文件"的中间态，不再产生 __pending_uploads 标记
     const file = uploadedResources[field.key]
     if (file) payload[field.key] = file
-    else {
-      // 切了"用户上传资源"但尚未选文件：带内部标记供提交校验拦截
-      // （必填资源不能静默回退内置），提交前由 OnlineTester 剔除
-      if (!Array.isArray(payload.__pending_uploads)) payload.__pending_uploads = []
-      ;(payload.__pending_uploads as Array<{ key: string, label: string }>).push({ key: field.key, label: field.label })
-    }
     // 分类知识库索引构建中：构建未完成禁止提交在线测试（2026-09-19 用户定调：
     // 构建中点在线测试要拦截报错提示等待，而不是带内置/词面检索直接跑），
     // 带内部标记供提交校验拦截，提交前由 OnlineTester 剔除
@@ -300,27 +294,27 @@ const resourceSaveError = ref('')
 const resourceSaveNotice = ref('')
 // 各资源字段上传文件的格式与字段说明（与后端 normalize.py 行有效性规则对应，
 // 文案样式与深度聚类锚点上传一致：仅 .json：字段 + 字段）
+// 用户上传格式提示 = 可直接照抄的最小 JSON 示例（2026-10-14 定稿：与官方
+// 测试包字段对齐、归一化层+端到端实测通过；悬浮多行显示，用户改数据即用）
 const resourceFieldHints: Record<string, string> = {
-  clc_labeled_data: '仅 .json：三个字段 clc_code（分类号）+ clc_name（类目名称）+ parent_code（父级分类号，可选）',
-  domain_terminology_library: '仅 .json：canonical（标准术语）+ variants（变体/缩写/同义词）',
-  manually_labeled_training_data: '仅 .json：text（示例文本）+ label（类目名，可不带分类号）',
-  manually_labeled_data: '仅 .json：canonical（标准中文词）+ variants（变体列表）+ canonical_en（标准英文词）+ type（五类之一）',
-  domain_labeled_training_data: '仅 .json：text（示例文本）+ entities（实体数组：text 实体词 + type 用本体类型 code）——教实体边界切法',
-  general_domain_annotated_corpus: '仅 .json：text（示例文本）+ entities（实体数组：text 实体词 + type 四类之一 PERSON/LOCATION/ORGANIZATION/EVENT）',
-  multi_domain_scientific_corpus: '仅 .json：text（示例文本）+ entities（实体数组：text 实体词 + type 五类之一 METHOD/DATASET/INSTRUMENT/THEORY/TOPIC）',
-  training_samples: '仅 .json：编号 + 文本 + 题名',
-  manually_labeled_category_data: '仅 .json：编号 + 人工标注类目标签',
-  domain_classification_rules: '仅 .json：clc_code（分类号）+ clc_name（类目名）+ parent_code（父级分类号，构成三级树）',
-  preprocessed_training_set: '仅 .json：document_title（题目）+ document_text（含引用句的文本）+ intent（分类结果：背景介绍/引入研究方法/结果比较）；reference_entries（参考文献条目）选填',
-  ontology_classification_system: '仅 .json：types（类型数组：code 类型码 + name 中文名 + description 判定标准 + examples 示例词 + standard_terms 标准词簇（term 标准词 + term_en 英文 + variants 变体，命中时输出映射ID）；也可只传平铺词表：标准词 + 英文 + 同义词 + 类别）；领域在请求参数下拉里选',
+  clc_labeled_data: '[\n  {"clc_code":"G818.2","clc_name":"体育馆","parent_code":"G818"}\n]',
+  domain_terminology_library: '[\n  {"canonical":"structural health monitoring","variants":["SHM","structural monitoring"]}\n]',
+  manually_labeled_training_data: '[\n  {"text":"示例文本","label":"类目名"}\n]',
+  manually_labeled_data: '[\n  {"canonical":"卷积神经网络","canonical_en":"convolutional neural network","type":"METHOD","variants":["CNN","卷积网络"]}\n]',
+  domain_labeled_training_data: '[\n  {"text":"钙通道阻滞剂常用于高血压治疗。","entities":[{"text":"钙通道阻滞剂","type":"DRUG_CLASS"}]}\n]',
+  general_domain_annotated_corpus: '[\n  {"text":"刘亭亭在南京使用PEER数据库开展研究。","entities":[{"text":"刘亭亭","type":"PERSON"},{"text":"南京","type":"LOCATION"}]}\n]',
+  multi_domain_scientific_corpus: '[\n  {"text":"本文采用卷积神经网络提取特征。","entities":[{"text":"卷积神经网络","type":"METHOD"}]}\n]',
+  training_samples: '[\n  {"title":"文献题名","text":"文献正文……","category":"人工标注类目"}\n]',
+  manually_labeled_category_data: '[\n  {"document_id":"DOC001","category":"人工标注类目"}\n]',
+  domain_classification_rules: '[\n  {"clc_code":"R318.04","clc_name":"生物信息、生物控制","parent_code":"R318"}\n]',
+  preprocessed_training_set: '[\n  {"document_title":"文献A","document_text":"已有研究表明该方法泛化能力不足[1]。","intent":"用于背景介绍","reference_entries":["[1] 张三. 图像分类方法研究. 情报学报, 2024."]}\n]',
+  ontology_classification_system: '{"types":[\n  {"code":"TREATMENT","name":"治疗方法",\n   "standard_terms":[{"id":"T001","term":"血液净化","term_en":"Blood Purification","variants":["血净"]}]}\n]}',
 }
 function fieldHint(key: string): string {
   // 映射表字段两个工具共用但格式不同（2026-09-19 用户反馈：两种格式混在一条
   // 提示里看不懂"怎么还有关键词"）——按当前工具只显示对应格式
   if (key === 'classification_standard_mapping_table') {
-    return props.toolId === 'en-keyword'
-      ? '仅 .json：term（英文术语）+ zh_term/label（中文标准表达，可带 clc_code）'
-      : '仅 .json：term（英文术语）+ zh_term/label（中文标准表达）'
+    return '[\n  {"term":"structural health monitoring","zh_term":"结构健康监测"}\n]'
   }
   return resourceFieldHints[key] || '仅 .json'
 }
@@ -450,12 +444,8 @@ function clearUploadedResource(key: string) {
 
 
 watch(() => props.toolId, () => {
-  Object.keys(sourceModes).forEach(key => delete sourceModes[key])
   Object.keys(uploadedResources).forEach(key => delete uploadedResources[key])
   Object.keys(resourceProbes).forEach(key => delete resourceProbes[key])
-  currentGroup.value?.fields.forEach(field => {
-    sourceModes[field.key] = 'builtin'
-  })
   citationRawReference.value = ''
   citationParseState.value = 'idle'
   citationReferenceSource.value = 'paste'
@@ -473,7 +463,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
 
 <template>
   <div v-if="toolId === 'rq-detect'" class="settings-card requirement-supplement-card">
-    <div class="field"><label><span class="label-main">文本格式要求</span><small>决定下载结果的文件结构：JSON / 文本清单 / 章节分组文本</small></label><AppSelect v-model="textFormatRequirement" :options="textFormatOptions" /></div>
+    <div class="field"><label><span class="label-main">输出格式要求</span><small>决定下载结果的文件结构：JSON / 文本清单 / 章节分组文本</small></label><AppSelect v-model="textFormatRequirement" :options="textFormatOptions" /></div>
     
   </div>
 
@@ -536,10 +526,9 @@ watchEffect(() => emit('update:payload', requestPayload.value))
     <div class="settings-title"><b>文献元数据</b><span>文献文件需同时提供元数据</span></div>
     <div class="field">
       <label><span class="label-main"><span class="required-mark">*</span> 文献元数据</span></label>
-      <AppSelect v-model="sourceModes.document_metadata" :options="documentMetadataSourceOptions" />
     </div>
-    <div v-if="sourceModes.document_metadata === 'upload'" class="resource-upload-wrap">
-      <label class="resource-upload-zone">
+    <div class="resource-upload-wrap">
+      <label class="resource-upload-zone" :title="fieldHint(field.key)">
         <input :ref="el => setResourceFileInput('document_metadata', el)" type="file" accept=".json,.jsonl,.csv,.xlsx" @change="handleResourceUpload($event, 'document_metadata')" />
         <span>⇧</span><b>{{ uploadedResources['document_metadata']?.name || '点击上传文献元数据' }}</b><small>支持 JSON/JSONL/CSV/XLSX：文献编号（或文件名）+ 题名 + 作者 + 年份 + 来源</small>
       </label>
@@ -561,27 +550,26 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         </div>
         <p v-if="field.description">{{ field.description }}</p>
         <div class="requirement-resource-controls">
-          <AppSelect v-model="sourceModes[field.key]" :options="sourceModeOptions" @change="handleSourceModeChange(field.key)" />
-          <div v-if="sourceModes[field.key] === 'upload'" class="resource-upload-wrap">
-            <label class="resource-upload-zone">
+          <div class="resource-upload-wrap">
+            <label class="resource-upload-zone" :title="fieldHint(field.key)">
               <input :ref="el => setResourceFileInput(field.key, el)" type="file" :accept="field.accept || '.json'" @change="handleResourceUpload($event, field.key)" />
-              <span>⇧</span><b>{{ uploadedResources[field.key]?.name || `点击上传${field.label}` }}</b><small>{{ fieldHint(field.key) }}</small>
+              <span>⇧</span><b>{{ uploadedResources[field.key]?.name || `点击上传${field.label}` }}</b>
             </label>
             <button v-if="uploadedResources[field.key]" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearUploadedResource(field.key)">✕ 取消</button>
             </div>
         </div>
         
-        <p v-if="sourceModes[field.key] === 'upload' && resourceSaveError" class="anchor-format-hint" style="color:#c0392b">{{ resourceSaveError }}</p>
-        <p v-if="sourceModes[field.key] === 'upload' && resourceSaveNotice" class="anchor-format-hint">{{ resourceSaveNotice }}</p>
-        <p v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.status === 'checking'" class="anchor-format-hint">⏳ 正在解析资源文件（结构非标准时将自动用大模型整理）…</p>
-        <p v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.status === 'ready'" class="anchor-format-hint" style="color:#1e8e3e">✓ 资源已就绪{{ resourceProbes[field.key]?.rows != null ? ` · 已解析 ${resourceProbes[field.key]?.rows} 条` : '' }}{{ resourceProbes[field.key]?.normalizedBy === 'glm' ? '（大模型已整理为标准格式，提交时直接复用）' : '' }}</p>
-        <div v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.indexStatus" style="display:flex;align-items:center;gap:10px;padding:4px 0;">
+        <p v-if="resourceSaveError" class="anchor-format-hint" style="color:#c0392b">{{ resourceSaveError }}</p>
+        <p v-if="resourceSaveNotice" class="anchor-format-hint">{{ resourceSaveNotice }}</p>
+        <p v-if="resourceProbes[field.key]?.status === 'checking'" class="anchor-format-hint">⏳ 正在解析资源文件（结构非标准时将自动用大模型整理）…</p>
+        <p v-if="resourceProbes[field.key]?.status === 'ready'" class="anchor-format-hint" style="color:#1e8e3e">✓ 资源已就绪{{ resourceProbes[field.key]?.rows != null ? ` · 已解析 ${resourceProbes[field.key]?.rows} 条` : '' }}{{ resourceProbes[field.key]?.normalizedBy === 'glm' ? '（大模型已整理为标准格式，提交时直接复用）' : '' }}</p>
+        <div v-if="resourceProbes[field.key]?.indexStatus" style="display:flex;align-items:center;gap:10px;padding:4px 0;">
           <span class="parse-ring" :data-state="resourceProbes[field.key]?.indexStatus === 'done' ? 'done' : resourceProbes[field.key]?.indexStatus === 'failed' ? 'error' : 'parsing'" :style="`--p:${resourceProbes[field.key]?.indexProgress || 0}%`"><i>{{ resourceProbes[field.key]?.indexStatus === 'done' ? '✓' : resourceProbes[field.key]?.indexStatus === 'failed' ? '✗' : (resourceProbes[field.key]?.indexProgress || 0) + '%' }}</i></span>
           <span v-if="resourceProbes[field.key]?.indexStatus === 'done'" class="parse-text ok clc-progress-text">分类知识库构建完成，提交即用用户体系分类</span>
           <span v-else-if="resourceProbes[field.key]?.indexStatus === 'failed'" class="parse-text err clc-progress-text">分类知识库构建失败，可重新选文件重试</span>
           <span v-else class="parse-text clc-progress-text">构建分类知识库（bge 向量编码）{{ resourceProbes[field.key]?.indexProgress || 0 }}% —— 构建完成前暂不能提交在线测试</span>
         </div>
-        <p v-if="sourceModes[field.key] === 'upload' && resourceProbes[field.key]?.status === 'error'" class="anchor-format-hint" style="color:#c0392b">✕ {{ resourceProbes[field.key]?.error }}</p>
+        <p v-if="resourceProbes[field.key]?.status === 'error'" class="anchor-format-hint" style="color:#c0392b">✕ {{ resourceProbes[field.key]?.error }}</p>
       </article>
     </div>
   </div>
