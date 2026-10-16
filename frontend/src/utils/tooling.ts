@@ -226,7 +226,7 @@ export const CUSTOM_BATCH_PAYLOADS: Record<string, Record<string, unknown>> = {
 }
 
 export function payloadFor(tool: ToolDefinition, mode: InputMode): Record<string, unknown> {
-  return alignDemoPayloadWithApi(tool.requirementKey || '', mode, stripEmptyResourceDescriptors(payloadForImpl(tool, mode)))
+  return alignDemoPayloadWithApi(tool, mode, stripEmptyResourceDescriptors(payloadForImpl(tool, mode)))
 }
 
 /** 调用示例载荷与在线测试实际提交严格对齐（2026-10-15 用户定稿）。演示载荷是
@@ -236,8 +236,12 @@ export function payloadFor(tool: ToolDefinition, mode: InputMode): Record<string
  *  ② citation 批量文本：citation_metadata 实为"每篇一组"的嵌套数组（在线测试
  *     按篇构建），旧示例是平铺多条；citation_sentence_and_context 剔除 id 键；
  *  ③ 通用工具批量文本：主字段对象数组逐条补 title（在线测试每条含 title，
- *     与 document_title 数组按序对应，fund-move 的 project_name 同理在对象内） */
-function alignDemoPayloadWithApi(toolId: string, mode: InputMode, payload: Record<string, unknown>) {
+ *     与 document_title 数组按序对应，fund-move 的 project_name 同理在对象内）；
+ *  ④ 输入↔输出自洽（2026-10-16 用户反馈）：载荷文本与响应文本是两份独立快照
+ *     会漂移（如 zh-abstract 载荷是"智慧体育"文、响应 abstract 是另一篇）——
+ *     响应示例回显的 document.abstract 是权威输入，主文本字段/题目与之同步 */
+function alignDemoPayloadWithApi(tool: ToolDefinition, mode: InputMode, payload: Record<string, unknown>) {
+  const toolId = tool.requirementKey || ''
   const out: Record<string, unknown> = { ...payload }
   delete out.input_type
   if (mode === 'batch-text') {
@@ -261,7 +265,87 @@ function alignDemoPayloadWithApi(toolId: string, mode: InputMode, payload: Recor
       }
     }
   }
+  syncCitationCardsWithFullText(toolId, mode, out)
+  syncPayloadTextWithResponse(tool, mode, out)
   return out
+}
+
+/** citation 文本/批量文本：引用句卡片从全文重建（2026-10-16 修复）。旧演示
+ *  载荷的卡片是另一份快照的句子（中文卡片配英文全文，[12] 标记全文里根本没有），
+ *  而后端优先消费 citation_sentence_and_context → 响应回显的句子与全文脱节。
+ *  在线测试的真实行为是"从粘贴全文自动提取引用句卡片"，示例同款重建：按句
+ *  切分，含 [n] 标记的句子生成卡片（上文/下文取相邻句），载荷内部自洽。 */
+function syncCitationCardsWithFullText(toolId: string, mode: InputMode, payload: Record<string, unknown>) {
+  if (!toolId.startsWith('citation-') || (mode !== 'text' && mode !== 'batch-text')) return
+  const fullText = payload.scientific_document_full_text
+  if (typeof fullText !== 'string' || !fullText.trim()) return
+  const sentences = fullText.split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
+  const markerOf = (sentence: string) => sentence.match(/[\[［]\s*\d+(?:\s*[-–,，]\s*\d+)*\s*[\]］]/)?.[0] || ''
+  const cards: Array<Record<string, unknown>> = []
+  sentences.forEach((sentence, i) => {
+    const marker = markerOf(sentence)
+    if (!marker) return
+    cards.push({
+      citation_sentence: sentence,
+      previous_context: i > 0 ? sentences[i - 1] : '（文档开头，无上文）',
+      next_context: i + 1 < sentences.length ? sentences[i + 1] : '（文档结尾，无下文）',
+      citation_marker: marker,
+    })
+  })
+  if (cards.length) payload.citation_sentence_and_context = cards
+}
+
+/** 主文本字段探测：载荷中最长的字符串值（≥40 字，排除题目/参数类短字段） */
+function demoMainTextField(payload: Record<string, unknown>): string | null {
+  let mainKey: string | null = null
+  let mainLen = 39
+  for (const [key, value] of Object.entries(payload)) {
+    if (typeof value !== 'string' || value.length <= mainLen) continue
+    mainKey = key
+    mainLen = value.length
+  }
+  return mainKey
+}
+
+const isPlainEchoText = (value: unknown): value is string =>
+  typeof value === 'string' && value.trim().length >= 40 && !/^\s*[[{]/.test(value)
+
+function syncPayloadTextWithResponse(tool: ToolDefinition, mode: InputMode, payload: Record<string, unknown>) {
+  let data: any
+  try { data = (demoResponseForMode(tool.requirementKey || '', tool, mode) as any)?.data } catch { return }
+  if (!data || typeof data !== 'object') return
+  const titleKeys = ['document_title', 'project_name']
+  if (mode === 'batch-text' && Array.isArray(data.results)) {
+    // 批量：逐条与 results[i].result 回显文本对齐（回显为 JSON 串的旧快照跳过）
+    const abstracts = (data.results as Array<Record<string, unknown>>).map(item => {
+      const result = (item as any)?.result
+      return result?.document?.abstract ?? null
+    })
+    for (const [key, value] of Object.entries(payload)) {
+      if (!Array.isArray(value) || !value.length || typeof value[0] !== 'object') continue
+      payload[key] = value.map((item, i) => {
+        if (!item || typeof item !== 'object') return item
+        const abstract = abstracts[i]
+        if (!isPlainEchoText(abstract)) return item
+        const text = (item as Record<string, unknown>).text
+        return typeof text === 'string' && text !== abstract ? { ...item, text: abstract } : item
+      })
+    }
+    return
+  }
+  if (Array.isArray(data.results) || Array.isArray(data)) return
+  const abstract = data.document?.abstract
+  const echoTitle = typeof data.document_title === 'string' && data.document_title.trim()
+    ? data.document_title : (typeof data.document?.title === 'string' && data.document.title.trim() ? data.document.title : null)
+  if (isPlainEchoText(abstract)) {
+    const mainKey = demoMainTextField(payload)
+    if (mainKey && payload[mainKey] !== abstract) payload[mainKey] = abstract
+  }
+  if (echoTitle) {
+    for (const key of titleKeys) {
+      if (typeof payload[key] === 'string' && payload[key] !== echoTitle) payload[key] = echoTitle
+    }
+  }
 }
 
 function payloadForImpl(tool: ToolDefinition, mode: InputMode): Record<string, unknown> {

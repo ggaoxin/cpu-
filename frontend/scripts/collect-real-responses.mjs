@@ -110,10 +110,28 @@ async function main() {
       result = JSON.parse(existing)
     } catch { /* 全新采集 */ }
   }
-  // text 模式
+  // text 模式（2026-10-16 修复）：载荷必须与前端"调用示例"同源（payloadFor），
+  // 否则快照回显的文本与展示的输入文本不同篇——甲方可复现无从谈起。
+  // 资源字段仍用 demoApiPayloadForTool 的正确 resource_id 覆盖（payloadFor
+  // 会把资源描述符拆成空占位剔除）。
+  const textPayloadFor = toolId => {
+    const tool = tools[toolId]
+    const base = payloadFor(tool, 'text')
+    const demo = demoApiPayloadForTool(toolId) || {}
+    const payload = { ...base }
+    for (const key of RESOURCE_KEYS) {
+      if (demo[key] !== undefined) {
+        payload[key] = demo[key]
+        delete payload[`${key}.source`]
+        delete payload[`${key}.resource_id`]
+        delete payload[`${key}.file`]
+      }
+    }
+    return payload
+  }
   for (const id of targetTextIds) {
     const tool = tools[id]
-    const payload = demoApiPayloadForTool(id)
+    const payload = textPayloadFor(id)
     result[id] = result[id] || {}
     result[id].text = await callEndpoint(tool.textEndpoint, payload, `${id}/text`)
   }
