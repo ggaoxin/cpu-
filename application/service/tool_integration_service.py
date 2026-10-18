@@ -1162,6 +1162,22 @@ class ToolIntegrationService:
         if files:
             items: List[InputItem] = []
             metadata = payload.get("document_metadata")
+            # 引用工具批量文件（2026-10-18 用户定稿：与单文件同体验）：前端解析后
+            # 逐文件提取的引用句卡片按文件顺序对位（citation_contexts_by_file 为
+            # 数组的数组，外层下标=文件序）——挂到 item source，_semantic_request
+            # 的 citation 分支按信任卡片路径消费
+            _citation_cards_by_file = (
+                payload.get("citation_contexts_by_file")
+                if contract.tool_id.startswith("citation-") and isinstance(payload.get("citation_contexts_by_file"), list)
+                else None
+            )
+            # 逐文件引用元数据（2026-10-18）：各文件解析框自带的元数据编辑区，
+            # citation_metadata_by_file 数组按文件顺序对位（元素=该文件的条目数组）
+            _citation_meta_by_file = (
+                payload.get("citation_metadata_by_file")
+                if contract.tool_id.startswith("citation-") and isinstance(payload.get("citation_metadata_by_file"), list)
+                else None
+            )
             for index, value in enumerate(files):
                 path = value.get("path")
                 text = path or value.get("text", "")
@@ -1177,6 +1193,12 @@ class ToolIntegrationService:
                     "title": value.get("title"),
                     **item_metadata,
                 }))
+                if _citation_cards_by_file and index < len(_citation_cards_by_file) \
+                        and isinstance(_citation_cards_by_file[index], list) and _citation_cards_by_file[index]:
+                    items[-1].source["citation_contexts"] = _citation_cards_by_file[index]
+                if _citation_meta_by_file and index < len(_citation_meta_by_file) \
+                        and isinstance(_citation_meta_by_file[index], list) and _citation_meta_by_file[index]:
+                    items[-1].source["citation_metadata"] = _citation_meta_by_file[index]
             return items
 
         if payload.get("input_type") == "upstream_records":
@@ -1371,8 +1393,12 @@ class ToolIntegrationService:
             effective_params["_source_pdf_path"] = source_pdf_path
         if contract.tool_id.startswith("citation-"):
             context = group[0].source.get("citation_context")
+            contexts_from_source = group[0].source.get("citation_contexts")
             metadata = group[0].source.get("citation_metadata")
-            if context:
+            if contexts_from_source:
+                # 批量文件：前端逐文件提取的引用句卡片（2026-10-18，信任卡片路径）
+                effective_params["citation_sentence_and_context"] = contexts_from_source
+            elif context:
                 effective_params["citation_sentence_and_context"] = [context]
             elif str(payload.get("input_type") or "") in {"file", "files"} and not effective_params.get("citation_sentence_and_context"):
                 # 文件模式内置 PDF 完整解析链路：上传 PDF（路径透传延迟解析或直传文本）

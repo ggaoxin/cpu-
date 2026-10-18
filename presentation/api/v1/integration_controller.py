@@ -1521,7 +1521,11 @@ async def parse_files(
                     break
         except Exception:
             _title = ""
-        results.append({"parse_id": parse_id, "file_name": item.get("file_name"), "char_count": len(text), "parsed_title": _title})
+        results.append({"parse_id": parse_id, "file_name": item.get("file_name"), "char_count": len(text), "parsed_title": _title,
+                        # 引用工具带解析文本（2026-10-18 用户定稿：文件解析后前端
+                        # 自动提取引用句卡片，提交走信任卡片路径——输入侧卡片数=
+                        # 输出侧引用句数在文件模式同样成立）
+                        **({"text": text} if effective_tool in CITATION_TOOLS else {})})
     return {"code": 0, "message": "解析完成", "data": {"tool_id": effective_tool, "results": results}}
 
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import type { InputMode, ToolDefinition } from '../types'
-import { endpointFor, modesFor, normalizeCitationLinebreaks, pretty, requestPayloadFor, supportsVisualization } from '../utils/tooling'
+import { endpointFor, filterNonCitationLines, looksLikeNonCitationLine, modesFor, normalizeCitationLinebreaks, pretty, requestPayloadFor, stripReferenceSection, supportsVisualization } from '../utils/tooling'
 import { ApiRequestError, apiUrl, executeToolRequest, listCompatibleHistory, listDictionaries, listClusterCollections, listDocumentCollections, listSemanticResources, parseCitationMetadata, saveDictionary } from '../services/api'
 import { requirementInputsFor } from '../data/requirement-contracts'
 import { copyText } from '../utils/clipboard'
@@ -160,6 +160,8 @@ type UploadedFileItem = {
   parseId?: string
   parsedChars?: number
   parseError?: string
+  // 引用工具：解析文本（/files/parse 对 citation 工具回传），供前端自动提取引用句卡片
+  parsedText?: string
   // 网络中断自动重试计数（2026-09-22 用户定稿：断网 10 秒窗口 × 3 次重试）
   netRetries?: number
 }
@@ -184,13 +186,115 @@ const citationSingle = reactive({ documentText: '' })
 type CitationCard = { id: number; marker: string; sentence: string; subSpan: string; previousContext: string; nextContext: string }
 const citationCards = reactive<CitationCard[]>([])
 let citationCardSeq = 0
+// 批量文件：逐文件的引用句卡片（2026-10-18 用户定稿：与单文件同体验——解析完成
+// 自动提取，可核对修改；键=uploadedFiles 的 item.id，提交按文件顺序对位）
+const fileCitationCards = reactive<Record<string, CitationCard[]>>({})
+// 批量文件：逐文件的引用元数据（2026-10-18 用户定稿：每个文件的解析框各带
+// 引用元数据区——粘贴该文件参考文献条目自动解析，可编辑；按文件对位提交）
+type FileMetaEntry = { reference_index: number | null; title: string; year: string; authorsText: string; venue: string; doi: string }
+const fileCitationMeta = reactive<Record<string, { raw: string; entries: FileMetaEntry[]; parsing: boolean; error: string; uploadName?: string; sourceMode: 'paste' | 'upload' }>>({})
+const fileMetaTimers: Record<string, ReturnType<typeof setTimeout>> = {}
+function ensureFileMeta(fileId: string) {
+  if (!fileCitationMeta[fileId]) fileCitationMeta[fileId] = { raw: '', entries: [], parsing: false, error: '', sourceMode: 'paste' }
+  return fileCitationMeta[fileId]
+}
+// 上传参考文献条目文件（2026-10-18 用户定稿：与其他输入模式的"粘贴或上传"一致）
+async function handleFileMetaUpload(fileId: string, event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  if (!/\.(txt|json|jsonl|csv)$/i.test(file.name)) {
+    showToast('仅支持 TXT、JSON、JSONL、CSV 格式的条目文件')
+    input.value = ''
+    return
+  }
+  const state = ensureFileMeta(fileId)
+  try {
+    state.raw = (await file.text()).trim()
+    state.uploadName = file.name
+    await parseFileMeta(fileId)
+  } catch {
+    showToast('条目文件读取失败，请重试')
+  } finally {
+    input.value = ''
+  }
+}
+function onFileMetaInput(fileId: string) {
+  if (fileMetaTimers[fileId]) clearTimeout(fileMetaTimers[fileId])
+  fileMetaTimers[fileId] = setTimeout(() => { void parseFileMeta(fileId) }, 700)
+}
+async function parseFileMeta(fileId: string) {
+  const state = ensureFileMeta(fileId)
+  const raw = state.raw.trim()
+  if (!raw) {
+    fileCitationMeta[fileId] = { ...state, entries: [], error: '' }
+    return
+  }
+  fileCitationMeta[fileId] = { ...state, parsing: true, error: '' }
+  try {
+    const response = await parseCitationMetadata(raw)
+    const entries = (response.data || []) as Array<Record<string, unknown>>
+    const mapped = entries.map(entry => ({
+      reference_index: (entry.reference_index as number) ?? null,
+      title: String(entry.title || ''),
+      year: entry.year == null ? '' : String(entry.year),
+      authorsText: Array.isArray(entry.authors) ? entry.authors.join('; ') : String(entry.authors || ''),
+      venue: String(entry.venue || ''),
+      doi: String(entry.doi || ''),
+    }))
+    // 整体替换键值触发重渲染（2026-10-18 实测：对返回对象做属性级赋值时，
+    // v-for 源表达式 ensureFileMeta(id).entries 的依赖未被调度——数据在但
+    // DOM 不更新；键级替换稳定触发）
+    fileCitationMeta[fileId] = { ...state, parsing: false, error: mapped.length ? '' : '未能解析出条目，请检查格式（每行一条）', entries: mapped }
+  } catch (error) {
+    fileCitationMeta[fileId] = { ...state, parsing: false, error: error instanceof Error ? error.message : '解析失败' }
+  }
+}
+function removeFileMetaEntry(fileId: string, index: number) {
+  const state = ensureFileMeta(fileId)
+  state.entries.splice(index, 1)
+}
+
+// 从任意文本提取整句引用卡（单文本/文件共用核心；返回新数组不落全局）
+function extractCitationCardsFrom(rawText: string): CitationCard[] {
+  const text = String(rawText || '').trim()
+  if (!text) return []
+  const sentences = normalizeCitationLinebreaks(filterNonCitationLines(stripReferenceSection(text))).split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
+  const cards: CitationCard[] = []
+  const seen = new Set<string>()
+  sentences.forEach((s, i) => {
+    if (looksLikeNonCitationLine(s)) return
+    const key = s.replace(/\s+/g, '')
+    if (seen.has(key)) return
+    const parts = splitSentenceByMarkers(s)
+    if (!parts.length) return
+    seen.add(key)
+    const markers = [...new Set(parts.map(part => part.marker))]
+    cards.push({
+      id: ++citationCardSeq,
+      marker: markers.join(' '),
+      sentence: s,
+      subSpan: s.replace(/[\[［]\d+(?:\s*[,，\-–~]\s*\d+)*[\]］]/g, '').replace(/\s+/g, ' ').trim(),
+      previousContext: i > 0 ? sentences[i - 1] : '（文档开头，无上文）',
+      nextContext: i + 1 < sentences.length ? sentences[i + 1] : '（文档结尾，无下文）',
+    })
+  })
+  return cards
+}
+
+function removeFileCitationCard(fileId: string, cardId: number) {
+  const list = fileCitationCards[fileId]
+  if (!list) return
+  const index = list.findIndex(c => c.id === cardId)
+  if (index >= 0) list.splice(index, 1)
+}
 
 // 句内引用标记探测：返回句中全部文献编号及其所在子句片段。2026-10-18 用户定稿：
 // 引用句以**完整一整句**为一条（与后端同句合并口径一致——此前按编号逐个拆卡，
 // 输入侧解析 20 条 vs 输出侧合并后 7 条对不上）；marker 用于展示与提交，
 // subSpan 为整句去标记后的语义片段。
 function splitSentenceByMarkers(sentence: string): Array<{ marker: string; subSpan: string }> {
-  const markerRe = /\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/g
+  const markerRe = /[\[［]\d+(?:\s*[,，\-–~]\s*\d+)*[\]］]/g
   const matches = Array.from(sentence.matchAll(markerRe))
   if (!matches.length) return []
   // 子句分段（记录起止位置）：引用标记归属其起点所在的子句段；
@@ -241,7 +345,12 @@ let citationCardsEdited = false   // 用户增删改过卡片后不再自动覆�
 let citationCardsAuto = false     // 当前卡片来自自动提取（源文本变更时随之失效清理）
 const citationExtractedCount = ref(0)
 function autoExtractCitation() {
-  const text = citationSingle.documentText.trim()
+  autoExtractCitationFromText(citationSingle.documentText)
+}
+// 引用句卡片提取核心（2026-10-18 抽出）：单文本输入与文件解析文本共用——
+// 文件模式解析完成即调用（自动出卡，不展示全文、无需点按钮）
+function autoExtractCitationFromText(rawText: string) {
+  const text = String(rawText || '').trim()
   // 文本清空 → 已解析的引用句卡片同步清空（2026-09-15 用户定调）
   if (!text) {
     citationExtractedCount.value = 0
@@ -249,27 +358,10 @@ function autoExtractCitation() {
     citationCardsAuto = false
     return
   }
-  const sentences = normalizeCitationLinebreaks(text).split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
-  const cards: CitationCard[] = []
-  sentences.forEach((s, i) => {
-    // 完整一整句 = 一条引用句（2026-10-18 用户定稿）：句内多个编号（[1][2] 或
-    // 复合 [1,2]）合并为一条卡，marker 串接全部编号——与后端同句合并同口径，
-    // 输入侧解析条数 = 输出侧引用句总数
-    const parts = splitSentenceByMarkers(s)
-    if (!parts.length) return
-    const markers = [...new Set(parts.map(part => part.marker))]
-    cards.push({
-      id: ++citationCardSeq,
-      marker: markers.join(' '),
-      sentence: s,
-      subSpan: s.replace(/\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/g, '').replace(/\s+/g, ' ').trim(),
-      previousContext: i > 0 ? sentences[i - 1] : '（文档开头，无上文）',
-      nextContext: i + 1 < sentences.length ? sentences[i + 1] : '（文档结尾，无下文）',
-    })
-  })
-  citationExtractedCount.value = cards.length
-  if (!cards.length) return
-  citationCards.splice(0, citationCards.length, ...cards)
+  const extracted = extractCitationCardsFrom(text)
+  citationExtractedCount.value = extracted.length
+  if (!extracted.length) return
+  citationCards.splice(0, citationCards.length, ...extracted)
   citationCardsAuto = true
 }
 watch(() => citationSingle.documentText, () => {
@@ -301,34 +393,24 @@ function forceAutoExtractCitation() {
 function autoExtractBatchCitation(item: CitationBatchItem) {
   const text = (item.documentText || '').trim()
   if (!text) { showToast('请先填写本条的文献文本，再自动提取引用句。'); return }
-  const sentences = normalizeCitationLinebreaks(text).split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
-  // 完整一整句 = 一条引用句（2026-10-18 用户定稿，与单文本同口径）
-  const hits: Array<{ s: string, i: number, marker: string, subSpan: string }> = []
-  sentences.forEach((s, i) => {
-    const parts = splitSentenceByMarkers(s)
-    if (!parts.length) return
-    const markers = [...new Set(parts.map(part => part.marker))]
-    hits.push({
-      s, i,
-      marker: markers.join(' '),
-      subSpan: s.replace(/\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/g, '').replace(/\s+/g, ' ').trim(),
-    })
-  })
-  if (!hits.length) { showToast('本条文献文本中未发现引用标记（如 [1]），请手动填写引用句。'); return }
+  // 与单文本/单文件/批量文件同一条提取管线（2026-10-18 用户定稿：四模式一致，
+  // 不再各写一份——此前这里是重复实现，行为会随时间漂移）
+  const cards = extractCitationCardsFrom(text)
+  if (!cards.length) { showToast('本条文献文本中未发现引用标记（如 [1]），请手动填写引用句。'); return }
   requestError.value = ''
-  const fill = (target: CitationBatchItem, hit: { s: string, i: number, marker: string, subSpan: string }) => {
-    target.citationSentence = hit.s
-    target.previousContext = hit.i > 0 ? sentences[hit.i - 1] : '（文档开头，无上文）'
-    target.nextContext = hit.i + 1 < sentences.length ? sentences[hit.i + 1] : '（文档结尾，无下文）'
-    target.citationMarker = hit.marker
-    target.subSpan = hit.subSpan
+  const fill = (target: CitationBatchItem, card: CitationCard) => {
+    target.citationSentence = card.sentence
+    target.previousContext = card.previousContext
+    target.nextContext = card.nextContext
+    target.citationMarker = card.marker
+    target.subSpan = card.subSpan
   }
-  fill(item, hits[0])
+  fill(item, cards[0])
   // 清掉本卡之前展开的旧卡片（重复点击幂等），再按剩余引用句展开
   for (let i = citationBatchItems.length - 1; i >= 0; i -= 1) {
     if (citationBatchItems[i].sourceId === item.id) citationBatchItems.splice(i, 1)
   }
-  for (const hit of hits.slice(1)) {
+  for (const extracted of cards.slice(1)) {
     const card: CitationBatchItem = {
       id: ++batchItemSequence,
       title: item.title,
@@ -344,7 +426,7 @@ function autoExtractBatchCitation(item: CitationBatchItem) {
       refsParsing: false,
       refsError: '',
     }
-    fill(card, hit)
+    fill(card, extracted)
     citationBatchItems.push(card)
   }
 }
@@ -573,10 +655,45 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
     } else if (mode.value === 'file') {
       // citation-* 的主字段 citation_sentence_and_context 是结构化数据，不能作
       // 文件上传字段名（后端 /file 按 primary 字段名找不到文件会报「缺少上传
-      // 字段」）；文件统一走通用上传字段，PDF 解析与引用句拆分由后端内置链路完成
+      // 字段」）；文件统一走通用上传字段，PDF 解析与引用句拆分由后端内置链路完成。
+      // 2026-10-18：解析完成后前端已自动提取引用句卡片——有卡片时随请求提交
+      // （信任卡片路径，输出引用句数=卡片数）；无卡片走后端自动抽取
       values.file = uploadedFiles[0]?.file || null
+      if (citationCards.length) {
+        values.citation_sentence_and_context = citationCards.map(card => ({
+          citation_sentence: card.sentence,
+          previous_context: card.previousContext,
+          next_context: card.nextContext,
+          citation_marker: card.marker || undefined,
+          citation_sub_span: card.subSpan || undefined,
+        }))
+      }
     } else if (mode.value === 'batch') {
       values.files = uploadedFiles.map(item => item.file)
+      // 批量文件（2026-10-18 用户定稿：与单文件同体验）：逐文件提取的引用句卡片
+      // 按文件顺序对位提交（数组的数组，外层下标=文件序）；无卡片的文件给空数组
+      // （后端对该文件走自动抽取兜底）
+      const cardToFile = (card: CitationCard) => ({
+        citation_sentence: card.sentence,
+        previous_context: card.previousContext,
+        next_context: card.nextContext,
+        citation_marker: card.marker || undefined,
+        citation_sub_span: card.subSpan || undefined,
+      })
+      values.citation_contexts_by_file = uploadedFiles.map(item => (fileCitationCards[item.id] || []).map(cardToFile))
+      // 逐文件引用元数据（与文本模式字段同构，按文件顺序对位）
+      const metaEntryToPayload = (entry: FileMetaEntry) => ({
+        citation_marker: entry.reference_index ? `[${entry.reference_index}]` : '',
+        reference_index: entry.reference_index,
+        authors: entry.authorsText.split(/[;；,，]/).map(s => s.trim()).filter(Boolean),
+        title: entry.title,
+        work_name: entry.title,
+        publication_year: entry.year,
+        year: entry.year,
+        venue: entry.venue,
+        doi: entry.doi,
+      })
+      values.citation_metadata_by_file = uploadedFiles.map(item => (fileCitationMeta[item.id]?.entries || []).map(metaEntryToPayload))
     }
     return values
   }
@@ -899,6 +1016,13 @@ watch(mode, (next, previous) => {
     docs.splice(0)
   } else if (previous === 'file' || previous === 'batch') {
     uploadedFiles.splice(0)
+    // 文件模式自动提取的引用句卡片随文件一并失效（2026-10-18）
+    if (citationCardsAuto) {
+      citationCards.splice(0, citationCards.length)
+      citationExtractedCount.value = 0
+      citationCardsAuto = false
+    }
+    Object.keys(fileCitationCards).forEach(key => delete fileCitationCards[key])
   } else if (previous === 'collection') {
     selectedCollectionId.value = ''
     selectedClusterTaskId.value = ''
@@ -1285,11 +1409,22 @@ function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
           item.parseId = row.parse_id
           item.parsedChars = row.char_count
           item.parsedTitle = row.parsed_title || ''
+          item.parsedText = typeof row.text === 'string' ? row.text : ''
           // 自动题名：解析出的论文题名覆盖文件名兜底值（用户可再改）
           if (item.parsedTitle && (!item.title || item.title === item.name)) {
             item.title = item.parsedTitle
           }
           item.parseState = 'done'
+          // 引用工具单文件（2026-10-18 用户定稿）：解析完成即自动提取引用句
+          // 卡片（无需用户点按钮、不展示文献全文），卡片可核对修改后提交
+          if (props.toolId.startsWith('citation-') && mode.value === 'file' && item.parsedText) {
+            autoExtractCitationFromText(item.parsedText)
+          }
+          // 引用工具批量文件（2026-10-18）：每篇解析完成即提取该篇卡片（对位存储）
+          if (props.toolId.startsWith('citation-') && mode.value === 'batch' && item.parsedText) {
+            fileCitationCards[item.id] = extractCitationCardsFrom(item.parsedText)
+            ensureFileMeta(item.id)   // 该文件的引用元数据编辑区状态就位
+          }
         } else {
           item.parseState = 'error'
           item.parseError = body?.message || '解析失败'
@@ -1316,6 +1451,7 @@ function retryParse(item: UploadedFileItem) {
 function removeUploadedFile(id: string) {
   const index = uploadedFiles.findIndex(item => item.id === id)
   if (index >= 0) uploadedFiles.splice(index, 1)
+  delete fileCitationCards[id]   // 引用工具批量文件：卡片随文件移除
 }
 
 function formatFileSize(size: number) {
@@ -2493,6 +2629,16 @@ function downloadResult() {
           </template>
           <template v-else-if="mode === 'file' && toolId !== 'relation-extract'">
             <div class="field single-file-field"><label><span class="label-main"><span class="required-mark">*</span> {{ textInputLabel }}文件</span><small>本次只处理一个文件</small></label><label class="upload-zone single-file-upload-zone" @dragover.prevent @drop.prevent="handleFileDrop($event, false)"><input type="file" accept=".pdf,.docx,.txt" @change="handleFileSelection($event, false)" /><span class="upload-icon">⇧</span><b>选择一个文件或拖拽到此处</b><small>支持 PDF、DOCX、TXT，单文件最大 50 MB</small></label><div v-if="uploadedFiles.length" class="selected-file-list single-file-list"><article v-for="item in uploadedFiles.slice(0,1)" :key="item.id" class="selected-file-row"><i>1</i><div class="file-name-cell"><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }}</small></div><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">{{ parseFailLabel(item) }}，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article></div></div>
+            <!-- 引用工具单文件（2026-10-18 用户定稿）：解析完成即自动提取引用句卡片，
+                 不展示文献全文；卡片可核对修改，提交走信任卡片路径 -->
+            <div v-if="toolId.startsWith('citation-') && citationCards.length" class="citation-structured-input citation-file-cards-v759">
+              <div class="field"><label><span class="label-main citation-label"><span class="required-mark">*</span> 引用句解析</span><small>已从解析文本自动提取 {{ citationExtractedCount }} 条引用句（完整一整句为一条），可核对修改后提交</small></label></div>
+              <div v-for="(card, index) in citationCards" :key="card.id" class="document-card citation-card">
+                <div class="document-card-head"><b>引用句 {{ index + 1 }}</b><button class="ghost-btn danger" type="button" @click="removeCitationCard(card.id)">删除</button></div>
+                <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span></label><textarea v-model="card.sentence" class="textarea compact" placeholder="包含引文标记的引用句" @input="markCitationCardsEdited"></textarea></div>
+                <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="card.previousContext" class="textarea compact citation-context-area" placeholder="引用句前文" @input="markCitationCardsEdited"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="card.nextContext" class="textarea compact citation-context-area" placeholder="引用句后文" @input="markCitationCardsEdited"></textarea></div></div>
+              </div>
+            </div>
           </template>
           <template v-else-if="mode === 'batch' && toolId !== 'relation-extract'">
             <div class="special-panel batch-file-panel">
@@ -2534,6 +2680,48 @@ function downloadResult() {
                 <template v-else>
                   <article v-for="(item,index) in uploadedFiles" :key="item.id" class="selected-file-row"><i>{{ index + 1 }}</i><div class="file-name-cell"><b>{{ item.name }}</b><small>{{ formatFileSize(item.size) }}</small></div><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">{{ parseFailLabel(item) }}，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></article>
                 </template>
+              </div>
+              <!-- 引用工具批量文件（2026-10-18 用户定稿）：引用句解析独立于待处理
+                   文件队列——每篇解析完成自动提取整句卡片，可核对修改后提交；
+                   提交按文件顺序对位走信任卡片路径 -->
+              <!-- 每个文件一个独立的引用句解析框（2026-10-18 用户定稿：批量 N 个
+                   文件 = N 个框，分别展示各文件的解析结果，不混在一个框里） -->
+              <div v-for="item in uploadedFiles.filter(f => fileCitationCards[f.id] && fileCitationCards[f.id].length)" :key="item.id" class="special-panel citation-batch-parse-panel-v759">
+                <div class="special-panel-head citation-file-panel-title-v759"><strong>引用句解析</strong><span class="citation-file-name-v759" :title="item.name">{{ item.name }}（{{ fileCitationCards[item.id].length }} 条）</span></div>
+                <div class="citation-structured-input citation-file-cards-v759">
+                  <div v-for="(card, cIndex) in fileCitationCards[item.id]" :key="card.id" class="document-card citation-card">
+                    <div class="document-card-head"><b>引用句 {{ cIndex + 1 }}</b><button class="ghost-btn danger" type="button" @click="removeFileCitationCard(item.id, card.id)">删除</button></div>
+                    <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句文本</span></label><textarea v-model="card.sentence" class="textarea compact" placeholder="包含引文标记的引用句"></textarea></div>
+                    <div class="two-column"><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句上文</span></label><textarea v-model="card.previousContext" class="textarea compact citation-context-area" placeholder="引用句前文"></textarea></div><div class="field"><label><span class="label-main"><span class="required-mark">*</span> 引用句下文</span></label><textarea v-model="card.nextContext" class="textarea compact citation-context-area" placeholder="引用句后文"></textarea></div></div>
+                  </div>
+                  <!-- 该文件的引用元数据（2026-10-18 用户定稿：各文件自带元数据区，
+                       粘贴或上传条目，与其他输入模式一致） -->
+                  <div class="settings-title citation-file-meta-title-v759"><b>引用元数据</b><span>选填；粘贴或上传该文件的参考文献条目（每行一条）自动解析</span></div>
+                  <div class="citation-file-meta-input-row-v759">
+                    <!-- 与单文本"被引文献元数据"同款：粘贴条目 / 上传条目 切换 -->
+                    <div class="citation-reference-source-switch" role="radiogroup" :aria-label="item.name + ' 参考文献条目提供方式'">
+                      <button type="button" :class="{ active: ensureFileMeta(item.id).sourceMode === 'paste' }" @click="ensureFileMeta(item.id).sourceMode = 'paste'">粘贴条目</button>
+                      <button type="button" :class="{ active: ensureFileMeta(item.id).sourceMode === 'upload' }" @click="ensureFileMeta(item.id).sourceMode = 'upload'">上传条目</button>
+                    </div>
+                    <div v-if="ensureFileMeta(item.id).sourceMode === 'paste'" class="field full">
+                      <textarea :value="ensureFileMeta(item.id).raw" class="textarea compact" rows="3" placeholder="每行一条参考文献条目，自动解析为引用元数据" @input="(e: Event) => { ensureFileMeta(item.id).raw = (e.target as HTMLTextAreaElement).value; onFileMetaInput(item.id) }"></textarea>
+                    </div>
+                    <div v-else class="resource-upload-wrap">
+                      <label class="resource-upload-zone citation-reference-upload-zone">
+                        <input type="file" accept=".txt,.json,.jsonl,.csv" @change="(e: Event) => handleFileMetaUpload(item.id, e)" />
+                        <span>⇧</span><b>{{ ensureFileMeta(item.id).uploadName || '点击上传引用元数据条目' }}</b><small>支持 TXT/JSON/JSONL/CSV</small>
+                      </label>
+                      <button v-if="ensureFileMeta(item.id).uploadName" class="hover-copy-btn resource-cancel-btn" type="button" @click="() => { ensureFileMeta(item.id).uploadName = undefined; ensureFileMeta(item.id).raw = ''; ensureFileMeta(item.id).entries = [] }">✕ 取消</button>
+                    </div>
+                  </div>
+                  <small v-if="ensureFileMeta(item.id).parsing" class="parse-text">元数据解析中…</small>
+                  <small v-else-if="ensureFileMeta(item.id).error" class="parse-text err">{{ ensureFileMeta(item.id).error }}</small>
+                  <div v-for="(entry, mIndex) in ensureFileMeta(item.id).entries" :key="mIndex" class="citation-metadata-entry citation-file-meta-entry-v759">
+                    <div class="citation-metadata-entry-head"><b>参考文献{{ entry.reference_index ? `[${entry.reference_index}]` : ` ${mIndex + 1}` }}</b><button class="ghost-btn danger" type="button" @click="removeFileMetaEntry(item.id, mIndex)">删除</button></div>
+                    <div class="two-column"><div class="field"><label><span class="label-main">作者</span></label><input v-model="entry.authorsText" class="input" placeholder="多人分号分隔" /></div><div class="field"><label><span class="label-main">题名</span></label><input v-model="entry.title" class="input" /></div></div>
+                    <div class="two-column"><div class="field"><label><span class="label-main">年份</span></label><input v-model="entry.year" class="input" /></div><div class="field"><label><span class="label-main">来源</span></label><input v-model="entry.venue" class="input" /></div></div>
+                  </div>
+                </div>
               </div>
               <div v-if="toolId === 'deep-cluster'" class="two-column deep-cluster-metadata-grid deep-cluster-anchor-grid">
                 <div class="field full"><label><span class="label-main">训练样本与人工标注类目标签数据</span><small>可选</small></label>

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from typing import Any, Dict, Optional
 
 import httpx
@@ -157,6 +158,10 @@ class GLMClient:
                 break
             logger.warning("GLM 返回空内容，重试 %d/2", attempt + 1)
             _time.sleep(1.0 * (attempt + 1))
+        # 0. 剥 markdown 代码围栏（2026-10-18 修复：GLM 偶发用 ```json 包裹
+        #    JSON 返回，json.loads 直接失败、_repair_json 误补围栏、重试同款
+        #    围栏——参考文献条目解析实测全挂的根因）
+        raw = self._strip_code_fence(raw)
         # 1. 直接解析
         try:
             return json.loads(raw)
@@ -176,14 +181,27 @@ class GLMClient:
                          response_json=True, timeout=timeout, max_tokens=retry_tokens)
         if raw2 and raw2.strip():
             try:
-                return json.loads(raw2)
+                return json.loads(self._strip_code_fence(raw2))
             except json.JSONDecodeError:
                 try:
-                    return self._repair_json(raw2)
+                    return self._repair_json(self._strip_code_fence(raw2))
                 except json.JSONDecodeError:
                     pass
         logger.error("GLM 返回非合法 JSON：%s", raw[:500])
         raise ValueError("大模型返回无法解析为 JSON（已尝试修复与重试）")
+
+    @staticmethod
+    def _strip_code_fence(raw: str) -> str:
+        """剥 markdown 代码围栏：完整 ```json ... ``` 取内容；截断未闭合时
+        只剥开头的 ```json 行（配合 _repair_json 修复截断体）"""
+        s = raw.strip()
+        m = re.match(r"^```[a-zA-Z]*[ \t]*\n?(.*?)\n?[ \t]*```[ \t]*$", s, re.S)
+        if m:
+            return m.group(1).strip()
+        m2 = re.match(r"^```[a-zA-Z]*[ \t]*\n", s)
+        if m2:
+            return s[m2.end():]
+        return s
 
     @staticmethod
     def _repair_json(raw: str) -> Dict[str, Any]:

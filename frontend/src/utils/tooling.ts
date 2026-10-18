@@ -279,13 +279,18 @@ function syncCitationCardsWithFullText(toolId: string, mode: InputMode, payload:
   if (!toolId.startsWith('citation-') || (mode !== 'text' && mode !== 'batch-text')) return
   const fullText = payload.scientific_document_full_text
   if (typeof fullText !== 'string' || !fullText.trim()) return
-  const sentences = normalizeCitationLinebreaks(fullText)
+  const sentences = normalizeCitationLinebreaks(filterNonCitationLines(stripReferenceSection(fullText)))
     .split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
   const markerOf = (sentence: string) => sentence.match(/[\[［]\s*\d+(?:\s*[-–,，]\s*\d+)*\s*[\]］]/)?.[0] || ''
   const cards: Array<Record<string, unknown>> = []
+  const seen = new Set<string>()
   sentences.forEach((sentence, i) => {
     const marker = markerOf(sentence)
     if (!marker) return
+    if (looksLikeNonCitationLine(sentence)) return
+    const _dedupeKey = sentence.replace(/\s+/g, '')
+    if (seen.has(_dedupeKey)) return
+    seen.add(_dedupeKey)
     const subSpan = sentence.replace(/[\[［]\s*\d+(?:\s*[-–,，]\s*\d+)*\s*[\]］]/g, '').replace(/\s+/g, ' ').trim()
     cards.push({
       citation_sentence: sentence,
@@ -306,6 +311,75 @@ export function normalizeCitationLinebreaks(text: string): string {
   return text
     .replace(/([A-Za-z])-\s*\n\s*/g, '$1')
     .replace(/(?<!\n)\n(?!\n)/g, ' ')
+}
+
+/** 引用句提取的文本预处理（2026-10-18 用户实测反馈：参考文献条目被解析成
+ *  引用句卡片，如 "[1]刘展志,曾子芮.数字化赋能…[J].运动精品,2025,44(3)."）。
+ *  与后端 _extract_citations 同口径的两层确定性过滤：
+ *  ① 截断参考文献/致谢/附录章节——其后的内容不产引用句；
+ *  ② 参考文献条目句（[n] 开头 + [J]/[M]/[C]/[D]/[N] 类型标记或年卷期格式）与
+ *     作者署名行（"张三[1] 李四[2]"式编号列表）剔除 */
+export function stripReferenceSection(text: string): string {
+  // ① 标题截断（宽松变体：markdown 标题/加粗/字间空格，行锚定）
+  const headingRe = /^[ \t]*#{0,4}[ \t]*\**[ \t]*(?:参\s*考\s*文\s*献|R\s*e\s*f\s*e\s*r\s*e\s*n\s*c\s*e\s*s|REFERENCES|致\s*谢|A\s*c\s*k\s*n\s*o\s*w\s*l\s*e\s*d\s*g\S{0,10}|附\s*录|A\s*p\s*p\s*e\s*n\s*d\s*i\s*x)\**[ \t]*[：:．.]?[ \t]*$/m
+  const m = text.match(headingRe)
+  const cut = m && m.index != null ? text.slice(0, m.index) : text
+  // ② 条目序列截断（2026-10-18 用户定稿架构：先去参考文献区再解析引用句）：
+  // 标题被解析器吞掉/压行时靠条目形态定位——正文行几乎不以 [n] 开头，
+  // 某行以 [n]/［n］ 开头且后续 4 个非空行中还有条目行 → 参考文献区起点，
+  // 从该行整段截断
+  const lines = cut.split('\n')
+  const entryStart = /^\s*[\[［]\d+(?:[-–,，]\d+)*[\]］]/
+  for (let i = 0; i < lines.length; i++) {
+    if (!entryStart.test(lines[i])) continue
+    let checked = 0
+    let follow = 0
+    for (let j = i + 1; j < lines.length && checked < 4; j++) {
+      if (!lines[j].trim()) continue
+      checked += 1
+      if (entryStart.test(lines[j])) follow += 1
+    }
+    if (follow >= 1) return lines.slice(0, i).join('\n')
+  }
+  return cut
+}
+
+export function looksLikeNonCitationLine(sentence: string): boolean {
+  // 图/表标题句（2026-10-18 用户实测：换行合并后"表 2 强度参数…[30]…"出现在
+  // 句首——行级过滤只删行首，句级再兜一层）
+  if (/^(表\s*\d+|Table\s*\d+|图\s*\d+|Fig\.?\s*\d+)/i.test(sentence.trim())) return true
+  // 参考文献条目：[n] 开头 + 著录特征（类型标记 / 年,卷( / 年,( ）
+  if (/^\s*\[\d+(?:[-–,，]\d+)*\]\s*.+(?:\[[JMCDN]\]|\d{4}\s*[,，]\s*\d+\s*\(|\d{4}\s*[,，]\s*\()/.test(sentence)) return true
+  // 英文参考文献条目（2026-10-18 用户实测漏网）：无 [J]/年卷期特征的西文条目。
+  // 统一"作者块"判定：[n] 开头 + 两个名字单元（各 1-5 个大写开头词，涵盖全名
+  // "Jiang Xiaoxiang"、缩写 "Smith J"、多缩写 "Tang P M"）由逗号/and/& 连接。
+  // 位置信号：正文引用句标记在句中/句尾，条目标记在句首——不误伤
+  if (/^\s*\[\d+(?:[-–,，]\d+)*\]\s*(?:[A-ZÀ-Þ][\wÀ-ÿ.]*\s+){0,4}[A-ZÀ-Þ][\wÀ-ÿ.]*\s*(?:,\s*|\sand\s+|&\s+)(?:[A-ZÀ-Þ][\wÀ-ÿ.]*\s+){0,4}[A-ZÀ-Þ][\wÀ-ÿ.]*/.test(sentence)) return true
+  // 英文条目年份收尾特征：句中以 ". 2023." / ", 2023." 等年份标点收束
+  if (/^\s*\[\d+(?:[-–,，]\d+)*\]\s*.*[.,;]\s*(?:19|20)\d{2}[a-z]?\s*[.,;:]?\s*$/.test(sentence) && !/[。！？]/.test(sentence)) return true
+  // 作者署名行：名字[编号组] 以逗号/分号连接、无陈述动词（后端同款判据）
+  if (/^(?:[一-鿿]{2,4}|[A-ZÀ-Þ][\wÀ-ÿ]*(?:\s+[A-ZÀ-Þ][\wÀ-ÿ]*)*)\s*\[\d[^]]*\]\s*(?:[,，;；]\s*(?:[一-鿿]{2,4}|[A-ZÀ-Þ][\wÀ-ÿ]*(?:\s+[A-ZÀ-Þ][\wÀ-ÿ]*)*)\s*\[\d[^]]*\]\s*)+[,。.;；]?$/.test(sentence.trim())) return true
+  return false
+}
+
+/** 切句前的行级过滤（2026-10-18 用户实测：表格标题行"表 2 所选地震动强度参数
+ *  …[30]…"被当引用句）——与后端 _extract_citations 的行清理同口径：markdown
+ *  表格行（含 |）、图/表标题行、mineru 图片行剔除，公式碎片行（无 CJK/字母
+ *  主导内容）一并去掉 */
+export function filterNonCitationLines(text: string): string {
+  return text.split('\n')
+    .filter(line => {
+      const s = line.trim()
+      if (!s) return true
+      if (s.includes('|')) return false                        // markdown 表格行
+      if (/^(表\s*\d+|Table\s*\d+|图\s*\d+|Fig\.?\s*\d+)/i.test(s)) return false  // 图/表标题行
+      if (/^!?\[.*\]\(images\/.*\)\s*$/.test(s)) return false  // mineru 图片行
+      // 公式碎片行：CJK+字母+数字之外的字符占比过高（LaTeX/符号汤）
+      const meaningful = (s.match(/[一-鿿A-Za-z0-9]/g) || []).length
+      if (meaningful < s.length * 0.3) return false
+      return true
+    })
+    .join('\n')
 }
 
 /** 主文本字段探测：载荷中最长的字符串值（≥40 字，排除题目/参数类短字段） */
@@ -499,6 +573,10 @@ const RESOURCE_FIELD_NAMES = new Set([
 // 元数据键直通（2026-09-15）：部分工具的 params 模板未登记 document_title（如
 // NER 系只列 text/file），按模板过滤会把题目键丢弃——弹窗文献列落"当前结果"
 const METADATA_FIELD_NAMES = new Set(['document_title', 'project_name'])
+// citation 文件模式的引用句卡片直通（2026-10-18 修复）：file 模式文档模板无
+// citation_sentence_and_context 键，按模板过滤会把自动提取的卡片静默丢掉
+// （实测卡片 5 张、请求不带卡片走后端自动抽取）——在线测试实发字段须直通
+const CITATION_CARD_FIELD_NAMES = new Set(['citation_sentence_and_context', 'citation_contexts_by_file', 'citation_metadata_by_file'])
 function stripEmptyResourceDescriptors(payload: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(payload)) {
@@ -534,6 +612,7 @@ export function requestPayloadFor(
   // 若按模板过滤会把用户上传的资源 File 一并丢弃——请求静默退回内置资源
   return Object.fromEntries(Object.keys(values).flatMap(key =>
     key in template || RESOURCE_FIELD_NAMES.has(key) || METADATA_FIELD_NAMES.has(key)
+      || CITATION_CARD_FIELD_NAMES.has(key)
       ? [[key, values[key]]] : [],
   ))
 }

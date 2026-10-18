@@ -136,7 +136,7 @@ const requestPayload = computed<Record<string, unknown>>(() => {
   if (props.toolId === 'rq-detect') payload.text_format_requirement = textFormatRequirement.value
 
   if (props.toolId === 'citation-sentiment' || props.toolId === 'citation-intent') {
-    if (props.mode === 'text') {
+    if (props.mode === 'text' || props.mode === 'file') {
       payload.citation_metadata = citationMetadataList.value.map(entry => ({
         citation_marker: entry.reference_index ? `[${entry.reference_index}]` : '',
         reference_index: entry.reference_index,
@@ -467,10 +467,10 @@ watchEffect(() => emit('update:payload', requestPayload.value))
     
   </div>
 
-  <div v-if="(toolId === 'citation-sentiment' || toolId === 'citation-intent') && mode === 'text'" class="settings-card requirement-supplement-card citation-metadata-card">
-    <div class="settings-title"><b>被引文献元数据</b><span>{{ mode === 'text' || mode === 'batch-text' ? '由用户填写或上传' : '从文件参考文献列表自动解析' }}</span></div>
+  <div v-if="(toolId === 'citation-sentiment' || toolId === 'citation-intent') && (mode === 'text' || mode === 'file')" class="settings-card requirement-supplement-card citation-metadata-card">
+    <div class="settings-title"><b>被引文献元数据</b><span>{{ mode === 'batch' ? '从文件参考文献列表自动解析' : '由用户填写或上传，选填' }}</span></div>
 
-    <div v-if="mode === 'text'" class="citation-manual-metadata-panel">
+    <div v-if="mode === 'text' || mode === 'file'" class="citation-manual-metadata-panel">
       <div class="citation-metadata-section-head"><b>参考文献原始条目</b><span>选填；可选择粘贴或上传，提供时作为判定辅助因素</span></div>
       <div class="citation-reference-parser">
         <div class="citation-reference-source-switch" role="radiogroup" aria-label="参考文献条目提供方式">

@@ -2800,3 +2800,32 @@ body.v668-en-classify-active .en-classify-domain-tag-v668,
 body.v669-domain-classify-active .domain-classify-domain-tag-v669 {
   font-size: 12px;
 }
+
+/* 引用工具批量文件·引用句解析独立面板（2026-10-18）：与待处理文件队列分离，
+   队列下方独立区块展示逐文件卡片 */
+.citation-batch-parse-panel-v759 { margin-top: 14px; }
+.citation-batch-parse-panel-v759 .citation-file-cards-v759 { margin-bottom: 10px; }
+/* 文件组标题与卡片间距（2026-10-18 用户定稿）：紧凑纵向节奏——
+   面板标题→文件组标题→首张卡片依次收紧（用户反馈间距大） */
+.citation-batch-parse-panel-v759 .special-panel-head { margin-bottom: 6px; }
+/* 引用句卡片区间距收紧：单文件（.citation-file-cards-v759 直接挂在请求区）与
+   批量文件面板共用（2026-10-18 用户反馈：单文件的标题与卡片间距大） */
+.citation-batch-parse-panel-v759 .citation-file-cards-v759, .special-panel-field .citation-file-cards-v759, .request-card .citation-file-cards-v759 { margin-top: 2px; }
+.citation-batch-parse-panel-v759 .citation-file-cards-v759 .field > label, .request-card .citation-file-cards-v759 .field > label { min-height: 0; margin-bottom: 4px; }
+.citation-batch-parse-panel-v759 .citation-file-cards-v759 .citation-card, .request-card .citation-file-cards-v759 .citation-card { margin-top: 4px; }
+.citation-batch-parse-panel-v759 .citation-file-cards-v759 .citation-card + .citation-card, .request-card .citation-file-cards-v759 .citation-card + .citation-card { margin-top: 12px; }
+
+/* 批量文件·每个文件解析框（2026-10-18）：标题两行（引用句解析 / 文件名），
+   元数据区收紧间距，粘贴+上传两种条目提供方式 */
+/* 同特异性（双类）压过全局 .special-panel-head 的 flex+space-between
+   （2026-10-18 用户实测：单类覆盖被压制，文件名被推到右侧 529px 处）——
+   纵向排列左对齐：引用句解析在上，文件名正下方 */
+.special-panel-head.citation-file-panel-title-v759 { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 2px; min-height: 0; margin-bottom: 6px; }
+.special-panel-head.citation-file-panel-title-v759 strong { display: block; }
+.special-panel-head.citation-file-panel-title-v759 .citation-file-name-v759 { display: block; color: #5b7395; font-size: 12px; font-weight: 500; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.citation-file-meta-title-v759 { margin-top: 8px; min-height: 0; margin-bottom: 4px; }
+/* 与单文本"被引文献元数据"同款结构（切换+上传区复用全局类），仅收紧行距 */
+.citation-file-meta-input-row-v759 .citation-reference-source-switch { margin-bottom: 8px; }
+.citation-file-meta-upload-v759 input[type=file] { display: none; }
+.citation-file-meta-entry-v759 { margin-top: 4px; padding: 8px 12px; background: #f6f9fd; border: 1px solid #dde7f3; border-radius: 8px; }
+.citation-file-meta-entry-v759 .field { margin-bottom: 4px; }
