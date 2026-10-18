@@ -1558,7 +1558,7 @@ body.figma-ui-v717 .main-card {
   box-shadow: none !important;
 }
 
-.online-test-run-btn { gap: 8px !important; }
+.online-test-run-btn { gap: 8px !important; margin-right: 8px !important; }
 .online-test-run-icon { display: block; width: 16px; height: 16px; flex: 0 0 16px; }
 
 body.figma-ui-v717 .pill.ready {
@@ -1726,6 +1726,7 @@ body.figma-ui-v717 .reference-copy-btn {
   height: 38px !important;
   min-height: 0 !important;
   margin-left: auto !important;
+  margin-right: 8px !important;
   padding: 0 15px !important;
   align-items: center !important;
   justify-content: center !important;
@@ -2277,6 +2278,7 @@ body.figma-ui-v717 .code-box {
 }
 
 .response-card .response-card-actions-v645 {
+  padding-right: 8px;
   display: flex !important;
   flex-wrap: nowrap !important; /* 组内禁止逐按钮换行（2+1 的来源） */
   min-width: 0;
@@ -2420,16 +2422,77 @@ body.figma-ui-v717 .code-box {
 
 /* 中文摘要语步：下载结果格式菜单（2026-10-11）：点下载按钮弹出 JSON/CSV/数据库(SQL)选择 */
 .download-menu-wrap-v751 { position: relative; display: inline-flex; }
+/* 下载菜单：放大字级与阅读留白，图标仅为装饰；保留原有选项和交互。 */
 .download-menu-v751 {
-  position: absolute; top: calc(100% + 6px); right: 0; z-index: 40; min-width: 190px;
-  background: #fff; border: 1px solid #d3dfef; border-radius: 10px;
-  box-shadow: 0 12px 32px rgba(14, 26, 48, .16); padding: 6px; display: flex; flex-direction: column; gap: 2px;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  right: auto;
+  z-index: 40;
+  box-sizing: border-box;
+  width: 160px;
+  max-width: calc(100vw - 144px);
+  height: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid #dbe5f2;
+  border-radius: 13px;
+  box-shadow: 0 10px 30px -8px rgba(37, 66, 108, .18), 0 2px 5px rgba(37, 66, 108, .04);
+  transform: translateX(-50%);
+  transform-origin: top center;
+  animation: download-menu-reveal 160ms cubic-bezier(.22, 1, .36, 1) both;
 }
-.download-menu-item-v751 {
-  border: 0; background: transparent; text-align: left; padding: 8px 12px; border-radius: 7px;
-  font-size: 13px; color: #1f3a5f; cursor: pointer; white-space: nowrap;
+body.figma-ui-v717 .response-card-actions-v645 .download-menu-item-v751 {
+  display: flex !important;
+  width: 100%;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  flex: 0 0 44px;
+  align-items: center;
+  justify-content: flex-start !important;
+  gap: 12px;
+  padding: 0 12px !important;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #304563;
+  font-family: inherit;
+  font-size: 14px !important;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
 }
-.download-menu-item-v751:hover { background: #eef4fc; }
+.download-menu-item-v751::before {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 30px;
+  flex: 0 0 28px;
+  border: 1px solid #dae7fa;
+  border-radius: 6px;
+  background: #edf4ff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23536f98' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 3v5h5M9 13h6M9 17h4'/%3E%3C/svg%3E") center / 17px 17px no-repeat;
+  transition: transform 140ms cubic-bezier(.22, 1, .36, 1);
+}
+.download-menu-item-v751:nth-child(2)::before { background-color: #eff8f5; border-color: #dceee6; }
+.download-menu-item-v751:nth-child(3)::before { background-color: #f3f0fb; border-color: #e5dff4; }
+.download-menu-item-v751:is(:hover, :focus-visible):not(:disabled) { color: #244f8c !important; background: #eff5ff !important; }
+.download-menu-item-v751:is(:hover, :focus-visible)::before { transform: translateY(-1px); }
+.download-menu-item-v751:focus-visible { outline: 2px solid #b4cdf3; outline-offset: -2px; }
+@keyframes download-menu-reveal {
+  from { opacity: 0; transform: translate(-50%, -4px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .download-menu-v751 { animation: none; }
+  .download-menu-item-v751::before { transition: none; }
+  .download-menu-item-v751:is(:hover, :focus-visible)::before { transform: none; }
+}
 
 /* 发表时间·年份选择（2026-10-11 定稿）：单年份下拉（AppSelect），选填 */
 .year-picker-v754 { width: 100%; }
@@ -2455,12 +2518,12 @@ body.figma-ui-v717 .code-box {
 
 /* 会议批注与 Word 参考：外层框、目录、Tab 与结果操作的最终样式。 */
 body.figma-ui-v717 .platform-frame-v640 .content-wrap {
-  padding: 12px !important;
+  padding: 16px !important;
 }
 body.figma-ui-v717 .page-shell {
-  height: calc(100vh - 24px) !important;
-  height: calc(100dvh - 24px) !important;
-  padding: 12px !important;
+  height: calc(100vh - 32px) !important;
+  height: calc(100dvh - 32px) !important;
+  padding: 16px !important;
   background: rgba(255, 255, 255, .02) !important;
   border: 1px solid #fff !important;
   border-radius: 16px !important;
@@ -2470,11 +2533,13 @@ body.figma-ui-v717 .page-shell::before {
   display: none !important;
 }
 body.figma-ui-v717 .main-card {
+  padding: 16px !important;
   height: auto !important;
   flex: 1 1 auto !important;
   background: #f8faff !important;
 }
 .document-page-header {
+  padding-right: 8px;
   display: flex;
   min-width: 0;
   flex: 0 0 auto;
@@ -2601,12 +2666,12 @@ body.figma-ui-v717 .response-card-actions-v645 :is(#downloadResultBtnV732, #view
 }
 @media (max-width: 900px) {
   body.figma-ui-v717 .platform-frame-v640 .content-wrap {
-    padding: 8px !important;
+    padding: 16px !important;
   }
   body.figma-ui-v717 .page-shell {
-    height: calc(100vh - 16px) !important;
-    height: calc(100dvh - 16px) !important;
-    padding: 8px !important;
+    height: calc(100vh - 32px) !important;
+    height: calc(100dvh - 32px) !important;
+    padding: 16px !important;
   }
 }
 @media (max-width: 640px) {
