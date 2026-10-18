@@ -1768,7 +1768,6 @@ function rqResultAsText(data: Record<string, unknown> | undefined, bySection: bo
       lines.push(`  类型：${st.question_type || '—'} | 研究对象：${st.research_object || '—'} | 置信度：${s.confidence ?? '—'}`)
       const cons = (st.constraints as string[]) || []
       if (cons.length) lines.push(`  约束条件：${cons.join('、')}`)
-      lines.push(`  来源：${((s.source_sections as string[]) || ['—']).join(' / ')}`)
       lines.push('')
     })
     return lines.join('\n')

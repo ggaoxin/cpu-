@@ -2988,40 +2988,35 @@
         "document_title": "地震动记录选取的新视角：大数据与机器学习",
         "research_question_sentences": [
           {
-            "sentence": "本文从 PEER 数据库选取地震动记录，先利用模糊聚类分析记录的震级与距离特征，再通过主成分分析对不同场地类别中的记录进行排序，形成自适应地震动记录推荐方法。",
-            "text": "本文从 PEER 数据库选取地震动记录，先利用模糊聚类分析记录的震级与距离特征，再通过主成分分析对不同场地类别中的记录进行排序，形成自适应地震动记录推荐方法。",
+            "sentence": "合理选取地震动记录是结构抗震分析的重要基础。",
+            "text": "合理选取地震动记录是结构抗震分析的重要基础。",
             "id": "RQS1",
             "expression_type": "implicit",
-            "confidence": 0.7,
-            "source_sections": [
-              "摘要"
-            ]
+            "confidence": 0.6
           }
         ],
         "research_question_phrases": [
           {
             "id": "RQP1",
-            "text": "形成自适应地震动记录推荐方法",
+            "text": "合理选取地震动记录",
             "sentence_id": "RQS1",
-            "normalized_question": "如何构建一种自适应的地震动记录推荐方法，以客观描述记录之间的频谱差异？",
-            "confidence": 0.7
+            "normalized_question": "如何合理选取地震动记录以支撑结构抗震分析？",
+            "confidence": 0.6
           }
         ],
         "structured_research_questions": [
           {
             "research_question_id": "RQ1",
-            "question": "如何构建一种自适应的地震动记录推荐方法，以客观描述记录之间的频谱差异？",
-            "normalized_question": "如何构建一种自适应的地震动记录推荐方法，以客观描述记录之间的频谱差异？",
-            "question_type": "method",
+            "question": "如何合理选取地震动记录以支撑结构抗震分析？",
+            "normalized_question": "如何合理选取地震动记录以支撑结构抗震分析？",
+            "question_type": "objective",
             "research_object": "地震动记录",
             "constraints": [
-              "PEER 数据库",
-              "震级与距离特征",
-              "不同场地类别"
+              "结构抗震分析"
             ],
             "role": "main",
             "parent_id": "",
-            "confidence": 0.7
+            "confidence": 0.6
           }
         ],
         "statistics": {
@@ -3058,20 +3053,20 @@
         }
       },
       "meta": {
-        "request_id": "req_f27f7739acbd4ca98a7e7d9b8647f06b",
+        "request_id": "req_f621fdb217d24409b8f5e77806d26919",
         "schema_version": "1.0",
         "model_version": "semantic-toolkit-2026.08",
         "taxonomy_version": null,
         "ontology_version": null,
-        "elapsed_ms": 4537,
-        "created_at": "2026-10-16T18:53:44.571470+08:00",
+        "elapsed_ms": 8869,
+        "created_at": "2026-10-18T17:14:37.893096+08:00",
         "database_dialect": "mysql",
-        "task_id": "tsk_fa50667c9c45405792abac12a88e6c0a",
+        "task_id": "tsk_7bb0ba806d6f4e1a8bc204f13a9fc81e",
         "input_type": "text",
         "total": 1,
         "success_count": 1,
         "failed_count": 0,
-        "record_id": "rec_63f6c9633db54ec79311e1120d25de23",
+        "record_id": "rec_77766b85e7e643b9a5d40c9640f7e5bb",
         "file_name": null
       }
     },
@@ -3079,7 +3074,7 @@
       "code": 0,
       "message": "success",
       "data": {
-        "batch_id": "tsk_d20e9e93858b407e8561dde82e75808b",
+        "batch_id": "tsk_7c6b481358044e9fbaee61a958973fcf",
         "input_type": "texts",
         "total": 3,
         "success_count": 3,
@@ -3091,7 +3086,7 @@
             "file_name": null,
             "status": "succeeded",
             "code": 0,
-            "record_id": "rec_1eec0cf57c6a47bbb4af708417dcf88e",
+            "record_id": "rec_d68d116d24584bcd9970a51f5641beef",
             "result": {
               "document": {
                 "title": "地震动记录选取的新视角：大数据与机器学习"
@@ -3103,10 +3098,7 @@
                   "text": "本文从 PEER 数据库选取地震动记录，先利用模糊聚类分析记录的震级与距离特征，再通过主成分分析对不同场地类别中的记录进行排序，形成自适应地震动记录推荐方法。",
                   "id": "RQS1",
                   "expression_type": "implicit",
-                  "confidence": 0.7,
-                  "source_sections": [
-                    "摘要"
-                  ]
+                  "confidence": 0.7
                 }
               ],
               "research_question_phrases": [
@@ -3114,20 +3106,21 @@
                   "id": "RQP1",
                   "text": "形成自适应地震动记录推荐方法",
                   "sentence_id": "RQS1",
-                  "normalized_question": "如何基于模糊聚类与主成分分析构建自适应的地震动记录推荐方法，以更客观地选取地震动记录？",
+                  "normalized_question": "如何构建一种自适应的地震动记录推荐方法，使地震动记录的选取更客观一致？",
                   "confidence": 0.7
                 }
               ],
               "structured_research_questions": [
                 {
                   "research_question_id": "RQ1",
-                  "question": "如何基于模糊聚类与主成分分析构建自适应的地震动记录推荐方法，以更客观地选取地震动记录？",
-                  "normalized_question": "如何基于模糊聚类与主成分分析构建自适应的地震动记录推荐方法，以更客观地选取地震动记录？",
+                  "question": "如何构建一种自适应的地震动记录推荐方法，使地震动记录的选取更客观一致？",
+                  "normalized_question": "如何构建一种自适应的地震动记录推荐方法，使地震动记录的选取更客观一致？",
                   "question_type": "method",
                   "research_object": "地震动记录",
                   "constraints": [
-                    "PEER 数据库",
-                    "结构抗震分析"
+                    "PEER数据库",
+                    "震级与距离特征",
+                    "不同场地类别"
                   ],
                   "role": "main",
                   "parent_id": "",
@@ -3173,7 +3166,7 @@
             "file_name": null,
             "status": "succeeded",
             "code": 0,
-            "record_id": "rec_3d84b6e0b6b9432c9c1d28ee5eab6e14",
+            "record_id": "rec_80bf000eaaad4d53bb1ff86d2fc50efc",
             "result": {
               "document": {
                 "title": "糖尿病肾病关键基因识别与潜在靶点分析"
@@ -3181,77 +3174,40 @@
               "document_title": "糖尿病肾病关键基因识别与潜在靶点分析",
               "research_question_sentences": [
                 {
-                  "sentence": "研究从 GEO 数据库获取相关转录组数据，利用加权基因共表达网络分析识别关键模块，并整合多种机器学习方法筛选特征基因。",
-                  "text": "研究从 GEO 数据库获取相关转录组数据，利用加权基因共表达网络分析识别关键模块，并整合多种机器学习方法筛选特征基因。",
-                  "id": "RQS1",
-                  "expression_type": "implicit",
-                  "confidence": 0.55,
-                  "source_sections": [
-                    "摘要"
-                  ]
-                },
-                {
                   "sentence": "随后通过通路富集、免疫微环境关联和分子对接分析验证候选基因的诊断及治疗价值。",
                   "text": "随后通过通路富集、免疫微环境关联和分子对接分析验证候选基因的诊断及治疗价值。",
-                  "id": "RQS2",
+                  "id": "RQS1",
                   "expression_type": "implicit",
-                  "confidence": 0.6,
-                  "source_sections": [
-                    "摘要"
-                  ]
+                  "confidence": 0.65
                 }
               ],
               "research_question_phrases": [
                 {
                   "id": "RQP1",
-                  "text": "筛选特征基因",
+                  "text": "候选基因的诊断及治疗价值",
                   "sentence_id": "RQS1",
-                  "normalized_question": "如何从糖尿病肾病转录组数据中筛选出具有诊断价值的关键特征基因？",
-                  "confidence": 0.55
-                },
-                {
-                  "id": "RQP2",
-                  "text": "验证候选基因的诊断及治疗价值",
-                  "sentence_id": "RQS2",
-                  "normalized_question": "候选基因对糖尿病肾病的诊断及治疗价值是否成立？",
-                  "confidence": 0.6
+                  "normalized_question": "筛选出的候选基因在糖尿病肾病中的诊断效能和治疗价值如何？",
+                  "confidence": 0.65
                 }
               ],
               "structured_research_questions": [
                 {
                   "research_question_id": "RQ1",
-                  "question": "如何从糖尿病肾病转录组数据中筛选出具有诊断价值的关键特征基因？",
-                  "normalized_question": "如何从糖尿病肾病转录组数据中筛选出具有诊断价值的关键特征基因？",
-                  "question_type": "method",
-                  "research_object": "糖尿病肾病",
-                  "constraints": [
-                    "GEO 数据库转录组数据",
-                    "加权基因共表达网络分析",
-                    "机器学习"
-                  ],
-                  "role": "main",
-                  "parent_id": "",
-                  "confidence": 0.55
-                },
-                {
-                  "research_question_id": "RQ2",
-                  "question": "候选基因对糖尿病肾病的诊断及治疗价值是否成立？",
-                  "normalized_question": "候选基因对糖尿病肾病的诊断及治疗价值是否成立？",
+                  "question": "筛选出的候选基因在糖尿病肾病中的诊断效能和治疗价值如何？",
+                  "normalized_question": "筛选出的候选基因在糖尿病肾病中的诊断效能和治疗价值如何？",
                   "question_type": "validation",
                   "research_object": "候选基因",
                   "constraints": [
-                    "通路富集",
-                    "免疫微环境关联",
-                    "分子对接分析"
+                    "糖尿病肾病"
                   ],
-                  "role": "sub",
-                  "parent_id": "RQ1",
-                  "confidence": 0.6
+                  "role": "main",
+                  "parent_id": "",
+                  "confidence": 0.65
                 }
               ],
               "statistics": {
-                "sentence_count": 2,
-                "phrase_count": 2,
+                "sentence_count": 1,
+                "phrase_count": 1,
                 "expression_types": [
                   {
                     "type": "显式（explicit）",
@@ -3260,14 +3216,14 @@
                   },
                   {
                     "type": "隐式（implicit）",
-                    "count": 2,
+                    "count": 1,
                     "ratio": 1
                   }
                 ]
               },
               "research_question_statistics": {
-                "sentence_count": 2,
-                "phrase_count": 2,
+                "sentence_count": 1,
+                "phrase_count": 1,
                 "expression_types": [
                   {
                     "type": "显式（explicit）",
@@ -3276,7 +3232,7 @@
                   },
                   {
                     "type": "隐式（implicit）",
-                    "count": 2,
+                    "count": 1,
                     "ratio": 1
                   }
                 ]
@@ -3288,7 +3244,7 @@
             "file_name": null,
             "status": "succeeded",
             "code": 0,
-            "record_id": "rec_dad4950a478c459bb7adc0903ddfc22a",
+            "record_id": "rec_5d0246b416734c9da2a07ece043f3803",
             "result": {
               "document": {
                 "title": "融合多尺度特征的工业表面微小缺陷检测"
@@ -3300,35 +3256,32 @@
                   "text": "本文提出融合多尺度特征增强和局部注意力的微小缺陷检测方法，通过跨层特征融合改善缺陷区域表征。",
                   "id": "RQS1",
                   "expression_type": "implicit",
-                  "confidence": 0.8,
-                  "source_sections": [
-                    "摘要"
-                  ]
+                  "confidence": 0.7
                 }
               ],
               "research_question_phrases": [
                 {
                   "id": "RQP1",
-                  "text": "改善缺陷区域表征",
+                  "text": "融合多尺度特征增强和局部注意力的微小缺陷检测方法",
                   "sentence_id": "RQS1",
-                  "normalized_question": "如何构建融合多尺度特征增强与局部注意力的检测方法，以改善复杂工业表面微小缺陷的区域表征？",
-                  "confidence": 0.8
+                  "normalized_question": "如何构建融合多尺度特征增强和局部注意力的检测方法，以改善复杂工业表面微小缺陷区域的表征与检测？",
+                  "confidence": 0.7
                 }
               ],
               "structured_research_questions": [
                 {
                   "research_question_id": "RQ1",
-                  "question": "如何构建融合多尺度特征增强与局部注意力的检测方法，以改善复杂工业表面微小缺陷的区域表征？",
-                  "normalized_question": "如何构建融合多尺度特征增强与局部注意力的检测方法，以改善复杂工业表面微小缺陷的区域表征？",
+                  "question": "如何构建融合多尺度特征增强和局部注意力的检测方法，以改善复杂工业表面微小缺陷区域的表征与检测？",
+                  "normalized_question": "如何构建融合多尺度特征增强和局部注意力的检测方法，以改善复杂工业表面微小缺陷区域的表征与检测？",
                   "question_type": "method",
                   "research_object": "微小缺陷检测",
                   "constraints": [
                     "复杂工业表面",
-                    "尺度差异大、边缘模糊、背景纹理干扰强"
+                    "尺度差异大、边缘模糊及背景纹理干扰强"
                   ],
                   "role": "main",
                   "parent_id": "",
-                  "confidence": 0.8
+                  "confidence": 0.7
                 }
               ],
               "statistics": {
@@ -3368,15 +3321,15 @@
         ]
       },
       "meta": {
-        "request_id": "req_c8e2c4fa63124cae996109da121975cd",
+        "request_id": "req_f03263c9dc714000bd5f696e4bce1a45",
         "schema_version": "1.0",
         "model_version": "semantic-toolkit-2026.08",
         "taxonomy_version": null,
         "ontology_version": null,
-        "elapsed_ms": 15738,
-        "created_at": "2026-10-16T18:54:37.024222+08:00",
+        "elapsed_ms": 8048,
+        "created_at": "2026-10-18T17:14:45.960444+08:00",
         "database_dialect": "mysql",
-        "task_id": "tsk_d20e9e93858b407e8561dde82e75808b",
+        "task_id": "tsk_7c6b481358044e9fbaee61a958973fcf",
         "input_type": "texts",
         "total": 3,
         "success_count": 3,
