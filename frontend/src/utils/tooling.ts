@@ -279,20 +279,33 @@ function syncCitationCardsWithFullText(toolId: string, mode: InputMode, payload:
   if (!toolId.startsWith('citation-') || (mode !== 'text' && mode !== 'batch-text')) return
   const fullText = payload.scientific_document_full_text
   if (typeof fullText !== 'string' || !fullText.trim()) return
-  const sentences = fullText.split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
+  const sentences = normalizeCitationLinebreaks(fullText)
+    .split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
   const markerOf = (sentence: string) => sentence.match(/[\[［]\s*\d+(?:\s*[-–,，]\s*\d+)*\s*[\]］]/)?.[0] || ''
   const cards: Array<Record<string, unknown>> = []
   sentences.forEach((sentence, i) => {
     const marker = markerOf(sentence)
     if (!marker) return
+    const subSpan = sentence.replace(/[\[［]\s*\d+(?:\s*[-–,，]\s*\d+)*\s*[\]］]/g, '').replace(/\s+/g, ' ').trim()
     cards.push({
       citation_sentence: sentence,
       previous_context: i > 0 ? sentences[i - 1] : '（文档开头，无上文）',
       next_context: i + 1 < sentences.length ? sentences[i + 1] : '（文档结尾，无下文）',
       citation_marker: marker,
+      // 与在线测试实发字段一致（2026-10-18 手动提取口径）：整句去标记的语义片段
+      citation_sub_span: subSpan,
     })
   })
   if (cards.length) payload.citation_sentence_and_context = cards
+}
+
+/** PDF 断行文本整形（2026-10-18）：双栏/换行 PDF 的纯文本有连字符断词
+ *  （"in-\nto"）与行中断句——切句前先合并断词与单换行（空行=段落边界保留），
+ *  否则"完整一整句"口径会把半句当整句（实测示例文本 9 卡中 5 张是半句） */
+export function normalizeCitationLinebreaks(text: string): string {
+  return text
+    .replace(/([A-Za-z])-\s*\n\s*/g, '$1')
+    .replace(/(?<!\n)\n(?!\n)/g, ' ')
 }
 
 /** 主文本字段探测：载荷中最长的字符串值（≥40 字，排除题目/参数类短字段） */

@@ -5413,6 +5413,7 @@ class SemanticApplicationService(ISemanticService):
                 "context_after": str(row.get("next_context") or row.get("context_after") or ""),
             })
         uncertain = []
+        _from_provided = bool(certain)   # 用户明确提交的引用句卡片（文本模式）
         if not certain:
             certain, uncertain = self._extract_citations(text, rule)
         logger.info("引用句抽取：确定%d 不确定%d", len(certain), len(uncertain))
@@ -5420,8 +5421,14 @@ class SemanticApplicationService(ISemanticService):
         # ② 正则召回的候选(certain+uncertain)一次性批量送 LLM 判定是否正文引用句。
         # 替代原 confirm+filter+is_body 正则兜底：LLM 语义排除参考文献条目/作者署名/
         # 图标题/无标记总结句，不再需要 is_body 正则补丁。
+        # 用户提供的卡片跳过判定（2026-10-18 用户定稿"完整一整句为一条引用句"）：
+        # 前端已按整句口径解析，输入侧条数必须与输出侧引用句总数一致——LLM 判定
+        # 波动会随机丢卡（实测同输入 9 卡两次输出 2/9 条），信任调用方提交
         candidates = list(certain) + list(uncertain)
-        if candidates:
+        if _from_provided:
+            # 用户卡片直接全量放行（下方 ②b 确定性参考文献过滤仍兜底著录格式）
+            citations = candidates
+        elif candidates:
             citations = self._llm_judge_citations(candidates)
             # uncertain 经 LLM 确认后，用引用模式从句中补 citation_marker（原 uncertain marker 为空）
             for _c in citations:

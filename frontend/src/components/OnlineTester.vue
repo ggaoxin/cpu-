@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import type { InputMode, ToolDefinition } from '../types'
-import { endpointFor, modesFor, pretty, requestPayloadFor, supportsVisualization } from '../utils/tooling'
+import { endpointFor, modesFor, normalizeCitationLinebreaks, pretty, requestPayloadFor, supportsVisualization } from '../utils/tooling'
 import { ApiRequestError, apiUrl, executeToolRequest, listCompatibleHistory, listDictionaries, listClusterCollections, listDocumentCollections, listSemanticResources, parseCitationMetadata, saveDictionary } from '../services/api'
 import { requirementInputsFor } from '../data/requirement-contracts'
 import { copyText } from '../utils/clipboard'
@@ -185,10 +185,10 @@ type CitationCard = { id: number; marker: string; sentence: string; subSpan: str
 const citationCards = reactive<CitationCard[]>([])
 let citationCardSeq = 0
 
-// 句内多引用拆分：单条自然句含多个文献编号（[1][2][3] 或复合 [1,2]/[1-3]）时，
-// 每个文献编号生成一条独立引用句记录（同一意图共用子片段的 [4][5][6] 同样拆分）。
-// 每条携带：marker=绑定的文献编号；subSpan=标记所在子句（按，,；;切分）去掉
-// 引用标记后的局部语义片段。原始完整句子不做截断，保留在 sentence 供上下文核对。
+// 句内引用标记探测：返回句中全部文献编号及其所在子句片段。2026-10-18 用户定稿：
+// 引用句以**完整一整句**为一条（与后端同句合并口径一致——此前按编号逐个拆卡，
+// 输入侧解析 20 条 vs 输出侧合并后 7 条对不上）；marker 用于展示与提交，
+// subSpan 为整句去标记后的语义片段。
 function splitSentenceByMarkers(sentence: string): Array<{ marker: string; subSpan: string }> {
   const markerRe = /\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/g
   const matches = Array.from(sentence.matchAll(markerRe))
@@ -238,6 +238,7 @@ function splitSentenceByMarkers(sentence: string): Array<{ marker: string; subSp
 // 各自的引用元数据）；被引文献元数据由用户在下方补充。
 let citationAutoTimer: ReturnType<typeof setTimeout> | null = null
 let citationCardsEdited = false   // 用户增删改过卡片后不再自动覆盖
+let citationCardsAuto = false     // 当前卡片来自自动提取（源文本变更时随之失效清理）
 const citationExtractedCount = ref(0)
 function autoExtractCitation() {
   const text = citationSingle.documentText.trim()
@@ -245,39 +246,51 @@ function autoExtractCitation() {
   if (!text) {
     citationExtractedCount.value = 0
     citationCards.splice(0, citationCards.length)
+    citationCardsAuto = false
     return
   }
-  const sentences = text.split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
+  const sentences = normalizeCitationLinebreaks(text).split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
   const cards: CitationCard[] = []
   sentences.forEach((s, i) => {
-    for (const { marker, subSpan } of splitSentenceByMarkers(s)) {
-      cards.push({
-        id: ++citationCardSeq,
-        marker,
-        sentence: s,
-        subSpan,
-        previousContext: i > 0 ? sentences[i - 1] : '（文档开头，无上文）',
-        nextContext: i + 1 < sentences.length ? sentences[i + 1] : '（文档结尾，无下文）',
-      })
-    }
+    // 完整一整句 = 一条引用句（2026-10-18 用户定稿）：句内多个编号（[1][2] 或
+    // 复合 [1,2]）合并为一条卡，marker 串接全部编号——与后端同句合并同口径，
+    // 输入侧解析条数 = 输出侧引用句总数
+    const parts = splitSentenceByMarkers(s)
+    if (!parts.length) return
+    const markers = [...new Set(parts.map(part => part.marker))]
+    cards.push({
+      id: ++citationCardSeq,
+      marker: markers.join(' '),
+      sentence: s,
+      subSpan: s.replace(/\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/g, '').replace(/\s+/g, ' ').trim(),
+      previousContext: i > 0 ? sentences[i - 1] : '（文档开头，无上文）',
+      nextContext: i + 1 < sentences.length ? sentences[i + 1] : '（文档结尾，无下文）',
+    })
   })
   citationExtractedCount.value = cards.length
   if (!cards.length) return
   citationCards.splice(0, citationCards.length, ...cards)
+  citationCardsAuto = true
 }
 watch(() => citationSingle.documentText, () => {
-  // 文本清空 → 无条件同步清空引用句卡片（编辑保护只对"有新文本"生效）
+  // 引用句解析改为纯手动（2026-10-18 用户定稿）：输入文献文本不再自动提取，
+  // 点「从文献文本自动提取」按钮才解析。文本变更时只做失效清理——
+  // 自动提取的卡片随源文本过期一并清掉（防止旧卡配新文的错位提交），
+  // 手动增删改的卡片保留（用户有意构造，不被输入打断）
   if (!citationSingle.documentText.trim()) {
     if (citationAutoTimer) clearTimeout(citationAutoTimer)
     autoExtractCitation()
     return
   }
   if (citationCardsEdited) return
-  if (citationAutoTimer) clearTimeout(citationAutoTimer)
-  citationAutoTimer = setTimeout(autoExtractCitation, 600)
+  if (citationCardsAuto) {
+    citationCards.splice(0, citationCards.length)
+    citationExtractedCount.value = 0
+    citationCardsAuto = false
+  }
 })
 
-function markCitationCardsEdited() { citationCardsEdited = true }
+function markCitationCardsEdited() { citationCardsEdited = true; citationCardsAuto = false }
 function forceAutoExtractCitation() {
   citationCardsEdited = false
   autoExtractCitation()
@@ -288,10 +301,18 @@ function forceAutoExtractCitation() {
 function autoExtractBatchCitation(item: CitationBatchItem) {
   const text = (item.documentText || '').trim()
   if (!text) { showToast('请先填写本条的文献文本，再自动提取引用句。'); return }
-  const sentences = text.split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
+  const sentences = normalizeCitationLinebreaks(text).split(/(?<=[。！？!?])\s*|(?<=\.)\s+|\n+/).map(s => s.trim()).filter(Boolean)
+  // 完整一整句 = 一条引用句（2026-10-18 用户定稿，与单文本同口径）
   const hits: Array<{ s: string, i: number, marker: string, subSpan: string }> = []
   sentences.forEach((s, i) => {
-    for (const { marker, subSpan } of splitSentenceByMarkers(s)) hits.push({ s, i, marker, subSpan })
+    const parts = splitSentenceByMarkers(s)
+    if (!parts.length) return
+    const markers = [...new Set(parts.map(part => part.marker))]
+    hits.push({
+      s, i,
+      marker: markers.join(' '),
+      subSpan: s.replace(/\[\d+(?:\s*[,，\-–~]\s*\d+)*\]/g, '').replace(/\s+/g, ' ').trim(),
+    })
   })
   if (!hits.length) { showToast('本条文献文本中未发现引用标记（如 [1]），请手动填写引用句。'); return }
   requestError.value = ''
