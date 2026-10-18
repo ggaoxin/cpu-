@@ -634,6 +634,11 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
     } else if (mode.value === 'batch-text') {
       values.document_title = citationBatchItems.map(item => item.title.trim())
       if (props.toolId === 'citation-sentiment') values.scientific_document_full_text = citationBatchItems.map(item => ({ text: item.documentText }))
+      // 参考文献原始条目逐条对位透传（2026-10-19 对齐：每条引用数据的条目原文
+      // 与解析出的 citation_metadata 一并提供，同单文本口径）
+      if (citationBatchItems.some(item => (item.refsText || '').trim())) {
+        values.reference_entries = citationBatchItems.map(item => (item.refsText || '').trim())
+      }
       values.citation_metadata = citationBatchItems.map(item => item.metaList.map(entry => ({
         citation_marker: entry.reference_index ? `[${entry.reference_index}]` : '',
         reference_index: entry.reference_index,
@@ -694,6 +699,11 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
         doi: entry.doi,
       })
       values.citation_metadata_by_file = uploadedFiles.map(item => (fileCitationMeta[item.id]?.entries || []).map(metaEntryToPayload))
+      // 逐文件参考文献原始条目（2026-10-19 对齐：各文件解析框粘贴/上传的条目
+      // 原文按文件顺序对位，与 citation_metadata_by_file 同口径）
+      if (uploadedFiles.some(item => (fileCitationMeta[item.id]?.raw || '').trim())) {
+        values.reference_entries_by_file = uploadedFiles.map(item => (fileCitationMeta[item.id]?.raw || '').trim())
+      }
     }
     return values
   }
@@ -1213,8 +1223,13 @@ async function processSelectedFiles(files: File[], multiple: boolean, reset?: ()
   files.forEach(file => {
     const duplicate = uploadedFiles.some(item => item.name === file.name && item.size === file.size && item.file.lastModified === file.lastModified)
     if (duplicate) return
+    // 引用工具：重传同文件（id 相同）先清旧解析状态（2026-10-19 修复：
+    // 移除未走 removeUploadedFile 的路径——如单文件整体替换——旧元数据残留）
+    const _fileId = `${file.name}-${file.size}-${file.lastModified}`
+    delete fileCitationCards[_fileId]
+    delete fileCitationMeta[_fileId]
     const entry: UploadedFileItem = {
-      id: `${file.name}-${file.size}-${file.lastModified}`,
+      id: _fileId,
       file,
       name: file.name,
       size: file.size,
@@ -1452,7 +1467,8 @@ function removeUploadedFile(id: string) {
   const index = uploadedFiles.findIndex(item => item.id === id)
   if (index >= 0) uploadedFiles.splice(index, 1)
   delete fileCitationCards[id]   // 引用工具批量文件：卡片随文件移除
-}
+  delete fileCitationMeta[id]    // 元数据随文件移除（2026-10-19 修复：此前残留，
+}                                // 同文件重传（同名同大小同修改时间→同 id）旧数据复活
 
 function formatFileSize(size: number) {
   if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`
@@ -1954,6 +1970,11 @@ function toggleDownloadMenu() {
     if (form.outputFormat === '数据库写入结构') { downloadDefinitionSql(); return }
     downloadResult(); return
   }
+  if (props.toolId === 'relation-extract') {
+    // 实体关系识别（2026-10-19 需求）：JSON / RDF 两种格式
+    downloadMenuOpen.value = !downloadMenuOpen.value
+    return
+  }
   if (!['zh-abstract-move', 'en-abstract-move', 'zh-classify', 'en-classify', 'zh-keyword', 'en-keyword', 'citation-sentiment', 'general-ner'].includes(props.toolId)) { downloadResult(); return }   // 其他工具行为不变
   downloadMenuOpen.value = !downloadMenuOpen.value
 }
@@ -2347,6 +2368,31 @@ function downloadNerSql() {
   downloadMenuOpen.value = false
 }
 
+function downloadRelationRdf() {
+  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
+  const triples = ((data?.relation_triples || data?.triples) as Array<Record<string, unknown>>) || []
+  const esc = (v: unknown) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  // 实体 URI：以实体名为本地名（非法字符转下划线），关系为属性
+  const uri = (name: unknown) => 'sem:' + String(name || '').replace(/[^\w\u4e00-\u9fff]+/g, '_')
+  const items = triples.map(t =>
+    `  <sem:Statement rdf:about="sem:stmt_${esc(t.triple_id || '')}">
+    <sem:subject rdf:resource="${uri(t.subject)}"/>
+    <sem:predicate rdf:resource="sem:rel_${String(t.relation || '').replace(/[^\w\u4e00-\u9fff]+/g, '_')}"/>
+    <sem:object rdf:resource="${uri(t.object)}"/>
+    <rdfs:label>${esc(t.subject)} —${esc(t.relation)}→ ${esc(t.object)}</rdfs:label>
+  </sem:Statement>`).join('\n')
+  const rdf = `<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:sem="http://example.org/semantic-toolkit/relation#">
+${items}
+</rdf:RDF>`
+  const blob = new Blob(['\ufeff' + rdf], { type: 'application/rdf+xml;charset=utf-8' })
+  const url = URL.createObjectURL(blob); const a = document.createElement('a')
+  a.href = url; a.download = `${props.toolId}_result.rdf`; a.click(); URL.revokeObjectURL(url)
+  downloadMenuOpen.value = false
+}
+
 function downloadAbstractMoveDatabase() {
   // 2026-10-18：批量信封逐篇解包（此前批量只剩建表语句）
   const esc = (v: unknown) => v === null || v === undefined ? 'NULL' : `'${String(v).replace(/'/g, "''")}'`
@@ -2720,6 +2766,7 @@ function downloadResult() {
                     <div class="citation-metadata-entry-head"><b>参考文献{{ entry.reference_index ? `[${entry.reference_index}]` : ` ${mIndex + 1}` }}</b><button class="ghost-btn danger" type="button" @click="removeFileMetaEntry(item.id, mIndex)">删除</button></div>
                     <div class="two-column"><div class="field"><label><span class="label-main">作者</span></label><input v-model="entry.authorsText" class="input" placeholder="多人分号分隔" /></div><div class="field"><label><span class="label-main">题名</span></label><input v-model="entry.title" class="input" /></div></div>
                     <div class="two-column"><div class="field"><label><span class="label-main">年份</span></label><input v-model="entry.year" class="input" /></div><div class="field"><label><span class="label-main">来源</span></label><input v-model="entry.venue" class="input" /></div></div>
+                    <div class="field"><label><span class="label-main">DOI</span><small>选填</small></label><input v-model="entry.doi" class="input" placeholder="例如：10.xxxx/xxxxx" /></div>
                   </div>
                 </div>
               </div>
@@ -2766,7 +2813,7 @@ function downloadResult() {
 
       <div class="test-card response-card">
         <div v-if="languageMismatch" class="info-banner warning" style="margin:0 0 10px"><b>语言不匹配提示</b><span>{{ languageMismatch }}</span></div>
-        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><div class="download-menu-wrap-v751"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="toggleDownloadMenu"><ResultActionIcon kind="download" />下载结果</button><div v-if="downloadMenuOpen" class="download-menu-v751"><button type="button" class="download-menu-item-v751" @click="downloadResult">JSON</button><button v-if="toolId === 'zh-classify' || toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationCsv">CSV</button><button v-else-if="toolId === 'zh-keyword' || toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordCsv">CSV</button><button v-else-if="toolId === 'citation-sentiment'" type="button" class="download-menu-item-v751" @click="downloadCitationCsv">CSV</button><button v-else-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerCsv">CSV</button><button v-else-if="toolId !== 'definition-detect'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveCsv">CSV</button><button v-if="toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationXml">XML</button><button v-if="toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordXml">XML</button><button v-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerSql">数据库</button><button v-if="toolId === 'zh-abstract-move'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveDatabase">数据库</button></div></div><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)"><ResultActionIcon kind="visualize" />查看可视化效果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><ResultActionIcon kind="clear" />清除结果</button></div></div>
+        <div class="test-card-header"><div class="test-card-title">响应结果</div><div class="response-card-actions-v645"><div class="download-menu-wrap-v751"><button id="downloadResultBtnV732" class="ghost-btn" :disabled="!hasResult" @click="toggleDownloadMenu"><ResultActionIcon kind="download" />下载结果</button><div v-if="downloadMenuOpen" class="download-menu-v751"><button type="button" class="download-menu-item-v751" @click="downloadResult">JSON</button><button v-if="toolId === 'zh-classify' || toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationCsv">CSV</button><button v-else-if="toolId === 'zh-keyword' || toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordCsv">CSV</button><button v-else-if="toolId === 'citation-sentiment'" type="button" class="download-menu-item-v751" @click="downloadCitationCsv">CSV</button><button v-else-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerCsv">CSV</button><button v-else-if="toolId !== 'definition-detect'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveCsv">CSV</button><button v-if="toolId === 'relation-extract'" type="button" class="download-menu-item-v751" @click="downloadResult">JSON</button><button v-if="toolId === 'relation-extract'" type="button" class="download-menu-item-v751" @click="downloadRelationRdf">RDF</button><button v-if="toolId === 'en-classify'" type="button" class="download-menu-item-v751" @click="downloadClassificationXml">XML</button><button v-if="toolId === 'en-keyword'" type="button" class="download-menu-item-v751" @click="downloadKeywordXml">XML</button><button v-if="toolId === 'general-ner'" type="button" class="download-menu-item-v751" @click="downloadNerSql">数据库</button><button v-if="toolId === 'zh-abstract-move'" type="button" class="download-menu-item-v751" @click="downloadAbstractMoveDatabase">数据库</button></div></div><button v-if="canVisualize" id="viewVisualizationBtnV645" class="outline-btn visual-btn" :disabled="!hasResult" @click="emit('visualize', result)"><ResultActionIcon kind="visualize" />查看可视化效果</button><button id="clearBtn" class="clear-result-link" @click="clearResult"><ResultActionIcon kind="clear" />清除结果</button></div></div>
         <div class="response-result-body hover-copy-box"><pre v-if="hasResult" class="console">{{ pretty(result) }}</pre><div v-else-if="running && runProgress" class="console live-progress"><div class="lp-summary"><b>正在处理 {{ runProgress.total }} 篇</b><span>已完成 {{ runProgress.success_count + runProgress.failed_count }}/{{ runProgress.total }}（成功 {{ runProgress.success_count }}<template v-if="runProgress.failed_count">，失败 {{ runProgress.failed_count }}</template>）· 累计 {{ runProgress.elapsed }}s</span></div><div class="lp-rows"><div v-for="it in runProgress.items" :key="it.index" class="lp-row" :data-st="it.status"><i>{{ it.index + 1 }}</i><span class="lp-name" :title="it.file_name">{{ it.file_name }}</span><template v-if="it.status === 'succeeded'"><b class="lp-ok">✓</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template><template v-else-if="it.status === 'failed'"><b class="lp-err">✗</b><span class="lp-time">失败</span></template><template v-else><b class="lp-run">…</b><span class="lp-time">{{ (it.elapsed_ms / 1000).toFixed(1) }}s</span></template></div></div></div><div v-else-if="requestError" class="console placeholder request-error">{{ requestError }}</div><div v-else class="console placeholder">等待测试执行...</div></div>
       </div>
     </div>

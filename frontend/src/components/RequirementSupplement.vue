@@ -137,6 +137,12 @@ const requestPayload = computed<Record<string, unknown>>(() => {
 
   if (props.toolId === 'citation-sentiment' || props.toolId === 'citation-intent') {
     if (props.mode === 'text' || props.mode === 'file') {
+      // 参考文献原始条目随请求透传（2026-10-19 对齐：文档参数表有
+      // reference_entries 而在线测试从未发送——粘贴/上传的条目原文
+      // 与解析出的 citation_metadata 一并提供，后端作判定辅助因素）
+      if (citationRawReference.value.trim()) {
+        payload.reference_entries = citationRawReference.value.trim()
+      }
       payload.citation_metadata = citationMetadataList.value.map(entry => ({
         citation_marker: entry.reference_index ? `[${entry.reference_index}]` : '',
         reference_index: entry.reference_index,
@@ -225,7 +231,14 @@ let _refParseTimer: ReturnType<typeof setTimeout> | null = null
 watch(citationRawReference, (val) => {
   if (_refParseTimer) clearTimeout(_refParseTimer)
   const raw = val.trim()
-  if (!raw) return
+  if (!raw) {
+    // 原文清空 → 已解析的元数据同步清空（2026-10-19 用户反馈：删掉内容
+    // 后元数据残留；与批量文本/批量文件的清空行为对齐）
+    citationMetadataList.value = []
+    citationParseState.value = 'idle'
+    citationParseError.value = ''
+    return
+  }
   _refParseTimer = setTimeout(() => { parseCitationReference() }, 800)
 })
 
@@ -490,7 +503,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
             <button v-if="citationUploadName" class="hover-copy-btn resource-cancel-btn" type="button" @click="clearCitationReferenceFile">✕ 取消</button>
           </div>
         <div class="citation-parser-action-row">
-          <span v-if="citationParsing" class="citation-parse-status">解析中…（大模型解析多条条目约需数秒）</span>
+          <span v-if="citationParsing" class="citation-parse-status">解析中…（多条条目约需数秒）</span>
           <span v-else-if="citationParseState === 'empty'" class="citation-parse-status warning">! {{ citationParseError || '请先粘贴或上传参考文献条目' }}</span>
         </div>
       </div>
@@ -500,7 +513,7 @@ watchEffect(() => emit('update:payload', requestPayload.value))
           <div class="citation-metadata-form-grid">
             <div class="field"><label><span class="label-main">发表年份</span></label><input v-model="entry.year" class="input" placeholder="例如：2024" /></div>
             <div class="field"><label><span class="label-main">作者</span></label><input v-model="entry.authorsText" class="input" placeholder="多个作者用分号分隔" /></div>
-            <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献题名</span></label><input v-model="entry.title" class="input" placeholder="请输入被引文献题名" /><small class="char-count-v755">{{ entry.title.length }}/50</small></div>
+            <div class="field"><label><span class="label-main">文献题名</span></label><input v-model="entry.title" class="input" placeholder="请输入被引文献题名" /><small class="char-count-v755">{{ entry.title.length }}/50</small></div>
             <div class="field"><label><span class="label-main">期刊或会议</span></label><input v-model="entry.venue" class="input" placeholder="请输入期刊或会议名称" /></div>
             <div class="field"><label><span class="label-main">DOI</span><small>选填</small></label><input v-model="entry.doi" class="input" placeholder="例如：10.xxxx/xxxxx" /></div>
           </div>
@@ -561,8 +574,8 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         
         <p v-if="resourceSaveError" class="anchor-format-hint" style="color:#c0392b">{{ resourceSaveError }}</p>
         <p v-if="resourceSaveNotice" class="anchor-format-hint">{{ resourceSaveNotice }}</p>
-        <p v-if="resourceProbes[field.key]?.status === 'checking'" class="anchor-format-hint">⏳ 正在解析资源文件（结构非标准时将自动用大模型整理）…</p>
-        <p v-if="resourceProbes[field.key]?.status === 'ready'" class="anchor-format-hint" style="color:#1e8e3e">✓ 资源已就绪{{ resourceProbes[field.key]?.rows != null ? ` · 已解析 ${resourceProbes[field.key]?.rows} 条` : '' }}{{ resourceProbes[field.key]?.normalizedBy === 'glm' ? '（大模型已整理为标准格式，提交时直接复用）' : '' }}</p>
+        <p v-if="resourceProbes[field.key]?.status === 'checking'" class="anchor-format-hint">⏳ 正在解析资源文件（结构非标准时将自动整理）…</p>
+        <p v-if="resourceProbes[field.key]?.status === 'ready'" class="anchor-format-hint" style="color:#1e8e3e">✓ 资源已就绪{{ resourceProbes[field.key]?.rows != null ? ` · 已解析 ${resourceProbes[field.key]?.rows} 条` : '' }}{{ resourceProbes[field.key]?.normalizedBy === 'glm' ? '（已自动整理为标准格式，提交时直接复用）' : '' }}</p>
         <div v-if="resourceProbes[field.key]?.indexStatus" style="display:flex;align-items:center;gap:10px;padding:4px 0;">
           <span class="parse-ring" :data-state="resourceProbes[field.key]?.indexStatus === 'done' ? 'done' : resourceProbes[field.key]?.indexStatus === 'failed' ? 'error' : 'parsing'" :style="`--p:${resourceProbes[field.key]?.indexProgress || 0}%`"><i>{{ resourceProbes[field.key]?.indexStatus === 'done' ? '✓' : resourceProbes[field.key]?.indexStatus === 'failed' ? '✗' : (resourceProbes[field.key]?.indexProgress || 0) + '%' }}</i></span>
           <span v-if="resourceProbes[field.key]?.indexStatus === 'done'" class="parse-text ok clc-progress-text">分类知识库构建完成，提交即用用户体系分类</span>

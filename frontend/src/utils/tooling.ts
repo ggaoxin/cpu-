@@ -576,7 +576,7 @@ const METADATA_FIELD_NAMES = new Set(['document_title', 'project_name'])
 // citation 文件模式的引用句卡片直通（2026-10-18 修复）：file 模式文档模板无
 // citation_sentence_and_context 键，按模板过滤会把自动提取的卡片静默丢掉
 // （实测卡片 5 张、请求不带卡片走后端自动抽取）——在线测试实发字段须直通
-const CITATION_CARD_FIELD_NAMES = new Set(['citation_sentence_and_context', 'citation_contexts_by_file', 'citation_metadata_by_file'])
+const CITATION_CARD_FIELD_NAMES = new Set(['citation_sentence_and_context', 'citation_contexts_by_file', 'citation_metadata_by_file', 'reference_entries', 'reference_entries_by_file'])
 function stripEmptyResourceDescriptors(payload: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(payload)) {
@@ -823,6 +823,25 @@ export function requestParameterRowsFor(tool: ToolDefinition, mode: InputMode) {
       rows.push([field, 'file (.json)', status || 'optional', status === 'required'
         ? desc
         : `可选上传资源：${desc}`])
+    }
+  }
+  // 引用句识别文件模式的卡片/元数据可选字段（2026-10-19 同步：在线测试文件
+  // 模式会随请求携带这些字段——单文件带整句卡片走信任路径（输出引用句数=
+  // 卡片数），批量文件按文件顺序对位；不提供时走后端自动抽取）
+  if (toolId.startsWith('citation-')) {
+    const extra: Array<[string, string]> = mode === 'file'
+      ? [['citation_sentence_and_context', '引用句卡片数组（完整一整句为一条）。提供时走信任卡片路径：输出引用句数=卡片数；不提供由后端自动抽取'],
+         ['citation_metadata', '被引文献元数据数组（标记/作者/题名/年份/来源），作为意图/情感判定的辅助因素'],
+         ['reference_entries', '参考文献原始条目（每行一条）。与解析出的元数据一并提供，作判定辅助因素']]
+      : mode === 'batch'
+        ? [['citation_contexts_by_file', '逐文件引用句卡片（数组的数组，外层下标=文件序）。提供时各文件输出引用句数=该文件卡片数'],
+           ['citation_metadata_by_file', '逐文件被引文献元数据（数组的数组，与文件对位）'],
+           ['reference_entries_by_file', '逐文件参考文献原始条目（字符串数组，与文件对位）']]
+        : mode === 'batch-text'
+          ? [['reference_entries', '参考文献原始条目（字符串数组，逐条与引用数据对位）']]
+          : []
+    for (const [field, desc] of extra) {
+      if (!rows.some(item => item[0] === field)) rows.push([field, mode === 'batch' && field === 'reference_entries_by_file' ? 'string[]' : 'object[]', 'optional', `可选：${desc}`])
     }
   }
   return rows

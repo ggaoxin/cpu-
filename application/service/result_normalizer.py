@@ -353,6 +353,13 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
                 "dependency_path": dep_path,
                 "confidence": _confidence(value),
             })
+        # GLM 偶发漏掉单条三元组的 confidence（2026-10-19 全库扫描实测空列）：
+        # 兜底为同批有值三元组的均值（全空时 0.85）——与 NER 实体同口径
+        _tp = [t.get("confidence") for t in triples if isinstance(t.get("confidence"), (int, float))]
+        _tavg = round(sum(_tp) / len(_tp), 3) if _tp else 0.85
+        for t in triples:
+            if t.get("confidence") is None:
+                t["confidence"] = _tavg
         dependency_parse = _list(data.get("dependency_parse") or data.get("dependencies"))
         # dependency_paths 兜底：从每条 triple 的 dependency_path 聚合
         dependency_paths = _list(data.get("dependency_paths"))
@@ -1715,6 +1722,13 @@ def _entities(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
         # GLM output_schema 会带 mapping 字段（LLM 生成的知识库 ID 猜测），
         # 弹窗知识库 ID 列读 standard_kb_id，mapping 不展示不输出
         items[-1].pop("mapping", None)
+    # GLM 偶发漏掉单条实体的 confidence（2026-10-19 用户实测空列）：
+    # 兜底为同批有值实体的均值（全空时 0.9）——与语步"取不到回退整体"同口径
+    _present = [it.get("confidence") for it in items if isinstance(it.get("confidence"), (int, float))]
+    _avg = round(sum(_present) / len(_present), 3) if _present else 0.9
+    for it in items:
+        if it.get("confidence") is None:
+            it["confidence"] = _avg
     # ---- 实体去重（原子性优先）----
     # NER 最佳实践：输出原子概念单元，不输出复合短语。三层去重：
     # ① 位置嵌套（跨类型）：A 的 [start,end] 完全在 B 内 → 删 A（内嵌/不完整）

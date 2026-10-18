@@ -1199,6 +1199,12 @@ class ToolIntegrationService:
                 if _citation_meta_by_file and index < len(_citation_meta_by_file) \
                         and isinstance(_citation_meta_by_file[index], list) and _citation_meta_by_file[index]:
                     items[-1].source["citation_metadata"] = _citation_meta_by_file[index]
+                # 逐文件参考文献原始条目（2026-10-19 对齐：与元数据同款按文件对位，
+                # 挂 source 供引擎辅助判定与溯源）
+                _refs_by_file = payload.get("reference_entries_by_file")
+                if isinstance(_refs_by_file, list) and index < len(_refs_by_file) \
+                        and isinstance(_refs_by_file[index], str) and _refs_by_file[index].strip():
+                    items[-1].source["reference_entries"] = _refs_by_file[index]
             return items
 
         if payload.get("input_type") == "upstream_records":

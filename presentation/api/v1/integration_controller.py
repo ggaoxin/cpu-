@@ -1259,11 +1259,60 @@ async def _extract_abstract_fast(
     return out
 
 
+def _repair_glued_english(md: str, pdf_path: str) -> str:
+    """MinerU 断词粘连修复（2026-10-19 用户实测：结构化综述关键句段
+    "areoftenabletoemploy…" 单词贴块；综述/聚类/NER 等全链路读的是 mineru 文本）。
+
+    根因：mineru 合并 PDF 断行时丢词间空格，产出 "are often able to"→
+    "areoftenableto" 的全小写粘连串——无词典不可靠拆分。确定性修复：PyMuPDF
+    原始提取（实测无粘连）按去空白索引对位——粘连串在 PyMuPDF 原文中找到同一
+    字母序列后，取原文的带空格版本替换。找不到则保持原样（不猜测）。
+    """
+    import re as _re
+    _GLUE = _re.compile(r"[a-z]{18,}")
+    glue_runs = _GLUE.findall(md)
+    if not glue_runs:
+        return md
+    try:
+        import fitz as _fitz
+        doc = _fitz.open(pdf_path)
+        raw = "".join(page.get_text() for page in doc)
+        doc.close()
+    except Exception:  # noqa: BLE001 - PyMuPDF 读取失败则不修
+        return md
+    if not raw.strip():
+        return md
+    stripped = _re.sub(r"\s+", "", raw)
+    # 去空白索引 → 原文索引映射
+    index_map: List[int] = []
+    for _i, _ch in enumerate(raw):
+        if not _ch.isspace():
+            index_map.append(_i)
+    def _spaced(needle: str) -> Optional[str]:
+        flat = _re.sub(r"\s+", "", needle)
+        pos = stripped.find(flat)
+        if pos < 0:
+            return None
+        # 扩一位验证边界（避免子串误配）：取原文区间并折叠空白对比
+        s_orig, e_orig = index_map[pos], index_map[pos + len(flat) - 1] + 1
+        candidate = raw[s_orig:e_orig]
+        if _re.sub(r"\s+", "", candidate) != flat:
+            return None
+        return candidate
+    repaired = md
+    for run in set(glue_runs):
+        fixed = _spaced(run)
+        if fixed and fixed != run and " " in fixed:
+            repaired = repaired.replace(run, fixed)
+    return repaired
+
+
 def _mineru_parse_one(content: bytes, filename: str, end_page: Optional[int]) -> Optional[Dict[str, str]]:
     """MinerU 单文件解析（2026-09-09 主路径，用户拍板：解析已与响应解离，用结构化
     markdown 换取全链路文本质量；CPU 后端实测英文 13~28s/20页、限 8 页约减半）。
 
-    断词/双栏交错/噪声块/标题误抓等 PyMuPDF 固有问题在 md 输出中不存在。
+    断词/双栏交错/噪声块/标题误抓等 PyMuPDF 固有问题在 md 输出中不存在
+    （例外：断行合并的词间粘连由 _repair_glued_english 对位修复）。
     失败/超时/服务不可用返回 None，由调用方走 PyMuPDF 栈兜底（不删代码）。
     """
     import tempfile
@@ -1281,6 +1330,7 @@ def _mineru_parse_one(content: bytes, filename: str, end_page: Optional[int]) ->
         md = _clean_md_text(str(result.get("md_content") or ""))
         if len(md.strip()) < 200 or md.strip().lower() == "nan":
             return None
+        md = _repair_glued_english(md, tmp_path)
         title = ""
         for line in md.splitlines():
             s = line.strip()
@@ -1514,9 +1564,30 @@ async def parse_files(
         _title = ""
         try:
             _head = (text or "")[:500]
-            for _line in _head.split("\n"):
-                _s = _line.strip()
-                if len(_s) >= 8 and not _s.startswith(("#", "摘要", "Abstract", "关键词", "Keywords", "http", "DOI", "收稿", "作者")):
+            # 先收集非空行：页眉判定需要前瞻（下一行是刊号/年卷期 → 当前行
+            # 是期刊名行，2026-10-19：纯英文期刊名 "Chinese Journal of
+            # Bioinformatics" 无中文结尾特征，单行规则拦不住）
+            _lines = [l.strip() for l in _head.split("\n") if l.strip()]
+            for _li, _s in enumerate(_lines):
+                _next = _lines[_li + 1] if _li + 1 < len(_lines) else ""
+                # 期刊页眉过滤（2026-10-19 用户实测 socialbot.pdf：页眉三行
+                # "期刊中英名/年卷期/页码" 排在真标题前被误抓）——年卷期行
+                # （2026，62（2））、纯页码行（232）、中英无缝粘连的期刊名行
+                # （Computer...Applications计算机工程与应用）都跳过
+                if _re_title_pageno.fullmatch(_s):
+                    continue
+                if _next and (_re_title_pageno.fullmatch(_next) or _next.startswith(("ISSN", "CN ", "《"))):
+                    continue
+                # 网络首发版式（2026-10-19）："题目： 真标题" 行直接剥前缀采用；
+                # 刊号（ISSN/CN）与《期刊名》标识行跳过
+                _m_titled = re.match(r"^题\s*目[：:]\s*(.+)$", _s)
+                if _m_titled and _m_titled.group(1).strip():
+                    _title = _m_titled.group(1).strip()[:200]
+                    break
+                if _s.startswith(("ISSN", "CN ", "《")) or _re_title_issn.match(_s):
+                    continue
+                if len(_s) >= 8 and not _s.startswith(("#", "摘要", "Abstract", "关键词", "Keywords", "http", "DOI", "收稿", "作者")) \
+                        and not _re_title_journal.search(_s):
                     _title = _s[:200]
                     break
         except Exception:
@@ -1527,6 +1598,12 @@ async def parse_files(
                         # 输出侧引用句数在文件模式同样成立）
                         **({"text": text} if effective_tool in CITATION_TOOLS else {})})
     return {"code": 0, "message": "解析完成", "data": {"tool_id": effective_tool, "results": results}}
+
+
+# 标题提取的页眉过滤（2026-10-19）：年卷期行 / 纯页码行 / 中英无缝粘连期刊名行
+_re_title_pageno = __import__("re").compile(r"\d{4}\s*[，,（(].*|\d{1,5}")
+_re_title_journal = __import__("re").compile(r"^[A-Za-z][A-Za-z\s,.&:\-]+[一-鿿]{2,}$")
+_re_title_issn = __import__("re").compile(r"^ISSN\b|^CN\s*\d")
 
 
 def _file_endpoint(tool_id: str, multiple: bool):
