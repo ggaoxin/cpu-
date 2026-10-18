@@ -2792,3 +2792,11 @@ body.figma-ui-v717 .citation-request-card .citation-extract-btn:hover {
 .clc-tree-link-v756 a { color: #2563eb; font-size: 13.5px; font-weight: 600; text-decoration: none; }
 .clc-tree-link-v756 a:hover { text-decoration: underline; }
 .clc-tree-link-v756 small { color: #7a889b; font-size: 11px; }/* 资源上传字段"选填"标记（2026-10-15）：非必填资源字段明确标注 */
+
+/* 自动分类工具·领域标签字号（2026-10-18 用户反馈：9px 太小看不清）——
+   app.css 后于 prototype.generated.css 加载，同选择器覆盖三类分类工具 */
+body.v667-zh-classify-active .zh-classify-domain-tag-v667,
+body.v668-en-classify-active .en-classify-domain-tag-v668,
+body.v669-domain-classify-active .domain-classify-domain-tag-v669 {
+  font-size: 12px;
+}
