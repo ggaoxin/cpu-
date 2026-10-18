@@ -864,6 +864,26 @@ watch(() => props.toolId, () => {
 
 watch(mode, (next, previous) => {
   if (next !== previous && (next === 'file' || next === 'batch')) uploadedFiles.splice(0)
+  // 切走即清空原输入方式的输入（2026-10-18 用户定稿，适用于全部功能点）：
+  // 输入方式互切后旧输入残留，切回时内容还在，容易误以为已带入或误提交。
+  // 文本类清正文/题目；文件类清已传文件（含预解析结果）；数据库选择类清选中项
+  if (previous === 'text') {
+    form.text = ''
+    form.documentTitle = ''
+    form.projectName = ''
+    citationSingle.documentText = ''
+  } else if (previous === 'batch-text') {
+    batchTexts.splice(0)
+    citationBatchItems.splice(0)
+    docs.splice(0)
+  } else if (previous === 'file' || previous === 'batch') {
+    uploadedFiles.splice(0)
+  } else if (previous === 'collection') {
+    selectedCollectionId.value = ''
+    selectedClusterTaskId.value = ''
+  } else if (previous === 'existing-result') {
+    selectedNerRecordId.value = ''
+  }
   if (next === 'batch-text' && batchTexts.length === 0) {
     addBatchText()
     addBatchText()
