@@ -1785,13 +1785,41 @@ function csvCell(value: unknown) {
   const s = String(value ?? '')
   return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
 }
-function downloadAbstractMoveCsv() {
+// 下载取数：批量（批量文本/批量文件）响应是 batch_id 信封（results[] 包每篇
+// result），专用 CSV/SQL 此前只读 data.moves 等顶层键 → 批量下载只剩表头
+// （2026-10-18 用户反馈"CSV 没有内容"根因）。统一解包成逐篇记录，单篇即 [data]
+function downloadResultRecords(): Array<Record<string, unknown>> {
   const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const title = ((data?.document as Record<string, unknown>)?.title as string) || ''
-  const moves = ((data?.moves as Array<Record<string, unknown>>) || []).filter(m => m && m.text)
+  if (!data) return []
+  if (Array.isArray(data.results)) {
+    return (data.results as Array<Record<string, unknown>>)
+      .map(item => {
+        const rec = (item?.result && typeof item.result === 'object' ? item.result : item) as Record<string, unknown>
+        // 信封条目带 source.title（在线测试每篇题目），结果缺 document_title 时补上
+        if (rec && rec.document_title == null) {
+          const t = (item?.source as Record<string, unknown> | undefined)?.title
+          if (typeof t === 'string' && t.trim()) rec.document_title = t
+        }
+        return rec
+      })
+      .filter(rec => rec && typeof rec === 'object')
+  }
+  return [data]
+}
+function recordTitle(rec: Record<string, unknown>): string {
+  return String(rec.document_title
+    ?? (rec.document as Record<string, unknown> | undefined)?.title
+    ?? form.documentTitle
+    ?? '')
+}
+function downloadAbstractMoveCsv() {
+  const moves = downloadResultRecords().flatMap(rec =>
+    ((rec.moves as Array<Record<string, unknown>>) || [])
+      .filter(m => m && m.text)
+      .map(m => [recordTitle(rec), m.label, `${m.start ?? ''}-${m.end ?? ''}`, m.text, m.confidence ?? '']))
   const lines = [
     ['文献题名', '语步类别', '句子位置', '原文片段', '置信度评分'].map(csvCell).join(','),
-    ...moves.map(m => [title, m.label, `${m.start ?? ''}-${m.end ?? ''}`, m.text, m.confidence ?? ''].map(csvCell).join(',')),
+    ...moves.map(row => row.map(csvCell).join(',')),
   ]
   const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
@@ -1799,37 +1827,37 @@ function downloadAbstractMoveCsv() {
   downloadMenuOpen.value = false
 }
 function downloadClassificationCsv() {
-  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const title = ((data?.document as Record<string, unknown>)?.title as string)
-    || String(data?.document_title || '')
   // 分类结果：classifications 数组（每条含 clc_code/category_name/label/confidence/role；
   // zh 用 category_name，en 用 label，两者兼容）。列与可视化弹窗对齐（2026-10-15
-  // 用户定稿：下载要完整记录弹窗输出字段）——补分类路径、领域标签，en 补跨语言映射对
-  const cls = ((data?.classifications as Array<Record<string, unknown>>) || []).filter(c => c && c.clc_code)
+  // 用户定稿：下载要完整记录弹窗输出字段）——补分类路径、领域标签，en 补跨语言映射对。
+  // 2026-10-18：改走 downloadResultRecords，批量信封逐篇解包（此前批量只剩表头）
   const isEn = props.toolId === 'en-classify'
-  const domainLabels = (data?.domain_labels as Array<Record<string, unknown>>) || []
-  const clm = (data?.cross_language_mapping || {}) as Record<string, unknown>
   const pathOf = (c: Record<string, unknown>) => Array.isArray(c.classification_path)
     ? (c.classification_path as unknown[]).join(' > ') : String(c.classification_path || '')
-  const pairOf = (rowIndex: number) => {
-    const pair = ((rowIndex > 0 ? clm.secondary : clm) || {}) as Record<string, unknown>
-    const s = String(pair.source_term || '').trim(); const z = String(pair.zh_term || '').trim()
-    return s && z ? `${s}—${z}` : ''
-  }
   const header = ['文献题名', '角色', '中图分类号', '分类名称', '分类路径', '置信度',
     ...(isEn ? ['跨语言类目映射'] : []), '领域标签']
   const lines = [
     header.map(csvCell).join(','),
-    ...cls.map((c, rowIndex) => [
-      title,
-      String(c.role || 'main') === 'secondary' || rowIndex > 0 ? '次分类' : '主分类',
-      String(c.clc_code || ''),
-      String(c.category_name || c.label || ''),
-      pathOf(c),
-      String(c.confidence ?? ''),
-      ...(isEn ? [pairOf(rowIndex)] : []),
-      (() => { const l = domainLabels[rowIndex] as unknown; return l == null ? '' : String((l as Record<string, unknown>).label || (l as Record<string, unknown>).name || l) })(),
-    ].map(csvCell).join(',')),
+    ...downloadResultRecords().flatMap(rec => {
+      const cls = ((rec.classifications as Array<Record<string, unknown>>) || []).filter(c => c && c.clc_code)
+      const domainLabels = (rec.domain_labels as Array<Record<string, unknown>>) || []
+      const clm = (rec.cross_language_mapping || {}) as Record<string, unknown>
+      const pairOf = (rowIndex: number) => {
+        const pair = ((rowIndex > 0 ? clm.secondary : clm) || {}) as Record<string, unknown>
+        const s = String(pair.source_term || '').trim(); const z = String(pair.zh_term || '').trim()
+        return s && z ? `${s}—${z}` : ''
+      }
+      return cls.map((c, rowIndex) => [
+        recordTitle(rec),
+        String(c.role || 'main') === 'secondary' || rowIndex > 0 ? '次分类' : '主分类',
+        String(c.clc_code || ''),
+        String(c.category_name || c.label || ''),
+        pathOf(c),
+        String(c.confidence ?? ''),
+        ...(isEn ? [pairOf(rowIndex)] : []),
+        (() => { const l = domainLabels[rowIndex] as unknown; return l == null ? '' : String((l as Record<string, unknown>).label || (l as Record<string, unknown>).name || l) })(),
+      ].map(csvCell).join(','))
+    }),
   ]
   const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
@@ -1838,37 +1866,38 @@ function downloadClassificationCsv() {
 }
 
 // 英文科技文献分类：XML（结构化分类结果）——文档信息 + 主/次分类（含路径）+ 领域标签
+// 2026-10-18：批量信封逐篇解包（每篇一个 document 节点）
 function downloadClassificationXml() {
-  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const title = ((data?.document as Record<string, unknown>)?.title as string)
-    || String(data?.document_title || '')
   const escXml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-  const cls = ((data?.classifications as Array<Record<string, unknown>>) || []).filter(c => c && c.clc_code)
   const pathOf = (c: Record<string, unknown>) => {
     const p = c.classification_path
     return Array.isArray(p) ? p.join(' > ') : String(p || '')
   }
-  const items = cls.map((c, i) => `    <classification id="${i + 1}" role="${c.role === 'secondary' ? 'secondary' : 'primary'}">
+  const docs = downloadResultRecords().map(rec => {
+    const cls = ((rec.classifications as Array<Record<string, unknown>>) || []).filter(c => c && c.clc_code)
+    const domainList = (rec.domain_labels as Array<Record<string, unknown>>) || []
+    const items = cls.map((c, i) => `    <classification id="${i + 1}" role="${c.role === 'secondary' ? 'secondary' : 'primary'}">
       <clc_code>${escXml(String(c.clc_code || ''))}</clc_code>
       <name>${escXml(String(c.category_name || c.label || ''))}</name>
       <confidence>${c.confidence ?? ''}</confidence>
       <path>${escXml(pathOf(c))}</path>
     </classification>`).join('\n')
-  const domainList = (data?.domain_labels as Array<Record<string, unknown>>) || []
-  const domains = domainList
-    .map(d => `    <domain confidence="${d.confidence ?? ''}">${escXml(String(d.label || d.name || ''))}</domain>`).join('\n')
+    const domains = domainList
+      .map(d => `    <domain confidence="${d.confidence ?? ''}">${escXml(String(d.label || d.name || ''))}</domain>`).join('\n')
+    return `  <document>
+    <title>${escXml(recordTitle(rec))}</title>
+    <is_interdisciplinary>${rec.is_interdisciplinary === true ? 'true' : 'false'}</is_interdisciplinary>
+    <classifications count="${cls.length}">
+${items}
+    </classifications>
+    <domain_labels count="${domainList.length}">
+${domains}
+    </domain_labels>
+  </document>`
+  })
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <classificationResult>
-  <document>
-    <title>${escXml(title)}</title>
-    <is_interdisciplinary>${data?.is_interdisciplinary === true ? 'true' : 'false'}</is_interdisciplinary>
-  </document>
-  <classifications count="${cls.length}">
-${items}
-  </classifications>
-  <domain_labels count="${domainList.length}">
-${domains}
-  </domain_labels>
+${docs.join('\n')}
 </classificationResult>`
   const blob = new Blob(['﻿' + xml], { type: 'application/xml;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
@@ -1877,34 +1906,34 @@ ${domains}
 }
 
 function downloadKeywordCsv() {
-  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
-  const kws = ((data?.keywords as Array<Record<string, unknown>>) || []).filter(k => k && (k.keyword || k.term))
   // 列与可视化弹窗对齐（2026-10-15）：中文=排序/关键词/置信度/词典命中/权重变化；
-  // 英文=排序/关键词/规范化形式/置信度/科研分类标签
+  // 英文=排序/关键词/规范化形式/置信度/科研分类标签。2026-10-18：批量信封逐篇解包
   const isEn = props.toolId === 'en-keyword'
   const header = isEn
     ? ['文献题名', '排序', '关键词/主题短语', '规范化形式', '置信度', '科研分类标签']
     : ['文献题名', '排序', '关键词/短语', '置信度', '词典命中', '权重变化']
   const lines = [
     header.map(csvCell).join(','),
-    ...kws.map((k, index) => {
-      if (isEn) {
-        const mapping = (k.classification_mapping || {}) as Record<string, unknown>
-        return [title,
-          String(k.rank ?? index + 1),
-          String(k.term || k.keyword || ''),
-          String(k.normalized_term || ''),
-          String(k.prob ?? k.confidence ?? ''),
-          Object.keys(mapping).length ? `${mapping.code || ''} ${mapping.label || ''}`.trim() : '未映射'].map(csvCell).join(',')
-      }
-      return [title,
-        String(k.rank ?? index + 1),
-        String(k.keyword || k.term || ''),
-        String(k.prob ?? k.confidence ?? ''),
-        k.custom_dictionary_hit || k.adaptive_resource_match ? '用户词典命中' : '未命中',
-        Number(k.weight_change) > 0 ? `+${Number(k.weight_change).toFixed(2)}` : '0.00'].map(csvCell).join(',')
-    }),
+    ...downloadResultRecords().flatMap(rec =>
+      ((rec.keywords as Array<Record<string, unknown>>) || [])
+        .filter(k => k && (k.keyword || k.term))
+        .map((k, index) => {
+          if (isEn) {
+            const mapping = (k.classification_mapping || {}) as Record<string, unknown>
+            return [recordTitle(rec),
+              String(k.rank ?? index + 1),
+              String(k.term || k.keyword || ''),
+              String(k.normalized_term || ''),
+              String(k.prob ?? k.confidence ?? ''),
+              Object.keys(mapping).length ? `${mapping.code || ''} ${mapping.label || ''}`.trim() : '未映射'].map(csvCell).join(',')
+          }
+          return [recordTitle(rec),
+            String(k.rank ?? index + 1),
+            String(k.keyword || k.term || ''),
+            String(k.prob ?? k.confidence ?? ''),
+            k.custom_dictionary_hit || k.adaptive_resource_match ? '用户词典命中' : '未命中',
+            Number(k.weight_change) > 0 ? `+${Number(k.weight_change).toFixed(2)}` : '0.00'].map(csvCell).join(',')
+        })),
   ]
   const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
@@ -1913,28 +1942,30 @@ function downloadKeywordCsv() {
 }
 
 function downloadKeywordXml() {
-  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
-  const kws = ((data?.keywords as Array<Record<string, unknown>>) || []).filter(k => k && (k.keyword || k.term))
-  // 字段与可视化弹窗对齐（2026-10-15）：规范化形式 + 科研分类标签
+  // 字段与可视化弹窗对齐（2026-10-15）：规范化形式 + 科研分类标签。
+  // 2026-10-18：批量信封逐篇解包（每篇一个 document 节点）
   const escXml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-  const items = kws.map((k, i) => {
-    const mapping = (k.classification_mapping || {}) as Record<string, unknown>
-    return `    <keyword id="${i + 1}">
+  const docs = downloadResultRecords().map(rec => {
+    const kws = ((rec.keywords as Array<Record<string, unknown>>) || []).filter(k => k && (k.keyword || k.term))
+    const items = kws.map((k, i) => {
+      const mapping = (k.classification_mapping || {}) as Record<string, unknown>
+      return `    <keyword id="${i + 1}">
       <term>${escXml(String(k.keyword || k.term || ''))}</term>
       <normalized_term>${escXml(String(k.normalized_term || ''))}</normalized_term>
       <confidence>${k.prob ?? k.confidence ?? ''}</confidence>
       <classification_mapping>${Object.keys(mapping).length ? `${escXml(String(mapping.code || ''))} ${escXml(String(mapping.label || ''))}`.trim() : '未映射'}</classification_mapping>
     </keyword>`
-  }).join('\n')
+    }).join('\n')
+    return `  <document>
+    <title>${escXml(recordTitle(rec))}</title>
+    <keywords count="${kws.length}">
+${items}
+    </keywords>
+  </document>`
+  })
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <keywordRecognitionResult>
-  <document>
-    <title>${escXml(title)}</title>
-  </document>
-  <keywords count="${kws.length}">
-${items}
-  </keywords>
+${docs.join('\n')}
 </keywordRecognitionResult>`
   const blob = new Blob(['\ufeff' + xml], { type: 'application/xml;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
@@ -1943,25 +1974,25 @@ ${items}
 }
 
 function downloadCitationCsv() {
-  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
-  // 引用结果：citation_sentiment_results 或 results 数组。列与可视化弹窗对齐
-  // （2026-10-15）：主表四要素 + 上下文页签的前文/后文
-  const items = ((data?.citation_sentiment_results || data?.results) as Array<Record<string, unknown>>) || []
+  // 引用结果：citation_sentiment_results 数组。列与可视化弹窗对齐（2026-10-15）：
+  // 主表四要素 + 上下文页签的前文/后文。2026-10-18：批量信封逐篇解包
   const lines = [
     ['文献题名', '引用句', '情感标签', '置信度', '前文', '后文', '被引文献'].map(csvCell).join(','),
-    ...items.filter(r => r && (r.citation_sentence || r.sentence)).map(r => {
-      const ctx = (r.context || {}) as Record<string, unknown>
-      return [
-        title,
-        String(r.citation_sentence || r.sentence || ''),
-        String(r.sentiment || r.sentiment_label || r.label || ''),
-        String(r.confidence ?? ''),
-        String(ctx.before || ctx.previous_sentence || ''),
-        String(ctx.after || ctx.next_sentence || ''),
-        String(r.cited_title || r.work_name || ''),
-      ].map(csvCell).join(',')
-    }),
+    ...downloadResultRecords().flatMap(rec =>
+      ((rec.citation_sentiment_results as Array<Record<string, unknown>>) || [])
+        .filter(r => r && (r.citation_sentence || r.sentence))
+        .map(r => {
+          const ctx = (r.context || {}) as Record<string, unknown>
+          return [
+            recordTitle(rec),
+            String(r.citation_sentence || r.sentence || ''),
+            String(r.sentiment || r.sentiment_label || r.label || ''),
+            String(r.confidence ?? ''),
+            String(ctx.before || ctx.previous_sentence || ''),
+            String(ctx.after || ctx.next_sentence || ''),
+            String(r.cited_title || r.work_name || ''),
+          ].map(csvCell).join(',')
+        })),
   ]
   const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
@@ -1970,21 +2001,22 @@ function downloadCitationCsv() {
 }
 
 function downloadNerCsv() {
-  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
-  const ents = ((data?.entities || data?.entity_results) as Array<Record<string, unknown>>) || []
-  // 列与可视化弹窗对齐（2026-10-15）：补编号（实体编号）与语境片段
+  // 列与可视化弹窗对齐（2026-10-15）：补编号（实体编号）与语境片段。
+  // 2026-10-18：批量信封逐篇解包（此前批量只剩表头）
   const lines = [
     ['文献题名', '编号', '实体名称', '实体类别', '实体位置', '语境片段', '置信度'].map(csvCell).join(','),
-    ...ents.filter(e => e && (e.text || e.entity || e.name)).map((e, index) => [
-      title,
-      String(e.entity_id || e.id || `E${index + 1}`),
-      String(e.text || e.entity || e.name || ''),
-      String(e.entity_type || e.type || ''),
-      e.start != null ? `字符 ${e.start}-${e.end}` : String(e.position || ''),
-      String(e.context || ''),
-      String(e.confidence ?? ''),
-    ].map(csvCell).join(',')),
+    ...downloadResultRecords().flatMap(rec =>
+      ((rec.entities || rec.entity_results) as Array<Record<string, unknown>> || [])
+        .filter(e => e && (e.text || e.entity || e.name))
+        .map((e, index) => [
+          recordTitle(rec),
+          String(e.entity_id || e.id || `E${index + 1}`),
+          String(e.text || e.entity || e.name || ''),
+          String(e.entity_type || e.type || ''),
+          e.start != null ? `字符 ${e.start}-${e.end}` : String(e.position || ''),
+          String(e.context || ''),
+          String(e.confidence ?? ''),
+        ].map(csvCell).join(','))),
   ]
   const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob); const a = document.createElement('a')
@@ -2006,24 +2038,25 @@ function definitionSourceLabel(sub: Record<string, unknown>): string {
   return ''
 }
 function downloadDefinitionCsv() {
-  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const title = form.documentTitle || String(data?.document_title || ((data?.document as Record<string, unknown>)?.title as string) || '')
-  const defs = ((data?.definitions || data?.definition_results) as Array<Record<string, unknown>>) || []
+  // 2026-10-18：批量信封逐篇解包（此前批量只剩表头）
   const rows = [['编号', '文献题名', '概念词', '概念定义句', '来源', '句式', '置信度'].map(csvCell).join(',')]
   let seq = 0
-  for (const item of defs) {
-    const subs = Array.isArray(item?.definitions) && item.definitions.length ? item.definitions : [item]
-    for (const sub of subs as Array<Record<string, unknown>>) {
-      seq += 1
-      rows.push([
-        String(sub.definition_id || item.definition_id || `D${seq}`),
-        title,
-        String(item.concept || sub.concept || ''),
-        String(sub.sentence || sub.definition || ''),
-        definitionSourceLabel(sub),
-        String(sub.pattern || ''),
-        String(sub.confidence ?? ''),
-      ].map(csvCell).join(','))
+  for (const rec of downloadResultRecords()) {
+    const defs = ((rec.definitions || rec.definition_results) as Array<Record<string, unknown>>) || []
+    for (const item of defs) {
+      const subs = Array.isArray(item?.definitions) && item.definitions.length ? item.definitions : [item]
+      for (const sub of subs as Array<Record<string, unknown>>) {
+        seq += 1
+        rows.push([
+          String(sub.definition_id || item.definition_id || `D${seq}`),
+          recordTitle(rec),
+          String(item.concept || sub.concept || ''),
+          String(sub.sentence || sub.definition || ''),
+          definitionSourceLabel(sub),
+          String(sub.pattern || ''),
+          String(sub.confidence ?? ''),
+        ].map(csvCell).join(','))
+      }
     }
   }
   const content = rows.join('\r\n')
@@ -2038,42 +2071,47 @@ function downloadDefinitionCsv() {
 // definitions 展平兜底生成（此前 recs 为空 → 下载的 SQL 只有建表语句没有数据），
 // 并补齐弹窗字段（编号/来源字符位置）
 function downloadDefinitionSql() {
-  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const title = form.documentTitle || String(data?.document_title || '')
   const esc = (v: unknown) => v === null || v === undefined ? 'NULL' : `'${String(v).replace(/'/g, "''")}'`
   // definitions 聚合平铺（含来源字符位置，与弹窗"来源"列同源）；后端 database_records
-  // 与之同序生成（semantic_service 同一循环），按下标配对补齐位置/编号
-  const defs = ((data?.definitions || data?.definition_results) as Array<Record<string, unknown>>) || []
+  // 与之同序生成（semantic_service 同一循环），按下标配对补齐位置/编号。
+  // 2026-10-18：批量信封逐篇解包（此前批量只剩建表语句）
   const flat: Array<Record<string, unknown>> = []
-  for (const item of defs) {
-    const subs = Array.isArray(item?.definitions) && item.definitions.length ? item.definitions : [item]
-    for (const sub of subs as Array<Record<string, unknown>>) {
-      const pos = (sub.position || sub.source_position) as Record<string, unknown> | undefined
-      flat.push({
-        concept: item.concept || sub.concept,
-        definition_sentence: sub.sentence || sub.definition,
-        definition_pattern: sub.pattern,
-        confidence: sub.confidence,
-        source_start: pos?.start ?? sub.start ?? null,
-        source_end: pos?.end ?? sub.end ?? null,
-      })
+  for (const rec of downloadResultRecords()) {
+    const defs = ((rec.definitions || rec.definition_results) as Array<Record<string, unknown>>) || []
+    const dbRecs = ((rec.database_records) as Array<Record<string, unknown>>) || []
+    const recFlat: Array<Record<string, unknown>> = []
+    for (const item of defs) {
+      const subs = Array.isArray(item?.definitions) && item.definitions.length ? item.definitions : [item]
+      for (const sub of subs as Array<Record<string, unknown>>) {
+        const pos = (sub.position || sub.source_position) as Record<string, unknown> | undefined
+        recFlat.push({
+          concept: item.concept || sub.concept,
+          definition_sentence: sub.sentence || sub.definition,
+          definition_pattern: sub.pattern,
+          confidence: sub.confidence,
+          source_start: pos?.start ?? sub.start ?? null,
+          source_end: pos?.end ?? sub.end ?? null,
+        })
+      }
     }
+    const merged = recFlat.length
+      ? recFlat.map((f, i) => {
+          const rec2 = dbRecs[i] || {}
+          return {
+            concept_id: rec2.concept_id || `cdef_${String(flat.length + i + 1).padStart(4, '0')}`,
+            ...f,
+            ...(rec2.concept ? { concept: rec2.concept, definition_sentence: rec2.definition_sentence,
+                                  definition_pattern: rec2.definition_pattern, confidence: rec2.confidence } : {}),
+            domain_label: rec2.domain_label ?? rec.domain_label ?? null,
+            title: recordTitle(rec),
+          }
+        })
+      : dbRecs.map((r, i) => ({ source_start: null, source_end: null, ...r, title: recordTitle(rec),
+          concept_id: r.concept_id || `cdef_${String(flat.length + i + 1).padStart(4, '0')}` }))
+    flat.push(...merged)
   }
-  const dbRecs = ((data?.database_records) as Array<Record<string, unknown>>) || []
-  const recs = flat.length
-    ? flat.map((f, i) => {
-        const rec = dbRecs[i] || {}
-        return {
-          concept_id: rec.concept_id || `cdef_${String(i + 1).padStart(4, '0')}`,
-          ...f,
-          ...(rec.concept ? { concept: rec.concept, definition_sentence: rec.definition_sentence,
-                              definition_pattern: rec.definition_pattern, confidence: rec.confidence } : {}),
-          domain_label: rec.domain_label ?? data?.domain_label ?? null,
-        }
-      })
-    : dbRecs.map((r, i) => ({ source_start: null, source_end: null, ...r, concept_id: r.concept_id || `cdef_${String(i + 1).padStart(4, '0')}` }))
-  const values = recs.filter(r => r && (r.concept || r.definition_sentence)).map(r =>
-    `(${esc(title)}, ${esc(r.concept_id || '')}, ${esc(r.concept)}, ${esc(r.definition_sentence)}, ${esc(r.definition_pattern)}, ${r.source_start ?? 'NULL'}, ${r.source_end ?? 'NULL'}, ${r.confidence ?? 'NULL'}, ${esc(r.domain_label || null)})`)
+  const values = flat.filter(r => r && (r.concept || r.definition_sentence)).map(r =>
+    `(${esc(r.title ?? '')}, ${esc(r.concept_id || '')}, ${esc(r.concept)}, ${esc(r.definition_sentence)}, ${esc(r.definition_pattern)}, ${r.source_start ?? 'NULL'}, ${r.source_end ?? 'NULL'}, ${r.confidence ?? 'NULL'}, ${esc(r.domain_label || null)})`)
   const sql = [
     '-- 概念定义句识别结果（definition-detect）',
     'CREATE TABLE IF NOT EXISTS definition_detect_result (',
@@ -2098,13 +2136,14 @@ function downloadDefinitionSql() {
 }
 
 function downloadNerSql() {
-  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const title = form.documentTitle || ((data?.document as Record<string, unknown>)?.title as string) || ''
-  const ents = ((data?.entities || data?.entity_results) as Array<Record<string, unknown>>) || []
   const esc = (v: unknown) => v === null || v === undefined ? 'NULL' : `'${String(v).replace(/'/g, "''")}'`
-  // 字段与可视化弹窗对齐（2026-10-15）：补实体编号 + 语境片段
-  const rows = ents.filter(e => e && (e.text || e.entity || e.name)).map((e, index) =>
-    `(${esc(title)}, ${esc(e.entity_id || e.id || `E${index + 1}`)}, ${esc(e.text || e.entity || e.name)}, ${esc(e.entity_type || e.type || '')}, ${e.start ?? 'NULL'}, ${e.end ?? 'NULL'}, ${esc(e.context || null)}, ${e.confidence ?? 'NULL'})`)
+  // 字段与可视化弹窗对齐（2026-10-15）：补实体编号 + 语境片段。
+  // 2026-10-18：批量信封逐篇解包（此前批量只剩建表语句）
+  const rows = downloadResultRecords().flatMap(rec =>
+    ((rec.entities || rec.entity_results) as Array<Record<string, unknown>> || [])
+      .filter(e => e && (e.text || e.entity || e.name))
+      .map((e, index) =>
+        `(${esc(recordTitle(rec))}, ${esc(e.entity_id || e.id || `E${index + 1}`)}, ${esc(e.text || e.entity || e.name)}, ${esc(e.entity_type || e.type || '')}, ${e.start ?? 'NULL'}, ${e.end ?? 'NULL'}, ${esc(e.context || null)}, ${e.confidence ?? 'NULL'})`))
   const sql = [
     '-- 通用领域实体识别结果（general-ner）',
     '-- 建表模板（首次导入执行一次，已存在则跳过）：',
@@ -2133,12 +2172,13 @@ function downloadNerSql() {
 }
 
 function downloadAbstractMoveDatabase() {
-  const data = (result.value as Record<string, unknown>)?.data as Record<string, unknown> | undefined
-  const title = ((data?.document as Record<string, unknown>)?.title as string) || ''
-  const moves = ((data?.moves as Array<Record<string, unknown>>) || []).filter(m => m && m.text)
+  // 2026-10-18：批量信封逐篇解包（此前批量只剩建表语句）
   const esc = (v: unknown) => v === null || v === undefined ? 'NULL' : `'${String(v).replace(/'/g, "''")}'`
-  const rows = moves.map(m =>
-    `(${esc(title)}, ${esc(m.label)}, ${esc(m.text)}, ${m.start ?? 'NULL'}, ${m.end ?? 'NULL'}, ${m.confidence ?? 'NULL'})`)
+  const rows = downloadResultRecords().flatMap(rec =>
+    ((rec.moves as Array<Record<string, unknown>>) || [])
+      .filter(m => m && m.text)
+      .map(m =>
+        `(${esc(recordTitle(rec))}, ${esc(m.label)}, ${esc(m.text)}, ${m.start ?? 'NULL'}, ${m.end ?? 'NULL'}, ${m.confidence ?? 'NULL'})`))
   const sql = [
     '-- 中文摘要语步识别结果（zh-abstract-move）',
     '-- 建表模板（首次导入执行一次，已存在则跳过）：',

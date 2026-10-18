@@ -1496,7 +1496,11 @@ def _keywords(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
         cjk_count = sum(1 for ch in sample if "一" <= ch <= "鿿")
         is_english = bool(sample.strip()) and cjk_count * 2 < len(sample.strip())
     document = data.get("document") if isinstance(data.get("document"), dict) else {}
-    document.setdefault("title", payload.get("document_title") or payload.get("title") or "")
+    # 题名 = 用户提供的题目优先（2026-10-18 修复）：引擎自提取标题是内容分析副产
+    # 物（纯摘要输入会把首句当标题），此前 setdefault 挡不住引擎错值覆盖用户题目
+    # → 响应 document_title 变成摘要文本、下载题名列空/错
+    _user_title = str(payload.get("document_title") or payload.get("title") or "").strip()
+    document["title"] = _user_title or str(document.get("title") or "")
     document.setdefault("language", "en" if is_english else "zh")
     statistics = data.get("statistics") if isinstance(data.get("statistics"), dict) else {}
     statistics.setdefault("keyword_count", len(items))
@@ -1507,6 +1511,8 @@ def _keywords(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
     result = {
         **data,
         "document": document,
+        # 顶层 document_title 同口径：用户题目优先，引擎自提取值仅兜底
+        "document_title": _user_title or str(data.get("document_title") or ""),
         "input_type": payload.get("input_type"),
         "keywords": items,
         "keywords_or_topic_phrases": items,
