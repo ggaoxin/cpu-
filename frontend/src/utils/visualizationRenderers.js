@@ -719,7 +719,6 @@ const clusterColors = ['#315efb', '#08a66c', '#f59e0b', '#9b51e0', '#e5484d']
 function renderDeepCluster(response) {
   const data = (recordsOf(response)[0] || {}).payload || dataOf(response)
   const clusters = array(data.clusters)
-  const points = array(data.semantic_projection)
   const quality = object(data.clustering_quality)
   const trend = object(data.theme_trend_analysis)
   const hasTrend = Boolean(array(trend.series).length || array(trend.years).length)

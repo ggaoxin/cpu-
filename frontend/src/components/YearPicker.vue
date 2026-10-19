@@ -22,4 +22,11 @@ const yearOptions = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => {
 })
 
 watch(year, (y) => { emit('update:modelValue', y || '') })
+// 外部赋值回显（2026-10-19 深度聚类元数据自动填充：解析完成后才写入年份，
+// 此前仅挂载时读一次 modelValue，晚到的值不回显）
+watch(() => props.modelValue, (v) => {
+  const m = String(v || '').match(/(19|20)\d{2}/)
+  const incoming = m ? m[0] : ''
+  if (incoming !== year.value) year.value = incoming
+})
 </script>

@@ -1586,13 +1586,29 @@ async def parse_files(
                     break
                 if _s.startswith(("ISSN", "CN ", "《")) or _re_title_issn.match(_s):
                     continue
-                if len(_s) >= 8 and not _s.startswith(("#", "摘要", "Abstract", "关键词", "Keywords", "http", "DOI", "收稿", "作者")) \
+                if len(_s) >= 8 and not _s.startswith(("#", "摘要", "Abstract", "关键词", "Keywords", "http", "DOI", "收稿", "作者", "Preprint", "arXiv", "ARXIV")) \
                         and not _re_title_journal.search(_s):
                     _title = _s[:200]
+                    # 断行标题拼接（2026-10-19：19.pdf 标题跨两行只取到前半
+                    # "…BLACK-"）：行尾连字符直接续接（BLACK-BOX 复合词），下一行
+                    # 全大写短行（≤60、非邮箱/机构行）以空格拼接，只拼一行
+                    _nx = _lines[_li + 1] if _li + 1 < len(_lines) else ""
+                    if _nx and "@" not in _nx and len(_nx) <= 60 and not _re_title_pageno.fullmatch(_nx) \
+                            and (_title.endswith("-") or (_nx[:1].isupper() and _nx == _nx.upper() and len(_nx) >= 4)):
+                        _title = (_title.rstrip() + (" " if not _title.endswith("-") else "") + _nx.strip())[:200]
                     break
         except Exception:
             _title = ""
-        results.append({"parse_id": parse_id, "file_name": item.get("file_name"), "char_count": len(text), "parsed_title": _title,
+        # 发表年份自动抽取（2026-10-19 深度聚类元数据自动化）：取正文前 2000
+        # 字符内首个合理的 19xx/20xx（期刊页眉的年卷期通常即发表年）
+        _year = ""
+        try:
+            _ym = re.search(r"(?:19|20)\d{2}", text[:6000])
+            if _ym and int(_ym.group()) <= __import__("datetime").datetime.now().year + 1:
+                _year = _ym.group()
+        except Exception:
+            _year = ""
+        results.append({"parse_id": parse_id, "file_name": item.get("file_name"), "char_count": len(text), "parsed_title": _title, "parsed_year": _year,
                         # 引用工具带解析文本（2026-10-18 用户定稿：文件解析后前端
                         # 自动提取引用句卡片，提交走信任卡片路径——输入侧卡片数=
                         # 输出侧引用句数在文件模式同样成立）

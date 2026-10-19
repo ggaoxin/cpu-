@@ -162,6 +162,7 @@ type UploadedFileItem = {
   parseError?: string
   // 引用工具：解析文本（/files/parse 对 citation 工具回传），供前端自动提取引用句卡片
   parsedText?: string
+  parsedYear?: string   // 解析抽取的发表年份（深度聚类元数据自动填充用）
   // 网络中断自动重试计数（2026-09-22 用户定稿：断网 10 秒窗口 × 3 次重试）
   netRetries?: number
 }
@@ -1425,11 +1426,19 @@ function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
           item.parsedChars = row.char_count
           item.parsedTitle = row.parsed_title || ''
           item.parsedText = typeof row.text === 'string' ? row.text : ''
+          item.parsedYear = typeof row.parsed_year === 'string' ? row.parsed_year : ''
           // 自动题名：解析出的论文题名覆盖文件名兜底值（用户可再改）
           if (item.parsedTitle && (!item.title || item.title === item.name)) {
             item.title = item.parsedTitle
           }
           item.parseState = 'done'
+          // 深度聚类（2026-10-19 用户定稿）：文献元数据自动解析——编号按序自动
+          // 生成、发表年份从解析文本头部正则抽取（题名此前已自动覆盖），用户
+          // 无需手填；字段保留可编辑用于纠偏
+          if (props.toolId === 'deep-cluster') {
+            if (!item.documentId) item.documentId = `DOC${String(uploadedFiles.indexOf(item) + 1).padStart(3, '0')}`
+            if (!item.publicationDate && item.parsedYear) item.publicationDate = item.parsedYear
+          }
           // 引用工具单文件（2026-10-18 用户定稿）：解析完成即自动提取引用句
           // 卡片（无需用户点按钮、不展示文献全文），卡片可核对修改后提交
           if (props.toolId.startsWith('citation-') && mode.value === 'file' && item.parsedText) {
@@ -2699,7 +2708,7 @@ function downloadResult() {
                     <div class="selected-file-summary"><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成（{{ item.parsedChars }} 字）</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">{{ parseFailLabel(item) }}，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span></div>
                     <div class="settings-title review-metadata-title"><b>文献元数据</b><span>题名自动解析，其余可编辑</span></div>
                     <div class="two-column review-document-meta-grid-v637">
-                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="item.documentId" class="input" placeholder="例如：DOC001" /></div>
+                      <div class="field"><label><span class="label-main">文献编号</span><small>自动</small></label><input v-model="item.documentId" class="input" placeholder="解析后自动生成（DOC001）" /></div>
                       <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="item.title" class="input" maxlength="300" placeholder="解析后自动填充" /><small v-if="item.parsedTitle" class="char-count-v755">已自动解析</small></div>
                       <div class="field"><label><span class="label-main">作者</span></label><input v-model="item.authors" class="input" placeholder="可选" /></div>
                       <div class="field"><label><span class="label-main">发表时间</span></label><YearPicker v-model="item.publicationDate" /></div>
@@ -2712,11 +2721,11 @@ function downloadResult() {
                   <article v-for="(item,index) in uploadedFiles" :key="item.id" class="document-card deep-cluster-file-card">
                     <div class="document-card-head"><b>文件 {{ index + 1 }} · {{ item.name }}</b><button class="ghost-btn danger" type="button" @click="removeUploadedFile(item.id)">移除</button></div>
                     <div class="selected-file-summary"><span class="parse-ring" :data-state="item.parseState" :style="item.parseState === 'uploading' ? `--p:${item.parseProgress}%` : ''"><i v-if="item.parseState === 'uploading'">{{ item.parseProgress }}%</i><i v-else-if="item.parseState === 'parsing'">…</i><i v-else-if="item.parseState === 'done'">✓</i><i v-else-if="item.parseState === 'error'">✗</i><i v-else>·</i></span><span v-if="item.parseState === 'done'" class="parse-text ok">上传完成</span><button v-else-if="item.parseState === 'error'" class="parse-text err" type="button" :title="item.parseError" @click="retryParse(item)">{{ parseFailLabel(item) }}，点击重试</button><span v-else class="parse-text">{{ item.parseState === 'parsing' ? '解析中' : item.parseState === 'uploading' ? '上传中' : '排队中' }}</span></div>
-                    <div class="settings-title deep-cluster-metadata-title"><b>文献元数据</b><span>由用户填写，与当前文件一一关联</span></div>
+                    <div class="settings-title deep-cluster-metadata-title"><b>文献元数据</b><span>解析后自动填充，与当前文件一一关联；如有出入可修改</span></div>
                     <div class="two-column deep-cluster-metadata-grid">
-                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 文献编号</span></label><input v-model="item.documentId" class="input" placeholder="例如：DOC001" /></div>
+                      <div class="field"><label><span class="label-main">文献编号</span><small>自动</small></label><input v-model="item.documentId" class="input" placeholder="解析后自动生成（DOC001）" /></div>
                       <div class="field"><label><span class="label-main">发表时间</span><small>可选</small></label><YearPicker v-model="item.publicationDate" /></div>
-                      <div class="field"><label><span class="label-main"><span class="required-mark">*</span> 题名</span></label><input v-model="item.title" class="input" maxlength="300" placeholder="请输入题名" /><small class="char-count-v755">{{ smartCount(item.title) }}/50</small></div>
+                      <div class="field"><label><span class="label-main">题名</span><small>自动解析</small></label><input v-model="item.title" class="input" maxlength="300" placeholder="解析后自动填充" /><small v-if="item.parsedTitle" class="char-count-v755">已自动解析</small></div>
                       <div class="field"><label><span class="label-main">作者</span><small>可选</small></label><input v-model="item.authors" class="input" placeholder="多人使用逗号分隔" /></div>
                       <div class="field"><label><span class="label-main">文献来源</span><small>可选</small></label><input v-model="item.source" class="input" placeholder="期刊、会议、报告或其他来源" /></div>
                       <div class="field"><label><span class="label-main">关键词</span><small>可选</small></label><input v-model="item.keywords" class="input" placeholder="多个关键词使用逗号分隔" /></div>
