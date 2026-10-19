@@ -453,6 +453,32 @@ def _normalize_stdterm_rows(rows: List[Any]) -> List[Dict[str, Any]]:
     return out
 
 
+def _normalize_labeled_rows(rows: List[Any]) -> List[Dict[str, Any]]:
+    """人工标注数据（research-ner）双结构（2026-10-19 用户定稿）：
+    ① text+entities 标注样本行 → 原样透传（few-shot 消费）；
+    ② canonical+variants 词簇行 → 归一为标准词簇（查表归一消费）。"""
+    out: List[Dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        if _first_present(row, ("text", "示例文本", "文本", "sentence")) and \
+                (row.get("entities") or row.get("识别结果") or row.get("标注")):
+            out.append(row)
+            continue
+        canonical = _first_present(row, ("canonical", "标准词", "标准术语", "standard_term"))
+        if not canonical:
+            continue
+        raw_variants = row.get("variants") if "variants" in row else row.get("变体")
+        if isinstance(raw_variants, str):
+            raw_variants = [v for v in raw_variants.replace("；", ";").replace("，", ";").replace(",", ";").split(";") if v.strip()]
+        variants = [str(v) for v in raw_variants] if isinstance(raw_variants, list) else []
+        out.append({"canonical": str(canonical).strip(),
+                    "type": str(_first_present(row, ("type", "类型", "label")) or "").strip(),
+                    "variants": variants,
+                    "canonical_en": str(_first_present(row, ("canonical_en", "英文标准词", "en")) or "").strip()})
+    return out
+
+
 def _normalize_corpus_rows(rows: List[Any]) -> List[Dict[str, Any]]:
     """领域示例语料（research-ner 多领域科研语料）：{text, entities:[{text,type}]} few-shot 结构。
 
@@ -474,6 +500,10 @@ def _normalize_corpus_rows(rows: List[Any]) -> List[Dict[str, Any]]:
                 ents.append({"text": e.strip(), "type": ""})
         if text and ents:
             out.append({"text": str(text), "entities": ents})
+        # 标准词表行（2026-10-19 用户定稿：语料槽兼容 canonical+variants 映射）：
+        # 原样透传，消费端 _load_ner_standard_index 识别该结构并入查表索引
+        elif _first_present(row, ("canonical", "标准词")):
+            out.append({k: v for k, v in row.items() if str(k).strip()})
     return out
 
 
@@ -491,8 +521,8 @@ ROW_FIELD_CONFIG: Dict[str, Dict[str, Any]] = {
         "expect": "JSON 数组，每条为术语簇：{\"canonical\":\"标准术语\",\"variants\":[\"变体/缩写/同义词\"]}（纯术语字符串数组亦可）"},
     "manually_labeled_training_data": {"fn": _normalize_generic_rows, "label": "人工标注训练数据",
         "expect": "JSON 数组，每条为含文本/标注字段的对象"},
-    "manually_labeled_data": {"fn": _normalize_stdterm_rows, "label": "标准词表(科研实体标注)",
-        "expect": "JSON 数组，每条为标准词簇：{\"canonical\":\"标准词\",\"type\":\"METHOD/DATASET/INSTRUMENT/THEORY/TOPIC\",\"variants\":[\"变体...\"],\"canonical_en\":\"英文标准词(可选)\"}（中文别名：标准词/类型/变体/英文标准词）"},
+    "manually_labeled_data": {"fn": _normalize_labeled_rows, "label": "人工标注数据(标注样本+术语簇)",
+        "expect": "JSON 数组，两种结构：标注样本 {\"text\":\"示例\",\"entities\":[{\"text\":\"实体\",\"type\":\"类型\"}]} 或术语簇 {\"canonical\":\"标准词\",\"variants\":[\"变体...\"]}"},
     "domain_labeled_training_data": {"fn": _normalize_generic_rows, "label": "领域标注训练数据",
         "expect": "JSON 数组，每条为含文本/标注字段的对象"},
     "general_domain_annotated_corpus": {"fn": _normalize_generic_rows, "label": "通用领域标注语料",
@@ -568,17 +598,21 @@ REQUIRED_FIELD_GROUPS: Dict[str, List[Dict[str, Any]]] = {
     ],
     # research-ner 科研语料：同 general-ner 结构（五类）
     "multi_domain_scientific_corpus": [
-        {"keys": ("text", "示例文本", "文本", "content"),
-         "label": "text（示例文本）"},
-        {"keys": ("entities", "识别结果", "实体"),
-         "label": "entities（实体数组：text 实体词 + type 五类之一）", "optional": True},
+        # 结构二选一（2026-10-19 用户定稿：语料槽可同时容纳 few-shot 样本与
+        # 标准词表映射）：text+entities 示例行 或 canonical+variants 词表行
+        {"keys": ("text", "示例文本", "文本", "content", "canonical", "标准词"),
+         "label": "text（示例文本）或 canonical（标准词）"},
+        {"keys": ("entities", "识别结果", "实体", "variants", "变体"),
+         "label": "entities（实体数组）或 variants（变体列表）", "optional": True},
     ],
     # research-ner 标准词表：canonical + variants
     "manually_labeled_data": [
-        {"keys": ("canonical", "标准词", "term", "text"),
-         "label": "canonical（标准中文词）"},
-        {"keys": ("variants", "变体", "同义词", "synonyms"),
-         "label": "variants（变体列表）", "optional": True},
+        # 结构二选一（2026-10-19 用户定稿）：text+entities 人工标注样本（few-shot）
+        # 或 canonical+variants 术语簇（查表归一）
+        {"keys": ("canonical", "标准词", "term", "text", "示例文本", "文本"),
+         "label": "text（标注样本）或 canonical（标准词）"},
+        {"keys": ("variants", "变体", "同义词", "synonyms", "entities", "识别结果", "实体"),
+         "label": "entities（实体数组）或 variants（变体列表）", "optional": True},
     ],
     # domain-ner 本体：类型码 + 类型名
     "ontology_classification_system": [

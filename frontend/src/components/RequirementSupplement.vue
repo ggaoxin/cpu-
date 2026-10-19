@@ -83,8 +83,8 @@ const resourceGroups: Record<string, { title: string; description: string; field
     title: '科研实体语料配置',
     description: '科研语料与标注数据配套使用',
     fields: [
-      { key: 'multi_domain_scientific_corpus', label: '多领域科研语料', description: '可选上传', placeholder: '请选择多领域科研语料', required: false },
-      { key: 'manually_labeled_data', label: '人工标注数据', description: '可选上传', placeholder: '请选择人工标注数据', required: false },
+      { key: 'multi_domain_scientific_corpus', label: '多领域科研语料', description: '标准词映射（术语簇）', placeholder: '请选择多领域科研语料', required: false },
+      { key: 'manually_labeled_data', label: '人工标注数据', description: '标注样本（few-shot 辅助识别）', placeholder: '请选择人工标注数据', required: false },
     ],
   },
   'domain-ner': {
@@ -313,10 +313,10 @@ const resourceFieldHints: Record<string, string> = {
   clc_labeled_data: '[\n  {"clc_code":"G818.2","clc_name":"体育馆","parent_code":"G818"}\n]',
   domain_terminology_library: '[\n  {"canonical":"structural health monitoring","variants":["SHM","structural monitoring"]}\n]',
   manually_labeled_training_data: '[\n  {"text":"示例文本","label":"类目名"}\n]',
-  manually_labeled_data: '[\n  {"canonical":"卷积神经网络","canonical_en":"convolutional neural network","type":"METHOD","variants":["CNN","卷积网络"]}\n]',
+  manually_labeled_data: '[\n  {"text":"本文采用卷积神经网络提取特征。","entities":[{"text":"卷积神经网络","type":"METHOD"}]}\n]',
   domain_labeled_training_data: '[\n  {"text":"钙通道阻滞剂常用于高血压治疗。","entities":[{"text":"钙通道阻滞剂","type":"DRUG_CLASS"}]}\n]',
   general_domain_annotated_corpus: '[\n  {"text":"刘亭亭在南京使用PEER数据库开展研究。","entities":[{"text":"刘亭亭","type":"PERSON"},{"text":"南京","type":"LOCATION"}]}\n]',
-  multi_domain_scientific_corpus: '[\n  {"text":"本文采用卷积神经网络提取特征。","entities":[{"text":"卷积神经网络","type":"METHOD"}]}\n]',
+  multi_domain_scientific_corpus: '[\n  {"canonical":"卷积神经网络","variants":["CNN","卷积网络"],"canonical_en":"convolutional neural network"}\n]',
   training_samples: '[\n  {"title":"文献题名","text":"文献正文……","category":"人工标注类目"}\n]',
   manually_labeled_category_data: '[\n  {"document_id":"DOC001","category":"人工标注类目"}\n]',
   domain_classification_rules: '[\n  {"clc_code":"R318.04","clc_name":"生物信息、生物控制","parent_code":"R318"}\n]',

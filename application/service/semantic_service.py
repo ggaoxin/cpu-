@@ -7270,10 +7270,21 @@ class SemanticApplicationService(ISemanticService):
         #    → 类型体系整体注入提示词（答案空间替换，见下方白名单同步）；domain_labeled
         #    _training_data=领域标注训练数据 → 同①机制 few-shot（此前均为死槽）
         _res = (request.params or {}).get("resolved_resources") or {}
-        _fewshot = self._load_ner_fewshot(
-            _res.get("multi_domain_scientific_corpus") or _res.get("general_domain_annotated_corpus")
-            or _res.get("domain_labeled_training_data"))
-        _std_index = self._load_ner_standard_index(_res.get("manually_labeled_data"))
+        # 语料槽结构分流（2026-10-19 用户定稿：多领域科研语料可同时容纳
+        # few-shot 样本与标准词表映射）：text+entities 行 → few-shot；
+        # canonical+variants 行 → 并入标准词索引（与"人工标注数据"槽的词表
+        # 合并，两处来源都可触发确定性查表归一）
+        # 槽位职责（2026-10-20 用户定稿）：人工标注数据只影响实体识别
+        # （few-shot：边界/类型/召回），不进标准词表；多领域科研语料才可
+        # 替换/增强标准词表（canonical+variants 行进查表索引）兼 few-shot
+        # 示例；内置标准词 = 大模型拟词
+        _corpus_desc = (_res.get("multi_domain_scientific_corpus")
+                        or _res.get("general_domain_annotated_corpus")
+                        or _res.get("domain_labeled_training_data"))
+        _labeled_desc = _res.get("manually_labeled_data")
+        _fewshot = "\n\n".join(filter(None, [
+            self._load_ner_fewshot(_corpus_desc), self._load_ner_fewshot(_labeled_desc)]))
+        _std_index = self._load_ner_standard_index(_corpus_desc)
         _ontology = (self._load_custom_ontology(_res.get("ontology_classification_system"))
                      if code == 'ner_domain' else {})
         # 领域引导（2026-09-16 用户定调：领域是请求参数，本体只需给 types）：
@@ -7287,8 +7298,14 @@ class SemanticApplicationService(ISemanticService):
         # 内置领域类型体系回落（2026-09-16 用户定调：用户传本体→用户体系；
         # 未传本体+选了领域→该领域内置专属体系；都没有→默认 13 类自动判定）
         _builtin_types: list = []
+        _domain_unconfigured = False
         if code == 'ner_domain' and not _ontology.get("types") and _domain_label:
             _builtin_types = self._builtin_domain_type_system(_domain_label)
+            if not _builtin_types:
+                # 选了领域但无专属体系（2026-10-20 修复：此前回落默认13类——
+                # 含 TREATMENT 等医学类型，建筑领域实测漏出医学实体；改为空
+                # 答案空间，与"错域本体=不产出实体"同口径）
+                _domain_unconfigured = True
         if _ontology.get("types") or _builtin_types:
             _lines = []
             for _t in (_ontology["types"] if _ontology.get("types") else _builtin_types):
@@ -7308,6 +7325,22 @@ class SemanticApplicationService(ISemanticService):
             system_prompt += f"\n\n本次识别面向【{_domain_label}】领域，实体领域标签统一标注为该领域。"
         if _fewshot:
             system_prompt += "\n\n【领域示例（用户上传语料，few-shot 校准实体边界与类型风格）】\n" + _fewshot
+            # 训练示例的自定义类型在类型体系里声明为合法（2026-10-20：few-shot 教
+            # ADMINISTRATION 但类型体系只列内置医学五类时，LLM 会跟随类型体系而
+            # 忽略示例——显式声明示例类型合法，口径跟随用户标注）
+            _train_type_names = set()
+            for _r in self._read_uploaded_resource_json(_res.get("domain_labeled_training_data")):
+                if not isinstance(_r, dict):
+                    continue
+                for _e in (_r.get("entities") or []):
+                    if isinstance(_e, dict) and _e.get("type"):
+                        _t = str(_e["type"]).strip().upper()
+                        if _t:
+                            _train_type_names.add(_t)
+            if _train_type_names:
+                system_prompt += (
+                    "\n示例中出现的类型代码（" + "、".join(sorted(_train_type_names))
+                    + "）同样是合法答案，用户示例的类型判定优先于内置类型体系。")
         if code in ('ner_research', 'ner_domain'):
             system_prompt += (
                 "\n\n【标准词输出（与识别同轮完成）】对识别出的每个实体同时给出：\n"
@@ -7352,7 +7385,7 @@ class SemanticApplicationService(ISemanticService):
                 _workers = min(4, len(_chunks)) if _chunk_ok else min(2, len(_chunks))
                 _prompts = [self._render_user_prompt({"text": c, "meta": request.meta}, request.params)
                             for c, _ in _chunks]
-                _batch = self._glm_chat_batch(system_prompt, _prompts, timeout=180.0,
+                _batch = self._glm_chat_batch(system_prompt, _prompts, temperature=0.0, timeout=180.0,
                                               max_tokens=3000, max_workers=_workers)
                 out = []
                 _seen_chunk = set()
@@ -7378,7 +7411,8 @@ class SemanticApplicationService(ISemanticService):
                 data = {"data": out}  # 下游 evidence/raw 组装沿用 data 变量
             else:
                 user_prompt = self._render_user_prompt(user_payload, request.params)
-                data = self._glm.chat_json(system_prompt, user_prompt, timeout=120.0, max_tokens=3000)
+                data = self._glm.chat_json(system_prompt, user_prompt,
+                                           temperature=0.0, timeout=120.0, max_tokens=3000)
                 out = data.get("data", data) if isinstance(data, dict) else data
         finally:
             with self.__class__._NER_INFLIGHT_LOCK:
@@ -7507,9 +7541,14 @@ class SemanticApplicationService(ISemanticService):
             # 2026-09-12 修复：用户上传 ontology_classification_system 时白名单扩展为
             # 内置∪本体声明类型——此前硬编码白名单把自定义类型（BRIDGE_COMPONENT等）
             # 整类丢弃，"换本体=换类型体系"实际失效
-            _domain_types = {'DRUG', 'DISEASE', 'TREATMENT', 'COMPOUND', 'REACTION',
-                             'MATERIAL', 'THEORY', 'PHENOMENON', 'LAW', 'SYMPTOM',
-                             'EQUIPMENT', 'TECHNIQUE', 'OTHER'}
+            if _domain_unconfigured:
+                # 选了未配置领域 → 空白名单：任何实体类型都不合法 → 0 实体
+                # （体系说一不二；自动识别/已配置领域不受影响）
+                _domain_types = set()
+            else:
+                _domain_types = {'DRUG', 'DISEASE', 'TREATMENT', 'COMPOUND', 'REACTION',
+                                 'MATERIAL', 'THEORY', 'PHENOMENON', 'LAW', 'SYMPTOM',
+                                 'EQUIPMENT', 'TECHNIQUE', 'OTHER'}
             _onto_extra = self._custom_ontology_types(_res.get("ontology_classification_system"))
             if _onto_extra:
                 # 用户本体 = 答案空间替换（2026-09-16 用户定调）：类型体系整体换成
@@ -7527,6 +7566,17 @@ class SemanticApplicationService(ISemanticService):
                 # 类型集为合法答案（如 计算机→ALGORITHM/MODEL/DATASET…）
                 _domain_types = {str(t.get("code") or "").strip().upper()
                                  for t in _builtin_types if t.get("code")}
+                # 训练数据示例类型软扩展（2026-10-20 修复：选了领域+传训练数据
+                # 时此前被 elif 短路——训练教的 ADMINISTRATION 等自定义类型不在
+                # 内置医学白名单，被整类过滤；few-shot 教的类型并进合法答案）
+                for _r in self._read_uploaded_resource_json(_res.get("domain_labeled_training_data")):
+                    if not isinstance(_r, dict):
+                        continue
+                    for _e in (_r.get("entities") or []):
+                        if isinstance(_e, dict) and _e.get("type"):
+                            _t = str(_e["type"]).strip().upper()
+                            if _t:
+                                _domain_types.add(_t)
             else:
                 # 只传训练数据未传本体（2026-09-16 修复）：训练示例教 LLM 输出的
                 # 自定义类型 code（如 DRUG_CLASS）不在内置 13 类白名单——曾整批被
@@ -7554,6 +7604,26 @@ class SemanticApplicationService(ISemanticService):
                    if not (isinstance(e, dict)
                            and e.get('type') == 'PHENOMENON'
                            and _not_phenomenon.search(str(e.get('text') or '').strip()))]
+            # ④ 训练标注确定性类型覆盖（2026-10-20 用户定稿）：实体文本与训练
+            # 数据标注的实体**完全一致**时，类型以训练标注为准（查表覆盖，非
+            # few-shot 猜测——示例教"胃肠道出血→ADMINISTRATION"，LLM 仍按语义
+            # 判 ADVERSE_REACTION；完全一致就不该不匹配）
+            _train_type_map = {}
+            for _r in self._read_uploaded_resource_json(_res.get("domain_labeled_training_data")):
+                if not isinstance(_r, dict):
+                    continue
+                for _e in (_r.get("entities") or []):
+                    if isinstance(_e, dict) and _e.get("type"):
+                        _k = str(_e.get("text") or "").strip().casefold()
+                        _v = str(_e["type"]).strip().upper()
+                        if _k and _v:
+                            _train_type_map.setdefault(_k, _v)
+            if _train_type_map:
+                for e in out:
+                    if isinstance(e, dict):
+                        _hit = _train_type_map.get(str(e.get("text") or "").strip().casefold())
+                        if _hit and str(e.get("type") or "").strip().upper() != _hit:
+                            e["type"] = _hit
             # ③ 变体归一（2026-09-11 用户需求：化学学名↔通用名）：分子对接句的
             # "3-（1-甲基吡咯烷-2-基）吡啶"（尼古丁 IUPAC 学名）应归并为通用名
             # 尼古丁并保留学名进 variants——与通用 NER 共用 lexicon_variants.json
