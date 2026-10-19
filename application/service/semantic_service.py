@@ -2616,6 +2616,51 @@ class SemanticApplicationService(ISemanticService):
                                 "dense_score": round(_s, 4),
                                 "scene": "用户映射表向量索引近邻",
                             }
+            # LLM 直接判类兜底（2026-10-19 用户定稿：无用户映射表时科研分类标签
+            # 完全由大模型给出，不应出现"未映射"）：两段式管线（检索→域过滤→
+            # rerank≥0.45）仍有漏网（如 in-service bridges 检索召回弱/rerank 低
+            # 置信被弃）→ 对最终关键词列表中仍未映射的词，LLM 直接给中图类号，
+            # resolve_code 验证码真实存在才采信（防幻觉），名称/路径来自真实
+            # CLC 条目
+            _unmapped = [c["keyword"] for c in cleaned
+                         if c["keyword"].casefold() not in _user_map_index
+                         and c["keyword"] not in _en_clc_map]
+            if _unmapped:
+                _sys_d = ("你是科技文献分类专家。为每个英文术语判断最贴切的中图法（CLC）"
+                          "分类号。只输出JSON：{\"results\":[{\"term\":\"原术语\","
+                          "\"clc_code\":\"中图分类号\"}]}。分类号必须是真实存在的中图法"
+                          "类号（如 U44 桥涵工程、TP391 计算机的应用）。")
+                _ctx_lines = []
+                for _kw in _unmapped:
+                    _c2 = _en_ctxs.get(_kw, "")
+                    _ctx_lines.append(f"术语：{_kw}\n上下文：{_c2[:200]}")
+                try:
+                    _d_resp = self._glm.chat_json(_sys_d, "\n\n".join(_ctx_lines),
+                                                  timeout=60.0, max_tokens=1200)
+                    _rows_d = (_d_resp.get("data") or {}).get("results") \
+                        if isinstance(_d_resp.get("data"), dict) else _d_resp.get("results")
+                    for _r in (_rows_d or []):
+                        if not isinstance(_r, dict):
+                            continue
+                        _t_k = str(_r.get("term") or "").strip()
+                        _code_d = str(_r.get("clc_code") or "").strip().upper()
+                        if not _t_k or not _code_d or _t_k not in _unmapped:
+                            continue
+                        _e_real = _clc_r.resolve_code(_code_d)
+                        if _e_real is None:
+                            continue
+                        _en_clc_map[_t_k] = {
+                            "system": "CLC",
+                            "code": _e_real.get("clc_code"),
+                            "label": _e_real.get("clc_name"),
+                            "classification_path": _e_real.get("path_names") or [],
+                            "confidence": 0.75,
+                            "mapping_engine": "llm_direct",
+                            "scene": _en_scenes.get(_t_k, ""),
+                        }
+                except Exception:  # noqa: BLE001 - 兜底失败维持原口径
+                    pass
+
             # 无码用户表达 → CLC 分类号锚定（2026-09-20 用户定调"映射列要分类号
             # 不是裸中文"，且不能拿用户表达冒充官方类目名）。两段式：
             # ① 英中混合查询（英文术语+中文表达）召回内置候选 + LLM rerank 精选
