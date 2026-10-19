@@ -1024,6 +1024,11 @@ def _domain_classification(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
             "role": "main",
             "level_1": l1, "level_2": l2, "level_3": l3,
             "classification_path": cpath,
+            # 主表字段（2026-10-19 修复：classifications 复用 multilevel，弹窗
+            # 主表读 clc_code/category_name，此前两键缺失 → 主表分类号/名称全空，
+            # 用户误以为训练标签未生效）
+            "clc_code": clc.get("clc_code") or (pc[-1] if pc else ""),
+            "category_name": pn[-1] if pn else l3,
             "confidence": clc.get("confidence", 0.0),
         })
 

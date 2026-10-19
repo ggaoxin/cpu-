@@ -99,7 +99,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
     inputs: [
             ['document_title', 'string | string[]', 'required', '文献题目,必填(文本输入时);用于响应结果标识与可视化弹窗的文献显示,文件输入时由文件名兜底'],
             ['domain_scientific_literature_data', 'string | string[] | file | file[]', 'required', '专业领域科技文献文本'],
-      ['professional_domain', 'string', 'required', '目标专业领域编码,取值 "01"–"32"(如 "14"=材料科学与材料工程);在该领域语境下执行中图法三级分类'],
+      ['professional_domain', 'string', 'optional', '选填;目标专业领域编码,取值 "01"–"32"。不传由系统按文本自动判定领域(默认行为,前端不提供选择)'],
       ...resourceDescriptorRows('domain_classification_rules',
         '领域分类规则引用。定义 32 领域清单、领域与中图类号段映射、三级分类粒度要求;用户上传自定义版本可覆盖判定口径',
         '自定义规则文件(补充分类原则/强制指令,注入提示词)'),

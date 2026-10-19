@@ -800,7 +800,7 @@ const reviewerSupplementParams: Record<string, ToolDefinition['params']> = {
   ],
   'domain-classify': [
     ['document_title', 'string|string[]', 'required', '文献题目；标识响应结果与可视化弹窗中的当前文献'],
-    ['professional_domain', 'string', 'required', '目标专业领域（01-32）'],
+    ['professional_domain', 'string', 'optional', '选填；目标专业领域编码（01-32），不传由系统按文本自动判定'],
     ['domain_classification_rules', 'resource', 'required', '领域分类规则。【直接影响判定口径】领域清单、领域↔中图类号段映射、三级类号粒度要求；用户上传自定义版本可按自己的领域理解判定'],
     ['manually_labeled_training_data', 'resource', 'required', '人工标注训练数据。【辅助影响】64 条标注样本注入提示词作 few-shot 参考，校准标注风格与粒度'],
   ],

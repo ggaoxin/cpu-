@@ -1676,14 +1676,19 @@ class SemanticApplicationService(ISemanticService):
         换一套分类规则资源码自动跟随名称走。解析不出返回 ("", "")，由调用方
         跳过硬覆盖（避免拿名称当码 resolve 失败）。"""
         label = str(label or "").strip()
-        if not label or not rules_entries:
+        if not label:
             return "", ""
         first = label.split()[0]
-        # ① 带码形态：首词命中规则树码
-        for e in rules_entries:
+        # ① 带码形态：首词命中规则树码；未上传规则树时（2026-10-19 修复：只传
+        # 训练数据的 README ③ 场景此前恒空 → 永不覆盖），首词形如分类码
+        # （字母+数字）即直接采信标签自带码
+        for e in rules_entries or []:
             if str(e.get("clc_code") or "").strip() == first:
                 rest = label.split(None, 1)[1].strip() if len(label.split(None, 1)) > 1 else ""
                 return str(e.get("clc_code")), rest or str(e.get("clc_name") or "")
+        if not rules_entries and re.match(r"^[A-Z]{1,2}\d", first):
+            rest = label.split(None, 1)[1].strip() if len(label.split(None, 1)) > 1 else ""
+            return first, rest
         # ② 纯类目名：精确匹配
         for e in rules_entries:
             if str(e.get("clc_name") or "").strip() == label:
@@ -3806,92 +3811,36 @@ class SemanticApplicationService(ISemanticService):
         if fewshot_text:
             user_prompt += "\n\n【人工标注样本（用户上传）】以下是已标注的训练样本（标签为类目名，可能不带分类号），当输入文本与某样本内容相似时，优先采用该样本类目名对应的候选分类号作为 clc_code 输出：\n" + fewshot_text
         if _train_boost:
-            _pref = "\n".join(f"→ 优先考虑：{l}" for l in _train_boost.get("matched_labels") or [])
-            user_prompt += "\n\n【训练数据匹配推荐】以下类目标签来自与输入文本语义相似的标注样本（相似度≥0.55），应作为首选分类：\n" + _pref
+            # 训练匹配 → 规则树候选关联（2026-10-19 用户定稿"训练辅助、去规则中匹配"）：
+            # 标签的码（TP39）或名称在树候选中精确/语义关联到具体候选条目，给 LLM
+            # 的推荐从抽象标签落成"候选 N（码 名称）"——两段独立提示时 LLM 关联
+            # 不起 来（实测选了粗码 TP3 而非树内更贴切的 TP39）
+            _labels = _train_boost.get("matched_labels") or []
+            _pref_lines = []
+            for _lb in _labels:
+                _lb_code = str(_lb).split()[0] if str(_lb).split() else ""
+                _hit_cand = None
+                if custom_candidates:
+                    _hit_cand = next((c for c in custom_candidates
+                                      if str(c.get("clc_code") or "").strip() == _lb_code), None)
+                    if _hit_cand is None:
+                        _lb_name = str(_lb).split(None, 1)[1].strip() if len(str(_lb).split(None, 1)) > 1 else ""
+                        _hit_cand = next((c for c in custom_candidates
+                                          if _lb_name and _lb_name in str(c.get("clc_name") or "")), None)
+                if _hit_cand is not None:
+                    _pref_lines.append(f"→ 输入文本与标注样本高度相似（相似度≥0.55），样本判定为「{_lb}」，该标签在候选体系中对应 [{_hit_cand.get('clc_code')} {_hit_cand.get('clc_name')}] —— 除非文献主题与之明显不符，clc_code 应首选 {_hit_cand.get('clc_code')}")
+                else:
+                    _pref_lines.append(f"→ 优先考虑：{_lb}" + ("（候选体系中无精确对应，请按语义就近选择）" if custom_candidates else ""))
+            user_prompt += "\n\n【训练数据匹配推荐】以下类目来自与输入文本语义相似的标注样本（相似度≥0.55），已对照候选分类体系完成匹配，应作为首选分类：\n" + "\n".join(_pref_lines)
         data = self._glm.chat_json(system_prompt, user_prompt, timeout=120.0, max_tokens=1500)
         data = data.get("data", data) if isinstance(data, dict) else {}
         clc_code = (data.get("clc_code") or "").strip()
         reason = data.get("selection_reason", "")
 
-        # 训练数据权威覆盖（2026-09-15；2026-09-19 标签与分类号解耦）：最高相似度
-        # 样本的标签优先于 LLM 泛判——内置给 TU3（粗），训练标注说这类文本是
-        # TU31（细）→ 用 TU31。标签可带码（"TU31 名称"）也可纯类目名：纯名称在
-        # 用户规则树里解析出码（换一套规则资源码自动跟随名称）；解析不出则跳过
-        # 硬覆盖（few-shot 已引导 LLM，拿名称当码 resolve 必失败）
-        if _train_boost and _train_boost.get("matched_examples"):
-            _top = max(_train_boost["matched_examples"], key=lambda x: x.get("similarity", 0))
-            _top_sim = float(_top.get("similarity") or 0)
-            _top_code, _top_name = self._resolve_training_label(
-                str(_top.get("label") or ""), _rules_entries)
-            if _top_code and _top_sim >= 0.60:  # 硬覆盖线（2026-09-19 校准 0.55 分界同主题≥0.645，0.60 才配权威定码
-                # 仅当训练码是 LLM 码的同系（LLM=TU3, 训练=TU31 → 细化）或不同（覆盖）时采用
-                if not clc_code or clc_code == _top_code or _top_code.startswith(clc_code) or clc_code.startswith(_top_code):
-                    if _top_code != clc_code:
-                        reason = f"[训练数据覆盖 {_top_sim:.2f}→{_top_code}] " + reason
-                    clc_code = _top_code
-                    # 训练标签权威输出：直接用训练标签构建分类对象，不走内置 resolve
-                    # ——内置索引可能没有训练标签的细码（如 TU31），resolve 会退到粗码。
-                    # 路径优先沿用户规则树 parent_code 真实上溯；树内查不到再字母数字推断
-                    _entry = next((e for e in _rules_entries
-                                   if str(e.get("clc_code") or "").strip() == _top_code), None)
-                    if _entry is not None:
-                        _pc, _pn = [_top_code], [str(_entry.get("clc_name") or _top_name)]
-                        _cur, _seen = _entry, {_top_code}
-                        while str(_cur.get("parent_code") or "").strip() and _cur["parent_code"] not in _seen:
-                            _p = next((e for e in _rules_entries
-                                       if str(e.get("clc_code") or "").strip()
-                                       == str(_cur.get("parent_code") or "").strip()), None)
-                            if _p is None:
-                                break
-                            _pc.insert(0, str(_p.get("clc_code") or ""))
-                            _pn.insert(0, str(_p.get("clc_name") or ""))
-                            _seen.add(_p.get("clc_code"))
-                            _cur = _p
-                        clc_obj = {
-                            "clc_code": _top_code,
-                            "clc_name": str(_entry.get("clc_name") or _top_name),
-                            "classification_path": " > ".join(f"{c} {n}" for c, n in zip(_pc, _pn)),
-                            "path_codes": _pc, "path_names": _pn,
-                            "confidence": round(min(0.85 + _top_sim * 0.10, 0.95), 3),
-                        }
-                    else:
-                        # 字母数字推断兜底：TU31 → [TU, TU3, TU31]（字母=一级，+1数字=二级）
-                        import re as _re_t
-                        _m_t = _re_t.match(r'([A-Z]+)(\d*)', _top_code)
-                        _letters = _m_t.group(1) if _m_t else _top_code
-                        _digits = _m_t.group(2) if _m_t else ""
-                        _l1 = _letters
-                        _l2_code = _letters + _digits[:1] if _digits else _letters
-                        _l2_name = ""
-                        if _rules_entries:
-                            _l2_entry = next((e for e in _rules_entries
-                                              if e.get("clc_code") == _l2_code), None)
-                            if _l2_entry:
-                                _l2_name = str(_l2_entry.get("clc_name") or "")
-                        if not _l2_name:
-                            _l2_name = "相关子类"  # 兜底名称（不含码，避免 normalizer 拼接后重复）
-                        clc_obj = {
-                            "clc_code": _top_code, "clc_name": _top_name,
-                            "classification_path": f"{_l1} {domain_name}",
-                            "path_codes": [_l1, _l2_code, _top_code],
-                            "path_names": [domain_name, _l2_name, _top_name],
-                            "confidence": round(min(0.85 + _top_sim * 0.10, 0.95), 3),
-                        }
-                    result.success = True
-                    result.data = {
-                        "document_title": title,
-                        "domain_code": valid_domain.split()[0],
-                        "domain_name": domain_name,
-                        "clc_classification": clc_obj,
-                        "rag_top_k_candidates": [],
-                        "selection_reason": reason,
-                        "alignment_check": {"domain_valid": True,
-                                            "training_data_override": True},
-                        **({"training_data_effect": _train_boost} if _train_boost else {}),
-                    }
-                    result.confidence = clc_obj.get("confidence")
-                    result.raw = json.dumps(result.data, ensure_ascii=False)
-                    return result
+        # 训练数据不再做权威硬覆盖（2026-10-19 用户定稿）：人工标注训练数据
+        # 只是辅助对照——few-shot 样本与匹配推荐已注入提示词（见上方 user_prompt），
+        # 最终分类由 LLM 在候选体系内自主判别，再经下方 resolve_code 对齐真实
+        # 分类体系（用户规则树或内置中图法），名称/路径始终来自权威体系。
 
         # 仅在远端模型成功后加载体积较大的 CLC 检索索引。
         retriever = custom_retriever if custom_retriever is not None else \
@@ -3913,6 +3862,10 @@ class SemanticApplicationService(ISemanticService):
         main_entry = retriever.resolve_code(clc_code)
         if main_entry is None:
             raise RuntimeError("GLM-5.2 返回的领域分类号无法在 CLC 知识库中验证")
+        # 输出体系的权威源（2026-10-19 用户定稿）：有用户规则树 → 名称/路径用
+        # 规则树的（训练标签辅助去规则中匹配，如 TP39=AI赋能工程应用）；无规则
+        # 树 → 内置真实中图法（TP39=计算机的应用）。resolve_code 已按此分流
+        # （custom_retriever=树 / 内置 retriever=真实 CLC）
         clc_obj = self._entry_to_obj(main_entry, candidates) if main_entry else None
         if clc_obj:
             # 置信度计算方法：以"CLC 库验证通过 + 层级细化通过 + 用户指定领域约束 + LLM 推理(selection_reason)"
