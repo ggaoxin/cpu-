@@ -3342,300 +3342,140 @@
       "code": 0,
       "message": "success",
       "data": {
-        "document_title": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models",
+        "document_title": "多尺度注意力图像分类研究",
         "document": {
-          "title": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models"
+          "title": "多尺度注意力图像分类研究"
         },
         "citations": [
           {
-            "citation_id": "CIT1",
-            "sentence": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models Xinyu Tian1 Shu Zou1,2 Zhaoyuan Yang3 Mengqi He1 Peter Tu3 Jing Zhang1 1Australian National University 2Shanghai AI Lab 3GE Research 1firstname.lastname@anu.edu.au, 3firstname.lastname@ge.com Abstract visual questions [13, 47] and traditional tasks [18, 29].",
-            "citation_marker": "[13, 47]",
+            "citation_id": "CIT-001",
+            "sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
+            "citation_marker": "[1]",
             "citation_markers": [
-              "[13, 47]"
+              "[1]"
             ],
-            "sentiment": "中立",
-            "confidence": 0.8,
-            "citation_sentence": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models Xinyu Tian1 Shu Zou1,2 Zhaoyuan Yang3 Mengqi He1 Peter Tu3 Jing Zhang1 1Australian National University 2Shanghai AI Lab 3GE Research 1firstname.lastname@anu.edu.au, 3firstname.lastname@ge.com Abstract visual questions [13, 47] and traditional tasks [18, 29].",
+            "confidence": 0.94,
+            "citation_sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
             "context": {
-              "before": "（文档开头，无上文）",
-              "current_sentence": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models Xinyu Tian1 Shu Zou1,2 Zhaoyuan Yang3 Mengqi He1 Peter Tu3 Jing Zhang1 1Australian National University 2Shanghai AI Lab 3GE Research 1firstname.lastname@anu.edu.au, 3firstname.lastname@ge.com Abstract visual questions [13, 47] and traditional tasks [18, 29].",
-              "after": "However, despite the promise, the underlying mechaRecent studies have demonstrated that Reinforcement nisms driving the effectiveness of RL models, as well as Learning (RL), notably Group Relative Policy Optimization their limitations, remain underexplored."
-            }
+              "previous_sentence": "针对图像分类任务，",
+              "current_sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
+              "next_sentence": "因此本文提出新的数据增强策略。"
+            },
+            "sentiment": "局限性"
           },
           {
-            "citation_id": "CIT2",
-            "sentence": "Early doubts arise (GRPO), can intrinsically elicit and enhance the reasoning from LLMs, where [52] observe that although RL models capabilities of Vision-Language Models (VLMs).",
-            "citation_marker": "[52]",
+            "citation_id": "CIT-002",
+            "sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
+            "citation_marker": "[2]",
             "citation_markers": [
-              "[52]"
+              "[2]"
             ],
-            "sentiment": "中立",
-            "confidence": 0.7,
-            "citation_sentence": "Early doubts arise (GRPO), can intrinsically elicit and enhance the reasoning from LLMs, where [52] observe that although RL models capabilities of Vision-Language Models (VLMs).",
+            "confidence": 0.96,
+            "citation_sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
             "context": {
-              "before": "However, despite the promise, the underlying mechaRecent studies have demonstrated that Reinforcement nisms driving the effectiveness of RL models, as well as Learning (RL), notably Group Relative Policy Optimization their limitations, remain underexplored.",
-              "current_sentence": "Early doubts arise (GRPO), can intrinsically elicit and enhance the reasoning from LLMs, where [52] observe that although RL models capabilities of Vision-Language Models (VLMs).",
-              "after": "However, demonstrate higher accuracy, their performance ceilings redespite the promise, the underlying mechanisms that drive main constrained by the capabilities of base models, lackthe effectiveness of RL models as well as their limitations ing the ability to expand novel reasoning patterns."
-            }
+              "previous_sentence": "在目标检测领域，",
+              "current_sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
+              "next_sentence": "受此启发，我们设计了多尺度注意力模块。"
+            },
+            "sentiment": "支持"
           },
           {
-            "citation_id": "CIT3",
-            "sentence": "In this paper, we highlight a fundarecently, in the context of VLMs, [17, 43] notice that inmental behavioral distinction between RL and base modcorporating reasoning, in some cases, leads RL models to els, where the former engages in deeper yet narrow reaunderperform base models.",
-            "citation_marker": "[17, 43]",
+            "citation_id": "CIT-003",
+            "sentence": "早期研究已将图模型引入结构化数据建模[5]。",
+            "citation_marker": "[5]",
             "citation_markers": [
-              "[17, 43]"
+              "[5]"
             ],
-            "sentiment": "中立",
-            "confidence": 0.8,
-            "citation_sentence": "In this paper, we highlight a fundarecently, in the context of VLMs, [17, 43] notice that inmental behavioral distinction between RL and base modcorporating reasoning, in some cases, leads RL models to els, where the former engages in deeper yet narrow reaunderperform base models.",
+            "confidence": 0.92,
+            "citation_sentence": "早期研究已将图模型引入结构化数据建模[5]。",
             "context": {
-              "before": "More remain underexplored.",
-              "current_sentence": "In this paper, we highlight a fundarecently, in the context of VLMs, [17, 43] notice that inmental behavioral distinction between RL and base modcorporating reasoning, in some cases, leads RL models to els, where the former engages in deeper yet narrow reaunderperform base models.",
-              "after": "These findings lead us to ask: soning, while base models, despite less refined along inDo RL models truly outperform their base counterparts?"
-            }
+              "previous_sentence": "在关系数据表示领域，",
+              "current_sentence": "早期研究已将图模型引入结构化数据建模[5]。",
+              "next_sentence": "近年来图神经网络进一步拓展了该路线。"
+            },
+            "sentiment": "中立"
           },
           {
-            "citation_id": "CIT4",
-            "sentence": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
-            "citation_marker": "[16, 57]",
+            "citation_id": "CIT-004",
+            "sentence": "然而该策略在长序列场景下的稳定性仍缺乏充分验证[8]。",
+            "citation_marker": "[8]",
             "citation_markers": [
-              "[16, 57]"
+              "[8]"
             ],
-            "sentiment": "中立",
-            "confidence": 0.7,
-            "citation_sentence": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
+            "confidence": 0.9,
+            "citation_sentence": "然而该策略在长序列场景下的稳定性仍缺乏充分验证[8]。",
             "context": {
-              "before": "Base models, howfor addressing complex tasks.",
-              "current_sentence": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
-              "after": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking."
-            }
-          },
-          {
-            "citation_id": "CIT5",
-            "sentence": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking.",
-            "citation_marker": "[6, 22]",
-            "citation_markers": [
-              "[6, 22]"
-            ],
-            "sentiment": "中立",
-            "confidence": 0.7,
-            "citation_sentence": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking.",
-            "context": {
-              "before": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
-              "current_sentence": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking.",
-              "after": "More recently, the rise of tween RL models and their vanilla base counterparts."
-            }
-          },
-          {
-            "citation_id": "CIT6",
-            "sentence": "DurReinforcement Learning (RL), notably Group Relative Pol- ingreasoning, RLmodels, despitedemonstratingdeeperdeicy Optimization (GRPO) [26, 28], facilitates self-reflection liberation, tendtobeconservative, oftenadheringtoadomiand verification, highlighting remarkable self-improving nantstrategy.",
-            "citation_marker": "[26, 28]",
-            "citation_markers": [
-              "[26, 28]"
-            ],
-            "sentiment": "有局限性",
-            "confidence": 0.7,
-            "citation_sentence": "DurReinforcement Learning (RL), notably Group Relative Pol- ingreasoning, RLmodels, despitedemonstratingdeeperdeicy Optimization (GRPO) [26, 28], facilitates self-reflection liberation, tendtobeconservative, oftenadheringtoadomiand verification, highlighting remarkable self-improving nantstrategy.",
-            "context": {
-              "before": "More recently, the rise of tween RL models and their vanilla base counterparts.",
-              "current_sentence": "DurReinforcement Learning (RL), notably Group Relative Pol- ingreasoning, RLmodels, despitedemonstratingdeeperdeicy Optimization (GRPO) [26, 28], facilitates self-reflection liberation, tendtobeconservative, oftenadheringtoadomiand verification, highlighting remarkable self-improving nantstrategy.",
-              "after": "Incontrast, base models, althoughlessrefined capabilities."
-            }
-          },
-          {
-            "citation_id": "CIT7",
-            "sentence": "Intuitively, the (VLMs) [1, 10, 45].",
-            "citation_marker": "[1, 10, 45]",
-            "citation_markers": [
-              "[1, 10, 45]"
-            ],
-            "sentiment": "中立",
-            "confidence": 0.6,
-            "citation_sentence": "Intuitively, the (VLMs) [1, 10, 45].",
-            "context": {
-              "before": "Consequently, researchers have increasingly along a single path, display divergent thinking, frequently sought to integrate reasoning into Vision-Language Models exploring potential alternative solutions.",
-              "current_sentence": "Intuitively, the (VLMs) [1, 10, 45].",
-              "after": "By leveraging RL, VLMs acquire the latter more closely aligns with human problem-solving, in ability to extract, analyze and reflect over visual informa- which individuals, when given multiple attempts, often aption, achieving significant gains on both challenging logical proach the same problem from varied perspectives, increas6202 rpA 1 ]VC.sc[ 1v97400.4062:viXra"
-            }
-          },
-          {
-            "citation_id": "CIT8",
-            "sentence": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-            "citation_marker": "[13]",
-            "citation_markers": [
-              "[13]"
-            ],
-            "sentiment": "中立",
-            "confidence": 0.85,
-            "citation_sentence": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-            "context": {
-              "before": "The failure cases of RL models.",
-              "current_sentence": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-              "after": "The examples are selected from MathVerse [54] and MathVista [20], respectively."
-            }
-          },
-          {
-            "citation_id": "CIT9",
-            "sentence": "The examples are selected from MathVerse [54] and MathVista [20], respectively.",
-            "citation_marker": "[54]",
-            "citation_markers": [
-              "[54]"
-            ],
-            "sentiment": "中立",
-            "confidence": 0.85,
-            "citation_sentence": "The examples are selected from MathVerse [54] and MathVista [20], respectively.",
-            "context": {
-              "before": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-              "current_sentence": "The examples are selected from MathVerse [54] and MathVista [20], respectively.",
-              "after": "For each question, we set the sampling temperature to 1.0 and generate multiple responses, each of which is displayed in a gray box."
-            }
+              "previous_sentence": "尽管上述方法取得了良好效果，",
+              "current_sentence": "然而该策略在长序列场景下的稳定性仍缺乏充分验证[8]。",
+              "next_sentence": "这一不足构成了本文的动机之一。"
+            },
+            "sentiment": "局限性"
           }
         ],
         "citation_sentiment_results": [
           {
-            "citation_id": "CIT1",
-            "sentence": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models Xinyu Tian1 Shu Zou1,2 Zhaoyuan Yang3 Mengqi He1 Peter Tu3 Jing Zhang1 1Australian National University 2Shanghai AI Lab 3GE Research 1firstname.lastname@anu.edu.au, 3firstname.lastname@ge.com Abstract visual questions [13, 47] and traditional tasks [18, 29].",
-            "citation_marker": "[13, 47]",
+            "citation_id": "CIT-001",
+            "sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
+            "citation_marker": "[1]",
             "citation_markers": [
-              "[13, 47]"
+              "[1]"
             ],
-            "sentiment": "中立",
-            "confidence": 0.8,
-            "citation_sentence": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models Xinyu Tian1 Shu Zou1,2 Zhaoyuan Yang3 Mengqi He1 Peter Tu3 Jing Zhang1 1Australian National University 2Shanghai AI Lab 3GE Research 1firstname.lastname@anu.edu.au, 3firstname.lastname@ge.com Abstract visual questions [13, 47] and traditional tasks [18, 29].",
+            "confidence": 0.94,
+            "citation_sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
             "context": {
-              "before": "（文档开头，无上文）",
-              "current_sentence": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models Xinyu Tian1 Shu Zou1,2 Zhaoyuan Yang3 Mengqi He1 Peter Tu3 Jing Zhang1 1Australian National University 2Shanghai AI Lab 3GE Research 1firstname.lastname@anu.edu.au, 3firstname.lastname@ge.com Abstract visual questions [13, 47] and traditional tasks [18, 29].",
-              "after": "However, despite the promise, the underlying mechaRecent studies have demonstrated that Reinforcement nisms driving the effectiveness of RL models, as well as Learning (RL), notably Group Relative Policy Optimization their limitations, remain underexplored."
-            }
+              "previous_sentence": "本文围绕图像分类中的注意力机制展开研究。",
+              "current_sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
+              "next_sentence": "因此本文提出新的数据增强策略。"
+            },
+            "sentiment": "局限性"
           },
           {
-            "citation_id": "CIT2",
-            "sentence": "Early doubts arise (GRPO), can intrinsically elicit and enhance the reasoning from LLMs, where [52] observe that although RL models capabilities of Vision-Language Models (VLMs).",
-            "citation_marker": "[52]",
+            "citation_id": "CIT-002",
+            "sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
+            "citation_marker": "[2]",
             "citation_markers": [
-              "[52]"
+              "[2]"
             ],
-            "sentiment": "中立",
-            "confidence": 0.7,
-            "citation_sentence": "Early doubts arise (GRPO), can intrinsically elicit and enhance the reasoning from LLMs, where [52] observe that although RL models capabilities of Vision-Language Models (VLMs).",
+            "confidence": 0.96,
+            "citation_sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
             "context": {
-              "before": "However, despite the promise, the underlying mechaRecent studies have demonstrated that Reinforcement nisms driving the effectiveness of RL models, as well as Learning (RL), notably Group Relative Policy Optimization their limitations, remain underexplored.",
-              "current_sentence": "Early doubts arise (GRPO), can intrinsically elicit and enhance the reasoning from LLMs, where [52] observe that although RL models capabilities of Vision-Language Models (VLMs).",
-              "after": "However, demonstrate higher accuracy, their performance ceilings redespite the promise, the underlying mechanisms that drive main constrained by the capabilities of base models, lackthe effectiveness of RL models as well as their limitations ing the ability to expand novel reasoning patterns."
-            }
+              "previous_sentence": "因此本文提出新的数据增强策略。",
+              "current_sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
+              "next_sentence": "受此启发，我们设计了多尺度注意力模块。"
+            },
+            "sentiment": "支持"
           },
           {
-            "citation_id": "CIT3",
-            "sentence": "In this paper, we highlight a fundarecently, in the context of VLMs, [17, 43] notice that inmental behavioral distinction between RL and base modcorporating reasoning, in some cases, leads RL models to els, where the former engages in deeper yet narrow reaunderperform base models.",
-            "citation_marker": "[17, 43]",
+            "citation_id": "CIT-003",
+            "sentence": "早期研究已将图模型引入结构化数据建模[5]。",
+            "citation_marker": "[5]",
             "citation_markers": [
-              "[17, 43]"
+              "[5]"
             ],
-            "sentiment": "中立",
-            "confidence": 0.8,
-            "citation_sentence": "In this paper, we highlight a fundarecently, in the context of VLMs, [17, 43] notice that inmental behavioral distinction between RL and base modcorporating reasoning, in some cases, leads RL models to els, where the former engages in deeper yet narrow reaunderperform base models.",
+            "confidence": 0.92,
+            "citation_sentence": "早期研究已将图模型引入结构化数据建模[5]。",
             "context": {
-              "before": "More remain underexplored.",
-              "current_sentence": "In this paper, we highlight a fundarecently, in the context of VLMs, [17, 43] notice that inmental behavioral distinction between RL and base modcorporating reasoning, in some cases, leads RL models to els, where the former engages in deeper yet narrow reaunderperform base models.",
-              "after": "These findings lead us to ask: soning, while base models, despite less refined along inDo RL models truly outperform their base counterparts?"
-            }
+              "previous_sentence": "受此启发，我们设计了多尺度注意力模块。",
+              "current_sentence": "早期研究已将图模型引入结构化数据建模[5]。",
+              "next_sentence": "近年来图神经网络进一步拓展了该路线。"
+            },
+            "sentiment": "中立"
           },
           {
-            "citation_id": "CIT4",
-            "sentence": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
-            "citation_marker": "[16, 57]",
+            "citation_id": "CIT-004",
+            "sentence": "然而该策略在长序列场景下的稳定性仍缺乏充分验证[8]。",
+            "citation_marker": "[8]",
             "citation_markers": [
-              "[16, 57]"
+              "[8]"
             ],
-            "sentiment": "中立",
-            "confidence": 0.7,
-            "citation_sentence": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
+            "confidence": 0.9,
+            "citation_sentence": "然而该策略在长序列场景下的稳定性仍缺乏充分验证[8]。",
             "context": {
-              "before": "Base models, howfor addressing complex tasks.",
-              "current_sentence": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
-              "after": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking."
-            }
-          },
-          {
-            "citation_id": "CIT5",
-            "sentence": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking.",
-            "citation_marker": "[6, 22]",
-            "citation_markers": [
-              "[6, 22]"
-            ],
-            "sentiment": "中立",
-            "confidence": 0.7,
-            "citation_sentence": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking.",
-            "context": {
-              "before": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
-              "current_sentence": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking.",
-              "after": "More recently, the rise of tween RL models and their vanilla base counterparts."
-            }
-          },
-          {
-            "citation_id": "CIT6",
-            "sentence": "DurReinforcement Learning (RL), notably Group Relative Pol- ingreasoning, RLmodels, despitedemonstratingdeeperdeicy Optimization (GRPO) [26, 28], facilitates self-reflection liberation, tendtobeconservative, oftenadheringtoadomiand verification, highlighting remarkable self-improving nantstrategy.",
-            "citation_marker": "[26, 28]",
-            "citation_markers": [
-              "[26, 28]"
-            ],
-            "sentiment": "有局限性",
-            "confidence": 0.7,
-            "citation_sentence": "DurReinforcement Learning (RL), notably Group Relative Pol- ingreasoning, RLmodels, despitedemonstratingdeeperdeicy Optimization (GRPO) [26, 28], facilitates self-reflection liberation, tendtobeconservative, oftenadheringtoadomiand verification, highlighting remarkable self-improving nantstrategy.",
-            "context": {
-              "before": "More recently, the rise of tween RL models and their vanilla base counterparts.",
-              "current_sentence": "DurReinforcement Learning (RL), notably Group Relative Pol- ingreasoning, RLmodels, despitedemonstratingdeeperdeicy Optimization (GRPO) [26, 28], facilitates self-reflection liberation, tendtobeconservative, oftenadheringtoadomiand verification, highlighting remarkable self-improving nantstrategy.",
-              "after": "Incontrast, base models, althoughlessrefined capabilities."
-            }
-          },
-          {
-            "citation_id": "CIT7",
-            "sentence": "Intuitively, the (VLMs) [1, 10, 45].",
-            "citation_marker": "[1, 10, 45]",
-            "citation_markers": [
-              "[1, 10, 45]"
-            ],
-            "sentiment": "中立",
-            "confidence": 0.6,
-            "citation_sentence": "Intuitively, the (VLMs) [1, 10, 45].",
-            "context": {
-              "before": "Consequently, researchers have increasingly along a single path, display divergent thinking, frequently sought to integrate reasoning into Vision-Language Models exploring potential alternative solutions.",
-              "current_sentence": "Intuitively, the (VLMs) [1, 10, 45].",
-              "after": "By leveraging RL, VLMs acquire the latter more closely aligns with human problem-solving, in ability to extract, analyze and reflect over visual informa- which individuals, when given multiple attempts, often aption, achieving significant gains on both challenging logical proach the same problem from varied perspectives, increas6202 rpA 1 ]VC.sc[ 1v97400.4062:viXra"
-            }
-          },
-          {
-            "citation_id": "CIT8",
-            "sentence": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-            "citation_marker": "[13]",
-            "citation_markers": [
-              "[13]"
-            ],
-            "sentiment": "中立",
-            "confidence": 0.85,
-            "citation_sentence": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-            "context": {
-              "before": "The failure cases of RL models.",
-              "current_sentence": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-              "after": "The examples are selected from MathVerse [54] and MathVista [20], respectively."
-            }
-          },
-          {
-            "citation_id": "CIT9",
-            "sentence": "The examples are selected from MathVerse [54] and MathVista [20], respectively.",
-            "citation_marker": "[54]",
-            "citation_markers": [
-              "[54]"
-            ],
-            "sentiment": "中立",
-            "confidence": 0.85,
-            "citation_sentence": "The examples are selected from MathVerse [54] and MathVista [20], respectively.",
-            "context": {
-              "before": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-              "current_sentence": "The examples are selected from MathVerse [54] and MathVista [20], respectively.",
-              "after": "For each question, we set the sampling temperature to 1.0 and generate multiple responses, each of which is displayed in a gray box."
-            }
+              "previous_sentence": "近年来图神经网络进一步拓展了该路线。",
+              "current_sentence": "然而该策略在长序列场景下的稳定性仍缺乏充分验证[8]。",
+              "next_sentence": "这一不足构成了本文的动机之一。"
+            },
+            "sentiment": "局限性"
           }
         ]
       },
@@ -3709,9 +3549,9 @@
                   "confidence": 0.95,
                   "citation_sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
                   "context": {
-                    "before": "针对图像分类任务，",
+                    "previous_sentence": "本文围绕图像分类中的注意力机制展开研究。",
                     "current_sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
-                    "after": "因此本文提出新的数据增强策略。"
+                    "next_sentence": "因此本文提出新的数据增强策略。"
                   }
                 }
               ]
@@ -3758,9 +3598,9 @@
                   "confidence": 1,
                   "citation_sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
                   "context": {
-                    "before": "在目标检测领域，",
+                    "previous_sentence": "因此本文提出新的数据增强策略。",
                     "current_sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
-                    "after": "受此启发，我们设计了多尺度注意力模块。"
+                    "next_sentence": "受此启发，我们设计了多尺度注意力模块。"
                   }
                 }
               ]
@@ -3790,300 +3630,140 @@
       "code": 0,
       "message": "success",
       "data": {
-        "document_title": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models",
+        "document_title": "多尺度注意力图像分类研究",
         "document": {
-          "title": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models"
+          "title": "多尺度注意力图像分类研究"
         },
         "citations": [
           {
-            "citation_id": "CIT1",
-            "sentence": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models Xinyu Tian1 Shu Zou1,2 Zhaoyuan Yang3 Mengqi He1 Peter Tu3 Jing Zhang1 1Australian National University 2Shanghai AI Lab 3GE Research 1firstname.lastname@anu.edu.au, 3firstname.lastname@ge.com Abstract visual questions [13, 47] and traditional tasks [18, 29].",
-            "citation_marker": "[13, 47]",
+            "citation_id": "CIT-001",
+            "sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
+            "citation_marker": "[1]",
             "citation_markers": [
-              "[13, 47]"
+              "[1]"
             ],
-            "intent": "用于背景介绍",
-            "confidence": 0.6,
-            "citation_sentence": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models Xinyu Tian1 Shu Zou1,2 Zhaoyuan Yang3 Mengqi He1 Peter Tu3 Jing Zhang1 1Australian National University 2Shanghai AI Lab 3GE Research 1firstname.lastname@anu.edu.au, 3firstname.lastname@ge.com Abstract visual questions [13, 47] and traditional tasks [18, 29].",
+            "confidence": 0.94,
+            "citation_sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
             "context": {
-              "before": "（文档开头，无上文）",
-              "current_sentence": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models Xinyu Tian1 Shu Zou1,2 Zhaoyuan Yang3 Mengqi He1 Peter Tu3 Jing Zhang1 1Australian National University 2Shanghai AI Lab 3GE Research 1firstname.lastname@anu.edu.au, 3firstname.lastname@ge.com Abstract visual questions [13, 47] and traditional tasks [18, 29].",
-              "after": "However, despite the promise, the underlying mechaRecent studies have demonstrated that Reinforcement nisms driving the effectiveness of RL models, as well as Learning (RL), notably Group Relative Policy Optimization their limitations, remain underexplored."
-            }
+              "previous_sentence": "针对图像分类任务，",
+              "current_sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
+              "next_sentence": "因此本文提出新的数据增强策略。"
+            },
+            "intent": "结果比较"
           },
           {
-            "citation_id": "CIT2",
-            "sentence": "Early doubts arise (GRPO), can intrinsically elicit and enhance the reasoning from LLMs, where [52] observe that although RL models capabilities of Vision-Language Models (VLMs).",
-            "citation_marker": "[52]",
+            "citation_id": "CIT-002",
+            "sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
+            "citation_marker": "[2]",
             "citation_markers": [
-              "[52]"
+              "[2]"
             ],
-            "intent": "用于背景介绍",
-            "confidence": 0.7,
-            "citation_sentence": "Early doubts arise (GRPO), can intrinsically elicit and enhance the reasoning from LLMs, where [52] observe that although RL models capabilities of Vision-Language Models (VLMs).",
+            "confidence": 0.96,
+            "citation_sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
             "context": {
-              "before": "However, despite the promise, the underlying mechaRecent studies have demonstrated that Reinforcement nisms driving the effectiveness of RL models, as well as Learning (RL), notably Group Relative Policy Optimization their limitations, remain underexplored.",
-              "current_sentence": "Early doubts arise (GRPO), can intrinsically elicit and enhance the reasoning from LLMs, where [52] observe that although RL models capabilities of Vision-Language Models (VLMs).",
-              "after": "However, demonstrate higher accuracy, their performance ceilings redespite the promise, the underlying mechanisms that drive main constrained by the capabilities of base models, lackthe effectiveness of RL models as well as their limitations ing the ability to expand novel reasoning patterns."
-            }
+              "previous_sentence": "在目标检测领域，",
+              "current_sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
+              "next_sentence": "受此启发，我们设计了多尺度注意力模块。"
+            },
+            "intent": "方法引入"
           },
           {
-            "citation_id": "CIT3",
-            "sentence": "In this paper, we highlight a fundarecently, in the context of VLMs, [17, 43] notice that inmental behavioral distinction between RL and base modcorporating reasoning, in some cases, leads RL models to els, where the former engages in deeper yet narrow reaunderperform base models.",
-            "citation_marker": "[17, 43]",
+            "citation_id": "CIT-003",
+            "sentence": "早期研究已将图模型引入结构化数据建模[5]。",
+            "citation_marker": "[5]",
             "citation_markers": [
-              "[17, 43]"
+              "[5]"
             ],
-            "intent": "用于背景介绍",
-            "confidence": 0.7,
-            "citation_sentence": "In this paper, we highlight a fundarecently, in the context of VLMs, [17, 43] notice that inmental behavioral distinction between RL and base modcorporating reasoning, in some cases, leads RL models to els, where the former engages in deeper yet narrow reaunderperform base models.",
+            "confidence": 0.92,
+            "citation_sentence": "早期研究已将图模型引入结构化数据建模[5]。",
             "context": {
-              "before": "More remain underexplored.",
-              "current_sentence": "In this paper, we highlight a fundarecently, in the context of VLMs, [17, 43] notice that inmental behavioral distinction between RL and base modcorporating reasoning, in some cases, leads RL models to els, where the former engages in deeper yet narrow reaunderperform base models.",
-              "after": "These findings lead us to ask: soning, while base models, despite less refined along inDo RL models truly outperform their base counterparts?"
-            }
+              "previous_sentence": "在关系数据表示领域，",
+              "current_sentence": "早期研究已将图模型引入结构化数据建模[5]。",
+              "next_sentence": "近年来图神经网络进一步拓展了该路线。"
+            },
+            "intent": "背景介绍"
           },
           {
-            "citation_id": "CIT4",
-            "sentence": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
-            "citation_marker": "[16, 57]",
+            "citation_id": "CIT-004",
+            "sentence": "然而该策略在长序列场景下的稳定性仍缺乏充分验证[8]。",
+            "citation_marker": "[8]",
             "citation_markers": [
-              "[16, 57]"
+              "[8]"
             ],
-            "intent": "用于背景介绍",
-            "confidence": 0.7,
-            "citation_sentence": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
+            "confidence": 0.9,
+            "citation_sentence": "然而该策略在长序列场景下的稳定性仍缺乏充分验证[8]。",
             "context": {
-              "before": "Base models, howfor addressing complex tasks.",
-              "current_sentence": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
-              "after": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking."
-            }
-          },
-          {
-            "citation_id": "CIT5",
-            "sentence": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking.",
-            "citation_marker": "[6, 22]",
-            "citation_markers": [
-              "[6, 22]"
-            ],
-            "intent": "用于引入研究方法",
-            "confidence": 0.8,
-            "citation_sentence": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking.",
-            "context": {
-              "before": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
-              "current_sentence": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking.",
-              "after": "More recently, the rise of tween RL models and their vanilla base counterparts."
-            }
-          },
-          {
-            "citation_id": "CIT6",
-            "sentence": "DurReinforcement Learning (RL), notably Group Relative Pol- ingreasoning, RLmodels, despitedemonstratingdeeperdeicy Optimization (GRPO) [26, 28], facilitates self-reflection liberation, tendtobeconservative, oftenadheringtoadomiand verification, highlighting remarkable self-improving nantstrategy.",
-            "citation_marker": "[26, 28]",
-            "citation_markers": [
-              "[26, 28]"
-            ],
-            "intent": "用于引入研究方法",
-            "confidence": 0.7,
-            "citation_sentence": "DurReinforcement Learning (RL), notably Group Relative Pol- ingreasoning, RLmodels, despitedemonstratingdeeperdeicy Optimization (GRPO) [26, 28], facilitates self-reflection liberation, tendtobeconservative, oftenadheringtoadomiand verification, highlighting remarkable self-improving nantstrategy.",
-            "context": {
-              "before": "More recently, the rise of tween RL models and their vanilla base counterparts.",
-              "current_sentence": "DurReinforcement Learning (RL), notably Group Relative Pol- ingreasoning, RLmodels, despitedemonstratingdeeperdeicy Optimization (GRPO) [26, 28], facilitates self-reflection liberation, tendtobeconservative, oftenadheringtoadomiand verification, highlighting remarkable self-improving nantstrategy.",
-              "after": "Incontrast, base models, althoughlessrefined capabilities."
-            }
-          },
-          {
-            "citation_id": "CIT7",
-            "sentence": "Intuitively, the (VLMs) [1, 10, 45].",
-            "citation_marker": "[1, 10, 45]",
-            "citation_markers": [
-              "[1, 10, 45]"
-            ],
-            "intent": "用于引入研究方法",
-            "confidence": 0.8,
-            "citation_sentence": "Intuitively, the (VLMs) [1, 10, 45].",
-            "context": {
-              "before": "Consequently, researchers have increasingly along a single path, display divergent thinking, frequently sought to integrate reasoning into Vision-Language Models exploring potential alternative solutions.",
-              "current_sentence": "Intuitively, the (VLMs) [1, 10, 45].",
-              "after": "By leveraging RL, VLMs acquire the latter more closely aligns with human problem-solving, in ability to extract, analyze and reflect over visual informa- which individuals, when given multiple attempts, often aption, achieving significant gains on both challenging logical proach the same problem from varied perspectives, increas6202 rpA 1 ]VC.sc[ 1v97400.4062:viXra"
-            }
-          },
-          {
-            "citation_id": "CIT8",
-            "sentence": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-            "citation_marker": "[13]",
-            "citation_markers": [
-              "[13]"
-            ],
-            "intent": "用于引入研究方法",
-            "confidence": 0.7,
-            "citation_sentence": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-            "context": {
-              "before": "The failure cases of RL models.",
-              "current_sentence": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-              "after": "The examples are selected from MathVerse [54] and MathVista [20], respectively."
-            }
-          },
-          {
-            "citation_id": "CIT9",
-            "sentence": "The examples are selected from MathVerse [54] and MathVista [20], respectively.",
-            "citation_marker": "[54]",
-            "citation_markers": [
-              "[54]"
-            ],
-            "intent": "用于引入研究方法",
-            "confidence": 0.85,
-            "citation_sentence": "The examples are selected from MathVerse [54] and MathVista [20], respectively.",
-            "context": {
-              "before": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-              "current_sentence": "The examples are selected from MathVerse [54] and MathVista [20], respectively.",
-              "after": "For each question, we set the sampling temperature to 1.0 and generate multiple responses, each of which is displayed in a gray box."
-            }
+              "previous_sentence": "尽管上述方法取得了良好效果，",
+              "current_sentence": "然而该策略在长序列场景下的稳定性仍缺乏充分验证[8]。",
+              "next_sentence": "这一不足构成了本文的动机之一。"
+            },
+            "intent": "结果比较"
           }
         ],
         "citation_intent_results": [
           {
-            "citation_id": "CIT1",
-            "sentence": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models Xinyu Tian1 Shu Zou1,2 Zhaoyuan Yang3 Mengqi He1 Peter Tu3 Jing Zhang1 1Australian National University 2Shanghai AI Lab 3GE Research 1firstname.lastname@anu.edu.au, 3firstname.lastname@ge.com Abstract visual questions [13, 47] and traditional tasks [18, 29].",
-            "citation_marker": "[13, 47]",
+            "citation_id": "CIT-001",
+            "sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
+            "citation_marker": "[1]",
             "citation_markers": [
-              "[13, 47]"
+              "[1]"
             ],
-            "intent": "用于背景介绍",
-            "confidence": 0.6,
-            "citation_sentence": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models Xinyu Tian1 Shu Zou1,2 Zhaoyuan Yang3 Mengqi He1 Peter Tu3 Jing Zhang1 1Australian National University 2Shanghai AI Lab 3GE Research 1firstname.lastname@anu.edu.au, 3firstname.lastname@ge.com Abstract visual questions [13, 47] and traditional tasks [18, 29].",
+            "confidence": 0.94,
+            "citation_sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
             "context": {
-              "before": "（文档开头，无上文）",
-              "current_sentence": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models Xinyu Tian1 Shu Zou1,2 Zhaoyuan Yang3 Mengqi He1 Peter Tu3 Jing Zhang1 1Australian National University 2Shanghai AI Lab 3GE Research 1firstname.lastname@anu.edu.au, 3firstname.lastname@ge.com Abstract visual questions [13, 47] and traditional tasks [18, 29].",
-              "after": "However, despite the promise, the underlying mechaRecent studies have demonstrated that Reinforcement nisms driving the effectiveness of RL models, as well as Learning (RL), notably Group Relative Policy Optimization their limitations, remain underexplored."
-            }
+              "previous_sentence": "本文围绕图像分类中的注意力机制展开研究。",
+              "current_sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
+              "next_sentence": "因此本文提出新的数据增强策略。"
+            },
+            "intent": "结果比较"
           },
           {
-            "citation_id": "CIT2",
-            "sentence": "Early doubts arise (GRPO), can intrinsically elicit and enhance the reasoning from LLMs, where [52] observe that although RL models capabilities of Vision-Language Models (VLMs).",
-            "citation_marker": "[52]",
+            "citation_id": "CIT-002",
+            "sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
+            "citation_marker": "[2]",
             "citation_markers": [
-              "[52]"
+              "[2]"
             ],
-            "intent": "用于背景介绍",
-            "confidence": 0.7,
-            "citation_sentence": "Early doubts arise (GRPO), can intrinsically elicit and enhance the reasoning from LLMs, where [52] observe that although RL models capabilities of Vision-Language Models (VLMs).",
+            "confidence": 0.96,
+            "citation_sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
             "context": {
-              "before": "However, despite the promise, the underlying mechaRecent studies have demonstrated that Reinforcement nisms driving the effectiveness of RL models, as well as Learning (RL), notably Group Relative Policy Optimization their limitations, remain underexplored.",
-              "current_sentence": "Early doubts arise (GRPO), can intrinsically elicit and enhance the reasoning from LLMs, where [52] observe that although RL models capabilities of Vision-Language Models (VLMs).",
-              "after": "However, demonstrate higher accuracy, their performance ceilings redespite the promise, the underlying mechanisms that drive main constrained by the capabilities of base models, lackthe effectiveness of RL models as well as their limitations ing the ability to expand novel reasoning patterns."
-            }
+              "previous_sentence": "因此本文提出新的数据增强策略。",
+              "current_sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
+              "next_sentence": "受此启发，我们设计了多尺度注意力模块。"
+            },
+            "intent": "方法引入"
           },
           {
-            "citation_id": "CIT3",
-            "sentence": "In this paper, we highlight a fundarecently, in the context of VLMs, [17, 43] notice that inmental behavioral distinction between RL and base modcorporating reasoning, in some cases, leads RL models to els, where the former engages in deeper yet narrow reaunderperform base models.",
-            "citation_marker": "[17, 43]",
+            "citation_id": "CIT-003",
+            "sentence": "早期研究已将图模型引入结构化数据建模[5]。",
+            "citation_marker": "[5]",
             "citation_markers": [
-              "[17, 43]"
+              "[5]"
             ],
-            "intent": "用于背景介绍",
-            "confidence": 0.7,
-            "citation_sentence": "In this paper, we highlight a fundarecently, in the context of VLMs, [17, 43] notice that inmental behavioral distinction between RL and base modcorporating reasoning, in some cases, leads RL models to els, where the former engages in deeper yet narrow reaunderperform base models.",
+            "confidence": 0.92,
+            "citation_sentence": "早期研究已将图模型引入结构化数据建模[5]。",
             "context": {
-              "before": "More remain underexplored.",
-              "current_sentence": "In this paper, we highlight a fundarecently, in the context of VLMs, [17, 43] notice that inmental behavioral distinction between RL and base modcorporating reasoning, in some cases, leads RL models to els, where the former engages in deeper yet narrow reaunderperform base models.",
-              "after": "These findings lead us to ask: soning, while base models, despite less refined along inDo RL models truly outperform their base counterparts?"
-            }
+              "previous_sentence": "受此启发，我们设计了多尺度注意力模块。",
+              "current_sentence": "早期研究已将图模型引入结构化数据建模[5]。",
+              "next_sentence": "近年来图神经网络进一步拓展了该路线。"
+            },
+            "intent": "背景介绍"
           },
           {
-            "citation_id": "CIT4",
-            "sentence": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
-            "citation_marker": "[16, 57]",
+            "citation_id": "CIT-004",
+            "sentence": "然而该策略在长序列场景下的稳定性仍缺乏充分验证[8]。",
+            "citation_marker": "[8]",
             "citation_markers": [
-              "[16, 57]"
+              "[8]"
             ],
-            "intent": "用于背景介绍",
-            "confidence": 0.7,
-            "citation_sentence": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
+            "confidence": 0.9,
+            "citation_sentence": "然而该策略在长序列场景下的稳定性仍缺乏充分验证[8]。",
             "context": {
-              "before": "Base models, howfor addressing complex tasks.",
-              "current_sentence": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
-              "after": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking."
-            }
-          },
-          {
-            "citation_id": "CIT5",
-            "sentence": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking.",
-            "citation_marker": "[6, 22]",
-            "citation_markers": [
-              "[6, 22]"
-            ],
-            "intent": "用于引入研究方法",
-            "confidence": 0.8,
-            "citation_sentence": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking.",
-            "context": {
-              "before": "Early approaches typically ever, areoftenabletoemployefficienteliminationstrategies rely on prompt engineering [16, 57], which elicit chain-ofthat reach the correct answer in significantly fewer steps.",
-              "current_sentence": "thought solutions, or on Supervised Fine-Tuning (SFT) [6, 22], where models are trained on high-quality trajectories These observations reveal a fundamental distinction beto emulate human-like thinking.",
-              "after": "More recently, the rise of tween RL models and their vanilla base counterparts."
-            }
-          },
-          {
-            "citation_id": "CIT6",
-            "sentence": "DurReinforcement Learning (RL), notably Group Relative Pol- ingreasoning, RLmodels, despitedemonstratingdeeperdeicy Optimization (GRPO) [26, 28], facilitates self-reflection liberation, tendtobeconservative, oftenadheringtoadomiand verification, highlighting remarkable self-improving nantstrategy.",
-            "citation_marker": "[26, 28]",
-            "citation_markers": [
-              "[26, 28]"
-            ],
-            "intent": "用于引入研究方法",
-            "confidence": 0.7,
-            "citation_sentence": "DurReinforcement Learning (RL), notably Group Relative Pol- ingreasoning, RLmodels, despitedemonstratingdeeperdeicy Optimization (GRPO) [26, 28], facilitates self-reflection liberation, tendtobeconservative, oftenadheringtoadomiand verification, highlighting remarkable self-improving nantstrategy.",
-            "context": {
-              "before": "More recently, the rise of tween RL models and their vanilla base counterparts.",
-              "current_sentence": "DurReinforcement Learning (RL), notably Group Relative Pol- ingreasoning, RLmodels, despitedemonstratingdeeperdeicy Optimization (GRPO) [26, 28], facilitates self-reflection liberation, tendtobeconservative, oftenadheringtoadomiand verification, highlighting remarkable self-improving nantstrategy.",
-              "after": "Incontrast, base models, althoughlessrefined capabilities."
-            }
-          },
-          {
-            "citation_id": "CIT7",
-            "sentence": "Intuitively, the (VLMs) [1, 10, 45].",
-            "citation_marker": "[1, 10, 45]",
-            "citation_markers": [
-              "[1, 10, 45]"
-            ],
-            "intent": "用于引入研究方法",
-            "confidence": 0.8,
-            "citation_sentence": "Intuitively, the (VLMs) [1, 10, 45].",
-            "context": {
-              "before": "Consequently, researchers have increasingly along a single path, display divergent thinking, frequently sought to integrate reasoning into Vision-Language Models exploring potential alternative solutions.",
-              "current_sentence": "Intuitively, the (VLMs) [1, 10, 45].",
-              "after": "By leveraging RL, VLMs acquire the latter more closely aligns with human problem-solving, in ability to extract, analyze and reflect over visual informa- which individuals, when given multiple attempts, often aption, achieving significant gains on both challenging logical proach the same problem from varied perspectives, increas6202 rpA 1 ]VC.sc[ 1v97400.4062:viXra"
-            }
-          },
-          {
-            "citation_id": "CIT8",
-            "sentence": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-            "citation_marker": "[13]",
-            "citation_markers": [
-              "[13]"
-            ],
-            "intent": "用于引入研究方法",
-            "confidence": 0.7,
-            "citation_sentence": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-            "context": {
-              "before": "The failure cases of RL models.",
-              "current_sentence": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-              "after": "The examples are selected from MathVerse [54] and MathVista [20], respectively."
-            }
-          },
-          {
-            "citation_id": "CIT9",
-            "sentence": "The examples are selected from MathVerse [54] and MathVista [20], respectively.",
-            "citation_marker": "[54]",
-            "citation_markers": [
-              "[54]"
-            ],
-            "intent": "用于引入研究方法",
-            "confidence": 0.85,
-            "citation_sentence": "The examples are selected from MathVerse [54] and MathVista [20], respectively.",
-            "context": {
-              "before": "We use Vision-R1 [13] as a representative RL model, with its corresponding base model being Qwen2.5-VL-7B [1].",
-              "current_sentence": "The examples are selected from MathVerse [54] and MathVista [20], respectively.",
-              "after": "For each question, we set the sampling temperature to 1.0 and generate multiple responses, each of which is displayed in a gray box."
-            }
+              "previous_sentence": "近年来图神经网络进一步拓展了该路线。",
+              "current_sentence": "然而该策略在长序列场景下的稳定性仍缺乏充分验证[8]。",
+              "next_sentence": "这一不足构成了本文的动机之一。"
+            },
+            "intent": "结果比较"
           }
         ]
       },
@@ -4157,9 +3837,9 @@
                   "confidence": 1,
                   "citation_sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
                   "context": {
-                    "before": "针对图像分类任务，",
+                    "previous_sentence": "本文围绕图像分类中的注意力机制展开研究。",
                     "current_sentence": "已有研究表明该方法在小样本场景下泛化能力不足[1]。",
-                    "after": "因此本文提出新的数据增强策略。"
+                    "next_sentence": "因此本文提出新的数据增强策略。"
                   }
                 }
               ]
@@ -4206,9 +3886,9 @@
                   "confidence": 0.85,
                   "citation_sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
                   "context": {
-                    "before": "在目标检测领域，",
+                    "previous_sentence": "因此本文提出新的数据增强策略。",
                     "current_sentence": "Smith等人[2]的工作证实了注意力机制能提升检测精度。",
-                    "after": "受此启发，我们设计了多尺度注意力模块。"
+                    "next_sentence": "受此启发，我们设计了多尺度注意力模块。"
                   }
                 }
               ]

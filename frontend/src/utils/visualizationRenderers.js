@@ -277,7 +277,7 @@ function renderAbstractMove(response, english = false) {
       ['句子总数', sentenceTotal],
       ['平均置信度', fixed(average(rows.map(item => item.confidence)))],
     ], 'fund-move-summary-grid-v663', 'fund-move-summary-item-v663', 'fund-move-summary-value-v663', 'fund-move-summary-label-v663')}
-    <div class="fund-move-visual-card-v663"><div class="fund-move-visual-title-v663">${english ? 'Abstract Move Recognition Details' : '摘要语步识别明细'}</div><div class="fund-move-result-table-wrap-v663"><table class="fund-move-result-table-v663"><colgroup><col style="width:21%"><col style="width:13%"><col style="width:10%"><col style="width:46%"><col style="width:10%"></colgroup><thead><tr><th>文献题名</th><th>${english ? '语步类型' : '语步类别'}</th><th>句子位置</th><th>${english ? '上下文信息' : '原文片段'}</th><th>${english ? '置信度' : '置信度评分'}</th></tr></thead><tbody>${resultRows || '<tr><td colspan="5">当前响应未包含有效摘要语步。</td></tr>'}</tbody></table></div></div>
+    <div class="fund-move-visual-card-v663"><div class="fund-move-visual-title-v663">摘要语步识别明细</div><div class="fund-move-result-table-wrap-v663"><table class="fund-move-result-table-v663"><colgroup><col style="width:21%"><col style="width:13%"><col style="width:10%"><col style="width:46%"><col style="width:10%"></colgroup><thead><tr><th>文献题名</th><th>${english ? '语步类型' : '语步类别'}</th><th>句子位置</th><th>${english ? '上下文信息' : '原文片段'}</th><th>${english ? '置信度' : '置信度评分'}</th></tr></thead><tbody>${resultRows || '<tr><td colspan="5">当前响应未包含有效摘要语步。</td></tr>'}</tbody></table></div></div>
     ${failed ? `<div class="fund-move-batch-failure-note-v663">批量任务中有 ${failed} 条输入处理失败，表格仅展示成功结果。</div>` : ''}
   </div>`
 }

@@ -183,6 +183,25 @@ def _citation_sub_span(sentence: str, marker_num: int) -> str:
     return _clean(sentence[start:end]) or _clean(sentence)
 
 
+def _is_table_or_formula_line(sent: str) -> bool:
+    """表格体/公式残留行（2026-10-20 用户实测 socialbot.pdf：MinerU 把表4
+    性能对比黏成一行，"VCDN[13]98.6298.95…"整行被当引用句）。
+
+    四信号任一命中即判非引用句：① 黏连小数——小数点后直接跟下一段数字
+    （"98.6298.95"，正文数字必有分隔符）；② 引用标记后紧跟数字 ≥2 次
+    （"[13]98.62"，正文标记后为标点/文字）；③ LaTeX 残留（\\mathrm/\\left[）；
+    ④ 中文表格空占位"一一"与标记共存。
+    """
+    s = re.sub(r"\s+", "", sent)
+    if len(re.findall(r"\d{1,3}\.\d{2,}(?=\d)", s)) >= 2:
+        return True
+    if len(re.findall(r"[\]］]\d", s)) >= 2:
+        return True
+    if re.search(r"\\mathrm|\\left\s*\[|\\right\s*\]|\$\{", sent):
+        return True
+    return bool(re.search(r"一一", s)) and bool(re.search(r"[\[［]\s*\d", s))
+
+
 def _extract_citation_contexts(document_text: str, limit: int = 30) -> list:
     """定位带引用标记([1]/[2,3]/[4-6])的句子,取前句/后句为上下文。
 
@@ -203,6 +222,8 @@ def _extract_citation_contexts(document_text: str, limit: int = 30) -> list:
         markers = _CITE_MARKER_RE.findall(sent)
         if not markers:
             continue
+        if _is_table_or_formula_line(sent):
+            continue  # 表格体/公式残留行不作为引用句（2026-10-20 socialbot 实测）
         nums = []
         for m in markers:
             nums.extend(_marker_nums_of(m))

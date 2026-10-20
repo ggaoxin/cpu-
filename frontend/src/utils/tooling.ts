@@ -348,6 +348,14 @@ export function looksLikeNonCitationLine(sentence: string): boolean {
   // 图/表标题句（2026-10-18 用户实测：换行合并后"表 2 强度参数…[30]…"出现在
   // 句首——行级过滤只删行首，句级再兜一层）
   if (/^(表\s*\d+|Table\s*\d+|图\s*\d+|Fig\.?\s*\d+)/i.test(sentence.trim())) return true
+  // 表格体/公式残留句（2026-10-20 socialbot.pdf 实测：MinerU 把性能对比表黏成
+  // 一行，"VCDN[13]98.6298.95…"带标记被当引用句）——与后端 _is_table_or_formula_line
+  // 同口径四信号：黏连小数 / 标记后紧跟数字≥2 / LaTeX 残留 / "一一"占位+标记
+  const glued = sentence.replace(/\s+/g, '')
+  if ((glued.match(/\d{1,3}\.\d{2,}(?=\d)/g) || []).length >= 2) return true
+  if ((sentence.match(/[\]］]\d/g) || []).length >= 2) return true
+  if (/\\mathrm|\\left\s*\[|\\right\s*\]|\$\{/.test(sentence)) return true
+  if (/一一/.test(glued) && /[\[［]\s*\d/.test(glued)) return true
   // 参考文献条目：[n] 开头 + 著录特征（类型标记 / 年,卷( / 年,( ）
   if (/^\s*\[\d+(?:[-–,，]\d+)*\]\s*.+(?:\[[JMCDN]\]|\d{4}\s*[,，]\s*\d+\s*\(|\d{4}\s*[,，]\s*\()/.test(sentence)) return true
   // 英文参考文献条目（2026-10-18 用户实测漏网）：无 [J]/年卷期特征的西文条目。
@@ -372,6 +380,11 @@ export function filterNonCitationLines(text: string): string {
       const s = line.trim()
       if (!s) return true
       if (s.includes('|')) return false                        // markdown 表格行
+      // 黏连表格体行（MinerU 把表格体黏成一行，无 | 分隔）：与句级四信号同口径
+      const gluedLine = s.replace(/\s+/g, '')
+      if ((gluedLine.match(/\d{1,3}\.\d{2,}(?=\d)/g) || []).length >= 2) return false
+      if ((s.match(/[\]］]\d/g) || []).length >= 2) return false
+      if (/\\mathrm|\\left\s*\[|\\right\s*\]|\$\{/.test(s)) return false
       if (/^(表\s*\d+|Table\s*\d+|图\s*\d+|Fig\.?\s*\d+)/i.test(s)) return false  // 图/表标题行
       if (/^!?\[.*\]\(images\/.*\)\s*$/.test(s)) return false  // mineru 图片行
       // 公式碎片行：CJK+字母+数字之外的字符占比过高（LaTeX/符号汤）

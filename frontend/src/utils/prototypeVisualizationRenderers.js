@@ -107,22 +107,20 @@ function renderDomainClassification(response) {
     return { ...record, classifications, match, candidates: [], confirmableCandidates: [], labels: array(payload.domain_labels), confirmation: {} }
   })
   const successful = records.filter(record => record.status !== 'failed' && record.classifications.length)
-  if (!successful.length) return '<div class="domain-classify-empty-v669">当前结果为空、领域匹配失败或缺少有效分类字段，无法生成结构化展示。</div>'
+  if (!successful.length) return '<div class="domain-classify-empty-v669">当前结果为空或缺少有效分类字段，无法生成结构化展示。</div>'
 
-  const matched = successful.filter(record => record.match.status === 'matched').length
   const level2Count = new Set(successful.flatMap(record => record.classifications.map(item => item.level_2).filter(Boolean))).size
   const level3Count = new Set(successful.flatMap(record => record.classifications.map(item => item.level_3).filter(Boolean))).size
   // 与 zh/en-classify 一致：只把"有 ≥0.8 替代候选"的文献放进候选确认区；只有当前首选、无替代
   // 候选的文献已是正式结果并入库，不在候选区出现空占位、无需人工确认。summary 的"待人工确认"
   // 因此只统计这类真正待确认的文献（有替代候选且未确认），没有则显示 0（不再像旧版把所有
   // 非已确认记录都算成"待确认"，那会把只有当前首选、无需确认的文献也计入，数字虚高且误导）。
-  const summary = [['文献数量', records.length], ['领域匹配', `${matched}/${successful.length}`], ['二级类目', level2Count], ['三级类目', level3Count]]
+  const summary = [['文献数量', records.length], ['二级类目', level2Count], ['三级类目', level3Count]]
 
   const detailRows = successful.map(record => {
     const item = record.classifications[0]
-    const low = record.match.status !== 'matched'
-    const labels = record.labels.map(label => `<span class="domain-classify-domain-tag-v669">${escapeHtml(label.label || label)}</span>`).join('')
-    return `<tr class="viz-record-start"><td>${renderTextWithMath(record.name)}</td><td>${escapeHtml(record.match.selected_domain?.name || '未提供目标领域')}</td><td><span class="domain-classify-match-badge-v669 ${low ? 'low' : ''}">${low ? '低置信匹配' : '领域匹配'}</span><br>${record.match.match_score == null ? '—' : number(record.match.match_score).toFixed(2)}</td><td><b>${escapeHtml(item.level_1 || '—')}</b><br>${escapeHtml(item.level_2 || '—')}<br>${escapeHtml(item.level_3 || '—')}</td><td>${confidence(item.confidence)}</td><td><div class="domain-classify-domain-list-v669">${labels || '—'}</div></td></tr>`
+    // 领域标签 = 二级类目（与中英文科技文献分类设计一致，2026-10-20 用户定稿）
+    return `<tr class="viz-record-start"><td>${renderTextWithMath(record.name)}</td><td>${escapeHtml(record.match.selected_domain?.name || '未提供目标领域')}</td><td style="white-space:nowrap"><b>${escapeHtml(item.level_1 || '—')}</b><span class="domain-classify-path-sep-v669"> / </span>${escapeHtml(item.level_2 || '—')}<span class="domain-classify-path-sep-v669"> / </span>${escapeHtml(item.level_3 || '—')}</td><td>${confidence(item.confidence)}</td><td><div class="domain-classify-domain-list-v669">${item.level_2 ? `<span class="domain-classify-domain-tag-v669">${escapeHtml(String(item.level_2).replace(/^[A-Z]{1,2}(?:\d+(?:\.\d+)*)?\s+/, ''))}</span>` : '—'}</div></td></tr>`
   }).join('')
 
   const level2 = new Map()
@@ -138,7 +136,7 @@ function renderDomainClassification(response) {
 
   // 2026-09-09 候选确认已移除（API 调用无人在回路，直接给最高置信度结果）
 
-  return `<div class="domain-classify-visual-v669" data-viz-confirm-root>${`<div class="domain-classify-summary-grid-v669">${summary.map(([label, value]) => `<div class="domain-classify-summary-item-v669"><div class="domain-classify-summary-value-v669">${escapeHtml(value)}</div><div class="domain-classify-summary-label-v669">${label}</div></div>`).join('')}</div>`}<div class="domain-classify-result-card-v669"><div class="domain-classify-result-title-v669">多层级领域分类结果</div><div class="domain-classify-result-table-wrap-v669"><table class="domain-classify-result-table-v669"><thead><tr><th style="width:18%">文献</th><th style="width:13%">目标领域</th><th style="width:12%">领域匹配</th><th>一级 / 二级 / 三级分类</th><th style="width:8%">分类置信度</th><th style="width:20%">领域标签</th></tr></thead><tbody>${detailRows}</tbody></table></div></div><div class="domain-classify-result-card-v669"><div class="domain-classify-result-title-v669">数据分布报告</div><div class="domain-classify-result-table-wrap-v669"><table class="domain-classify-result-table-v669"><thead><tr><th style="width:14%">分类层级</th><th>专业类目</th><th style="width:18%">文献数量</th></tr></thead><tbody>${distributionRows.map(row => `<tr><td>${row.level}</td><td>${escapeHtml(row.category)}</td><td>${row.count}</td></tr>`).join('')}</tbody></table></div></div></div>`
+  return `<div class="domain-classify-visual-v669" data-viz-confirm-root>${`<div class="domain-classify-summary-grid-v669">${summary.map(([label, value]) => `<div class="domain-classify-summary-item-v669"><div class="domain-classify-summary-value-v669">${escapeHtml(value)}</div><div class="domain-classify-summary-label-v669">${label}</div></div>`).join('')}</div>`}<div class="domain-classify-result-card-v669"><div class="domain-classify-result-title-v669">多层级领域分类结果</div><div class="domain-classify-result-table-wrap-v669"><table class="domain-classify-result-table-v669"><thead><tr><th style="width:15%">文献</th><th style="width:13%">目标领域</th><th style="width:34%">一级 / 二级 / 三级分类</th><th style="width:9%">分类置信度</th><th style="width:18%">领域标签</th></tr></thead><tbody>${detailRows}</tbody></table></div></div><div class="domain-classify-result-card-v669"><div class="domain-classify-result-title-v669">数据分布报告</div><div class="domain-classify-result-table-wrap-v669"><table class="domain-classify-result-table-v669"><thead><tr><th style="width:14%">分类层级</th><th>专业类目</th><th style="width:18%">文献数量</th></tr></thead><tbody>${distributionRows.map(row => `<tr><td>${row.level}</td><td>${escapeHtml(row.category)}</td><td>${row.count}</td></tr>`).join('')}</tbody></table></div></div></div>`
 }
 
 function relationTriples(response) {

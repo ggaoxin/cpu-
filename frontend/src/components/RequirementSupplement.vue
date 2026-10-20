@@ -576,9 +576,9 @@ watchEffect(() => emit('update:payload', requestPayload.value))
         <p v-if="resourceSaveNotice" class="anchor-format-hint">{{ resourceSaveNotice }}</p>
         <p v-if="resourceProbes[field.key]?.status === 'checking'" class="anchor-format-hint">⏳ 正在解析资源文件（结构非标准时将自动整理）…</p>
         <p v-if="resourceProbes[field.key]?.status === 'ready'" class="anchor-format-hint" style="color:#1e8e3e">✓ 资源已就绪{{ resourceProbes[field.key]?.rows != null ? ` · 已解析 ${resourceProbes[field.key]?.rows} 条` : '' }}{{ resourceProbes[field.key]?.normalizedBy === 'glm' ? '（已自动整理为标准格式，提交时直接复用）' : '' }}</p>
-        <div v-if="resourceProbes[field.key]?.indexStatus" style="display:flex;align-items:center;gap:10px;padding:4px 0;">
+        <div v-if="resourceProbes[field.key]?.indexStatus" class="resource-index-status" style="display:flex;align-items:center;gap:10px;padding:4px 0;">
           <span class="parse-ring" :data-state="resourceProbes[field.key]?.indexStatus === 'done' ? 'done' : resourceProbes[field.key]?.indexStatus === 'failed' ? 'error' : 'parsing'" :style="`--p:${resourceProbes[field.key]?.indexProgress || 0}%`"><i>{{ resourceProbes[field.key]?.indexStatus === 'done' ? '✓' : resourceProbes[field.key]?.indexStatus === 'failed' ? '✗' : (resourceProbes[field.key]?.indexProgress || 0) + '%' }}</i></span>
-          <span v-if="resourceProbes[field.key]?.indexStatus === 'done'" class="parse-text ok clc-progress-text">分类知识库构建完成，提交即用用户体系分类</span>
+          <span v-if="resourceProbes[field.key]?.indexStatus === 'done'" class="parse-text ok clc-progress-text">分类知识库构建完成，提交后即按您的规则体系分类</span>
           <span v-else-if="resourceProbes[field.key]?.indexStatus === 'failed'" class="parse-text err clc-progress-text">分类知识库构建失败，可重新选文件重试</span>
           <span v-else class="parse-text clc-progress-text">构建分类知识库（bge 向量编码）{{ resourceProbes[field.key]?.indexProgress || 0 }}% —— 构建完成前暂不能提交在线测试</span>
         </div>

@@ -408,19 +408,19 @@ function alignResearchQuestions(response: AnyRecord, startIndex = 0) {
 
 const citationProfiles = [
   {
-    paper: enPapers[0], marker: '[52]', sentence: 'Early doubts arise from LLM studies, where prior work [52] observes that performance ceilings remain constrained by base-model capabilities.',
-    previous: 'Recent studies have demonstrated that reinforcement learning can enhance reasoning capabilities.', next: 'These findings motivate a direct comparison between RL models and their base counterparts.',
-    sentiment: '局限性', sentimentCode: 'limitation', intent: '结果比较', intentCode: 'result_comparison', evidence: 'performance ceilings remain constrained', work: 'Reasoning limits of reinforcement learning models', authors: ['Prior research team'],
+    paper: enPapers[0], marker: '[1]', sentence: '已有研究表明该方法在小样本场景下泛化能力不足[1]。',
+    previous: '本文围绕图像分类中的注意力机制展开研究。', next: '因此本文提出新的数据增强策略。',
+    sentiment: '局限性', sentimentCode: 'limitation', intent: '结果比较', intentCode: 'result_comparison', evidence: '泛化能力不足', work: '图像分类方法研究', authors: ['张三'],
   },
   {
-    paper: enPapers[1], marker: '[20, 29, 30, 38, 48]', sentence: 'Recent findings [20, 29, 30, 38, 48] indicate minimal variation in adjacent-timestep features.',
-    previous: 'Diffusion models repeatedly execute denoising blocks and incur high inference costs.', next: 'This observation motivates feature reuse and timestep-specific computation.',
-    sentiment: '支持', sentimentCode: 'support', intent: '方法引入', intentCode: 'method_introduction', evidence: 'indicate minimal variation', work: 'Feature reuse for diffusion acceleration', authors: ['Related diffusion-model researchers'],
+    paper: enPapers[1], marker: '[2]', sentence: 'Smith等人[2]的工作证实了注意力机制能提升检测精度。',
+    previous: '因此本文提出新的数据增强策略。', next: '受此启发，我们设计了多尺度注意力模块。',
+    sentiment: '支持', sentimentCode: 'support', intent: '方法引入', intentCode: 'method_introduction', evidence: '证实了注意力机制能提升检测精度', work: 'Attention for detection', authors: ['Smith J'],
   },
   {
-    paper: enPapers[2], marker: '[8]', sentence: 'Frame-level methods have evolved from uniform sampling to adaptive methods that identify and discard irrelevant frames [8].',
-    previous: 'Video reasoning suffers from temporal and spatial redundancy.', next: 'TRIAGE further unifies frame selection and token allocation as hierarchical visual budgeting.',
-    sentiment: '中立', sentimentCode: 'neutral', intent: '背景介绍', intentCode: 'background_introduction', evidence: 'have evolved from uniform sampling to adaptive methods', work: 'Adaptive frame sampling for video understanding', authors: ['Prior video-reasoning researchers'],
+    paper: enPapers[2], marker: '[5]', sentence: '早期研究已将图模型引入结构化数据建模[5]。',
+    previous: '受此启发，我们设计了多尺度注意力模块。', next: '近年来图神经网络进一步拓展了该路线。',
+    sentiment: '中立', sentimentCode: 'neutral', intent: '背景介绍', intentCode: 'background_introduction', evidence: '已将图模型引入', work: '图模型结构化建模研究', authors: ['李四'],
   },
 ]
 

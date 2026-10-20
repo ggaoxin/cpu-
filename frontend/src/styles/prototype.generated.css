@@ -8380,7 +8380,8 @@
   }
   body.v669-domain-classify-active .domain-classify-summary-grid-v669 {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    /* 2026-10-20：汇总项 4→3（领域匹配已删），三等分占满整行 */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
     margin-bottom: 12px;
   }

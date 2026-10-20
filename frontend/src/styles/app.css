@@ -382,6 +382,11 @@ body.v690-general-ner-active .ner-results-table td,
   width: 100%;
   margin: 6px 0 4px;
 }
+/* 2026-10-20：上传控件/知识库构建进度同样必须跨全宽——未显式定位的块会被自动
+   放进第1列 max-content 窄轨道，把第2列的描述文字（"可选上传"）挤成竖排
+   （截图实测：已上传规则的左卡竖排、空右卡正常）。此前仅 citation 卡修过 */
+.requirement-resource-controls { grid-column: 1 / -1; }
+.requirement-resource-item > .resource-index-status { grid-column: 1 / -1; }
 .requirement-resource-summary span { flex: 0 0 auto; color: #53657c; font-weight: 700; }
 .requirement-resource-summary em { min-width: 0; color: #98a4b5; font-style: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .database-source-notice { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 11px 12px; color: #66758a; background: #f8fbff; border: 1px solid #dce7f6; border-radius: 9px; }
