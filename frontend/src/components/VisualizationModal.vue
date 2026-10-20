@@ -65,6 +65,118 @@ function removePrototypeExportActions() {
   })
 }
 
+
+// 知识图谱拖拽（2026-10-21 用户需求：边标签常被节点/其他标签遮挡无法阅读）——
+// 节点可拖拽（相连边与标签实时跟随重算）、边标签可单独拖拽微调位置。
+// 几何基准挂在 data-* 上（data-cx/cy/hw/dx/dy、data-label-dy/label-w），拖动
+// 只改增量，不重排布局。
+function bindRelationNetworkDrag() {
+  const host = visualizationHost.value
+  if (!host) return
+  host.querySelectorAll<SVGSVGElement>('.relation-network-svg').forEach(svg => {
+    if ((svg as unknown as { __dragBound?: boolean }).__dragBound) return
+    ;(svg as unknown as { __dragBound?: boolean }).__dragBound = true
+    const svgPoint = (event: PointerEvent) => {
+      const ctm = svg.getScreenCTM()
+      if (!ctm) return { x: 0, y: 0 }
+      const inv = ctm.inverse()
+      const p = new DOMPoint(event.clientX, event.clientY).matrixTransform(inv)
+      return { x: p.x, y: p.y }
+    }
+    const nodeState = (id: string) => {
+      const g = svg.querySelector(`[data-node-id="${CSS.escape(id)}"]`) as SVGElement | null
+      if (!g) return null
+      return {
+        g,
+        cx: Number(g.getAttribute('data-cx')) || 0,
+        cy: Number(g.getAttribute('data-cy')) || 0,
+        hw: Number(g.getAttribute('data-hw')) || 0,
+        dx: Number(g.getAttribute('data-dx')) || 0,
+        dy: Number(g.getAttribute('data-dy')) || 0,
+      }
+    }
+    const redrawEdgesOf = (nodeId: string) => {
+      svg.querySelectorAll<SVGPathElement>(`[data-edge-source-id="${CSS.escape(nodeId)}"], [data-edge-target-id="${CSS.escape(nodeId)}"]`).forEach(el => {
+        if (el.classList.contains('relation-network-edge')) {
+          redrawEdge(el as SVGPathElement)
+        } else {
+          redrawLabel(el as SVGGElement)
+        }
+      })
+    }
+    const redrawEdge = (path: SVGPathElement) => {
+      const s = nodeState(path.getAttribute('data-edge-source-id') || '')
+      const t = nodeState(path.getAttribute('data-edge-target-id') || '')
+      if (!s || !t) return
+      const sx = s.cx + s.dx, sy = s.cy + s.dy, tx = t.cx + t.dx, ty = t.cy + t.dy
+      const direction = tx >= sx ? 1 : -1
+      const startX = sx + direction * s.hw
+      const endX = tx - direction * t.hw
+      const control = Math.max(42, Math.max(60, Math.abs(endX - startX)) * .45)
+      path.setAttribute('d', `M ${startX} ${sy} C ${startX + direction * control} ${sy}, ${endX - direction * control} ${ty}, ${endX} ${ty}`)
+    }
+    const redrawLabel = (group: SVGGElement) => {
+      const s = nodeState(group.getAttribute('data-edge-source-id') || '')
+      const t = nodeState(group.getAttribute('data-edge-target-id') || '')
+      if (!s || !t) return
+      const sx = s.cx + s.dx, sy = s.cy + s.dy, tx = t.cx + t.dx, ty = t.cy + t.dy
+      const direction = tx >= sx ? 1 : -1
+      const startX = sx + direction * s.hw
+      const endX = tx - direction * t.hw
+      const labelX = (startX + endX) / 2
+      const labelY = (sy + ty) / 2 + (Number(group.getAttribute('data-label-dy')) || 0)
+      const w = Number(group.getAttribute('data-label-w')) || 70
+      const rect = group.querySelector('rect')
+      const text = group.querySelector('text')
+      if (rect) { rect.setAttribute('x', String(labelX - w / 2)); rect.setAttribute('y', String(labelY - 12)) }
+      if (text) { text.setAttribute('x', String(labelX)); text.setAttribute('y', String(labelY)) }
+      group.removeAttribute('transform')
+    }
+    let drag: { kind: 'node' | 'label'; id: string; el: SVGElement; startX: number; startY: number; baseDx: number; baseDy: number } | null = null
+    const onDown = (event: PointerEvent) => {
+      const target = event.target as Element
+      const nodeG = target.closest('[data-node-id]')
+      const labelG = target.closest('.relation-network-edge-label-group')
+      if (labelG && !nodeG) {
+        const pt = svgPoint(event)
+        const baseX = Number(labelG.querySelector('rect')?.getAttribute('x')) || 0
+        const baseY = Number(labelG.querySelector('rect')?.getAttribute('y')) || 0
+        drag = { kind: 'label', id: '', el: labelG as SVGElement, startX: pt.x - baseX, startY: pt.y - baseY, baseDx: 0, baseDy: 0 }
+        event.preventDefault()
+        return
+      }
+      if (nodeG) {
+        const pt = svgPoint(event)
+        const id = nodeG.getAttribute('data-node-id') || ''
+        drag = { kind: 'node', id, el: nodeG as SVGElement, startX: pt.x, startY: pt.y,
+                 baseDx: Number(nodeG.getAttribute('data-dx')) || 0, baseDy: Number(nodeG.getAttribute('data-dy')) || 0 }
+        event.preventDefault()
+      }
+    }
+    const onMove = (event: PointerEvent) => {
+      if (!drag) return
+      const pt = svgPoint(event)
+      if (drag.kind === 'node') {
+        const dx = drag.baseDx + (pt.x - drag.startX)
+        const dy = drag.baseDy + (pt.y - drag.startY)
+        drag.el.setAttribute('data-dx', String(dx))
+        drag.el.setAttribute('data-dy', String(dy))
+        drag.el.setAttribute('transform', `translate(${dx} ${dy})`)
+        redrawEdgesOf(drag.id)
+      } else {
+        const dx = pt.x - drag.startX
+        const dy = pt.y - drag.startY
+        drag.el.setAttribute('transform', `translate(${dx} ${dy})`)
+      }
+      event.preventDefault()
+    }
+    const onUp = () => { drag = null }
+    svg.addEventListener('pointerdown', onDown)
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+  })
+}
+
 function switchPanels(root: Element | null, tabSelector: string, panelSelector: string, name: string, tab: Element) {
   if (!root) return
   root.querySelectorAll(tabSelector).forEach(item => item.classList.toggle('active', item === tab))
@@ -402,6 +514,7 @@ watch(() => props.open, open => {
   setBodyState(open)
   if (open) {
     nextTick(removePrototypeExportActions)
+    nextTick(bindRelationNetworkDrag)
   }
 })
 
@@ -409,6 +522,7 @@ watch(() => [props.toolId, props.response], () => {
   if (props.open) {
     setBodyState(true)
     nextTick(removePrototypeExportActions)
+    nextTick(bindRelationNetworkDrag)
   }
 })
 

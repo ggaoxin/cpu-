@@ -1534,7 +1534,7 @@
         "document": {
           "document_id": null,
           "title": "基于WGCNA和113种机器学习算法鉴定糖尿病肾病关键基因",
-          "abstract": "",
+          "abstract": "研究从GEO数据库获取糖尿病肾病转录组数据，利用WGCNA构建共表达网络，整合113种机器学习算法筛选特征基因，鉴定出VWF等关键基因。",
           "keywords": [],
           "language": null,
           "source_file": null
@@ -1542,18 +1542,18 @@
         "selected_domain": {
           "code": "10",
           "name": "医学与卫生健康",
-          "auto_judged": false
+          "auto_judged": true
         },
         "professional_domain": "医学与卫生健康",
         "domain_match_result": {
           "selected_domain": {
             "code": "10",
             "name": "医学与卫生健康",
-            "auto_judged": false
+            "auto_judged": true
           },
           "status": "matched",
           "match_score": 0.91,
-          "message": "文献分类号已成功解析，与所选领域「医学与卫生健康」匹配",
+          "message": "文献分类号已成功解析，领域已自动判定为「医学与卫生健康」",
           "evidence": []
         },
         "multilevel_classification_results": [
@@ -1641,7 +1641,7 @@
               "document": {
                 "document_id": null,
                 "title": "糖尿病肾病基因研究",
-                "abstract": "",
+                "abstract": "研究从GEO数据库获取糖尿病肾病转录组数据，利用WGCNA构建共表达网络，整合113种机器学习算法筛选特征基因，鉴定出VWF等关键基因。",
                 "keywords": [],
                 "language": null,
                 "source_file": null
@@ -1649,18 +1649,18 @@
               "selected_domain": {
                 "code": "10",
                 "name": "医学与卫生健康",
-                "auto_judged": false
+                "auto_judged": true
               },
               "professional_domain": "医学与卫生健康",
               "domain_match_result": {
                 "selected_domain": {
                   "code": "10",
                   "name": "医学与卫生健康",
-                  "auto_judged": false
+                  "auto_judged": true
                 },
                 "status": "matched",
                 "match_score": 0.95,
-                "message": "文献分类号已成功解析，与所选领域「医学与卫生健康」匹配",
+                "message": "文献分类号已成功解析，领域已自动判定为「医学与卫生健康」",
                 "evidence": []
               },
               "multilevel_classification_results": [
@@ -1720,26 +1720,26 @@
               "document": {
                 "document_id": null,
                 "title": "工业表面缺陷检测",
-                "abstract": "",
+                "abstract": "提出融合轻量级卷积网络和动态注意力机制的缺陷检测模型，通过多尺度特征聚合增强缺陷表征，在工业缺陷数据集上提高检测精度。",
                 "keywords": [],
                 "language": null,
                 "source_file": null
               },
               "selected_domain": {
-                "code": "10",
-                "name": "医学与卫生健康",
-                "auto_judged": false
+                "code": "18",
+                "name": "机械工程与智能制造",
+                "auto_judged": true
               },
-              "professional_domain": "医学与卫生健康",
+              "professional_domain": "机械工程与智能制造",
               "domain_match_result": {
                 "selected_domain": {
-                  "code": "10",
-                  "name": "医学与卫生健康",
-                  "auto_judged": false
+                  "code": "18",
+                  "name": "机械工程与智能制造",
+                  "auto_judged": true
                 },
                 "status": "matched",
-                "match_score": 0.85,
-                "message": "文献分类号已成功解析，与所选领域「医学与卫生健康」匹配",
+                "match_score": 0.87,
+                "message": "文献分类号已成功解析，领域已自动判定为「机械工程与智能制造」",
                 "evidence": []
               },
               "multilevel_classification_results": [
@@ -1764,7 +1764,7 @@
               },
               "domain_labels": [
                 {
-                  "label": "医学与卫生健康",
+                  "label": "机械工程与智能制造",
                   "confidence": 0.85
                 },
                 {

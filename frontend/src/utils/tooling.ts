@@ -102,7 +102,16 @@ function requirementExampleValue(name: string, type: string, mode: InputMode, to
     }
     return title
   }
+  // domain-classify 领域已改后端自动判定（2026-10-20 语义重构定稿）：调用示例
+  // 不再示范提交 professional_domain（与在线测试实发一致）；domain-ner 等仍保留。
+  // 注意判别键用 requirementKey——documentType 是分类类共享的 "classification"
+  if (name === 'professional_domain' && String(tool.requirementKey || tool.documentType || '') === 'domain-classify') return undefined
   if (name === 'professional_domain') return String(tool.payload?.professional_domain || '生物医学信息学')
+  // domain-classify 单文本示例文本（2026-10-20 修复：采集响应 abstract 为空导致
+  // 调用示例主字段空串）——与批量 DOC1 及响应示例回显同源
+  if (name === 'domain_scientific_literature_data' && String(tool.requirementKey || '') === 'domain-classify' && mode === 'text') {
+    return '研究从GEO数据库获取糖尿病肾病转录组数据，利用WGCNA构建共表达网络，整合113种机器学习算法筛选特征基因，鉴定出VWF等关键基因。'
+  }
   if (name === 'text_format_requirement') return '章节结构文本'
   if (name === 'domain_terminology_dictionary') return {
     use_mode: 'custom',
@@ -219,7 +228,7 @@ export const CUSTOM_BATCH_PAYLOADS: Record<string, Record<string, unknown>> = {
       { id: 'DOC1', text: '研究从GEO数据库获取糖尿病肾病转录组数据，利用WGCNA构建共表达网络，整合113种机器学习算法筛选特征基因，鉴定出VWF等关键基因。' },
       { id: 'DOC2', text: '提出融合轻量级卷积网络和动态注意力机制的缺陷检测模型，通过多尺度特征聚合增强缺陷表征，在工业缺陷数据集上提高检测精度。' },
     ],
-    professional_domain: 'biomedical_informatics',
+    // professional_domain 不传：按文本自动判定领域（契约默认行为，响应示例 auto_judged=true 与此对应）
     domain_classification_rules: { source: 'database', resource_id: 'RES-BUNDLED-DOMAIN-RULE' },
     manually_labeled_training_data: { source: 'database', resource_id: 'RES-BUNDLED-DOMAIN-GOLD' },
   },
@@ -356,6 +365,11 @@ export function looksLikeNonCitationLine(sentence: string): boolean {
   if ((sentence.match(/[\]］]\d/g) || []).length >= 2) return true
   if (/\\mathrm|\\left\s*\[|\\right\s*\]|\$\{/.test(sentence)) return true
   if (/一一/.test(glued) && /[\[［]\s*\d/.test(glued)) return true
+  // ⑤ 黏连综述表（socialbot 表5 实测：四列黏成 1371 字单"句"、12 个标记组、
+  // 无小数无 LaTeX）：单句标记组 ≥5 且长度 ≥250 字判表格块（正文枚举句 ≤150 字）
+  if ((sentence.match(/[\[［]\s*\d+(?:\s*[-–,，]\s*\d+)*\s*[\]］]/g) || []).length >= 5 && sentence.length >= 250) return true
+  // ⑥ 表头英文黏连（MinerU 拼接列头）："ModelDescription""Key featuresData"
+  if (/(?:Model|Method|Dataset|Approach|Framework)(?:Description|Features|Data|Used)/.test(glued)) return true
   // 参考文献条目：[n] 开头 + 著录特征（类型标记 / 年,卷( / 年,( ）
   if (/^\s*\[\d+(?:[-–,，]\d+)*\]\s*.+(?:\[[JMCDN]\]|\d{4}\s*[,，]\s*\d+\s*\(|\d{4}\s*[,，]\s*\()/.test(sentence)) return true
   // 英文参考文献条目（2026-10-18 用户实测漏网）：无 [J]/年卷期特征的西文条目。
@@ -385,6 +399,9 @@ export function filterNonCitationLines(text: string): string {
       if ((gluedLine.match(/\d{1,3}\.\d{2,}(?=\d)/g) || []).length >= 2) return false
       if ((s.match(/[\]］]\d/g) || []).length >= 2) return false
       if (/\\mathrm|\\left\s*\[|\\right\s*\]|\$\{/.test(s)) return false
+      // ⑤ 只在句级生效：行级一个段落行天然含多句多标记（相关工作整段），行级
+      // 应用会把整段连坐误杀（实测 24 卡掉到 9 卡）——此处置空，由句级兜住
+      if (/(?:Model|Method|Dataset|Approach|Framework)(?:Description|Features|Data|Used)/.test(gluedLine)) return false
       if (/^(表\s*\d+|Table\s*\d+|图\s*\d+|Fig\.?\s*\d+)/i.test(s)) return false  // 图/表标题行
       if (/^!?\[.*\]\(images\/.*\)\s*$/.test(s)) return false  // mineru 图片行
       // 公式碎片行：CJK+字母+数字之外的字符占比过高（LaTeX/符号汤）

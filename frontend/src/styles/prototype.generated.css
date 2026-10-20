@@ -15666,20 +15666,6 @@
     word-break: break-word;
   }
 
-  body.v699-relation-active .relation-rdf-toolbar-v699 {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-
-  body.v699-relation-active .relation-rdf-meta-v699 {
-    color: #7d899b;
-    font-size: 11px;
-    line-height: 1.5;
-  }
-
   body.v699-relation-active .relation-rdf-copy-v699 {
     min-height: 32px;
     padding: 0 11px;

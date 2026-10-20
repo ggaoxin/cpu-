@@ -199,7 +199,15 @@ def _is_table_or_formula_line(sent: str) -> bool:
         return True
     if re.search(r"\\mathrm|\\left\s*\[|\\right\s*\]|\$\{", sent):
         return True
-    return bool(re.search(r"一一", s)) and bool(re.search(r"[\[［]\s*\d", s))
+    if re.search(r"一一", s) and re.search(r"[\[［]\s*\d", s):
+        return True
+    # ⑤ 黏连综述表（2026-10-20 用户实测表5：方法/描述/特征/数据四列黏成 1371
+    # 字单"句"、12 个标记组、无小数无 LaTeX——①~④全躲过）：单句标记组 ≥5 且
+    # 长度 ≥250 字判表格块（正文枚举句带 5 标记时通常 ≤150 字）
+    if len(re.findall(r"[\[［]\s*\d+(?:\s*[-–,，]\s*\d+)*\s*[\]］]", sent)) >= 5 and len(sent) >= 250:
+        return True
+    # ⑥ 表头英文黏连（MinerU 去空格拼接列头）："ModelDescription""Key featuresData"
+    return bool(re.search(r"(?:Model|Method|Dataset|Approach|Framework)(?:Description|Features|Data|Used)", s))
 
 
 def _extract_citation_contexts(document_text: str, limit: int = 30) -> list:
