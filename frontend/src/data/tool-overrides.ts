@@ -329,7 +329,7 @@ function enrichClusterLabelResult(value: unknown) {
       { order: 1, name: '读取类簇结果', status: 'completed', output: `${data.cluster_count || labels.length} 个类簇` },
       { order: 2, name: '汇总代表特征', status: 'completed', output: '关键词、命名实体和中心句' },
       { order: 3, name: '生成候选标签', status: 'completed', output: `${labels.reduce((sum: number, item: any) => sum + (item.candidate_labels?.length || 0), 0)} 个候选标签` },
-      { order: 4, name: '差异化筛选', status: 'completed', output: `阈值 ${data.parameters?.distinctiveness_threshold ?? 0.75}` },
+      { order: 4, name: '差异化筛选', status: 'completed', output: data.parameters?.threshold_mode === 'auto' ? '未触发差异化优化' : `阈值 ${data.parameters?.distinctiveness_threshold ?? 0.75}（强制达标）` },
       { order: 5, name: '输出推荐标签', status: 'completed', output: `${data.generated_label_count || labels.length} 个标签` },
     ],
     strategy: data.generation_strategy || 'adaptive_label_generation',
@@ -1199,7 +1199,7 @@ const finalOverrides: Record<string, Partial<ToolDefinition>> = {
       ['cluster_task_id', 'string', 'conditional', '数据库中已完成的深度聚类历史任务编号'],
       ['label_length_limit', 'integer', 'optional', '标签最大长度'],
       ['language_type', 'string', 'optional', '输出语言：自动、中文或英文'],
-      ['distinctiveness_threshold', 'number', 'optional', '类簇间差异阈值，范围 0—1']
+      ['distinctiveness_threshold', 'number', 'optional', '类簇间差异阈值，范围 0—1。不传该参数默认"自动"：不做差异化优化，以模型生成的标签为准；显式设定时低于阈值的标签强制优化到达标']
     ],
     demoBatchTextResult: alignedClusterLabelDemo,
     demoBatchFileResult: variantOf(alignedClusterLabelDemo, { meta: { input_type: 'files' } }),

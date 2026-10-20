@@ -2184,16 +2184,16 @@ class ToolIntegrationService:
             task for task in self.repository.list_tasks(workspace, limit=200)
             if task.get("tool_id") == "cluster-label" and task.get("status") == "succeeded"
         ][:limit]
-        # 批量取各任务最新结果与确认状态（替代逐任务 2 次往返 × 29 任务）
+        # 批量取各任务最新结果（替代逐任务 2 次往返 × 29 任务）
         task_ids = [summary["id"] for summary in tasks]
         latest_results, record_ids = self.repository.latest_results_batch(task_ids)
-        confirmations_by_record = self.repository.label_confirmations_batch(
-            list(record_ids.values()))
         for summary in tasks:
             result = (latest_results.get(summary["id"]) or {}).get("result") or {}
-            confirmed_labels: Dict[str, str] = confirmations_by_record.get(
-                record_ids.get(summary["id"], ""), {})
-            threshold = float((result.get("parameters") or {}).get("distinctiveness_threshold") or 0.75)
+            _params = result.get("parameters") or {}
+            # 自动模式（2026-10-20 再定稿）：不优化、无阈值闸门——模型结果即
+            # 终稿，全部簇可入综述文献集；仅用户设定阈值的记录按阈值过滤
+            _auto = str(_params.get("threshold_mode") or "") == "auto"
+            threshold = float(_params.get("distinctiveness_threshold") or 0.75)
             # 2026-09-11 提速：旧版为每个标签任务拉取上游深度聚类任务的巨型
             # result_json（含语义投影向量）拼题名相似度文本——相似度过滤已于
             # 2026-09-06 移除，sim_text 返回前即被 pop，属纯死代码，删除后
@@ -2202,14 +2202,16 @@ class ToolIntegrationService:
                 if not isinstance(item, dict):
                     continue
                 cluster_id = str(item.get("cluster_id") or "")
-                confirmed = confirmed_labels.get(cluster_id)
-                passed = str(item.get("optimization_status") or "") == "passed" or (
+                # 必须达标才能通过（2026-10-20 用户定稿）：差异度 ≥ 阈值是簇进入
+                # 综述文献集的唯一通行证——无人工确认放行通道；自动模式记录
+                # 以模型结果为准，不设闸门
+                passed = _auto or str(item.get("optimization_status") or "") == "passed" or (
                     isinstance(item.get("distinctiveness"), (int, float))
                     and float(item["distinctiveness"]) >= threshold)
-                if not passed and not confirmed:
-                    continue  # 待复核且未人工确认：不入文献集
+                if not passed:
+                    continue  # 未达标：不入文献集
                 docs = item.get("linked_document_ids") or []
-                name = str(confirmed or item.get("recommended_label") or item.get("label") or cluster_id)
+                name = str(item.get("recommended_label") or item.get("label") or cluster_id)
                 options.append({
                     "id": f"{summary['id']}:{item.get('cluster_id')}",
                     "name": name,
@@ -2234,6 +2236,16 @@ class ToolIntegrationService:
                       if isinstance(row, dict) and str(row.get("cluster_id")) == cluster_id), None)
         if not label:
             return []
+        # 必须达标才能通过（2026-10-20 用户定稿）：直连调用同样不允许取未达标
+        # 簇的文献——与文献集列表口径一致，防止绕过下拉直接拼 set_id 放行；
+        # 自动模式记录以模型结果为准，不设闸门
+        _lparams = label_result.get("parameters") or {}
+        if str(_lparams.get("threshold_mode") or "") != "auto":
+            _threshold = float(_lparams.get("distinctiveness_threshold") or 0.75)
+            _d = label.get("distinctiveness")
+            if str(label.get("optimization_status") or "") != "passed" and not (
+                    isinstance(_d, (int, float)) and float(_d) >= _threshold):
+                return []
         wanted = {str(doc) for doc in (label.get("linked_document_ids") or [])}
         if not wanted:
             return []

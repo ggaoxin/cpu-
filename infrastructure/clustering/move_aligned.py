@@ -36,20 +36,22 @@ EXTRACT_SYSTEM = (
 
 AXIS_PROMPTS = {
     "technical": {
-        "criterion": "所用的具体技术方法（方法、模型、算法层面）",
-        "example": "如'扩散模型图像生成''图神经网络检测''WGCNA基因筛选'",
+        "criterion": "所围绕的技术任务（方法、模型、算法层面）",
+        "example": "如'大模型微调'——LoRA 微调、指令微调、全参数微调等方法不同的文献同属一簇，可写成一篇微调综述；'扩散模型图像生成'同理",
     },
     "application": {
         "criterion": "所研究的应用场景/研究对象（问题与领域层面）",
-        "example": "如'社交媒体机器人检测''糖尿病诊疗''混凝土结构耐久'",
+        "example": "如'社交机器人检测'——从 text、image、知识图谱等不同角度着手的文献同属一簇，可写成一篇检测综述；'糖尿病诊疗'同理",
     },
 }
 
 GROUP_SYSTEM_TEMPLATE = (
     "你是科技文献聚类专家。下面是每篇文献的题名与{which}描述片段，把文献按{criterion}分组。\n"
-    "判断标准（综述粒度）：同一簇的文献必须能直接合并为一篇聚焦的主题综述"
-    "（{example}）。研究同一主题但方法/表述不同的文献必须聚在一起；"
-    "讲不同事情的文献绝不能混入同簇，宁可各自单列。孤立文献可单列。\n"
+    "判断标准（最细合理粒度，2026-10-20 用户定稿）：同一簇 = 核心技术路线"
+    "（或应用场景）实质相同，且能合并为一篇高度聚焦的主题综述（{example}）。"
+    "大领域相同但侧重不同的文献（如模型优化 vs 机器人检测；同是多模态但技术"
+    "路线不同）必须分成不同簇——按最细合理粒度分组，宁多勿合；只有实质同路"
+    "线/同场景才合并。孤立文献可单列。\n"
     '只输出JSON：{{"groups":[{{"name":"簇名（10字内）","docs":[文献编号,...],"keywords":["关键词1","关键词2","关键词3"]}}]}}'
     "\nkeywords 要求：3-5 个该簇文献的专业术语（至少 2 个），优先级：① 论文命名的方法/模型名"
     "（如 TTSR、Self-Harmony、Memex、FLB）；② 核心技术术语（如 reinforcement learning、"
@@ -100,7 +102,8 @@ def _display_title(paper: Dict[str, Any]) -> str:
     full_text = str(paper.get("full_text") or "")
     for ln in full_text.split("\n")[:8]:
         ln = ln.strip().lstrip("# ").strip()
-        if 8 <= len(ln) <= 80 and not ln.startswith(("Abstract", "摘要", "http", "DOI", "{")):
+        if 8 <= len(ln) <= 80 and not ln.startswith(
+                ("Abstract", "摘要", "http", "DOI", "{", "Preprint", "preprint", "arXiv", "Anonymous")):
             return ln[:50]
     return title or str(paper.get("document_id") or "")
 
@@ -862,6 +865,275 @@ def _name_fallback_groups(glm_client, papers, groups, moves=None,
         pass
 
 
+# ── 三段式任务锚定分组（2026-10-20 晚定稿，用户批准实测）──────────────────────
+# 背景：同日三次提示词调粒度实测 18→2→2 簇剧烈摆动，证明"措辞控不住粒度"。
+# 改为机制化：① 每篇独立抽取任务（无全局自由度，稳定）；② 嵌入剪枝候选对 +
+# LLM 逐对裁决"是否同一任务" + 确定性完备链接并查集（2026-10-20 定标发现：
+# 任务描述嵌入分不开正负例——用户认可对 15-16=0.63/11-18=0.65 与否定对
+# 3-6=0.74/4-15=0.70 同带宽，故嵌入只做剪枝，同任务判定交给 LLM 逐对裁决，
+# 无全局粒度自由度）；③ LLM 只做低风险的簇命名。
+# 回滚开关：USE_TASK_ANCHORED_GROUPING = False 即回到 _group_once 老路径。
+
+USE_TASK_ANCHORED_GROUPING = True
+
+# 候选对嵌入剪枝下限（0-1，BGE-M3 余弦）：只把 ≥ 此值的对送 LLM 裁决。
+# 2026-10-20 用 20 篇真实语料定标：用户认可的同任务对最低 0.63，取 0.55 留
+# 冗余；低于 0.55 的对直接判不同任务（省 LLM 调用）。
+AUTO_TASK_SIMILARITY = 0.55
+
+# 簇名黑名单：领域/能力域词、放弃性/占位性措辞不得充当簇名（巨簇/坏名第一信号）
+_TASK_NAME_BLACKLIST = re.compile(
+    r"大模型|深度学习|多模态|人工智能|机器学习|神经网络|自然语言|大语言|LLM|AI|NLP"
+    r"|混合簇|未命名|未知|无法判断|不确定|不能判断|其他|综合|相关研究"
+    r"|未提供|无法识别|任务无法|信息不足|preprint|arxiv|anonymous|submission|under review",
+    re.IGNORECASE)
+
+TASK_EXTRACT_TEMPLATE = (
+    "你是科技文献分析专家。给定一篇文献的题名与{which}语句，抽取它的核心研究任务。\n"
+    "要求：task = 任务名（不超过 12 字，必须具体到任务/场景级，如'大模型微调'"
+    "'社交机器人检测''生成式检索''工具调用编排'；禁止领域级词如'大模型研究'"
+    "'多模态''深度学习应用'）；task_desc = 一句话任务定义（做什么、解决什么，"
+    "35 字内）；branch = 该文献完成此任务的方法分支名（不超过 10 字，"
+    "如'LoRA 参数高效微调''基于知识图谱的检测'）。\n"
+    '只输出JSON：{{"task":"...","task_desc":"...","branch":"..."}}'
+)
+
+
+def _axis_sentences(mv: Dict[str, List[str]], axis: str, title: str) -> str:
+    """轴相关的语步句（喂给任务抽取）：技术轴=方法+目的，场景轴=背景+目的。"""
+    if axis == "technical":
+        sents = (mv.get("研究方法") or []) + (mv.get("研究目的") or [])
+    else:
+        sents = (mv.get("研究背景") or []) + (mv.get("研究目的") or []) + (mv.get("研究结果") or [])
+    sents = [s for s in sents if s and s.strip()][:10]
+    return "题名：" + str(title or "（无）") + "\n" + "\n".join("- " + s[:200] for s in sents)
+
+
+def _extract_paper_tasks(glm_client, papers, moves, axis: str) -> List[Dict[str, str]]:
+    """阶段一：逐篇抽取任务（task/task_desc/branch）。单篇无全局自由度，稳定。"""
+    spec = AXIS_PROMPTS.get(axis, AXIS_PROMPTS["technical"])
+    which = "技术方法" if axis == "technical" else "应用场景"
+
+    def _one(args):
+        i, paper, mv = args
+        fallback = {"task": "", "task_desc": str(paper.get("title") or "")[:60], "branch": ""}
+        try:
+            raw = glm_client.chat_json(
+                TASK_EXTRACT_TEMPLATE.format(which=which),
+                _axis_sentences(mv, axis, _display_title(paper)),
+                temperature=0.0, timeout=60.0, max_tokens=300)
+            row = raw.get("data", raw) if isinstance(raw, dict) else {}
+            task = str(row.get("task") or "").strip()[:24]
+            desc = str(row.get("task_desc") or "").strip()[:80]
+            branch = str(row.get("branch") or "").strip()[:20]
+            if not task or _TASK_NAME_BLACKLIST.fullmatch(task):
+                return fallback
+            return {"task": task, "task_desc": desc or task, "branch": branch}
+        except Exception:  # noqa: BLE001 - 单篇失败降级用题名
+            return fallback
+
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+        rows = list(pool.map(_one, zip(range(len(papers)), papers, moves)))
+    return [r if isinstance(r, dict) else {"task": "", "task_desc": "", "branch": ""} for r in rows]
+
+
+def _llm_same_task(glm_client, row_i: Dict[str, str], row_j: Dict[str, str],
+                   title_i: str, title_j: str,
+                   sents_i: List[str] = None, sents_j: List[str] = None) -> Dict[str, str]:
+    """LLM 逐对裁决：两篇文献是否在做同一个具体研究任务/方向。
+
+    锚定用户定义（2026-10-20）：看【目的/问题】是否相同，不看手段——同目的
+    不同方法算同任务（如都是大模型微调，方法 LoRA/指令/全参数各不同；都是
+    机器人检测，从 text/image/知识图谱分别着手）；仅同属大领域或只有"提升
+    推理能力"这类宽泛共同目的的不算，必须分开。温度 0，无全局自由度。
+    返回 {"same": "true"/"false", "task": 共同任务名}；异常按不同任务处理。
+    """
+    def _sents(block):
+        return "\n".join("- " + str(s)[:160] for s in (block or [])[:3])
+    prompt = (
+        "判断下面两篇文献是否在做【同一个具体研究任务】——判据：它们能合并成"
+        "一篇聚焦主题综述的同一章节。\n"
+        "校准（看目的，不看手段）：目的是同一类问题的求解/同一类能力的提升即"
+        "算同任务，具体对象可以不同——如一篇用 RL 增强数学奥赛推理、另一篇用"
+        "RL 增强视觉模型发散推理，都是'推理能力强化学习训练'，算同任务；都是"
+        "大模型微调（LoRA/指令/全参数）算同任务；都是社交机器人检测（text/"
+        "image/知识图谱）算同任务。\n"
+        "反例（必须拆开）：目的分属不同问题域——如智能体记忆管理 vs 工具调用"
+        "编排、生成式检索 vs 材料计算筛选、只共属'多模态/大模型'大领域。\n"
+        f"文献A：任务「{row_i.get('task')}」（{row_i.get('task_desc')}），方法分支"
+        f"「{row_i.get('branch')}」，题名：{title_i[:60]}\n原文关键句：\n{_sents(sents_i)}\n"
+        f"文献B：任务「{row_j.get('task')}」（{row_j.get('task_desc')}），方法分支"
+        f"「{row_j.get('branch')}」，题名：{title_j[:60]}\n原文关键句：\n{_sents(sents_j)}\n"
+        '只输出JSON：{"same":"true或false","task":"若同任务，给共同任务名（10字内）"}')
+    try:
+        raw = glm_client.chat_json("你是科技文献聚类判定专家。", prompt,
+                                   temperature=0.0, timeout=45.0, max_tokens=150)
+        row = raw.get("data", raw) if isinstance(raw, dict) else {}
+        return {"same": str(row.get("same") or "").strip().lower(),
+                "task": str(row.get("task") or "").strip()[:12]}
+    except Exception as exc:  # noqa: BLE001 - 裁决失败保守判不同任务（留痕可查）
+        print(f"[task-adjudicate] 裁决调用失败（按不同任务处理）: {exc}", flush=True)
+        return {"same": "", "task": ""}
+
+
+def _task_semantic_groups(papers, task_rows, encoder, glm_client, floor: float,
+                          axis: str = "technical", axis_moves: List[Dict[str, List[str]]] = None) -> List[Dict[str, Any]]:
+    """阶段二：嵌入剪枝候选对 → LLM 逐对裁决 → 完备链接并查集（确定性结构）。
+
+    ① 候选对 = 相似度 ≥ floor 且互为对方 top-3 近邻（控制裁决调用规模）；
+    ② 候选对交 LLM 裁决是否同一任务（same=true 才连边）；
+    ③ 并查集聚簇带完备链接约束：合并两簇要求簇间【所有】跨对都被裁决为同
+       任务——A~B、B~C 同任务但 A~C 不同任务时不串簇。
+    """
+    import numpy as np
+
+    n = len(papers)
+    descs = [f"{r.get('task') or ''}。{r.get('task_desc') or ''}".strip("。") or
+             str(papers[i].get("title") or "") for i, r in enumerate(task_rows)]
+    vecs = np.asarray(encoder.encode(descs))
+    sims = vecs @ vecs.T
+
+    # 互 top-5 近邻且 ≥ floor 的候选对（top-3 实测会漏真同任务对——任务描述
+    # 措辞变化即换邻居；放宽到 top-5 由 LLM 裁决兜住，仍无近邻关系的高分对
+    # 不裁决防误并）
+    top5 = {i: set(sorted((j for j in range(n) if j != i),
+                          key=lambda j: -float(sims[i][j]))[:5]) for i in range(n)}
+    cand = sorted(((i, j) for i in range(n) for j in range(i + 1, n)
+                   if float(sims[i][j]) >= 0.62
+                   or (j in top5[i] and i in top5[j] and float(sims[i][j]) >= floor)),
+                  key=lambda p: -float(sims[p[0]][p[1]]))
+    axis_sents = []
+    for mv in axis_moves:
+        axis_sents.append((mv.get("研究方法") or [])[:2] + (mv.get("研究目的") or [])[:1]
+                           if axis == "technical"
+                           else (mv.get("研究背景") or [])[:2] + (mv.get("研究目的") or [])[:1])
+
+    same_pairs: Dict[tuple, str] = {}
+    for i, j in cand:
+        verdict = _llm_same_task(glm_client, task_rows[i], task_rows[j],
+                                 _display_title(papers[i]), _display_title(papers[j]),
+                                 sents_i=axis_sents[i] if i < len(axis_sents) else None,
+                                 sents_j=axis_sents[j] if j < len(axis_sents) else None)
+        # 裁决留痕（uvicorn 日志可查逐对判定，翻转/失败可追溯）
+        print(f"[task-adjudicate] DOC{i + 1}×DOC{j + 1} cos={float(sims[i][j]):.2f}"
+              f" → {verdict.get('same') or 'FAIL'} {verdict.get('task', '')}", flush=True)
+        if verdict.get("same") == "true":
+            same_pairs[(i, j)] = verdict.get("task") or ""
+
+    parent = list(range(n))
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    members: Dict[int, List[int]] = {i: [i] for i in range(n)}
+
+    def all_same(ri, rj):
+        return all((min(a, b), max(a, b)) in same_pairs
+                   for a in members[ri] for b in members[rj])
+
+    for (i, j) in same_pairs:
+        ri, rj = find(i), find(j)
+        if ri != rj and all_same(ri, rj):
+            parent[rj] = ri
+            members[ri] = members[ri] + members[rj]
+            del members[rj]
+
+    # 共同任务名（裁决给出）优先于成员任务名统计
+    groups: List[Dict[str, Any]] = []
+    for root in sorted(members, key=lambda r: (-len(members[r]), min(members[r]))):
+        idxs = sorted(members[root])
+        pair_names = [t for (a, b), t in same_pairs.items()
+                      if find(a) == root and t]
+        task_names = [task_rows[i].get("task") or "" for i in idxs]
+        dominant = (max(set(pair_names), key=pair_names.count) if pair_names
+                    else max(set(task_names), key=task_names.count) if task_names else "")
+        branches = [task_rows[i].get("branch") for i in idxs if task_rows[i].get("branch")]
+        groups.append({
+            "name": dominant or str(papers[idxs[0]].get("title") or "未命名簇")[:12],
+            "indices": idxs,
+            "keywords": list(dict.fromkeys([t for t in task_names if t] + branches))[:5],
+        })
+    return groups
+
+
+# 退化占位值：分支/任务抽取偶发返回"无"类空值（实测 doc15 分支="无"）
+_DEGENERATE_NAMES = {"无", "暂无", "没有", "未提供", "空", "none", "null", "n/a", "na",
+                     "-", "—", "未提供信息", "任务无法识别", "preprint"}
+
+
+def _is_degenerate_name(value: str) -> bool:
+    v = str(value or "").strip().lower()
+    return (not v or v in _DEGENERATE_NAMES or len(v) < 3
+            or _TASK_NAME_BLACKLIST.search(v) is not None)
+
+
+def _name_task_groups(glm_client, papers, groups, task_rows) -> None:
+    """阶段三：多篇簇 LLM 命名（从成员任务/分支浓缩）+ 黑名单兜底。
+
+    成员任务名完全一致时直接采用（无需 LLM）；不一致或命中领域词黑名单时
+    让 LLM 按成员任务重新命名，仍不合规则回退到成员中出现最多的任务名。
+    """
+    for g in groups:
+        idxs = g["indices"]
+        if len(idxs) < 2:
+            # 单篇簇用方法分支名（方法名比任务名更具区分度，如 GENRE/TTSR）；
+            # 分支名命中黑名单/残缺（以"的/与/和"等虚词结尾=截断）时退回任务名
+            branch = str(task_rows[idxs[0]].get("branch") or "").strip()
+            task = str(task_rows[idxs[0]].get("task") or "").strip()
+            if (not _is_degenerate_name(branch)
+                    and branch.rstrip()[-1:] not in ("的", "与", "和", "及", "+", "-")):
+                g["name"] = branch[:14]
+            elif not _is_degenerate_name(task):
+                g["name"] = task[:14]
+            else:
+                g["name"] = _display_title(papers[idxs[0]])[:14] or "未分类文献"
+            continue
+        tasks = [task_rows[i].get("task") or "" for i in idxs]
+        branches = [task_rows[i].get("branch") or "" for i in idxs]
+        candidate = g.get("name") or ""
+        if len(set(t for t in tasks if t)) <= 1 and candidate and not _TASK_NAME_BLACKLIST.search(candidate):
+            continue  # 同任务多分支：任务名即簇名，无须 LLM
+        try:
+            raw = glm_client.chat_json(
+                "你是类簇命名专家。",
+                "为下面这组文献的类簇起名。它们共享同一研究任务，各文献的方法分支如下：\n"
+                + "\n".join(f"- 任务「{t}」分支「{b}」" for t, b in zip(tasks, branches) if t or b)
+                + "\n要求：簇名 = 这组文献共同任务的浓缩命名（不超过 10 字，任务级而非领域级，"
+                  "禁止'大模型''多模态''深度学习'等领域词）。"
+                  '只输出JSON：{"name":"簇名"}',
+                temperature=0.0, timeout=45.0, max_tokens=120)
+            nm = str((raw.get("data", raw) if isinstance(raw, dict) else {}).get("name") or "").strip()[:12]
+            if nm and not _TASK_NAME_BLACKLIST.search(nm) and not re.fullmatch(r"(簇|孤立文献|文献|未分组)\s*\d*", nm):
+                g["name"] = nm
+        except Exception:  # noqa: BLE001 - 命名失败保留任务名
+            pass
+
+
+def _task_anchored_groups(glm_client, papers, moves, axis, encoder,
+                          cluster_count=None) -> List[Dict[str, Any]]:
+    """三段式主函数：任务抽取 → 嵌入剪枝+LLM逐对裁决归簇 → LLM 命名。
+
+    用户显式指定类簇数（cluster_count>1）时不走三段式（数值旋钮无法忠实
+    表达任意 k），交回上层老路径 target_k 分组。失败返回 []（走老路径）。
+    """
+    if encoder is None or (cluster_count and int(cluster_count) > 1):
+        return []
+    try:
+        task_rows = _extract_paper_tasks(glm_client, papers, moves, axis)
+        if not any(r.get("task") for r in task_rows):
+            return []
+        groups = _task_semantic_groups(papers, task_rows, encoder, glm_client,
+                                       AUTO_TASK_SIMILARITY, axis=axis, axis_moves=moves)
+        _name_task_groups(glm_client, papers, groups, task_rows)
+        return groups if groups else []
+    except Exception:  # noqa: BLE001 - 三段式任何失败回退老路径
+        return []
+
+
+
 def run_move_aligned_clustering(papers, *, selected_axis, glm_client, encoder=None,
                                 anchor_docs=None, cluster_count=None,
                                 algorithm=None, language_type="auto") -> Dict[str, Any]:
@@ -915,10 +1187,16 @@ def run_move_aligned_clustering(papers, *, selected_axis, glm_client, encoder=No
                 groups = [{"name": "单一类簇（用户指定类簇数量=1）",
                            "indices": list(range(n)), "keywords": []}]
                 method = "single_cluster_requested"
-            elif n <= BATCH_SIZE:
+            elif USE_TASK_ANCHORED_GROUPING:
+                # 三段式任务锚定分组（2026-10-20 晚）：粒度=数值阈值而非提示词
+                # 措辞；任何失败返回 [] 自动落回下方老路径
+                groups = _task_anchored_groups(glm_client, papers, moves, selected_axis,
+                                               encoder, cluster_count=cluster_count)
+                method = "task_anchored_grouping_v1" if groups else ""
+            if not groups and n <= BATCH_SIZE:
                 groups = _group_once(glm_client, papers, moves, selected_axis, target_k=cluster_count)
                 method = "llm_move_aligned_grouping"
-            else:
+            elif not groups:
                 batches = [papers[i:i + BATCH_SIZE] for i in range(0, n, BATCH_SIZE)]
                 moves_batches = [moves[i:i + BATCH_SIZE] for i in range(0, n, BATCH_SIZE)]
                 with ThreadPoolExecutor(max_workers=3) as pool:

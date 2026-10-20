@@ -182,7 +182,7 @@ const batchTexts = reactive<BatchTextItem[]>([])
 const citationBatchItems = reactive<CitationBatchItem[]>([])
 const uploadedFiles = reactive<UploadedFileItem[]>([])
 let batchItemSequence = 0
-const form = reactive({ projectName: '', documentTitle: '', text: '', batchText: '', language: '自动识别', domain: '自动识别', threshold: '0.75', outputFormat: 'JSON', clusterDimension: 'technology', algorithm: 'auto', clusterCount: '', historyId: '', topic: '' })
+const form = reactive({ projectName: '', documentTitle: '', text: '', batchText: '', language: '自动识别', domain: '自动识别', threshold: 'auto', outputFormat: 'JSON', clusterDimension: 'technology', algorithm: 'auto', clusterCount: '', historyId: '', topic: '' })
 const citationSingle = reactive({ documentText: '' })
 type CitationCard = { id: number; marker: string; sentence: string; subSpan: string; previousContext: string; nextContext: string }
 const citationCards = reactive<CitationCard[]>([])
@@ -491,6 +491,11 @@ function handleAnchorUpload(event: Event) {
 const supplementalPayload = ref<Record<string, unknown>>({})
 const labelLengthLimit = ref(12)
 const labelLanguageType = ref('auto')
+// 差异度阈值双模式（2026-10-20 定稿）：默认"自动"不传该参数，由后端按语义
+// 可区分度自行优化易混标签；用户切"自定义"才提交 0-1 阈值，后端强制达标
+// 差异度阈值步进档位（2026-10-20 定稿，对齐深度聚类类簇数量交互）：自动在最底，
+// 上一位 0，步进 0.1，顶到 1；自动=不提交阈值参数（后端不优化、模型结果直出）
+const THRESHOLD_LADDER = ['auto', ...Array.from({ length: 11 }, (_, i) => (i / 10).toFixed(1))]
 const customDictionaryName = ref('')
 const customDictionaryTerms = ref('')
 const customDictionaryFile = ref<File | null>(null)
@@ -577,7 +582,9 @@ const onlineRequestValues = computed<Record<string, unknown>>(() => {
     values.cluster_phrase_sets = selectedClusterTask.value?.phraseSets || []
     values.label_length_limit = Number(labelLengthLimit.value)
     values.language_type = labelLanguageType.value
-    values.distinctiveness_threshold = Number(form.threshold)
+    // 自动档不传 distinctiveness_threshold（不传=后端不优化、模型结果直出），
+    // 数值档（0-1，步进 0.1）提交为强制达标阈值
+    if (form.threshold !== 'auto') values.distinctiveness_threshold = Number(form.threshold)
     return values
   }
   if (props.toolId === 'deep-cluster') {
@@ -860,9 +867,10 @@ function clearDictionaryFile() {
 
 
 function adjustThreshold(direction: 1 | -1) {
-  const current = Number(form.threshold)
-  const next = Math.min(1, Math.max(0, Math.round((current + direction * 0.05) * 100) / 100))
-  form.threshold = next.toFixed(2)
+  const idx = THRESHOLD_LADDER.indexOf(form.threshold)
+  const cur = idx >= 0 ? idx : 0
+  const next = Math.min(THRESHOLD_LADDER.length - 1, Math.max(0, cur + direction))
+  form.threshold = THRESHOLD_LADDER[next]
 }
 
 function adjustWeightBoost(direction: 1 | -1) {
@@ -2597,7 +2605,7 @@ function downloadResult() {
           </template>
 
           <template v-else-if="toolId === 'cluster-label' && mode === 'batch-text'">
-            <div class="settings-card"><div class="settings-title"><b>可选标签生成参数</b><span>可选标签长度、语言与差异阈值</span></div><div class="three-column"><div class="field"><label><span class="label-main">标签长度限制</span></label><input v-model="labelLengthLimit" class="input" type="number" min="1" /></div><div class="field"><label><span class="label-main">语言类型</span></label><AppSelect v-model="labelLanguageType" :options="labelLanguageTypeOptions" /></div><div class="field"><label><span class="label-main">差异度阈值</span></label><div class="numeric-stepper"><input v-model="form.threshold" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="差异度阈值" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加差异度阈值" :disabled="Number(form.threshold) >= 1" @click="adjustThreshold(1)">▲</button><button type="button" aria-label="减小差异度阈值" :disabled="Number(form.threshold) <= 0" @click="adjustThreshold(-1)">▼</button></span></div></div></div></div>
+            <div class="settings-card"><div class="settings-title"><b>可选标签生成参数</b><span>阈值默认自动：不做差异化优化、以模型生成结果为准；调至数值档（0-1）时低于阈值的标签将被强制优化到达标</span></div><div class="three-column"><div class="field"><label><span class="label-main">标签长度限制</span></label><input v-model="labelLengthLimit" class="input" type="number" min="1" /></div><div class="field"><label><span class="label-main">语言类型</span></label><AppSelect v-model="labelLanguageType" :options="labelLanguageTypeOptions" /></div><div class="field"><label><span class="label-main">差异度阈值</span></label><div class="numeric-stepper"><input :value="form.threshold === 'auto' ? '自动确定' : String(form.threshold)" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="差异度阈值" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加差异度阈值" title="增加（从自动确定进入 0；1 时到顶）" :disabled="form.threshold === THRESHOLD_LADDER[THRESHOLD_LADDER.length - 1]" @click="adjustThreshold(1)">▲</button><button type="button" aria-label="减小差异度阈值" title="减小（0 时退回自动确定）" :disabled="form.threshold === 'auto'" @click="adjustThreshold(-1)">▼</button></span></div></div></div></div>
           </template>
 
           <template v-else-if="toolId === 'structured-review' && mode === 'batch-text'">

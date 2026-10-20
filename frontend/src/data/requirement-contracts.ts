@@ -310,7 +310,7 @@ export const requirementContracts: Record<string, RequirementContract> = {
       ['cluster_phrase_sets', 'object[]', 'conditional', '直接提供深度聚类输出的类簇短语集合(API 调用路径;与 cluster_task_id 二选一)'],
       ['label_length_limit', 'integer', 'optional', '标签长度限制(默认 12)'],
       ['language_type', 'string', 'optional', '标签语言。枚举:"auto"(默认)、"zh"、"en"'],
-      ['distinctiveness_threshold', 'number', 'optional', '差异度阈值,范围 0-1(默认 0.75)。低于该阈值的候选标签被过滤;值越高候选越少越保守'],
+      ['distinctiveness_threshold', 'number', 'optional', '差异度阈值,范围 0-1。默认"自动"(不传该参数):不做差异化优化,以模型生成的标签为准;显式设定时为强制闸门——低于该阈值的标签将被强制优化到达标(差异度=标签间语义差异度,BGE-M3 相似度定标)'],
     ],
     outputs: [
       ['cluster_labels', 'object[]', '类簇标签集合'],

@@ -1337,8 +1337,17 @@ def _mineru_parse_one(content: bytes, filename: str, end_page: Optional[int]) ->
             if s.startswith("# ") and len(s) > 4:
                 title = s[2:].strip()[:200]
                 break
+        # PyMuPDF 原文头部（2026-10-20：mineru 偶发丢题名块——25.pdf 的 md
+        # 从作者行开始；题名审核需原文对照源）
+        _raw_head = ""
+        try:
+            import fitz as _fitz
+            with _fitz.open(tmp_path) as _fd:
+                _raw_head = "".join(pg.get_text() for pg in _fd[:1])[:1500]
+        except Exception:  # noqa: BLE001
+            _raw_head = ""
         return {"file_name": filename, "media_type": "application/pdf",
-                "text": md, "title": title}
+                "text": md, "title": title, "raw_head": _raw_head}
     except Exception:  # noqa: BLE001  mineru 任何异常 → 兜底路径
         return None
     finally:
@@ -1530,8 +1539,21 @@ async def parse_files(
                 elif effective_tool in CITATION_TOOLS:
                     parsed_pairs.extend(await _extract_citation_pdf(rebuilt, max_size_mb=_limit_mb))
                 else:
-                    parsed_pairs.extend(await extract_uploads(
-                        rebuilt, max_size_mb=_limit_mb, light=settings.should_use_light(effective_tool)))
+                    _fb_pairs = await extract_uploads(
+                        rebuilt, max_size_mb=_limit_mb, light=settings.should_use_light(effective_tool))
+                    # 兜底路径带原文头部（2026-10-20：mineru 失败的 PDF 走
+                    # PyMuPDF 版面感知读取，题名块可能被重排到后文——raw_head
+                    # 供题名 LLM 审核对照，同 mineru 主路径口径）
+                    _fb_bytes = {f[0]: f[1] for f in _pdf_failed}
+                    for _p in _fb_pairs:
+                        try:
+                            import fitz as _fitz
+                            with _fitz.open(stream=_fb_bytes.get(str(_p.get("file_name") or ""), b""),
+                                             filetype="pdf") as _fd:
+                                _p["raw_head"] = "".join(pg.get_text() for pg in _fd[:1])[:1500]
+                        except Exception:  # noqa: BLE001
+                            _p["raw_head"] = ""
+                    parsed_pairs.extend(_fb_pairs)
             if _other:
                 rebuilt2 = [await _rebuild(f[0], f[1], f[3]) for f in _other]
                 _pairs = await extract_uploads(
@@ -1586,16 +1608,30 @@ async def parse_files(
                     break
                 if _s.startswith(("ISSN", "CN ", "《")) or _re_title_issn.match(_s):
                     continue
-                if len(_s) >= 8 and not _s.startswith(("#", "摘要", "Abstract", "关键词", "Keywords", "http", "DOI", "收稿", "作者", "Preprint", "arXiv", "ARXIV")) \
-                        and not _re_title_journal.search(_s):
+                # 表单标签按去空格归一判定（2026-10-20：封面字段"学   号 104754221920"
+                # 带空白仍命中——矿工解析保留字距；去空白后比对标签前缀 + 尾随数字串
+                _s_nospace = re.sub(r"[\s　]+", "", _s)
+                _is_form_field = (
+                    _s_nospace.startswith(("单位代码", "学号", "分类号", "密级", "UDC", "论文编号", "工程编号", "培养单位", "导师", "答辩日期", "入学年份"))
+                    or re.fullmatch(r"(单位代码|学号|分类号|密级|编号)\d+", _s_nospace)
+                    or re.fullmatch(r"[A-Z]{1,6}\d{1,6}", _s_nospace))  # 分类号 TP319 裸码
+                if len(_s) >= 8 and not _s.startswith(("#", "摘要", "Abstract", "关键词", "Keywords", "http", "DOI", "收稿", "作者", "Preprint", "arXiv", "ARXIV", "单位代码", "学号", "分类号", "密级", "UDC", "论文编号", "工程编号")) \
+                        and not _is_form_field and not _re_title_journal.search(_s):
                     _title = _s[:200]
                     # 断行标题拼接（2026-10-19：19.pdf 标题跨两行只取到前半
                     # "…BLACK-"）：行尾连字符直接续接（BLACK-BOX 复合词），下一行
                     # 全大写短行（≤60、非邮箱/机构行）以空格拼接，只拼一行
                     _nx = _lines[_li + 1] if _li + 1 < len(_lines) else ""
+                    # 中文续行（2026-10-20：学位论文封面标题跨行"…社交媒体机器人/
+                    # 检测框架"——纯汉字短行直接无空格拼接；含字母数字冒号的行不拼
+                    _nx_cjk = bool(re.fullmatch(r"[\u4e00-\u9fff]{2,15}", _nx))
+                    # 英文小写续行（2026-10-20：题名换行接介词/冠词"in Large…"）
+                    _nx_lower_cont = bool(re.match(r"[a-z]", _nx)) and not _nx.endswith((".", "。"))
                     if _nx and "@" not in _nx and len(_nx) <= 60 and not _re_title_pageno.fullmatch(_nx) \
-                            and (_title.endswith("-") or (_nx[:1].isupper() and _nx == _nx.upper() and len(_nx) >= 4)):
+                            and (_title.endswith("-") or (_nx[:1].isupper() and _nx == _nx.upper() and len(_nx) >= 4) or _nx_lower_cont):
                         _title = (_title.rstrip() + (" " if not _title.endswith("-") else "") + _nx.strip())[:200]
+                    elif _nx_cjk and not _is_form_field and not _title.endswith(("。", "？", "！", "：", ":")):
+                        _title = (_title.rstrip() + _nx.strip())[:200]
                     break
         except Exception:
             _title = ""
@@ -1603,11 +1639,37 @@ async def parse_files(
         # 字符内首个合理的 19xx/20xx（期刊页眉的年卷期通常即发表年）
         _year = ""
         try:
-            _ym = re.search(r"(?:19|20)\d{2}", text[:6000])
+            _ym = re.search(r"(?<!\d)(?:19|20)\d{2}(?!\d)", text[:6000])
             if _ym and int(_ym.group()) <= __import__("datetime").datetime.now().year + 1:
                 _year = _ym.group()
         except Exception:
             _year = ""
+        # LLM 题名审核（2026-10-20 用户定稿：正则只覆盖已知版式，异形封面
+        # 仍会抓错）——LLM 从文档开头原样摘录题名，摘录去空白后必须能在原文
+        # 头部找到（防编造）才采纳；失败/无效回退确定性规则结果，不阻塞解析
+        try:
+            # 审核源补充 PyMuPDF 原文头部（2026-10-20 修复：mineru 偶发丢弃
+            # 题名块——25.pdf 的 md 从作者行开始，题名只在 PDF 原文里；LLM 只读
+            # md 时从摘要抠了个截断片段）
+            _pmu_head = str(item.get("raw_head") or "")
+            _svc = get_semantic_service()
+            _t_resp = _svc._glm.chat_json(
+                "你是文献题名提取专家。从给定文档开头文本中找出论文/报告的真实题名，"
+                "必须从原文原样摘录（含换行断开的完整题名要拼全），禁止编造或改写。"
+                '只输出JSON：{"title":"题名"}',
+                (text[:1500] + "\n" + _pmu_head)[:3000], timeout=30.0, max_tokens=200)
+            _llm_title = str((_t_resp.get("data") or _t_resp).get("title") or "").strip()
+            _head_flat = re.sub(r"\s+", "", text[:4000] + _pmu_head)
+            if _llm_title and 4 <= len(_llm_title) <= 200 \
+                    and re.sub(r"\s+", "", _llm_title) in _head_flat:
+                _llm_flat = re.sub(r"\s+", "", _llm_title)
+                _det_flat = re.sub(r"\s+", "", _title)
+                # LLM 摘录更完整才替换（LLM 给出的是正则结果的截断子串时保留
+                # 正则结果——25.pdf 实测 LLM 只回"Prefill-Time Intervention"）
+                if _llm_title != _title and not (_llm_flat in _det_flat and len(_llm_flat) < len(_det_flat)):
+                    _title = _llm_title
+        except Exception:  # noqa: BLE001 - 审核失败保持正则结果
+            pass
         results.append({"parse_id": parse_id, "file_name": item.get("file_name"), "char_count": len(text), "parsed_title": _title, "parsed_year": _year,
                         # 引用工具带解析文本（2026-10-18 用户定稿：文件解析后前端
                         # 自动提取引用句卡片，提交走信任卡片路径——输入侧卡片数=
