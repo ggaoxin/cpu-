@@ -4,7 +4,6 @@ import { groups as generatedGroups } from './data/prototype.generated.js'
 import { tools } from './data/tool-overrides'
 import type { InputMode, ToolGroup } from './types'
 import ToolSidebar from './components/ToolSidebar.vue'
-import AlgorithmDirectory from './components/AlgorithmDirectory.vue'
 import DocumentationPanel from './components/DocumentationPanel.vue'
 import OnlineTester from './components/OnlineTester.vue'
 import VisualizationModal from './components/VisualizationModal.vue'
@@ -83,7 +82,6 @@ function previewVisualization(mode: InputMode) {
         <div class="page-shell">
           <div class="document-page-header">
             <div class="breadcrumb"><span>算法中心</span><span class="slash">/</span><span>语义计算工具库</span><span class="slash">/</span><strong>{{ tool.title }}</strong></div>
-            <AlgorithmDirectory :groups="groups" :active-id="activeId" @select="selectTool" />
           </div>
           <section class="main-card">
             <div class="hero">
