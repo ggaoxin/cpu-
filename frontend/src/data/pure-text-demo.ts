@@ -118,6 +118,11 @@ export const pureSingleTextByTool: Record<string, string> = {
 }
 
 export const pureBatchTextByTool: Record<string, TextItem[]> = {
+  // 2026-10-28 用户反馈修复：摘要语步识别的批量文本此前落到 demo-data.generated
+  // 的整页快照（含期刊眉/ISSN/收稿日期/作者栏），不是摘要体裁——补映射走纯摘要，
+  // 与 zh-classify 等工具共用同一套 curated 语料
+  'zh-abstract-move': zhBatch,
+  'en-abstract-move': enBatch,
   'zh-classify': zhBatch,
   'en-classify': enBatch,
   'domain-classify': domainClassificationBatch,
