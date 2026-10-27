@@ -172,7 +172,9 @@ function strictRequirementPayload(tool: ToolDefinition, mode: InputMode) {
   if (String(tool.documentType || '').startsWith('citation-') && (mode === 'file' || mode === 'batch')) {
     const structuredFields = new Set(['document_title', 'scientific_document_full_text', 'reference_entries', 'citation_sentence_and_context', 'citation_metadata'])
     const configOnly = Object.fromEntries(contract.inputs
-      .filter(row => !structuredFields.has(row[0]))
+      // [] 嵌套行同通用分支口径：是文档说明行不是载荷键——此前漏过滤，
+      // 文件示例载荷混入 7 个空占位键与 year:0.75（number 通用默认值）
+      .filter(row => !row[0].includes('[]') && !structuredFields.has(row[0]))
       .map(row => [row[0], requirementExampleValue(row[0], row[1], mode, tool, false)]))
     return mode === 'file'
       ? { ...configOnly, file: '@paper.pdf' }
@@ -490,11 +492,15 @@ function payloadForImpl(tool: ToolDefinition, mode: InputMode): Record<string, u
   }
   if (tool.documentType === 'deep-cluster') {
     if (mode === 'batch') return {
-      scientific_document_texts: ['@paper_01.pdf', '@paper_02.docx'],
+      // 批量文件示例需 ≥4 篇（后端校验最少 4 项输入，2026-10-27 live 调用确认：
+      // 2 篇会 42201"至少需要 4 项输入数据"，示例必须本身可跑通）
+      scientific_document_texts: ['@paper_01.pdf', '@paper_02.docx', '@paper_03.pdf', '@paper_04.pdf'],
       document_metadata: base.document_metadata || [
         { document_id: 'DOC001', publication_date: '2025-03-18', title: '工业表面缺陷检测研究' },
         // 发表时间为选填：无该字段的文献可不提供（DOC002 即省略示例）
         { document_id: 'DOC002', title: '复杂场景视觉识别方法' },
+        { document_id: 'DOC003', publication_date: '2024-11-02', title: '多尺度特征融合的表面缺陷检测' },
+        { document_id: 'DOC004', title: '基于注意力机制的工业质检方法' },
       ],
       cluster_dimension: base.cluster_dimension || 'technology',
       clustering_algorithm_type: base.clustering_algorithm_type || base.algorithm || 'auto',
@@ -881,8 +887,10 @@ export function responseFor(tool: ToolDefinition, mode: InputMode) {
   // 调用文档与在线测试/可视化弹窗必须使用同一份分输入方式响应。
   // 这里不再单独选择旧的 API fixture，避免文本位置、文件章节、
   // 批量条数和数据库记录与弹窗不一致。
+  // 2026-10-27 契约审计：不再 cleanExampleText 拍平换行——响应示例要和
+  // 开发者按示例真实调用得到的结果逐字段一致（文本字段里的 \n 原样保留）。
   const demo = demoResponseForMode(tool.requirementKey || '', tool, mode)
-  return cleanExampleText(alignDemoExampleWithApi(tool, mode, filterDemoByWhitelist(tool.requirementKey || '', demo)))
+  return alignDemoExampleWithApi(tool, mode, filterDemoByWhitelist(tool.requirementKey || '', demo))
 }
 
 /** 演示响应与真实 API 输出严格对齐（2026-10-15 用户定稿：开发者按文档调用
@@ -933,9 +941,18 @@ function alignDemoExampleWithApi(tool: ToolDefinition, mode: InputMode, response
     const titles = Array.isArray(payload.document_title) ? payload.document_title as unknown[] : []
     const fileNames = exampleFileNames(tool, mode)
     const items = data.results as Array<Record<string, unknown>>
+    const stripStale = toolId === 'zh-classify' || toolId === 'en-classify' || toolId === 'domain-classify'
     data.results = items.map((item, i) => {
       if (!item || typeof item !== 'object' || !item.result || typeof item.result !== 'object') return item
       const result = { ...(item.result as Record<string, unknown>) }
+      // 批量行内陈旧键与单篇同口径清理（2026-10-27 live 比对：真实批量 result
+      // 行不带候选确认系列字段，也不带 classification_count/input_type——
+      // 此前只清 data 顶层，批量行残留导致响应示例多出 3 个真实响应没有的字段）
+      if (stripStale) {
+        for (const key of [...DEMO_STALE_CLASSIFY_KEYS, 'classification_count', 'input_type']) delete result[key]
+      }
+      // document_title 镜像：真实批量响应逐条回显 document_title（2026-10-27
+      // fund-move 基金文档实测确认），旧快照缺时从 document.title/请求题名回填
       if (allowed.includes('document_title') && result.document_title == null) {
         const title = (result.document as Record<string, unknown> | undefined)?.title
           || (typeof titles[i] === 'string' ? titles[i] : null)
@@ -955,9 +972,11 @@ function alignDemoExampleWithApi(tool: ToolDefinition, mode: InputMode, response
     // 旧演示可能残留的任务/进度形状键（成功同步响应不带）
     for (const stale of ['task_id', 'tool_id', 'status', 'progress', 'code', 'message']) delete data[stale]
     data = { ...env, results: data.results }
-  } else if (allowed.includes('document_title') && data.document_title == null) {
+  } else if (toolId !== 'structured-review' && toolId !== 'deep-cluster' && allowed.includes('document_title') && data.document_title == null) {
     // 单篇：title 回退链与真实响应同语义——请求带什么 document_title 响应就
-    // 标识什么；文件模式下后端用解析标题（文件名兜底），示例取调用示例文件名
+    // 标识什么；文件模式下后端用解析标题（文件名兜底），示例取调用示例文件名。
+    // structured-review / deep-cluster 除外（2026-10-27 live 比对）：两者真实
+    // 响应顶层无 document_title（批量文件模式曾被文件名兜底镜像出多余字段）
     const title = (data.document as Record<string, unknown> | undefined)?.title
       || (payloadFor(tool, mode) as Record<string, unknown>).document_title
       || exampleFileNames(tool, mode)[0]
@@ -990,22 +1009,13 @@ function filterDemoByWhitelist(toolId: string, response: any): any {
   return { ...response, data: Object.fromEntries(Object.entries(response.data).filter(([key]) => allowSet.has(key))) }
 }
 
-function cleanExampleText(obj: unknown): unknown {
-  if (typeof obj === 'string') {
-    return obj.replace(/[\n\r\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim()
-  }
-  if (Array.isArray(obj)) return obj.map(cleanExampleText)
-  if (obj && typeof obj === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(obj)) out[k] = cleanExampleText(v)
-    return out
-  }
-  return obj
-}
-
 export function buildCallCode(tool: ToolDefinition, mode: InputMode, callType: CallType) {
   const endpoint = endpointFor(tool, mode)
-  const payload = cleanExampleText(payloadFor(tool, mode)) as Record<string, unknown>
+  // 2026-10-27 契约审计：调用示例载荷必须与在线测试逐字节一致（同一文献、同一
+  // 换行结构），此前 cleanExampleText 把换行拍平，位置敏感工具（章节定位/语步
+  // 位置）按示例调用的结果会与响应示例对不上。JSON 字符串内换行本来就是 \n
+  // 转义，拍平对代码块展示并无必要。
+  const payload = payloadFor(tool, mode) as Record<string, unknown>
   if (tool.documentType === 'structured-review' && callType === 'api' && mode === 'batch') {
     return `import json
 import mimetypes

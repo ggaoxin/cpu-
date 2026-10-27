@@ -1395,7 +1395,8 @@ const clusterLabelResponse = {
 }
 
 const reviewResponse = {
-  code: 200, message: 'success', data: {
+  // 真实接口信封 code=0（2026-10-27 live 比对统一，此前手写块 200）
+  code: 0, message: 'success', data: {
     tool: '结构化自动综述工具', input_type: 'texts', topic: '视觉与语言模型的推理多样性、高效推理与时间推理', document_count: 4,
     statistics: { research_question_count: 3, method_count: 4, progress_item_count: 4, evidence_sentence_count: 8, trend_hotspot_status: 'computed' },
     tree: [
@@ -1510,11 +1511,16 @@ function stripFileMetadataForTextMode(value: unknown, mode: InputMode) {
 function cleanClassificationResponse(toolId: string, response: AnyRecord, mode: InputMode) {
   const result = clone(response)
   if (!classificationToolIds.has(toolId)) return stripFileMetadataForTextMode(result, mode)
+  // 2026-10-27 契约审计（live 比对定稿）：document 去留与 input_type 注入
+  // 按各工具真实响应口径——domain-classify 真实响应（文本/批量 result 行均）
+  // 保留 document；zh/en-classify 真实响应不返回 document；所有分类工具的
+  // 真实响应在各层都不带 input_type（批量信封层的 input_type 来自快照本身）。
+  const keepDocument = toolId === 'domain-classify'
   payloads(result).forEach(data => {
     // 题名、摘要、关键词及文件解析状态只用于分类算法内部预处理，
     // 不属于自动分类工具的对外响应契约；文本和文件模式均不向用户返回。
     data.document_title = data.document_title || data.document?.title || '未命名文献'
-    delete data.document
+    if (!keepDocument) delete data.document
     delete data.input
     delete data.parsed_document
     delete data.extracted_metadata
@@ -1525,7 +1531,6 @@ function cleanClassificationResponse(toolId: string, response: AnyRecord, mode: 
     delete data.file_name
     delete data.file_type
     delete data.parse_status
-    data.input_type = mode === 'batch-text' ? 'batch_text' : mode === 'batch' ? 'batch_file' : mode
   })
   return stripFileMetadataForTextMode(result, mode)
 }

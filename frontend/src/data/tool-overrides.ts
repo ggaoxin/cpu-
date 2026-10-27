@@ -685,6 +685,10 @@ const researchNerPreviewResponse = {
 
 // “预览可视化弹窗”使用的完整审核数据。在线测试仍由真实接口响应覆盖，
 // 此处只保证原型预览中的统计、实体详情和本体映射均可被完整检查。
+// 实体关系识别（历史记录模式）演示三元组：真实响应以 relation_triples/relations/
+// triples/relation_results 四个别名返回同一数组（2026-10-27 live 比对）
+const relationDemoTriples = [{ triple_id: 'TRIPLE_001', head: '阿司匹林', relation: '抑制', tail: '血小板聚集', subject: '阿司匹林', object: '血小板聚集', trigger: '抑制', sentence_id: 'SENT-018', context: '阿司匹林能够抑制血小板聚集。', dependency_path: '阿司匹林 ←[主语]— 抑制 —[宾语]→ 血小板聚集', confidence: 0.96, source_position: { start: 0, end: 12 } }]
+
 const domainNerPreviewResponse = {
   code: 200,
   message: 'success',
@@ -1138,7 +1142,7 @@ const finalOverrides: Record<string, Partial<ToolDefinition>> = {
     modeLabels: { 'existing-result': '命名实体识别历史记录' },
     payload: { upstream_ner_record_id: 'NER-20260816-001' },
     response: {
-      code: 200,
+      code: 0,
       message: 'success',
       data: {
         upstream_ner_record_id: 'NER-20260816-001',
@@ -1152,7 +1156,13 @@ const finalOverrides: Record<string, Partial<ToolDefinition>> = {
         dependency_paths: [
           { triple_id: 'TRIPLE_001', path: '阿司匹林 ←[主语]— 抑制 —[宾语]→ 血小板聚集' }
         ],
-        relation_triples: [{ triple_id: 'TRIPLE_001', subject: '阿司匹林', relation: { code: 'INHIBITS', label: '抑制', trigger: '抑制' }, object: '血小板聚集', sentence_id: 'SENT-018', context: '阿司匹林能够抑制血小板聚集。', dependency_path: '阿司匹林 ←[主语]— 抑制 —[宾语]→ 血小板聚集', confidence: 0.96 }],
+        // 2026-10-27 live 比对：真实响应三元组用 head/relation(字符串)/tail 为主键
+        // （subject/object 同步冗余），并同时以 relation_triples/relations/triples/
+        // relation_results 四个别名返回同一数组；旧示例 relation 是对象、缺 3 别名
+        relation_triples: relationDemoTriples,
+        relations: relationDemoTriples,
+        triples: relationDemoTriples,
+        relation_results: relationDemoTriples,
         context_fragments: [{ sentence_id: 'SENT-018', text: '阿司匹林能够抑制血小板聚集。' }],
         rdf_representation: '<http://example.org/entity/阿司匹林> <http://example.org/relation/抑制> <http://example.org/entity/血小板聚集> .'
       }
