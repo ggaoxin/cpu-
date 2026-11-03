@@ -510,6 +510,22 @@ function onKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape' && props.open) close()
 }
 
+/** 省略号悬浮全文（2026-11-03 用户定稿：凡因布局被截断为省略号的元素，悬浮
+ * 必须能看到完整内容）。事件委托 + 懒判定：悬浮到元素时若其实际溢出
+ * （scrollWidth > clientWidth）且被 overflow 截断，则补原生 title 提示。
+ * 懒判定无需关心内容何时渲染/切换，覆盖弹窗内所有工具的可视化输出。 */
+function onEllipsisHover(event: Event) {
+  const el = event.target as HTMLElement | null
+  if (!el || !el.classList || el.nodeType !== 1) return
+  if (el.hasAttribute('title') || el.tagName === 'svg' || el.tagName === 'svg' || el.closest('svg')) return
+  const style = window.getComputedStyle(el)
+  if (!style || style.textOverflow !== 'ellipsis') return
+  if (el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight) {
+    const full = (el.textContent || '').trim()
+    if (full) el.setAttribute('title', full)
+  }
+}
+
 watch(() => props.open, open => {
   setBodyState(open)
   if (open) {
@@ -526,9 +542,13 @@ watch(() => [props.toolId, props.response], () => {
   }
 })
 
-onMounted(() => document.addEventListener('keydown', onKeydown))
+onMounted(() => {
+  document.addEventListener('keydown', onKeydown)
+  document.addEventListener('mouseover', onEllipsisHover)
+})
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onKeydown)
+  document.removeEventListener('mouseover', onEllipsisHover)
   setBodyState(false)
 })
 </script>

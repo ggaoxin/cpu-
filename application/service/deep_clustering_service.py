@@ -86,9 +86,8 @@ _PUBLICATION_DATE = re.compile(
 
 
 def _publication_date_from_text(text: str) -> str | None:
-    """Extract only a date with an explicit publication-context label."""
-    match = _PUBLICATION_DATE.search(str(text or "")[:4000])
-    return match.group(1) if match else None
+    """Deprecated: 发表时间不再从全文解析（2026-11-03 用户定稿），保留仅为兼容引用。"""
+    return None
 
 
 def _year_of(value: Any) -> int | None:
@@ -98,37 +97,29 @@ def _year_of(value: Any) -> int | None:
 
 
 def _trend_summary(years: list, series: list) -> str:
-    """趋势摘要：全部命中制——列出每类所有命中簇与判定口径（供决策参考）。
-
-    口径（2026-11-03 用户定稿，锚点=语料最新年份 Y）：
-    新兴＝首次出现 ≥ Y-2（近三年内才出现）；上升＝有历史且近三年产出
-    ≥ max(2, 2×前三年)；稳定＝跨度≥5 年、逐年覆盖≥50%、近/前三年产出比
-    在 0.5~2 倍。每簇独立判定，按 新兴>上升>稳定 取更具体者。
-    """
+    """趋势汇总：一段自然语言描述（2026-11-03 用户定稿：不展示判定口径，
+    口径属内部规则；各命中簇归成一句话，整体连缀成段）。"""
     if not years:
         return ""
     span = f"{years[0]}–{years[-1]}" if len(years) > 1 else str(years[0])
-    count_of = {r["cluster_id"]: sum(r["yearly_counts"]) for r in series}
+    total = len(series)
     by_label = {"emerging": [], "rising": [], "stable": []}
     for row in series:
         if row.get("trend") in by_label:
             by_label[row["trend"]].append(row["cluster_id"])
 
-    def describe(key: str, label: str) -> str | None:
-        ids = by_label[key]
-        if not ids:
-            return None
-        listing = "、".join(f"{cid}（{count_of.get(cid, 0)} 篇）" for cid in ids)
-        return f"{label}类簇 {listing}"
-
-    parts = [x for x in (
-        describe("emerging", "新兴"),
-        describe("rising", "上升"),
-        describe("stable", "稳定"),
-    ) if x]
-    if not parts:
-        return f"{span} 年间各主题分布零散，未达新兴/上升/稳定的判定门槛。"
-    return f"{span} 年间趋势：" + "；".join(parts) + "。判定口径：新兴=近三年（相对语料最新年份）首次出现；上升=近三年产出达前三年 2 倍及以上；稳定=跨度≥5 年且逐年覆盖≥50%、涨落不超 2 倍。"
+    fragments = []
+    if by_label["emerging"]:
+        fragments.append(f"识别出 {len(by_label['emerging'])} 个新兴类簇（{'、'.join(by_label['emerging'])}），均为近期新出现的主题方向")
+    if by_label["rising"]:
+        fragments.append(f"{len(by_label['rising'])} 个上升类簇（{'、'.join(by_label['rising'])}）近年产出明显加快")
+    if by_label["stable"]:
+        fragments.append(f"{len(by_label['stable'])} 个稳定类簇（{'、'.join(by_label['stable'])}）多年保持持续产出")
+    if not fragments:
+        return f"{span} 年间，各主题的时间分布较为零散，未呈现明显的新兴、上升或稳定趋势。"
+    labelled = sum(len(v) for v in by_label.values())
+    rest = f"其余 {total - labelled} 个类簇时间分布零散，未呈现明显趋势。" if total > labelled else ""
+    return f"{span} 年间，" + "，".join(fragments) + "。" + rest
 
 
 def _trend_analysis(documents: list[dict[str, Any]]) -> dict[str, Any]:
@@ -232,7 +223,10 @@ def _input_documents(values: list[Any]) -> list[dict[str, Any] | str]:
                     "abstract": parsed.get("abstract") or "",
                     "keywords": value.get("keywords") or parsed.get("keywords") or [],
                     "full_text": full_text,
-                    "publication_date": value.get("publication_date") or _publication_date_from_text(full_text),
+                    # 发表时间只认用户上传的元数据（2026-11-03 用户定稿：不再
+                    # 从全文自动解析——自动抽取的日期可能取到引用文献/基金年度
+                    # 等噪声年份，趋势分析口径应完全由用户提供）
+                    "publication_date": value.get("publication_date"),
                 })
             else:
                 row = dict(value)
@@ -260,7 +254,9 @@ def _input_documents(values: list[Any]) -> list[dict[str, Any] | str]:
                 "abstract": parsed.get("abstract") or "",
                 "keywords": parsed.get("keywords") or [],
                 "full_text": full_text,
-                "publication_date": _publication_date_from_text(full_text),
+                # 纯路径直传分支同样不自动解析发表时间（与 dict 分支同口径，
+                # 用户经 document_metadata 提供才会参与趋势分析）
+                "publication_date": None,
             })
         else:
             # 纯字符串文献（API 直传 texts=["...", ...]，非 JSON 序列化 dict）：

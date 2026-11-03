@@ -8898,14 +8898,14 @@
           {
             "cluster_id": "C01",
             "topic_id": "C01",
-            "topic_name": "多组策略优化",
+            "topic_name": "多组策略优化强化学习",
             "size": 1,
             "doc_indices": [
               0
             ],
             "representative_terms": [
-              "视觉推理模型强化学习",
-              "多组策略优化"
+              "视觉推理模型多样性优化",
+              "多组策略优化强化学习"
             ],
             "members": [
               {
@@ -8929,14 +8929,14 @@
           {
             "cluster_id": "C02",
             "topic_id": "C02",
-            "topic_name": "时间步感知块掩码缓存",
+            "topic_name": "时间步感知模块掩码",
             "size": 1,
             "doc_indices": [
               1
             ],
             "representative_terms": [
-              "扩散模型高效推理",
-              "时间步感知块掩码缓存"
+              "扩散模型加速推理",
+              "时间步感知模块掩码"
             ],
             "members": [
               {
@@ -8960,14 +8960,14 @@
           {
             "cluster_id": "C03",
             "topic_id": "C03",
-            "topic_name": "层级视觉预算分配",
+            "topic_name": "分层视觉预算分配",
             "size": 1,
             "doc_indices": [
               2
             ],
             "representative_terms": [
-              "视频高效推理",
-              "层级视觉预算分配"
+              "视频关键帧选择与令牌预算分配",
+              "分层视觉预算分配"
             ],
             "members": [
               {
@@ -9059,7 +9059,7 @@
             "publication_year": 2026,
             "cluster_id": "C01",
             "similarity_to_centroid": 1,
-            "key_evidence": "The study compares reinforcement-learning vision-language models with their base models"
+            "key_evidence": "The study compares reinforcement-learning vision-language models with their base models, identifies diversity collapse in GRPO, and proposes Multi-Group Policy Optimization to encourage divergent reasoning across multiple solutions."
           },
           {
             "document_id": "DOC-EN-024",
@@ -9103,36 +9103,36 @@
             "document_id": "DOC-EN-018",
             "title": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models",
             "cluster_id": "C01",
-            "x": 12.964,
-            "y": 16.683
+            "x": 35.792,
+            "y": 95
           },
           {
             "document_id": "DOC-EN-024",
             "title": "Timestep-Aware Block Masking for Efficient Diffusion Model Inference",
             "cluster_id": "C02",
-            "x": 93.015,
-            "y": 5
+            "x": 95,
+            "y": 60.447
           },
           {
             "document_id": "DOC-EN-028",
             "title": "TRIAGE: Hierarchical Visual Budgeting for Efficient Video Reasoning",
             "cluster_id": "C03",
-            "x": 48.154,
-            "y": 86.421
+            "x": 39.613,
+            "y": 27.833
           },
           {
             "document_id": "DOC-EN-026",
             "title": "Can Slow-Thinking LLMs Reason Over Time?",
             "cluster_id": "C04",
-            "x": 95,
-            "y": 95
+            "x": 85.972,
+            "y": 5
           },
           {
             "document_id": "DOC-EN-030",
             "title": "FVG-PT: Adaptive Foreground View-Guided Pre-Training",
             "cluster_id": "C05",
             "x": 5,
-            "y": 77.351
+            "y": 17.615
           }
         ],
         "theme_trend_analysis": {
@@ -9178,24 +9178,24 @@
           "rising_cluster_id": null,
           "emerging_cluster_id": "C03",
           "stable_cluster_id": null,
-          "summary": "2026 年间趋势：新兴类簇 C01（1 篇）、C02（1 篇）、C03（1 篇）。判定口径：新兴=近三年（相对语料最新年份）首次出现；上升=近三年产出达前三年 2 倍及以上；稳定=跨度≥5 年且逐年覆盖≥50%、涨落不超 2 倍。"
+          "summary": "2026 年间，识别出 3 个新兴类簇（C01、C02、C03），均为近期新出现的主题方向。"
         }
       },
       "meta": {
-        "request_id": "req_29828806014c499ca5951e6447a26e60",
+        "request_id": "req_97bd410bb0554f71b2b0df84ff6f088e",
         "schema_version": "1.0",
         "model_version": "semantic-toolkit-2026.08",
         "taxonomy_version": null,
         "ontology_version": null,
-        "elapsed_ms": 25589,
-        "created_at": "2026-11-03T12:22:05.932339+08:00",
+        "elapsed_ms": 94744,
+        "created_at": "2026-11-03T13:26:33.842878+08:00",
         "database_dialect": "mysql",
-        "task_id": "tsk_5c20e284d93c4f339a8293be43296bf5",
+        "task_id": "tsk_a85d1a91a3994f87a18b05ee2ab4abcd",
         "input_type": "texts",
         "total": 1,
         "success_count": 1,
         "failed_count": 0,
-        "record_id": "rec_1ee94587f3e54d4b92aca20a90b073e3",
+        "record_id": "rec_52d5d18b7ec94aad95b3e6dcb6f667ad",
         "file_name": null
       }
     }
