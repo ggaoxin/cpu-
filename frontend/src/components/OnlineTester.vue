@@ -162,7 +162,6 @@ type UploadedFileItem = {
   parseError?: string
   // 引用工具：解析文本（/files/parse 对 citation 工具回传），供前端自动提取引用句卡片
   parsedText?: string
-  parsedYear?: string   // 解析抽取的发表年份（深度聚类元数据自动填充用）
   // 网络中断自动重试计数（2026-09-22 用户定稿：断网 10 秒窗口 × 3 次重试）
   netRetries?: number
 }
@@ -1434,18 +1433,16 @@ function uploadAndParse(item: UploadedFileItem, onDone: () => void) {
           item.parsedChars = row.char_count
           item.parsedTitle = row.parsed_title || ''
           item.parsedText = typeof row.text === 'string' ? row.text : ''
-          item.parsedYear = typeof row.parsed_year === 'string' ? row.parsed_year : ''
           // 自动题名：解析出的论文题名覆盖文件名兜底值（用户可再改）
           if (item.parsedTitle && (!item.title || item.title === item.name)) {
             item.title = item.parsedTitle
           }
           item.parseState = 'done'
-          // 深度聚类（2026-10-19 用户定稿）：文献元数据自动解析——编号按序自动
-          // 生成、发表年份从解析文本头部正则抽取（题名此前已自动覆盖），用户
-          // 无需手填；字段保留可编辑用于纠偏
+          // 深度聚类：文献编号按序自动生成；发表时间不再自动抽取（2026-11-03
+          // 用户定稿：全文/解析文本抽到的年份可能是引用文献或基金年度等噪声，
+          // 发表时间只认用户自己填写），题名自动覆盖保留
           if (props.toolId === 'deep-cluster') {
             if (!item.documentId) item.documentId = `DOC${String(uploadedFiles.indexOf(item) + 1).padStart(3, '0')}`
-            if (!item.publicationDate && item.parsedYear) item.publicationDate = item.parsedYear
           }
           // 引用工具单文件（2026-10-18 用户定稿）：解析完成即自动提取引用句
           // 卡片（无需用户点按钮、不展示文献全文），卡片可核对修改后提交
