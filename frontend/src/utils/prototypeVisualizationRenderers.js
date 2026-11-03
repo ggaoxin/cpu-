@@ -430,7 +430,33 @@ function renderDeepCluster(response) {
     const cluster = clusterById[String(clusterId)]
     return cluster?.topic_name || (array(cluster?.representative_terms).slice(0, 2).join(' / ') || '')
   }
-  const trends = `<div class="deep-cluster-trend-insights"><div class="deep-cluster-insight"><b>上升类簇</b><span>${renderTextWithMath(describeCluster(trend.rising_cluster_id))}</span></div><div class="deep-cluster-insight"><b>新兴类簇</b><span>${renderTextWithMath(describeCluster(trend.emerging_cluster_id))}</span></div><div class="deep-cluster-insight"><b>稳定类簇</b><span>${renderTextWithMath(describeCluster(trend.stable_cluster_id))}</span></div></div><div class="deep-cluster-trend-card"><div class="deep-cluster-panel-title">类簇年度分布</div><div class="deep-cluster-year-header"><span>类簇编号 · 主题</span>${array(trend.years).map(year => `<span>${year}</span>`).join('')}</div>${array(trend.series).map((item, index) => `<div class="deep-cluster-trend-row"><div class="deep-cluster-trend-label"><i class="deep-cluster-legend-dot" style="display:inline-block;background:${clusterColors[index % clusterColors.length]};margin-right:6px"></i><b>${escapeHtml(item.cluster_id)}</b><small style="display:block;margin-left:18px;color:#7a889b">${renderTextWithMath(trendTopic(item.cluster_id))}</small></div>${array(item.yearly_counts).map(value => `<div class="deep-cluster-trend-cell"><span>${value}</span><i class="deep-cluster-trend-bar" style="height:${Math.max(3, number(value) / maxTrend * 58)}px;background:${clusterColors[index % clusterColors.length]}"></i></div>`).join('')}</div>`).join('')}</div><div class="deep-cluster-method-note"><b>趋势判断：</b>${renderTextWithMath(trend.summary || '')}</div>`
+  // 趋势类目全部命中制（2026-11-03 用户定稿）：每个簇独立判定打标，洞察卡
+  // 列出各类全部命中簇；复数 ids 优先，旧响应回退单数字段
+  const TREND_BADGES = { emerging: ['✦', '新兴', 'deep-cluster-trend-badge-emerging'], rising: ['↗', '上升', 'deep-cluster-trend-badge-rising'], stable: ['●', '稳定', 'deep-cluster-trend-badge-stable'] }
+  const trendCountOf = clusterId => { const row = array(trend.series).find(r => r.cluster_id === clusterId); return row ? array(row.yearly_counts).reduce((a, b) => a + number(b), 0) : 0 }
+  const idsWithFallback = (plural, singular) => {
+    const list = array(trend[plural]).map(String)
+    return list.length ? list : (trend[singular] ? [String(trend[singular])] : [])
+  }
+  const trendCard = (label, ids, cls) => {
+    const items = ids.map(id => `<span class="deep-cluster-insight-item">${escapeHtml(describeCluster(id))}<small>${trendCountOf(id)} 篇</small></span>`).join('')
+    return `<div class="deep-cluster-insight deep-cluster-insight-${cls}"><b>${label}${ids.length ? ` · ${ids.length} 个` : ''}</b><span>${items || '<i class="deep-cluster-insight-empty">无命中类簇</i>'}</span></div>`
+  }
+  const insightCards = `<div class="deep-cluster-trend-insights">${trendCard('新兴类簇', idsWithFallback('emerging_cluster_ids', 'emerging_cluster_id'), 'emerging')}${trendCard('上升类簇', idsWithFallback('rising_cluster_ids', 'rising_cluster_id'), 'rising')}${trendCard('稳定类簇', idsWithFallback('stable_cluster_ids', 'stable_cluster_id'), 'stable')}</div>`
+  // 类簇年度分布：自适应列宽（2026-11-03 用户定稿）——列数随年份动态生成，
+  // 空间不足整表横向滚动永不折行；≥10 列年份缩写两位并悬停显示完整年份；
+  // 首列（类簇编号·主题）滚动时固定
+  const trendYears = array(trend.years)
+  const yearCount = trendYears.length
+  const abbrevYears = yearCount >= 10
+  const minCell = abbrevYears ? 34 : 44
+  const gridTemplate = `grid-template-columns:200px repeat(${yearCount}, minmax(${minCell}px, 1fr))`
+  const yearLabel = year => abbrevYears ? `<span title="${year}">’${String(year).slice(-2)}</span>` : `<span>${year}</span>`
+  const trendBadge = (item) => {
+    const meta = TREND_BADGES[String(item?.trend)]
+    return meta ? `<i class="deep-cluster-trend-badge ${meta[2]}" title="${meta[1]}类簇">${meta[0]}${meta[1]}</i>` : ''
+  }
+  const trends = `${insightCards}<div class="deep-cluster-trend-card"><div class="deep-cluster-panel-title">类簇年度分布${yearCount > 6 ? '<small class="deep-cluster-scroll-hint">时间跨度较长，可左右滑动查看</small>' : ''}</div><div class="deep-cluster-trend-scroll"><div class="deep-cluster-year-header" style="${gridTemplate}"><span>类簇编号 · 主题</span>${trendYears.map(yearLabel).join('')}</div>${array(trend.series).map((item, index) => `<div class="deep-cluster-trend-row" style="${gridTemplate}"><div class="deep-cluster-trend-label"><i class="deep-cluster-legend-dot" style="display:inline-block;background:${clusterColors[index % clusterColors.length]};margin-right:6px"></i><b>${escapeHtml(item.cluster_id)}</b>${trendBadge(item)}<small style="display:block;margin-left:18px;color:#7a889b">${renderTextWithMath(trendTopic(item.cluster_id))}</small></div>${array(item.yearly_counts).map(value => `<div class="deep-cluster-trend-cell"><span>${value}</span><i class="deep-cluster-trend-bar" style="height:${Math.max(3, number(value) / maxTrend * 58)}px;background:${clusterColors[index % clusterColors.length]}"></i></div>`).join('')}</div>`).join('')}</div></div><div class="deep-cluster-method-note"><b>趋势判断：</b>${renderTextWithMath(trend.summary || '')}</div>`
   return `<div class="deep-cluster-result-root" data-viz-group><div class="deep-cluster-summary-grid"><div class="deep-cluster-summary-card"><div class="deep-cluster-summary-label">输入文献</div><div class="deep-cluster-summary-value">${data.input_summary?.document_count || 0}<span class="deep-cluster-summary-unit">篇</span></div></div><div class="deep-cluster-summary-card"><div class="deep-cluster-summary-label">句子特征</div><div class="deep-cluster-summary-value">${data.input_summary?.parsed_sentence_count || 0}<span class="deep-cluster-summary-unit">句</span></div></div><div class="deep-cluster-summary-card"><div class="deep-cluster-summary-label">形成类簇</div><div class="deep-cluster-summary-value">${quality.cluster_count || 0}<span class="deep-cluster-summary-unit">个</span></div></div><div class="deep-cluster-summary-card"><div class="deep-cluster-summary-label">簇内平均相似度</div><div class="deep-cluster-summary-value">${quality.intra_cluster_similarity != null ? fixed(quality.intra_cluster_similarity, 2) : '—'}</div></div><div class="deep-cluster-summary-card"><div class="deep-cluster-summary-label">聚类维度</div><div class="deep-cluster-summary-value deep-cluster-summary-value-text">${escapeHtml(data.cluster_dimension_name || '—')}</div></div></div><div class="deep-cluster-result-tabs"><button class="deep-cluster-result-tab active" type="button" data-viz-tab="overview">聚类结果与类簇特征统计</button><button class="deep-cluster-result-tab" type="button" data-viz-tab="assignments">文献归属</button><button class="deep-cluster-result-tab" type="button" data-viz-tab="trends">主题趋势分析结果</button></div><div class="deep-cluster-result-panel active" data-viz-panel="overview">${clusterCards}</div><div class="deep-cluster-result-panel" data-viz-panel="assignments" hidden>${assignments}</div><div class="deep-cluster-result-panel" data-viz-panel="trends" hidden>${trends}</div></div>`
 }
 

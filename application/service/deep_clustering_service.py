@@ -97,30 +97,38 @@ def _year_of(value: Any) -> int | None:
     return int(match.group(0)) if match else None
 
 
-def _trend_summary(years: list, series: list, rising: str | None,
-                  emerging: str | None, stable: str | None) -> str:
-    """趋势摘要：解析上升/新兴/稳定类簇并给出可读结论（供决策参考）。"""
+def _trend_summary(years: list, series: list) -> str:
+    """趋势摘要：全部命中制——列出每类所有命中簇与判定口径（供决策参考）。
+
+    口径（2026-11-03 用户定稿，锚点=语料最新年份 Y）：
+    新兴＝首次出现 ≥ Y-2（近三年内才出现）；上升＝有历史且近三年产出
+    ≥ max(2, 2×前三年)；稳定＝跨度≥5 年、逐年覆盖≥50%、近/前三年产出比
+    在 0.5~2 倍。每簇独立判定，按 新兴>上升>稳定 取更具体者。
+    """
     if not years:
         return ""
     span = f"{years[0]}–{years[-1]}" if len(years) > 1 else str(years[0])
     count_of = {r["cluster_id"]: sum(r["yearly_counts"]) for r in series}
+    by_label = {"emerging": [], "rising": [], "stable": []}
+    for row in series:
+        if row.get("trend") in by_label:
+            by_label[row["trend"]].append(row["cluster_id"])
 
-    def describe(cid: str | None, label: str, detail: str) -> str | None:
-        if not cid:
+    def describe(key: str, label: str) -> str | None:
+        ids = by_label[key]
+        if not ids:
             return None
-        n = count_of.get(cid, 0)
-        return f"{label}类簇 {cid}（{detail}，{n} 篇）"
+        listing = "、".join(f"{cid}（{count_of.get(cid, 0)} 篇）" for cid in ids)
+        return f"{label}类簇 {listing}"
 
-    parts = [
-        x for x in (
-            describe(rising, "上升", "近年增长最快"),
-            describe(emerging, "新兴", "新出现的主题方向"),
-            describe(stable, "稳定", "各年份持续产出"),
-        ) if x
-    ]
+    parts = [x for x in (
+        describe("emerging", "新兴"),
+        describe("rising", "上升"),
+        describe("stable", "稳定"),
+    ) if x]
     if not parts:
-        return f"{span} 年间各主题分布均衡，无明显上升或新兴趋势。"
-    return f"{span} 年间趋势：" + "；".join(parts) + "。"
+        return f"{span} 年间各主题分布零散，未达新兴/上升/稳定的判定门槛。"
+    return f"{span} 年间趋势：" + "；".join(parts) + "。判定口径：新兴=近三年（相对语料最新年份）首次出现；上升=近三年产出达前三年 2 倍及以上；稳定=跨度≥5 年且逐年覆盖≥50%、涨落不超 2 倍。"
 
 
 def _trend_analysis(documents: list[dict[str, Any]]) -> dict[str, Any]:
@@ -139,24 +147,59 @@ def _trend_analysis(documents: list[dict[str, Any]]) -> dict[str, Any]:
         "cluster_id": cluster_id,
         "yearly_counts": [counts[year].get(cluster_id, 0) for year in years],
     } for cluster_id in cluster_ids]
-    rising = emerging = stable = None
+    # 每簇独立趋势判定（2026-11-03 用户定稿：全部命中制，不限额）。
+    # 锚点 Y=语料最新年份；R=近三年产出(Y-2..Y)；P=前三年产出(Y-5..Y-3)；
+    # F=首现年；C=首现至 Y 间有产出年份的覆盖率
+    latest = years[-1]
+    year_index = {y: i for i, y in enumerate(years)}
+
+    def _classify(values: list[int]) -> str | None:
+        counts_by_year = {y: values[i] for y, i in year_index.items() if values[i] > 0}
+        if not counts_by_year:
+            return None
+        first_year = min(counts_by_year)
+        recent = sum(n for y, n in counts_by_year.items() if y >= latest - 2)
+        previous = sum(n for y, n in counts_by_year.items() if latest - 5 <= y <= latest - 3)
+        if first_year >= latest - 2:
+            return "emerging"
+        if recent >= max(2, 2 * previous):
+            return "rising"
+        span_years = latest - first_year + 1
+        covered = len(counts_by_year) / span_years
+        if span_years >= 5 and covered >= 0.5 and previous >= 1 and 0.5 <= recent / previous <= 2:
+            return "stable"
+        return None
+
+    trend_counts: dict[str, list[tuple[str, int]]] = {"emerging": [], "rising": [], "stable": []}
     for row in series:
-        values = row["yearly_counts"]
-        midpoint = max(1, len(values) // 2)
-        early, late = sum(values[:midpoint]), sum(values[midpoint:])
-        if emerging is None and early == 0 and late > 0:
-            emerging = row["cluster_id"]
-        elif rising is None and late > early:
-            rising = row["cluster_id"]
-        elif stable is None and late == early and late > 0:
-            stable = row["cluster_id"]
+        label = _classify(row["yearly_counts"])
+        if label:
+            row["trend"] = label
+            trend_counts[label].append((row["cluster_id"], sum(row["yearly_counts"])))
+        else:
+            row["trend"] = None
+
+    def _representative(key: str) -> str | None:
+        hits = trend_counts[key]
+        return max(hits, key=lambda x: (x[1], x[0]))[0] if hits else None
+
     return {
         "years": years,
         "series": series,
-        "rising_cluster_id": rising,
-        "emerging_cluster_id": emerging,
-        "stable_cluster_id": stable,
-        "summary": _trend_summary(years, series, rising, emerging, stable),
+        "trend_criteria": {
+            "anchor_year": latest,
+            "emerging": "首次出现于近三年（锚点年份-2 至今）",
+            "rising": "存在更早历史且近三年产出≥max(2, 前三年产出×2)",
+            "stable": "跨度≥5年、逐年覆盖≥50%且近/前三年产出比在0.5~2倍",
+        },
+        "emerging_cluster_ids": [cid for cid, _ in trend_counts["emerging"]],
+        "rising_cluster_ids": [cid for cid, _ in trend_counts["rising"]],
+        "stable_cluster_ids": [cid for cid, _ in trend_counts["stable"]],
+        # 单数字段保留为各类代表簇（命中中篇数最多），兼容旧消费方
+        "rising_cluster_id": _representative("rising"),
+        "emerging_cluster_id": _representative("emerging"),
+        "stable_cluster_id": _representative("stable"),
+        "summary": _trend_summary(years, series),
     }
 
 
@@ -501,9 +544,11 @@ def execute_deep_clustering(
         # 性好（相同文献=1.0），且是"文档相似度"的忠实口径（聚类仍按语步轴执行，
         # 此处只做展示指标，不影响任何聚类决策）
         axis_texts = []
-        for i in range(len(papers)):
-            _t = str(papers[i].get("text") or "")[:2000] or str(papers[i].get("title") or f"DOC{i + 1}")
-            v = _np.asarray(encoder.encode([_t]))[0]
+        # 批量编码（2026-11-03 性能优化：此前逐篇单条 encode，CPU 上 m3 逐条往返
+        # 开销大；一次批量调用结果向量不变）
+        _texts = [str(papers[i].get("text") or "")[:2000] or str(papers[i].get("title") or f"DOC{i + 1}")
+                  for i in range(len(papers))]
+        for v in _np.asarray(encoder.encode(_texts)):
             axis_texts.append(v / max(float(_np.linalg.norm(v)), 1e-9))
         matrix = _np.asarray(axis_texts)
         centers = {}

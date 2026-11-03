@@ -637,7 +637,7 @@
             "start": 119,
             "end": 165,
             "label": "技术实施方案",
-            "text": "研究内容包括实体识别、关系抽取与跨模态对齐三个部分；技术路线为预训练模型微调结合弱监督学习。"
+            "text": "研究内容包括实体识别、关系抽取与跨模态对齐三个部分，技术路线为预训练模型微调结合弱监督学习。"
           },
           {
             "source_sections": [
@@ -647,7 +647,7 @@
             "start": 192,
             "end": 228,
             "label": "预期成果",
-            "text": "预期形成发明专利三项、学术论文五篇及原型系统一套；考核指标为实体对齐准确率不低于百分之八十五。"
+            "text": "预期形成发明专利三项、学术论文五篇及原型系统一套，考核指标为实体对齐准确率不低于百分之八十五。"
           },
           {
             "source_sections": [],
@@ -659,28 +659,28 @@
           }
         ],
         "document": {
-          "title": "一、立项依据",
+          "title": "一、立项依据 知识图谱构建在低资源场景面临语料稀缺与模态对齐困难的双重挑战，现有方法依赖大规模标注数据，难以迁移到垂直领域，亟需面向低资源场景的新方法。 二、研",
           "language": "zh",
-          "abstract": "一、立项依据\n知识图谱构建在低资源场景面临语料稀缺与模态对齐困难的双重挑战，现有方法依赖大规模标注数据，难以迁移到垂直领域，亟需面向低资源场景的新方法。\n二、研究目标与研究内容\n本项目研究跨模态语义对齐与远程监督相结合的知识图谱构建方法，研究内容包括实体识别、关系抽取与跨模态对齐三个部分，技术路线为预训练模型微调结合弱监督学习。\n三、预期成果与考核指标\n预期成果为形成发明专利三项、学术论文五篇及原型系统一套，考核指标为实体对齐准确率不低于百分之八十五。"
+          "abstract": "一、立项依据 知识图谱构建在低资源场景面临语料稀缺与模态对齐困难的双重挑战，现有方法依赖大规模标注数据，难以迁移到垂直领域，亟需面向低资源场景的新方法。 二、研究目标与研究内容 本项目研究跨模态语义对齐与远程监督相结合的知识图谱构建方法，研究内容包括实体识别、关系抽取与跨模态对齐三个部分，技术路线为预训练模型微调结合弱监督学习。 三、预期成果与考核指标 预期成果为形成发明专利三项、学术论文五篇及原型系统一套，考核指标为实体对齐准确率不低于百分之八十五。"
         },
         "document_title": "面向低资源场景的跨模态知识图谱构建关键技术",
         "input_type": "text"
       },
       "meta": {
-        "request_id": "req_0f0799f400dc4ea09c6c14f47bde978e",
+        "request_id": "req_a57f94547f7e4c0699c9f97086ce6c3b",
         "schema_version": "1.0",
         "model_version": "semantic-toolkit-2026.08",
         "taxonomy_version": null,
         "ontology_version": null,
-        "elapsed_ms": 5612,
-        "created_at": "2026-10-16T18:51:21.320126+08:00",
+        "elapsed_ms": 47951,
+        "created_at": "2026-11-03T12:02:06.261088+08:00",
         "database_dialect": "mysql",
-        "task_id": "tsk_8aebdadbcbf846ee8cec34e4e0194f11",
+        "task_id": "tsk_4cf6e6a8abcb4249a2fe33e6d6c42721",
         "input_type": "text",
         "total": 1,
         "success_count": 1,
         "failed_count": 0,
-        "record_id": "rec_a6c18450a0e84da28ff0b66e3acbc2cf",
+        "record_id": "rec_898cd6321ac94e6c8a73a81bcd95f862",
         "file_name": null
       }
     },
@@ -688,7 +688,7 @@
       "code": 0,
       "message": "success",
       "data": {
-        "batch_id": "tsk_72f7b7a832284ac1bc073b68a5a125a2",
+        "batch_id": "tsk_f077013bc0ee473ca85d257961f54aa6",
         "input_type": "texts",
         "total": 2,
         "success_count": 2,
@@ -700,7 +700,7 @@
             "file_name": null,
             "status": "succeeded",
             "code": 0,
-            "record_id": "rec_cf9426abc439401e9cd05322dc869c33",
+            "record_id": "rec_0fb786f0801f4a6784020e2e58761c02",
             "result": {
               "moves": [
                 {
@@ -748,16 +748,16 @@
                     "2．研究意义"
                   ],
                   "confidence": 1,
-                  "start": 126,
+                  "start": 127,
                   "end": 178,
                   "label": "应用价值",
-                  "text": "本项目成果可服务于智能制造与科技情报分析，为行业知识服务平台落地提供技术支撑，推动知识工程迈向自动构建。"
+                  "text": "项目成果可服务于智能制造与科技情报分析，为行业知识服务平台落地提供技术支撑，推动知识工程迈向自动构建。"
                 }
               ],
               "document": {
-                "title": "面向低资源场景的跨模态知识图谱构建关键技术研究",
+                "title": "面向低资源场景的跨模态知识图谱构建关键技术研究。 （一）立项依据： 1．研究背景与动机 多模态数据规模持续增长，跨模态知识图谱构建面临语义歧义与数据稀疏的双重挑",
                 "language": "zh",
-                "abstract": "国家自然科学基金项目申请书。项目名称：面向低资源场景的跨模态知识图谱构建关键技术研究。\n（一）立项依据：\n1．研究背景与动机\n多模态数据规模持续增长，跨模态知识图谱构建面临语义歧义与数据稀疏的双重挑战，现有方法难以支撑行业知识服务需求。\n2．研究意义\n本项目成果可服务于智能制造与科技情报分析，为行业知识服务平台落地提供技术支撑，推动知识工程迈向自动构建。\n（二）研究内容：\n3．研究目标\n构建覆盖典型领域的跨模态知识图谱，实体对齐准确率提升15%以上，形成可复用的构建方法体系。\n4．研究方案\n采用预训练语言模型与图神经网络混合架构，分阶段引入领域自适应与提示学习策略。\n6．预期研究成果\n发表高水平论文8篇，申请发明专利3项，形成可部署的开源系统一套。"
+                "abstract": "国家自然科学基金项目申请书。项目名称：面向低资源场景的跨模态知识图谱构建关键技术研究。 （一）立项依据： 1．研究背景与动机 多模态数据规模持续增长，跨模态知识图谱构建面临语义歧义与数据稀疏的双重挑战，现有方法难以支撑行业知识服务需求。 2．研究意义 本项目成果可服务于智能制造与科技情报分析，为行业知识服务平台落地提供技术支撑，推动知识工程迈向自动构建。 （二）研究内容： 3．研究目标 构建覆盖典型领域的跨模态知识图谱，实体对齐准确率提升15%以上，形成可复用的构建方法体系。 4．研究方案 采用预训练语言模型与图神经网络混合架构，分阶段引入领域自适应与提示学习策略。 6．预期研究成果 发表高水平论文8篇，申请发明专利3项，形成可部署的开源系统一套。"
               },
               "input_type": "texts"
             }
@@ -767,7 +767,7 @@
             "file_name": null,
             "status": "succeeded",
             "code": 0,
-            "record_id": "rec_d29ba2b2c4b24796a10aff9dda565057",
+            "record_id": "rec_36037dc9be0d4cc4978295412b7be5ba",
             "result": {
               "moves": [
                 {
@@ -822,9 +822,9 @@
                 }
               ],
               "document": {
-                "title": "面向高噪声场景的多模态知识图谱构建关键技术研究",
+                "title": "面向高噪声场景的多模态知识图谱构建关键技术研究。 （一）立项依据： 1．研究背景与动机 多模态数据规模持续增长，多模态知识图谱构建面临语义歧义与数据稀疏的双重挑",
                 "language": "zh",
-                "abstract": "国家自然科学基金项目申请书。项目名称：面向高噪声场景的多模态知识图谱构建关键技术研究。\n（一）立项依据：\n1．研究背景与动机\n多模态数据规模持续增长，多模态知识图谱构建面临语义歧义与数据稀疏的双重挑战，现有方法难以支撑行业知识服务需求。\n2．研究意义\n本项目成果可服务于智能制造与科技情报分析，为行业知识服务平台落地提供技术支撑，推动知识工程迈向自动构建。\n（二）研究内容：\n3．研究目标\n构建覆盖典型领域的多模态知识图谱，实体对齐准确率提升15%以上，形成可复用的构建方法体系。\n4．研究方案\n采用预训练语言模型与图神经网络混合架构，分阶段引入领域自适应与提示学习策略。\n6．预期研究成果\n发表高水平论文8篇，申请发明专利3项，形成可部署的开源系统一套。"
+                "abstract": "国家自然科学基金项目申请书。项目名称：面向高噪声场景的多模态知识图谱构建关键技术研究。 （一）立项依据： 1．研究背景与动机 多模态数据规模持续增长，多模态知识图谱构建面临语义歧义与数据稀疏的双重挑战，现有方法难以支撑行业知识服务需求。 2．研究意义 本项目成果可服务于智能制造与科技情报分析，为行业知识服务平台落地提供技术支撑，推动知识工程迈向自动构建。 （二）研究内容： 3．研究目标 构建覆盖典型领域的多模态知识图谱，实体对齐准确率提升15%以上，形成可复用的构建方法体系。 4．研究方案 采用预训练语言模型与图神经网络混合架构，分阶段引入领域自适应与提示学习策略。 6．预期研究成果 发表高水平论文8篇，申请发明专利3项，形成可部署的开源系统一套。"
               },
               "input_type": "texts"
             }
@@ -832,15 +832,15 @@
         ]
       },
       "meta": {
-        "request_id": "req_0e66691d14c844d5b64b7e5a550d3e07",
+        "request_id": "req_3982d93fbc9e469b826889421a96262b",
         "schema_version": "1.0",
         "model_version": "semantic-toolkit-2026.08",
         "taxonomy_version": null,
         "ontology_version": null,
-        "elapsed_ms": 5884,
-        "created_at": "2026-10-16T18:43:34.441934+08:00",
+        "elapsed_ms": 6916,
+        "created_at": "2026-11-03T12:02:13.207452+08:00",
         "database_dialect": "mysql",
-        "task_id": "tsk_72f7b7a832284ac1bc073b68a5a125a2",
+        "task_id": "tsk_f077013bc0ee473ca85d257961f54aa6",
         "input_type": "texts",
         "total": 2,
         "success_count": 2,
@@ -8885,27 +8885,27 @@
       "data": {
         "input_summary": {
           "document_count": 5,
-          "parsed_sentence_count": 13
+          "parsed_sentence_count": 12
         },
         "cluster_dimension_name": "技术路线聚类",
         "clustering_quality": {
           "cluster_count": 5,
           "intra_cluster_similarity": null,
           "algorithm_requested": "move_aligned",
-          "algorithm_used": "llm_move_aligned_grouping"
+          "algorithm_used": "task_anchored_grouping_v1"
         },
         "clusters": [
           {
             "cluster_id": "C01",
             "topic_id": "C01",
-            "topic_name": "RL视觉语言模型",
+            "topic_name": "多组策略优化",
             "size": 1,
             "doc_indices": [
               0
             ],
             "representative_terms": [
-              "reinforcement-learning vision-language models",
-              "Multi-Group Policy"
+              "视觉推理模型强化学习",
+              "多组策略优化"
             ],
             "members": [
               {
@@ -8929,16 +8929,14 @@
           {
             "cluster_id": "C02",
             "topic_id": "C02",
-            "topic_name": "扩散模型加速",
+            "topic_name": "时间步感知块掩码缓存",
             "size": 1,
             "doc_indices": [
               1
             ],
             "representative_terms": [
-              "timestep-specific block masks",
-              "diffusion models",
-              "cached features",
-              "timestep-aware"
+              "扩散模型高效推理",
+              "时间步感知块掩码缓存"
             ],
             "members": [
               {
@@ -8962,16 +8960,14 @@
           {
             "cluster_id": "C03",
             "topic_id": "C03",
-            "topic_name": "视频token预算",
+            "topic_name": "层级视觉预算分配",
             "size": 1,
             "doc_indices": [
               2
             ],
             "representative_terms": [
-              "TRIAGE",
-              "hierarchical resource allocation",
-              "keyframes",
-              "core and context tokens"
+              "视频高效推理",
+              "层级视觉预算分配"
             ],
             "members": [
               {
@@ -8995,15 +8991,14 @@
           {
             "cluster_id": "C04",
             "topic_id": "C04",
-            "topic_name": "时序LLM推理",
+            "topic_name": "推理时多步条件推理",
             "size": 1,
             "doc_indices": [
               3
             ],
             "representative_terms": [
-              "TimeReasoner",
-              "conditional reasoning",
-              "time-series forecasting"
+              "时间序列预测",
+              "推理时多步条件推理"
             ],
             "members": [
               {
@@ -9027,15 +9022,14 @@
           {
             "cluster_id": "C05",
             "topic_id": "C05",
-            "topic_name": "前景引导预训练",
+            "topic_name": "前景视图引导预训练",
             "size": 1,
             "doc_indices": [
               4
             ],
             "representative_terms": [
-              "FVG-PT",
-              "Foreground views",
-              "visual pre-training"
+              "视觉预训练",
+              "前景视图引导预训练"
             ],
             "members": [
               {
@@ -9065,7 +9059,7 @@
             "publication_year": 2026,
             "cluster_id": "C01",
             "similarity_to_centroid": 1,
-            "key_evidence": "The study compares reinforcement-learning vision-language models with their base models, and proposes Multi-Group Policy Optimization to encourage divergent reasoning across multiple solutions."
+            "key_evidence": "The study compares reinforcement-learning vision-language models with their base models"
           },
           {
             "document_id": "DOC-EN-024",
@@ -9109,36 +9103,36 @@
             "document_id": "DOC-EN-018",
             "title": "All Roads Lead to Rome: Incentivizing Divergent Thinking in Vision-Language Models",
             "cluster_id": "C01",
-            "x": 59.541,
-            "y": 50.65
+            "x": 12.964,
+            "y": 16.683
           },
           {
             "document_id": "DOC-EN-024",
             "title": "Timestep-Aware Block Masking for Efficient Diffusion Model Inference",
             "cluster_id": "C02",
-            "x": 5,
+            "x": 93.015,
             "y": 5
           },
           {
             "document_id": "DOC-EN-028",
             "title": "TRIAGE: Hierarchical Visual Budgeting for Efficient Video Reasoning",
             "cluster_id": "C03",
-            "x": 59.473,
-            "y": 56.706
+            "x": 48.154,
+            "y": 86.421
           },
           {
             "document_id": "DOC-EN-026",
             "title": "Can Slow-Thinking LLMs Reason Over Time?",
             "cluster_id": "C04",
-            "x": 16.683,
+            "x": 95,
             "y": 95
           },
           {
             "document_id": "DOC-EN-030",
             "title": "FVG-PT: Adaptive Foreground View-Guided Pre-Training",
             "cluster_id": "C05",
-            "x": 95,
-            "y": 37.119
+            "x": 5,
+            "y": 77.351
           }
         ],
         "theme_trend_analysis": {
@@ -9150,42 +9144,58 @@
               "cluster_id": "C01",
               "yearly_counts": [
                 1
-              ]
+              ],
+              "trend": "emerging"
             },
             {
               "cluster_id": "C02",
               "yearly_counts": [
                 1
-              ]
+              ],
+              "trend": "emerging"
             },
             {
               "cluster_id": "C03",
               "yearly_counts": [
                 1
-              ]
+              ],
+              "trend": "emerging"
             }
           ],
+          "trend_criteria": {
+            "anchor_year": 2026,
+            "emerging": "首次出现于近三年（锚点年份-2 至今）",
+            "rising": "存在更早历史且近三年产出≥max(2, 前三年产出×2)",
+            "stable": "跨度≥5年、逐年覆盖≥50%且近/前三年产出比在0.5~2倍"
+          },
+          "emerging_cluster_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "rising_cluster_ids": [],
+          "stable_cluster_ids": [],
           "rising_cluster_id": null,
-          "emerging_cluster_id": null,
+          "emerging_cluster_id": "C03",
           "stable_cluster_id": null,
-          "summary": "2026 年间各主题分布均衡，无明显上升或新兴趋势。"
+          "summary": "2026 年间趋势：新兴类簇 C01（1 篇）、C02（1 篇）、C03（1 篇）。判定口径：新兴=近三年（相对语料最新年份）首次出现；上升=近三年产出达前三年 2 倍及以上；稳定=跨度≥5 年且逐年覆盖≥50%、涨落不超 2 倍。"
         }
       },
       "meta": {
-        "request_id": "req_a51aab94b2604a6cbe9017b53429fb90",
+        "request_id": "req_29828806014c499ca5951e6447a26e60",
         "schema_version": "1.0",
         "model_version": "semantic-toolkit-2026.08",
         "taxonomy_version": null,
         "ontology_version": null,
-        "elapsed_ms": 26023,
-        "created_at": "2026-10-16T18:46:53.587034+08:00",
+        "elapsed_ms": 25589,
+        "created_at": "2026-11-03T12:22:05.932339+08:00",
         "database_dialect": "mysql",
-        "task_id": "tsk_d14d2f67ffd347b899414a4cc1b378fb",
+        "task_id": "tsk_5c20e284d93c4f339a8293be43296bf5",
         "input_type": "texts",
         "total": 1,
         "success_count": 1,
         "failed_count": 0,
-        "record_id": "rec_90882583968e487ab27aebe42a2fa807",
+        "record_id": "rec_1ee94587f3e54d4b92aca20a90b073e3",
         "file_name": null
       }
     }

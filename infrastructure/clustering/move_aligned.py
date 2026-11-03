@@ -1008,12 +1008,24 @@ def _task_semantic_groups(papers, task_rows, encoder, glm_client, floor: float,
                            if axis == "technical"
                            else (mv.get("研究背景") or [])[:2] + (mv.get("研究目的") or [])[:1])
 
+    # 逐对裁决（2026-11-03 性能优化：候选对彼此独立，并发 6 路与语步提取/任务
+    # 提取/簇命名同口径；pool.map 保序回填 → same_pairs 插入顺序与串行版一致，
+    # 并查集合并结果不变。此前逐对串行，20 篇 40+ 对 × 2-4s/对 = 数分钟纯等待）
+    def _judge(pair):
+        i, j = pair
+        return _llm_same_task(glm_client, task_rows[i], task_rows[j],
+                              _display_title(papers[i]), _display_title(papers[j]),
+                              sents_i=axis_sents[i] if i < len(axis_sents) else None,
+                              sents_j=axis_sents[j] if j < len(axis_sents) else None)
+
+    if cand:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=min(MAX_WORKERS, len(cand))) as pool:
+            verdicts = list(pool.map(_judge, cand))
+    else:
+        verdicts = []
     same_pairs: Dict[tuple, str] = {}
-    for i, j in cand:
-        verdict = _llm_same_task(glm_client, task_rows[i], task_rows[j],
-                                 _display_title(papers[i]), _display_title(papers[j]),
-                                 sents_i=axis_sents[i] if i < len(axis_sents) else None,
-                                 sents_j=axis_sents[j] if j < len(axis_sents) else None)
+    for (i, j), verdict in zip(cand, verdicts):
         # 裁决留痕（uvicorn 日志可查逐对判定，翻转/失败可追溯）
         print(f"[task-adjudicate] DOC{i + 1}×DOC{j + 1} cos={float(sims[i][j]):.2f}"
               f" → {verdict.get('same') or 'FAIL'} {verdict.get('task', '')}", flush=True)
