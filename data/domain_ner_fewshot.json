@@ -1,0 +1,278 @@
+[
+ {
+  "domain": "医学",
+  "text": "Clinical outcomes in ischemic stroke were measured after administration of insulin and follow-up blood pressure monitoring . Study cohort 2366 was included .",
+  "entities": [
+   {
+    "text": "ischemic stroke",
+    "type": "DISEASE"
+   },
+   {
+    "text": "insulin",
+    "type": "DRUG"
+   },
+   {
+    "text": "blood pressure monitoring",
+    "type": "TEST"
+   }
+  ]
+ },
+ {
+  "domain": "医学",
+  "text": "Researchers used magnetic resonance imaging to evaluate changes in left ventricle following radiation therapy . Study cohort 3820 was included .",
+  "entities": [
+   {
+    "text": "magnetic resonance imaging",
+    "type": "TEST"
+   },
+   {
+    "text": "left ventricle",
+    "type": "ANATOMY"
+   },
+   {
+    "text": "radiation therapy",
+    "type": "TREATMENT"
+   }
+  ]
+ },
+ {
+  "domain": "医学",
+  "text": "Combination of prednisone and dialysis was assessed for management of hypertension . Study cohort 3107 was included .",
+  "entities": [
+   {
+    "text": "prednisone",
+    "type": "DRUG"
+   },
+   {
+    "text": "dialysis",
+    "type": "TREATMENT"
+   },
+   {
+    "text": "hypertension",
+    "type": "DISEASE"
+   }
+  ]
+ },
+ {
+  "domain": "医学",
+  "text": "Researchers used blood pressure monitoring to evaluate changes in renal cortex following dialysis . Study cohort 1436 was included .",
+  "entities": [
+   {
+    "text": "blood pressure monitoring",
+    "type": "TEST"
+   },
+   {
+    "text": "renal cortex",
+    "type": "ANATOMY"
+   },
+   {
+    "text": "dialysis",
+    "type": "TREATMENT"
+   }
+  ]
+ },
+ {
+  "domain": "医学",
+  "text": "Combination of warfarin and radiation therapy was assessed for management of heart failure . Study cohort 2563 was included .",
+  "entities": [
+   {
+    "text": "warfarin",
+    "type": "DRUG"
+   },
+   {
+    "text": "radiation therapy",
+    "type": "TREATMENT"
+   },
+   {
+    "text": "heart failure",
+    "type": "DISEASE"
+   }
+  ]
+ },
+ {
+  "domain": "医学",
+  "text": "A randomized protocol compared metformin with standard radiation therapy for lung cancer . Study cohort 4621 was included .",
+  "entities": [
+   {
+    "text": "metformin",
+    "type": "DRUG"
+   },
+   {
+    "text": "radiation therapy",
+    "type": "TREATMENT"
+   },
+   {
+    "text": "lung cancer",
+    "type": "DISEASE"
+   }
+  ]
+ },
+ {
+  "domain": "化学",
+  "text": "liquid chromatography confirmed the formation of zinc oxide on the surface of copper foil . Experiment batch 7181 was recorded .",
+  "entities": [
+   {
+    "text": "liquid chromatography",
+    "type": "METHOD"
+   },
+   {
+    "text": "zinc oxide",
+    "type": "COMPOUND"
+   },
+   {
+    "text": "copper foil",
+    "type": "MATERIAL"
+   }
+  ]
+ },
+ {
+  "domain": "化学",
+  "text": "The stability of urea in the presence of phosphoric acid was evaluated during the nitration reaction . Experiment batch 3358 was recorded .",
+  "entities": [
+   {
+    "text": "urea",
+    "type": "COMPOUND"
+   },
+   {
+    "text": "phosphoric acid",
+    "type": "CHEMICAL"
+   },
+   {
+    "text": "nitration reaction",
+    "type": "REACTION"
+   }
+  ]
+ },
+ {
+  "domain": "化学",
+  "text": "A mixture containing acetic acid and ethyl acetate was characterized using nuclear magnetic resonance spectroscopy . Experiment batch 5603 was recorded .",
+  "entities": [
+   {
+    "text": "acetic acid",
+    "type": "CHEMICAL"
+   },
+   {
+    "text": "ethyl acetate",
+    "type": "COMPOUND"
+   },
+   {
+    "text": "nuclear magnetic resonance spectroscopy",
+    "type": "METHOD"
+   }
+  ]
+ },
+ {
+  "domain": "化学",
+  "text": "A mixture containing benzene and titanium dioxide was characterized using sol-gel synthesis . Experiment batch 6867 was recorded .",
+  "entities": [
+   {
+    "text": "benzene",
+    "type": "CHEMICAL"
+   },
+   {
+    "text": "titanium dioxide",
+    "type": "COMPOUND"
+   },
+   {
+    "text": "sol-gel synthesis",
+    "type": "METHOD"
+   }
+  ]
+ },
+ {
+  "domain": "化学",
+  "text": "A mixture containing magnesium sulfate and lithium carbonate was characterized using X-ray diffraction . Experiment batch 2155 was recorded .",
+  "entities": [
+   {
+    "text": "magnesium sulfate",
+    "type": "CHEMICAL"
+   },
+   {
+    "text": "lithium carbonate",
+    "type": "COMPOUND"
+   },
+   {
+    "text": "X-ray diffraction",
+    "type": "METHOD"
+   }
+  ]
+ },
+ {
+  "domain": "化学",
+  "text": "The stability of urea in the presence of phosphoric acid was evaluated during the nitration reaction . Experiment batch 5518 was recorded .",
+  "entities": [
+   {
+    "text": "urea",
+    "type": "COMPOUND"
+   },
+   {
+    "text": "phosphoric acid",
+    "type": "CHEMICAL"
+   },
+   {
+    "text": "nitration reaction",
+    "type": "REACTION"
+   }
+  ]
+ },
+ {
+  "domain": "物理",
+  "text": "The calculation is based on Ising model and compared with experimental observations . Physics record 5499 belongs to the Statistical Physics category .",
+  "entities": [
+   {
+    "text": "Ising model",
+    "type": "PHYSICS_CONCEPT"
+   }
+  ]
+ },
+ {
+  "domain": "物理",
+  "text": "The predicted dependence follows from nuclear fusion and agrees with the reported measurements . Physics record 5597 belongs to the Nuclear Phenomena category .",
+  "entities": [
+   {
+    "text": "nuclear fusion",
+    "type": "PHYSICS_CONCEPT"
+   }
+  ]
+ },
+ {
+  "domain": "物理",
+  "text": "The calculation is based on supernova explosion and compared with experimental observations . Physics record 3491 belongs to the Astrophysical Phenomena category .",
+  "entities": [
+   {
+    "text": "supernova explosion",
+    "type": "PHYSICS_CONCEPT"
+   }
+  ]
+ },
+ {
+  "domain": "物理",
+  "text": "The predicted dependence follows from molecular dynamics simulation and agrees with the reported measurements . Physics record 6637 belongs to the Computational Physics category .",
+  "entities": [
+   {
+    "text": "molecular dynamics simulation",
+    "type": "PHYSICS_CONCEPT"
+   }
+  ]
+ },
+ {
+  "domain": "物理",
+  "text": "The predicted dependence follows from gravitational lensing and agrees with the reported measurements . Physics record 6141 belongs to the Gravitation category .",
+  "entities": [
+   {
+    "text": "gravitational lensing",
+    "type": "PHYSICS_CONCEPT"
+   }
+  ]
+ },
+ {
+  "domain": "物理",
+  "text": "The predicted dependence follows from variational optimization and agrees with the reported measurements . Physics record 6517 belongs to the Optimization category .",
+  "entities": [
+   {
+    "text": "variational optimization",
+    "type": "PHYSICS_CONCEPT"
+   }
+  ]
+ }
+]

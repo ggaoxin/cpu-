@@ -211,12 +211,17 @@ def _is_table_or_formula_line(sent: str) -> bool:
 
 
 def _extract_citation_contexts(document_text: str, limit: int = 30) -> list:
-    """定位带引用标记([1]/[2,3]/[4-6])的句子,取前句/后句为上下文。
+    """定位引用句并取前句/后句为上下文（2026-11-04 评测驱动重构）。
 
-    句内含多个文献编号时按编号拆分为多条:citation_sentence 保留完整原句,
-    citation_marker 绑定单个编号,citation_sub_span 为该编号所在子句的局部
-    语义片段(意图判定优先采用)。返回 contexts 条目(含 previous_context/
-    next_context 与内部 _marker_nums),超出 limit 截断。
+    识别三类标记形态（SciCite 8190 条语料评测：旧版只认方括号、覆盖 34.6%）：
+    ① 方括号 [1]/[2,3]/[4-6]；② 作者-年份 Hickey et al. (2012)/Smith and
+    Jones (2012)；③ 句中圆括号数字 (12)/(12,15)——不取句首组（公式引用
+    "(66) we can get…" 常见于句首）。表格/公式行仍按既有信号过滤。
+
+    判定粒度：整句一条卡片（citation_marker=首个标记，citation_markers=全部，
+    _marker_nums=全部编号供元数据匹配）——旧版按编号拆多条+citation_sub_span
+    局部片段判定，实测比整句判定低 15-25 个百分点（多标记句 38.5% vs 整句
+    卡片路径 83.3%），与用户手工卡片口径对齐后统一走整句。
     """
     # 全角标记归一化（与引擎 _extract_citations 同款）：中文期刊 PDF 常用
     # ［1］/［1-2］/［1，2］，_CITE_MARKER_RE 只认半角（LSTM.pdf 34 处全角
@@ -224,30 +229,63 @@ def _extract_citation_contexts(document_text: str, limit: int = 30) -> list:
     document_text = re.sub(
         r"［\s*([0-9\-–,，\s]+?)\s*］",
         lambda m: "[" + m.group(1).replace("，", ",") + "]", document_text)
+    # 作者-年份引用（大小写姓首字母大写，允许 and/& 连接、et al.；年份带括号）
+    author_year_re = re.compile(
+        r"\b[A-Z][a-z]+(?:[-'’][A-Z][a-z]+)?"
+        r"(?:\s+(?:and|&)\s+[A-Z][a-z]+|\s+et\s+al\.?)?"
+        r"\s*\(\s*(?:19|20)\d{2}[a-z]?\s*,?\s*\)")
+    # 括号式作者-年份引注组（SciCite 语料主流形态，100/102 未命中属此类）：
+    # "(Korobova et al., 2013)"、"(Simon, 1996)"、"(Tuxen et al, 1995; Meyer
+    # and Rustin, 2000)"——整组在圆括号内、以大写姓名开头、以年份结尾。
+    # 要求以大写字母开头排除 "(established in 2012)" 类叙述括号
+    paren_author_year_re = re.compile(
+        r"\(\s*[A-Z][A-Za-z'’\-]+[^()]{0,80}?\b(?:19|20)\d{2}[a-z]?\s*\)")
+    # 中文姓名-年份（与 cr_intent.yaml 引用模式同款）：张三(2020)、李四等(2019)、
+    # 王五（2021）——中文文献常用形态
+    zh_author_year_re = re.compile(
+        r"[一-鿿]{2,6}等?\s*[\(（]\s*(?:19|20)\d{2}\s*[\)）]")
+    # 句中圆括号数字组（非 4 位年份；限制句中位置防公式引用误报）
+    paren_num_re = re.compile(r"\(\s*\d{1,3}(?:\s*[,;，]\s*\d{1,3})*\s*\)")
     sentences = _split_sentences_for_citation(document_text)
     contexts = []
     for i, sent in enumerate(sentences):
-        markers = _CITE_MARKER_RE.findall(sent)
-        if not markers:
-            continue
         if _is_table_or_formula_line(sent):
             continue  # 表格体/公式残留行不作为引用句（2026-10-20 socialbot 实测）
-        nums = []
-        for m in markers:
-            nums.extend(_marker_nums_of(m))
-        if not nums:
-            continue
-        for num in sorted(set(nums)):
-            contexts.append({
-                "citation_sentence": sent,
-                "previous_context": sentences[i - 1] if i > 0 else "（文档开头，无上文）",
-                "next_context": sentences[i + 1] if i + 1 < len(sentences) else "（文档结尾，无下文）",
-                "citation_marker": f"[{num}]",
-                "citation_sub_span": _citation_sub_span(sent, num),
-                "_marker_nums": [num],
-            })
-            if len(contexts) >= limit:
-                return contexts
+        markers = _CITE_MARKER_RE.findall(sent)
+        if markers:
+            nums = []
+            for m in markers:
+                nums.extend(_marker_nums_of(m))
+            if not nums:
+                continue
+            # findall 返回组内容（"1,2-3"），补回方括号作标记文本
+            marker_text = f"[{markers[0]}]"
+            citation_markers = [f"[{m}]" for m in markers]
+        else:
+            ay = (author_year_re.search(sent) or paren_author_year_re.search(sent)
+                  or zh_author_year_re.search(sent))
+            if ay:
+                nums, marker_text, citation_markers = [], ay.group(), [ay.group()]
+            else:
+                pn = None
+                for m in paren_num_re.finditer(sent):
+                    if m.start() >= 25:   # 句首圆括号数字多为公式/图表引用，不判
+                        pn = m
+                        break
+                if not pn:
+                    continue
+                nums, marker_text, citation_markers = [], pn.group(), [pn.group()]
+        contexts.append({
+            "citation_sentence": sent,
+            "previous_context": sentences[i - 1] if i > 0 else "（文档开头，无上文）",
+            "next_context": sentences[i + 1] if i + 1 < len(sentences) else "（文档结尾，无下文）",
+            "citation_marker": marker_text,
+            "citation_markers": citation_markers,
+            "_marker_nums": sorted(set(nums)),
+            "_card_index": len(contexts) + 1,
+        })
+        if len(contexts) >= limit:
+            return contexts
     return contexts
 
 
@@ -1220,6 +1258,7 @@ class ToolIntegrationService:
                     # 为 None，由其后的 file_name 兜底）。放在 item_metadata 前，
                     # 让用户显式提供的 document_metadata.title 优先于文件提取值。
                     "title": value.get("title"),
+                    **({"_moves": value["_moves"]} if value.get("_moves") else {}),
                     **item_metadata,
                 }))
                 if _citation_cards_by_file and index < len(_citation_cards_by_file) \
@@ -1357,6 +1396,7 @@ class ToolIntegrationService:
                             "document_id": item.source.get("document_id") or item.input_id,
                             "text": item.text,
                             "title": item.source.get("title") or "",
+                            **({"_moves": item.source["_moves"]} if item.source.get("_moves") else {}),
                             "publication_date": item.source.get("publication_date"),
                             "authors": item.source.get("authors") or [],
                             "source": item.source.get("source") or "",
@@ -1906,8 +1946,9 @@ class ToolIntegrationService:
                        if isinstance(m, dict) and m.get("reference_index")}
         for ctx in contexts:
             nums = ctx.pop("_marker_nums", None) or []
-            ctx["citation_id"] = f"cite-{nums[0]}" if nums else "cite-0"
-            ctx["matched_reference"] = nums[0] in ref_indexes if ref_indexes else None
+            seq = ctx.pop("_card_index", None)
+            ctx["citation_id"] = f"cite-{nums[0]}" if nums else f"cite-{seq or 0}"
+            ctx["matched_reference"] = any(n in ref_indexes for n in nums) if ref_indexes else None
         payload["citation_sentence_and_context"] = contexts
 
     def _payload_error(self, contract: ToolContract, payload: Dict[str, Any]) -> Optional[str]:

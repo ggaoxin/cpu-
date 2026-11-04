@@ -267,6 +267,10 @@ def sanitize_dependency_arcs(arcs) -> list:
     return out
 
 
+# 训练集向量进程级缓存（键=资源路径+条数+首句，资源变更自动失效）
+_CITATION_TRAINING_VEC_CACHE: dict = {}
+_load_citation_training_pairs_last_path = ""
+
 class SemanticApplicationService(ISemanticService):
     """语义计算应用服务（单例，由控制器共享）。"""
 
@@ -2277,14 +2281,17 @@ class SemanticApplicationService(ISemanticService):
             if current is None:
                 base_weight = _number_or_default(dictionary_term.get("weight"), 0.5)
                 new_weight = min(1.0, base_weight + boost)
-                current = {"keyword": term, "weight": new_weight, "weight_change": round(new_weight - base_weight, 4)}
+                # weight_change = 词典配置的完整增量（2026-11-04 用户定稿：即使置信度
+                # 已封顶 1.0，也如实显示词典加了 0.4，而不是封顶残余 0.07）
+                current = {"keyword": term, "weight": new_weight, "weight_change": round(boost, 4)}
                 cleaned.append(current)
                 by_term[term.casefold()] = current
             else:
                 old_weight = _number_or_default(current.get("weight"), 0.5)
                 new_weight = min(1.0, old_weight + boost)
                 current["weight"] = new_weight
-                current["weight_change"] = round(new_weight - old_weight, 4)
+                # 同上：记录完整配置增量；最终置信度 = fitness + 增量（封顶 1.0）
+                current["weight_change"] = round(boost, 4)
             current["custom_dictionary_hit"] = True
             current["dictionary_term_id"] = dictionary_term.get("id")
             matched_terms.append(dictionary_term)
@@ -4118,7 +4125,12 @@ class SemanticApplicationService(ISemanticService):
                        else "请识别以下摘要的研究问题句：\n") + json.dumps(obj, ensure_ascii=False, indent=2)
         def _llm_extract_once():
             """单次 GLM 调用 + 后置字面校验，返回 (cleaned, dropped)。"""
-            data = self._glm.chat_json(system_prompt, user_prompt, timeout=120.0, max_tokens=2500)
+            # 输出预算按输入长度自适应（2026-11-04 用户实测修复：长文献（8000 字
+            # 截断上限）的逐句 JSON 输出超固定 2500 被截断，修复+加倍重试仍失败
+            # ——"大模型返回无法解析为 JSON"报错的根因；预算=2500+输入/3，上限
+            # 8000，chat_json 解析失败时仍会自动翻倍重试
+            _budget = min(8000, 2500 + len(abstract) // 3)
+            data = self._glm.chat_json(system_prompt, user_prompt, timeout=120.0, max_tokens=_budget)
             raw = data.get("data", data) if isinstance(data, dict) else []
             if not isinstance(raw, list):
                 raise RuntimeError("GLM-5.2 未返回有效研究问题列表")
@@ -4270,6 +4282,46 @@ class SemanticApplicationService(ISemanticService):
                 _lo, _hi = (_sa, _sb) if len(_sa) <= len(_sb) else (_sb, _sa)
                 if _lo and _lo in _hi and len(_lo) >= len(_hi) * 0.5:
                     drop_idx.add(_a if len(_sa) <= len(_sb) else _b)
+        if drop_idx:
+            cleaned = [c for k, c in enumerate(cleaned) if k not in drop_idx]
+        # ①b 规范化问题级去重（2026-11-04 用户实测反馈：摘要与引言各自陈述同一
+        # 研究问题——句子不同、规范化问题同问（"作用机理是什么"两处一字不差），
+        # 逐句去重拦不住 → 结果看似重复。判定：两条规范化问题互为子串（核心问
+        # 法一致）或字符重合率 ≥0.6 视为同问；保留置信度高的一条，来源章节合并
+        # （合并后该问题同时标注两处来源，更真实），丢弃条目记入 dropped 可溯
+        def _conf_of(item):
+            try:
+                return float(item.get("confidence") or 0)
+            except (TypeError, ValueError):
+                return 0.0
+
+        def _norm_core(q: str) -> str:
+            return re.sub(r"[？?。，,；;\s]", "", str(q or ""))
+        drop_idx = set()
+        for _a in range(len(cleaned)):
+            if _a in drop_idx:
+                continue
+            _qa = _norm_core(cleaned[_a].get("normalized_question"))
+            if len(_qa) < 6:
+                continue
+            for _b in range(_a + 1, len(cleaned)):
+                if _b in drop_idx:
+                    continue
+                _qb = _norm_core(cleaned[_b].get("normalized_question"))
+                if len(_qb) < 6:
+                    continue
+                _lo, _hi = (_qa, _qb) if len(_qa) <= len(_qb) else (_qb, _qa)
+                _overlap = sum(1 for ch in _lo if ch in _hi) / len(_lo) if _lo else 0
+                same_q = (_lo in _hi) or (_overlap >= 0.6)
+                if not same_q:
+                    continue
+                _keep, _drop = (_a, _b) if _conf_of(cleaned[_a]) >= _conf_of(cleaned[_b]) else (_b, _a)
+                _keep_secs = set(cleaned[_keep].get("source_sections") or [])
+                _keep_secs.update(cleaned[_drop].get("source_sections") or [])
+                cleaned[_keep]["source_sections"] = [s for s in _keep_secs if s]
+                dropped.append({"normalized_question": cleaned[_drop].get("normalized_question", "")[:60],
+                                "reason": "与保留条目为同一研究问题（摘要/引言重复陈述），来源已合并"})
+                drop_idx.add(_drop)
         if drop_idx:
             cleaned = [c for k, c in enumerate(cleaned) if k not in drop_idx]
         for _k, c in enumerate(cleaned):
@@ -5520,8 +5572,16 @@ class SemanticApplicationService(ISemanticService):
             try:
                 from infrastructure.rag.m3_encoder import m3_encoder as _m3c
                 import numpy as _np3
-                _sv = _np3.asarray(_m3c.encode([p["text"] for p in training_pairs]), dtype="float32")
-                _sv = _sv / (_np3.linalg.norm(_sv, axis=1, keepdims=True) + 1e-9)
+                # 训练集向量缓存（2026-11-04 性能修复：内置训练集 1060 句，此前
+                # 每次请求全量重编码 ≈4-6s/次，实测把批量吞吐拖垮 10 倍以上。
+                # 按(路径,条数,首句)做进程级缓存——资源文件变化时键变即失效）
+                _cache_key = (str(_load_citation_training_pairs_last_path), len(training_pairs),
+                              str(training_pairs[0].get("text") or ""))
+                _sv = _CITATION_TRAINING_VEC_CACHE.get(_cache_key)
+                if _sv is None:
+                    _sv = _np3.asarray(_m3c.encode([p["text"] for p in training_pairs]), dtype="float32")
+                    _sv = _sv / (_np3.linalg.norm(_sv, axis=1, keepdims=True) + 1e-9)
+                    _CITATION_TRAINING_VEC_CACHE[_cache_key] = _sv
                 _rows = [str(c.get("sub_span") or c.get("sentence") or "") for c in labeled]
                 _qv = _np3.asarray(_m3c.encode(_rows), dtype="float32")
                 _qv = _qv / (_np3.linalg.norm(_qv, axis=1, keepdims=True) + 1e-9)
@@ -6037,6 +6097,8 @@ class SemanticApplicationService(ISemanticService):
                     "title": str(_r.get("document_title") or _r.get("title") or "").strip(),
                     "doc": str(_r.get("document_text") or _r.get("text") or "").strip(),
                 })
+            global _load_citation_training_pairs_last_path
+            _load_citation_training_pairs_last_path = _uri
             return pairs
         except Exception:  # noqa: BLE001 - 训练集损坏不影响内置路径
             logger.warning("引用意图训练集解析失败（保持内置路径）", exc_info=True)
@@ -6953,11 +7015,33 @@ class SemanticApplicationService(ISemanticService):
         _walk(doc)
         return found
 
-    def _load_ner_fewshot(self, descriptor) -> str:
-        """领域示例语料 → few-shot 文本。条目 {"text": 示例, "entities": [{"text","type"}]}。"""
+    def _load_ner_fewshot(self, descriptor, domain: str = "") -> str:
+        """领域示例语料 → few-shot 文本。条目 {"text": 示例, "entities": [{"text","type"}]}。
+
+        域感知（2026-11-04 gold 优化）：条目带 domain 字段时优先取与请求领域
+        相同的示例（内置三领域金标即带 domain）；无 domain 字段的条目（用户上传
+        语料的既有形态）不筛选取前 N，行为与旧版一致。示例上限 3→6：gold 评测
+        实测 3 例对召回的校准不足，6 例仍在提示词安全长度内。
+        """
         rows = [r for r in self._read_uploaded_resource_json(descriptor) if isinstance(r, dict)]
+        if domain:
+            # 域隔离（2026-11-04 用户确认的关键约束）：请求领域在资源里没有
+            # 匹配示例时（如内置金标只覆盖医/化/物，请求是计算机/材料），
+            # 只允许无 domain 标记的通用条目（用户上传语料形态），绝不把
+            # 其他领域的示例兜底注入——防止跨域类型污染
+            rows = [r for r in rows
+                    if str(r.get("domain") or "").strip() == domain
+                    or not str(r.get("domain") or "").strip()]
+        else:
+            # 未指定领域（自动识别模式）：按 domain 轮转均衡取样，
+            # 避免资源行序把单一领域示例灌满（此前前 6 条全是医学）
+            from collections import OrderedDict as _OD
+            groups = _OD()
+            for r in rows:
+                groups.setdefault(str(r.get("domain") or ""), []).append(r)
+            rows = [r for _d, grp in groups.items() for r in grp[:2]]
         lines = []
-        for row in rows[:3]:
+        for row in rows[:6]:
             text = str(row.get("text") or "").strip()
             ents = [e for e in (row.get("entities") or []) if isinstance(e, dict)
                     and e.get("text") and e.get("type")]
@@ -7282,8 +7366,6 @@ class SemanticApplicationService(ISemanticService):
                         or _res.get("general_domain_annotated_corpus")
                         or _res.get("domain_labeled_training_data"))
         _labeled_desc = _res.get("manually_labeled_data")
-        _fewshot = "\n\n".join(filter(None, [
-            self._load_ner_fewshot(_corpus_desc), self._load_ner_fewshot(_labeled_desc)]))
         _std_index = self._load_ner_standard_index(_corpus_desc)
         _ontology = (self._load_custom_ontology(_res.get("ontology_classification_system"))
                      if code == 'ner_domain' else {})
@@ -7295,6 +7377,10 @@ class SemanticApplicationService(ISemanticService):
             _domain_label = str((request.params or {}).get("domain") or "").strip()
             if _domain_label in ("", "auto", "自动识别", "请选择专业领域"):
                 _domain_label = str(_ontology.get("domain") or "").strip()
+        # few-shot 域感知取例（2026-11-04）：在领域确定后加载，按域筛 6 条
+        _fewshot = "\n\n".join(filter(None, [
+            self._load_ner_fewshot(_corpus_desc, _domain_label if code == 'ner_domain' else ""),
+            self._load_ner_fewshot(_labeled_desc)]))
         # 内置领域类型体系回落（2026-09-16 用户定调：用户传本体→用户体系；
         # 未传本体+选了领域→该领域内置专属体系；都没有→默认 13 类自动判定）
         _builtin_types: list = []
@@ -7411,8 +7497,18 @@ class SemanticApplicationService(ISemanticService):
                 data = {"data": out}  # 下游 evidence/raw 组装沿用 data 变量
             else:
                 user_prompt = self._render_user_prompt(user_payload, request.params)
+                # 输出 token 预算自适应（2026-11-04 用户实测修复）：实体关系识别
+                # 消费上游 NER 记录时，实体多的记录（实测 68-72 个）产出的三元组
+                # JSON 超过固定 3000 被截断，重试 6000 仍偶发不够——"大模型返回
+                # 无法解析为 JSON"报错的根因。按输入实体数加预算（超量实体每个
+                # +120 token，上限 12000），chat_json 解析失败时仍会再翻倍重试
+                _budget = 3000
+                if code == 'ner_relation':
+                    _m = re.search(r"共识别\s*(\d+)\s*个实体", str(user_prompt))
+                    _n_ent = int(_m.group(1)) if _m else 0
+                    _budget = min(12000, 3000 + 120 * max(0, _n_ent - 20))
                 data = self._glm.chat_json(system_prompt, user_prompt,
-                                           temperature=0.0, timeout=120.0, max_tokens=3000)
+                                           temperature=0.0, timeout=120.0, max_tokens=_budget)
                 out = data.get("data", data) if isinstance(data, dict) else data
         finally:
             with self.__class__._NER_INFLIGHT_LOCK:

@@ -646,8 +646,10 @@ def execute_cluster_labeling(
             "cluster_count": len(labels),
             "generated_label_count": len(labels),
             "parameters": {"label_length_limit": 12, "language_type": "auto",
-                            "mode": "move_aligned_direct", "distinctiveness_threshold": threshold_opt,
-                            "threshold_mode": _thr_mode},
+                            "mode": "move_aligned_direct", "threshold_mode": _thr_mode,
+                            # auto 模式不回填数值（2026-11-04：前端弹窗差异阈值
+                            # 显示 0.75 误导——参数面板与优化结果同口径）
+                            **({} if _thr_mode == "auto" else {"distinctiveness_threshold": threshold_opt})},
             "statistics": {"average_confidence": round(sum(l["confidence"] for l in labels) / len(labels), 3) if labels else 0,
                             "average_distinctiveness": round(
                                 sum(l["distinctiveness"] for l in labels) / len(labels), 3) if labels else 1.0,
@@ -662,7 +664,9 @@ def execute_cluster_labeling(
                 "direct_input_contract": "move_aligned_cluster_names",
             },
             "label_distinctiveness_optimization_result": {
-                "threshold": threshold_opt,
+                # auto 模式不回填数值阈值（2026-11-04 用户反馈：前端弹窗显示
+                # 0.75 误导——内部判定仍用 threshold_opt，对外只报模式）
+                **({} if _thr_mode == "auto" else {"threshold": threshold_opt}),
                 "optimized_count": sum(1 for it in _opt_items if it.get("changed")),
                 "passed_count": sum(1 for it in _opt_items if it.get("threshold_passed")),
                 "failed_count": sum(1 for it in _opt_items if not it.get("threshold_passed")),
@@ -830,7 +834,7 @@ def execute_cluster_labeling(
                         it["after_distinctiveness"] = round(float(_l.get("distinctiveness") or 0), 3)
                         it["threshold_passed"] = float(_l.get("distinctiveness") or 0) >= distinctiveness_threshold
                 output.setdefault("label_distinctiveness_optimization_result", {}).update({
-                    "threshold": distinctiveness_threshold,
+                    **({} if _thr_mode == "auto" else {"threshold": distinctiveness_threshold}),
                     "optimized_count": len(_opt_items),
                     "passed_count": sum(1 for it in _opt_items if it["threshold_passed"]),
                     "failed_count": sum(1 for it in _opt_items if not it["threshold_passed"]),

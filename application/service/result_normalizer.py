@@ -330,21 +330,27 @@ def normalize_result(tool_id: str, raw: Any, payload: Dict[str, Any]) -> Dict[st
             # 如"字符 128—203"，与 NER 实体位置同口径）：sentence_id 定位包含句
             # 在原文中的 span
             _sent_span = None
-            if sentence_id.startswith("SENT-"):
+            # 2026-11-04 用户实测修复：GLM 偶发把句编号写成 S1/1/s2 等简写
+            # （SENT- 前缀校验全挂 → 句子位置列整列空）。宽恕解析：取编号里的
+            # 数字序列作句下标，SENt-000/S1/1 同语义
+            _m = _re.search(r"(\d+)", str(sentence_id or ""))
+            if _m:
                 try:
-                    _idx = int(sentence_id.split("-")[-1])
+                    _idx = int(_m.group(1))
                 except ValueError:
                     _idx = -1
+            else:
+                _idx = -1
                 if 0 <= _idx < len(sentences):
                     _sent_text = sentences[_idx]
                     _pos = original_sentence.find(_sent_text)
                     if _pos >= 0:
                         _sent_span = {"start": _pos, "end": _pos + len(_sent_text)}
+            # 2026-11-04 用户定稿：句子位置字段撤出响应（sentence_id/
+            # source_position 不再对外），内部 span 计算保留位置匹配能力
             triples.append({
-                **value,
+                **{k: v for k, v in value.items() if k not in ("sentence_id", "source_position")},
                 "triple_id": triple_id,
-                "sentence_id": sentence_id,
-                **({"source_position": _sent_span} if _sent_span else {}),
                 "subject": head_text,
                 "relation": relation_str,
                 "object": tail_text,
@@ -895,7 +901,15 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
             if lbl and lbl not in statistics:
                 statistics[lbl] = _counter.get(lbl, 0)
     document = data.get("document") if isinstance(data.get("document"), dict) else {}
-    document.setdefault("title", _title_text(payload.get("project_name"), payload.get("document_title"), payload.get("title")))
+    # 题名 = 用户提供的题目/项目名称优先（2026-11-04 用户实测修复，同 2026-10-18
+    # 关键词工具定稿口径）：引擎自提取标题是内容分析副产物（基金文本会把"一、
+    # 立项依据 …"开头当标题），setdefault 挡不住引擎错值 → document.title 变成
+    # 正文开头。用户提供时直接覆盖
+    _user_title = _title_text(payload.get("project_name"), payload.get("document_title"), payload.get("title"))
+    if _user_title:
+        document["title"] = _user_title
+    else:
+        document.setdefault("title", "")
     # language 按输入文本实际语言判定（而非按工具页面写死）；引擎已显式给出时保留引擎值
     _detected_lang = _detect_language(document.get("abstract") or payload.get("text") or payload.get("project_document_text") or payload.get("abstract"))
     document.setdefault("language", _detected_lang or ("en" if tool_id == "en-abstract-move" else "zh"))
@@ -1551,8 +1565,13 @@ def _research_questions(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
         sentences = _list(data.get("research_question_sentences"))
         phrases = _list(data.get("research_question_phrases"))
         structured = _list(data.get("structured_research_questions"))
+        # source_sections 恢复放行（2026-11-04 用户定稿）：当前实现已诚实——
+        # 章节结构文本走真实标题层级重建、纯文本如实标"全文"、JSON 结构文本用
+        # 精确章节 span、文件模式用标题层级定位，2026-10-18 删除时的"判定属
+        # 臆测"前提已不成立；恢复后纯文本/章节结构文本两种格式有实质区别，
+        # 下载报告的按章节分组也有依据
         _sent_keep = ("sentence_id", "id", "sentence", "text", "expression_type", "type",
-                      "confidence")
+                      "confidence", "source_sections", "source_section")
         _phrase_keep = ("phrase_id", "id", "sentence_id", "phrase", "text",
                         "normalized_question", "question", "confidence")
         for _s in sentences:
@@ -1597,6 +1616,9 @@ def _research_questions(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
             "id": sentence_id,
             "expression_type": expression_type,
             "confidence": _confidence(item),
+            # source_sections 恢复（2026-11-04 用户定稿）：引擎 cleaned 已带真实
+            # 章节路径/全文口径，此前重建时被丢弃
+            "source_sections": [str(s) for s in (item.get("source_sections") or []) if str(s).strip()],
         })
         # 规范化问题：优先 normalized_question，回退 implication/phrase/sentence
         norm_q = item.get("normalized_question") or item.get("implication") or phrase or sentence

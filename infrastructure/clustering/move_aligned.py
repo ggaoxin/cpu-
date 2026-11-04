@@ -1161,7 +1161,13 @@ def run_move_aligned_clustering(papers, *, selected_axis, glm_client, encoder=No
     representative_terms/members（members 供 phrase_sets/标签生成）。
     """
     n = len(papers)
-    moves = extract_moves_batch(papers, glm_client)
+    # 语步前移（2026-11-04 甲方响应时间优化）：预解析阶段已提取的语步直接
+    # 取用（跳过 30+ 秒的 LLM 批量提取）；任一篇缺 _moves 则整体走原路径
+    _pre = [p.get("_moves") for p in papers]
+    if all(isinstance(m, dict) and m for m in _pre) and len(_pre) == n:
+        moves = _pre
+    else:
+        moves = extract_moves_batch(papers, glm_client)
     # 题名不做解析（2026-09-06 用户定调）：文件模式 title=文件名（1.pdf），
     # 文本模式 title=用户手动填写的题名——直接使用，不从全文/摘要提取
     # （提取会把作者名/邮箱/摘要头当题目，反而引入干扰）

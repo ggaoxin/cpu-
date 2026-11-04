@@ -63,14 +63,16 @@ def _db_sweep(db) -> None:
         pass
 
 
-def put(file_name: str, media_type: str, text: str) -> str:
+def put(file_name: str, media_type: str, text: str, title: str = "", moves: Any = None) -> str:
     parse_id = f"prs_{uuid.uuid4().hex[:20]}"
     now = time.time()
     row = {
         "file_name": file_name,
         "media_type": media_type or "application/octet-stream",
         "text": text,
+        "title": title,
         "created_at": now,
+        **({"moves": moves} if moves is not None else {}),
     }
     with _LOCK:
         _sweep(now)
@@ -81,11 +83,13 @@ def put(file_name: str, media_type: str, text: str) -> str:
     if db is not None:
         try:
             from datetime import datetime as _dt
+            import json as _json
             with db.session() as s:
                 s.execute(
-                    """INSERT INTO parse_store (parse_id, file_name, media_type, text, created_at, created_ts)
-                    VALUES (?, ?, ?, ?, ?, ?)""",
-                    (parse_id, str(file_name or "")[:500], row["media_type"], text,
+                    """INSERT INTO parse_store (parse_id, file_name, media_type, text, title, moves, created_at, created_ts)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (parse_id, str(file_name or "")[:500], row["media_type"], text, str(title or "")[:500],
+                     _json.dumps(moves, ensure_ascii=False) if moves is not None else None,
                      _dt.now().isoformat(timespec="seconds"), now),
                 )
             _db_sweep(db)
@@ -106,7 +110,7 @@ def get(parse_id: str) -> Optional[Dict[str, Any]]:
     try:
         with db.session() as s:
             rows = s.fetchall(
-                "SELECT file_name, media_type, text, created_ts FROM parse_store WHERE parse_id = ?",
+                "SELECT file_name, media_type, text, title, moves, created_ts FROM parse_store WHERE parse_id = ?",
                 (parse_id,),
             )
     except Exception:  # noqa: BLE001
@@ -121,7 +125,9 @@ def get(parse_id: str) -> Optional[Dict[str, Any]]:
         "file_name": row.get("file_name") or "",
         "media_type": row.get("media_type") or "application/octet-stream",
         "text": row.get("text") or "",
+        "title": row.get("title") or "",
         "created_at": created,
+        **({"moves": _json.loads(row["moves"])} if row.get("moves") else {}),
     }
     with _LOCK:  # 回填内存快路径（容量守恒）
         _sweep(time.time())

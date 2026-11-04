@@ -73,7 +73,7 @@ export const tools = {
       "en-abstract-move": {
         "group": "语步识别工具",
         "title": "英文摘要语步识别",
-        "description": "自动识别英文科技文献摘要中的 Background、Objective、Method、Result 和 Conclusion，支持单文本、批量文本、单文件和批量文件四种调用方式。",
+        "description": "自动识别英文科技文献摘要中的背景、目的、方法、结果和结论五类语步，支持单文本、批量文本、单文件和批量文件四种调用方式。",
         "features": "英文篇章结构分析、五类语步识别、批量文本处理、批量文件处理、文档解析与摘要定位、置信度输出",
         "scenarios": "英文论文摘要解析、批量国际文献处理、国际科技情报分析、接口联调",
         "endpoint": "/api/v1/move/abstract/en/text",
@@ -83,7 +83,7 @@ export const tools = {
         "batchFileEndpoint": "/api/v1/move/abstract/en/files",
         "languageCode": "en",
         "languageName": "英文",
-        "moveSummaryText": "Background、Objective、Method、Result 和 Conclusion",
+        "moveSummaryText": "背景、目的、方法、结果和结论",
         "sampleFileName": "s41467-021-23774-w.pdf",
         "sampleFileSize": "1.26 MB",
         "supportsFileUpload": true,

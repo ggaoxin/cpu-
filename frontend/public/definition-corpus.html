@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>概念定义句标注语料 · 语义计算工具库</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f4f9;color:#1f3a5f}
+.header{background:#fff;border-bottom:1px solid #d3dfef;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.header h1{font-size:18px;font-weight:600}
+.header .sub{font-size:12px;color:#7a889b;margin-top:2px}
+.back{padding:6px 14px;border:1px solid #c8d6e8;border-radius:8px;background:#fff;cursor:pointer;font-size:13px;color:#334a68}
+.toolbar{display:flex;gap:10px;padding:14px 24px;max-width:1120px;margin:0 auto;align-items:center;flex-wrap:wrap}
+.toolbar input{flex:1;min-width:220px;padding:8px 14px;border:1px solid #c8d6e8;border-radius:8px;font-size:13px;outline:none;background:#fff}
+.toolbar input:focus{border-color:#2563eb}
+.toolbar select{padding:8px 12px;border:1px solid #c8d6e8;border-radius:8px;font-size:13px;background:#fff;min-width:150px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:6px 14px;border:1px solid #c8d6e8;border-radius:999px;background:#fff;font-size:12.5px;cursor:pointer;color:#334a68;user-select:none}
+.chip small{color:#94a3b8;margin-left:4px}
+.chip.active{border-color:#2563eb;color:#2563eb;background:#f0f6ff;font-weight:600}
+.body{max-width:1120px;margin:0 auto;padding:0 24px 40px}
+.table-wrap{background:#fff;border:1px solid #d3dfef;border-radius:12px;overflow:hidden}
+.loading,.empty{padding:48px;text-align:center;color:#7a889b;font-size:14px}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 14px;font-size:12px;color:#7a889b;text-align:left;border-bottom:1px solid #e6edf6;background:#f8fbff;white-space:nowrap}
+td{padding:10px 14px;font-size:13px;border-bottom:1px solid #f2f6fb;vertical-align:top}
+tr:hover td{background:#f8faff}
+td.idx{color:#94a3b8;font-size:11px;white-space:nowrap;width:52px}
+td.text{line-height:1.7;color:#2c4460}
+.tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.tag-definition{color:#047857;background:#e3f7ef}
+.tag-non_definition{color:#64748b;background:#f1f5f9}
+td.topic{color:#64748b;font-size:12px;white-space:nowrap}
+.pager{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;font-size:12.5px;color:#64748b}
+.pager .btns{display:flex;gap:6px}
+.pager button{padding:5px 12px;border:1px solid #c8d6e8;border-radius:7px;background:#fff;cursor:pointer;font-size:12.5px;color:#334a68}
+.pager button:disabled{opacity:.4;cursor:default}
+.pager button:hover:not(:disabled){border-color:#2563eb;color:#2563eb}
+.hint{padding:8px 2px 0;font-size:11.5px;color:#94a3b8}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><h1>概念定义句标注语料（DEFT）</h1><div class="sub">概念定义句识别 · 16,314 句二分类标注（定义句 4,997 / 非定义句 11,317），七个学科主题</div></div>
+  <button class="back" onclick="history.back()">返回</button>
+</div>
+<div class="toolbar">
+  <input id="search" placeholder="搜索句子内容（如 is defined as、基因）" />
+  <div class="chips" id="chips"></div>
+  <select id="topicSel"></select>
+</div>
+<div class="body">
+  <div class="table-wrap">
+    <div class="loading" id="loading">加载中…</div>
+    <div id="content" style="display:none">
+      <table>
+        <thead><tr><th>#</th><th style="width:74%">句子</th><th>标注</th><th>学科主题</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="pager">
+        <span id="pageInfo"></span>
+        <div class="btns"><button id="prev">上一页</button><button id="next">下一页</button></div>
+      </div>
+    </div>
+    <div class="empty" id="empty" style="display:none">无匹配的句子。</div>
+  </div>
+  <div class="hint">语料来源：DEFT 语料库（adobe-research/deft_corpus），学术教科书语句级"定义句/非定义句"标注；主题取自 DEFT 文件命名（biology/government/economic/psychology/physics/history/sociology）。概念定义句识别工具输出"定义句/非定义句"二分类与本标注同口径。</div>
+</div>
+<script>
+const LABEL_ZH = { definition: '定义句', non_definition: '非定义句' }
+const TOPIC_ZH = { biology: '生物', government: '政治', economic: '经济', psychology: '心理', physics: '物理', history: '历史', sociology: '社会' }
+const PAGE = 50
+let ROWS = [], label = '', topic = '', search = '', page = 1
+const $ = id => document.getElementById(id)
+$('search').oninput = e => { search = e.target.value.toLowerCase().trim(); page = 1; render() }
+$('prev').onclick = () => { if (page > 1) { page--; render() } }
+$('next').onclick = () => { const max = Math.max(1, Math.ceil(filtered().length / PAGE)); if (page < max) { page++; render() } }
+$('topicSel').onchange = e => { topic = e.target.value; page = 1; render() }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') }
+function filtered() {
+  return ROWS.filter(r =>
+    (!label || r[1] === label) && (!topic || r[2] === topic) &&
+    (!search || r[0].toLowerCase().includes(search)))
+}
+function render() {
+  const rows = filtered()
+  const max = Math.max(1, Math.ceil(rows.length / PAGE))
+  if (page > max) page = max
+  const slice = rows.slice((page - 1) * PAGE, page * PAGE)
+  $('tbody').innerHTML = slice.map((r, i) => `<tr><td class="idx">${(page - 1) * PAGE + i + 1}</td><td class="text">${esc(r[0])}</td><td><span class="tag tag-${r[1]}">${LABEL_ZH[r[1]] || r[1]}</span></td><td class="topic">${r[2] ? (TOPIC_ZH[r[2]] || r[2]) : '—'}</td></tr>`).join('')
+  $('pageInfo').textContent = `共 ${rows.length.toLocaleString()} 句 · 第 ${page} / ${max} 页`
+  $('prev').disabled = page <= 1; $('next').disabled = page >= max
+  $('empty').style.display = rows.length ? 'none' : ''
+  $('content').style.display = rows.length ? '' : 'none'
+}
+function renderChips() {
+  const counts = {}
+  ROWS.forEach(r => counts[r[1]] = (counts[r[1]] || 0) + 1)
+  const all = [['', '全部', ROWS.length], ...Object.entries(counts).map(([k, n]) => [k, LABEL_ZH[k] || k, n])]
+  $('chips').innerHTML = all.map(([k, name, n]) => `<span class="chip${label === k ? ' active' : ''}" data-k="${k}">${name}<small>${n.toLocaleString()}</small></span>`).join('')
+  ;[...$('chips').children].forEach(c => c.onclick = () => { label = c.dataset.k; page = 1; renderChips(); render() })
+}
+function renderTopics() {
+  const counts = {}
+  ROWS.forEach(r => { if (r[2]) counts[r[2]] = (counts[r[2]] || 0) + 1 })
+  const opts = [['', '全部学科主题']].concat(Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([t, n]) => [t, `${TOPIC_ZH[t] || t}（${n.toLocaleString()}）`]))
+  $('topicSel').innerHTML = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')
+  $('topicSel').value = ''
+  topic = ''
+}
+fetch('definition-corpus-data.json').then(r => r.json()).then(data => {
+  ROWS = data
+  $('loading').style.display = 'none'
+  renderChips(); renderTopics(); render()
+})
+</script>
+</body>
+</html>

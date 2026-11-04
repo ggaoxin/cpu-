@@ -409,8 +409,12 @@ body.v690-general-ner-active .ner-results-table td,
 .cluster-phrase-preview-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 2px; }
 .cluster-phrase-preview-title b { color: #3b4d67; font-size: 11.5px; }
 .cluster-phrase-preview-title span, .cluster-phrase-preview > p { margin: 0; color: #929eb0; font-size: 9.5px; white-space: nowrap; }
-.cluster-phrase-preview-row { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: 5px; }
-.cluster-phrase-preview-row strong { width: 78px; color: #52657f; font-size: 10px; }
+/* 2026-11-04 用户定稿：类簇短语对齐——编号固定列宽，短语在独立容器内换行，
+ * 换行后与首个短语左对齐（不回到编号下方） */
+.cluster-phrase-preview-row { display: flex; min-width: 0; align-items: flex-start; gap: 5px; }
+.cluster-phrase-preview-row strong { flex: 0 0 78px; color: #52657f; font-size: 10px; line-height: 24px; }
+.cluster-phrase-list { display: flex; min-width: 0; flex: 1 1 0; flex-wrap: wrap; align-items: center; gap: 5px; }
+.cluster-phrase-list span { line-height: 24px; }
 .cluster-phrase-preview-row span { padding: 3px 7px; color: #526d99; background: #edf3ff; border-radius: 999px; font-size: 9.5px; }
 .format-example-box { display: flex; align-items: flex-start; gap: 12px; margin-top: 12px; padding: 11px 12px; color: #60728c; background: #fff; border: 1px solid #e1e8f2; border-radius: 8px; font-size: 11.5px; line-height: 1.65; }
 .format-example-box b { flex: 0 0 auto; color: #315b8b; }
@@ -1308,6 +1312,26 @@ body.figma-ui-v717 .platform-frame-v640 .content-wrap { padding-left: 8px !impor
   max-height: 60dvh;
 }
 
+/* 可视化弹窗表头固定（2026-11-04 用户反馈：行数多时滚动表头被顶出视野）。
+ * 滚动容器是各 table-wrap（上规则 60dvh 限高），thead th 在容器内 sticky。
+ * 全部功能点的弹窗表格统一生效（关系三元组/聚类标签/文献归属/NER 明细等）：
+ * 表头必须实底背景（继承 .distribution-table th 的 #f7f9fc，个别表格自带
+ * 表头底色的由后面的通配保持不透明），否则滚动时行内容透出。
+ */
+.visualization-modal-body-v645 .distribution-table-wrap thead th,
+.specialized-visualization-host-v804 .distribution-table-wrap thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f7f9fc;
+  box-shadow: 0 1px 0 0 #e6ebf2;
+}
+.visualization-modal-body-v645 .distribution-table-wrap thead th[style*="background"],
+.specialized-visualization-host-v804 .distribution-table-wrap thead th[style*="background"] {
+  /* 自带行内表头底色的表格（如依存弧表）保持原色不透明 */
+  background-color: inherit;
+}
+
 /* 弹窗表格滚动条视觉隐藏：保留滚轮滚动功能，不显示右侧滚动条轨道 */
 .visualization-modal-body-v645 .distribution-table-wrap::-webkit-scrollbar,
 .specialized-visualization-host-v804 .distribution-table-wrap::-webkit-scrollbar {
@@ -1802,6 +1826,7 @@ body.figma-ui-v717 .code-box {
   max-height: 360px !important;
   padding: 20px !important;
   overflow: auto !important;
+
   color: var(--platform-code-text) !important;
   font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace !important;
   font-size: 13px !important;
@@ -1935,7 +1960,10 @@ body.figma-ui-v717 .test-card {
   padding: 0 !important;
   flex: 1 1 0 !important;
   min-width: 0 !important;
-  overflow: visible !important;
+  /* 2026-11-04 用户实测修复：深度聚类表单内部溢出（资源上传区长 600px+）
+   * 穿透 visible 溢出撑高 main-card scrollHeight（+190px），在线测试框底部
+   * 与页面底部间多出大段空白。hidden 阻断内部溢出对外部的影响 */
+  overflow: hidden !important;
   background: transparent !important;
   border: 0 !important;
   border-radius: 0 !important;
@@ -2210,14 +2238,25 @@ body.figma-ui-v717 .response-card-actions-v645 button,
    视觉层把响应体定死 380px、请求表单弹性增长 → 两框高度不一致。
    统一：两框同高（calc(100vh - 300px)）+ 各自内部滚动（滚动条隐藏，
    滚轮可用）——响应结果再长也在框内滚，不再撑高/错位。 */
+/* 2026-11-04 用户实测修复（批量文件模式底部大空白）：表单区此前被强制
+ * height: calc(100vh - 300px) ≈ 600px——批量上传模式内容只占 ~200px 时
+ * 容器仍撑到 600px，在线测试框底部多出 400px+ 空白。改为 max-height 封顶：
+ * 内容短就自然收缩（消除空白），长就到上限内部滚动。响应区跟随表单等高
+ * （align-items: stretch），不再单独强制固定高度 */
 body.figma-ui-v717 .request-card .form-grid,
 body.figma-ui-v717 .response-card .response-result-body {
-  height: calc(100vh - 300px) !important;
-  min-height: 320px !important;
+  min-height: 280px !important;
   max-height: calc(100vh - 300px) !important;
   overflow-y: auto !important;
   overscroll-behavior: contain;
 }
+/* 响应体填满父卡片（2026-11-04：卡片被 align-items:stretch 拉到与表单等高，
+ * 体内 height:100% 跟随——此前移除是因 scrollHeight 穿透问题，现已被
+ * transform:translateZ(0) 修复，可安全恢复） */
+body.figma-ui-v717 .response-card .response-result-body {
+  height: 100% !important;
+}
+
 
 /* 文档面板代码框：与算法中心参考页一致，使用浏览器原生纵向滚动条。 */
 body.figma-ui-v717 .code-box {
@@ -2779,3 +2818,13 @@ body.v669-domain-classify-active .domain-classify-domain-tag-v669 {
 .relation-network-node-group:active { cursor: grabbing; }
 .relation-network-edge-label-group { cursor: grab; }
 .relation-network-edge-label-group:active { cursor: grabbing; }
+
+body.figma-ui-v717 .main-card { contain: layout paint; }
+
+/* 2026-11-04 终极修复：form-grid 的内部溢出（批量文件面板 915px+）穿透
+ * overflow:auto 传播到 main-card 的 scrollHeight（+188px），导致在线测试
+ * 框底部与页面底部之间出现大段空白。transform 强制创建独立合成层，
+ * 绝对阻断 scrollHeight 向祖先传播 */
+body.figma-ui-v717 .request-card .form-grid {
+  transform: translateZ(0) !important;
+}

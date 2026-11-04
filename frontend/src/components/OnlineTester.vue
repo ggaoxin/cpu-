@@ -511,14 +511,11 @@ const selectedNerRecord = computed(() => nerHistoryOptions.value.find(item => it
 const previewLines = computed<string[]>(() => {
   // 2026-09-11 用户定稿：关系抽取输入=上游 NER 的语境片段/关联上下文
   // （通用实体识别的语境片段、科研/专业领域 NER 的关联上下文，即 entities[].context）。
-  // 每条片段独立一行（span 块级化），v-html 外文本插值 \n 不换行的老坑
+  // 每条片段独立一行（span 块级化），v-html 外文本插值 \n 不换行的老坑。
+  // 2026-11-04 用户定稿：全量逐行展示（容器本身 220px 限高滚动，不再截 5 条）
   const ctxs = selectedNerRecord.value?.contexts || []
   if (ctxs.length) {
-    const lines = ctxs.map((c: string, i: number) => `S${i + 1}: ${c}`)
-    if (ctxs.length > 5) {
-      return [...lines.slice(0, 5), `…共 ${ctxs.length} 条语境片段`]
-    }
-    return lines
+    return ctxs.map((c: string, i: number) => `S${i + 1}: ${c}`)
   }
   // 无语境片段的老记录回退 sentence；临时路径不展示
   const s = selectedNerRecord.value?.sentence || ''
@@ -972,7 +969,7 @@ async function loadRuntimeDatabaseOptions() {
         id: item.record_id, taskName: item.document_title || item.label,
         nerType: item.tool_id, documentId: item.document_id || '由原记录确定',
         sentenceId: item.sentence_id || '由原记录确定', sentence: item.sentence || '',
-        entities: item.entities || [], contexts: [...new Set((item.entities || []).map((e: any) => (e.context || '').trim()).filter(Boolean))], completedAt: item.created_at,
+        entities: item.entities || [], contexts: (item.contexts?.length ? item.contexts : [...new Set((item.entities || []).map((e: any) => (e.context || '').trim()).filter(Boolean))]), completedAt: item.created_at,
       }))
     : []
   selectedDictionaryId.value = savedDictionaryOptions.value[0]?.id || ''
@@ -1020,6 +1017,10 @@ watch(() => props.toolId, () => {
 
 watch(mode, (next, previous) => {
   if (next !== previous && (next === 'file' || next === 'batch')) uploadedFiles.splice(0)
+  // 输入方式切换后领域重新选择（2026-11-04 用户定稿）：domain-ner 的专业
+  // 领域回到"自动识别"默认——切换后旧领域残留会随请求静默带入，
+  // 用户以为按新输入自动判定，实际仍按旧领域执行
+  if (next !== previous && props.toolId === 'domain-ner') form.domain = '自动识别'
   // 切走即清空原输入方式的输入（2026-10-18 用户定稿，适用于全部功能点）：
   // 输入方式互切后旧输入残留，切回时内容还在，容易误以为已带入或误提交。
   // 文本类清正文/题目；文件类清已传文件（含预解析结果）；数据库选择类清选中项
@@ -2557,7 +2558,7 @@ function downloadResult() {
                 </div>
                 <div v-if="selectedClusterTask" class="cluster-phrase-preview">
                   <div class="cluster-phrase-preview-title"><b>类簇短语预览</b><span>数据库将返回完整的类簇短语集合</span></div>
-                  <div v-for="item in selectedClusterTask.phraseSets" :key="item.clusterId" class="cluster-phrase-preview-row"><strong>{{ item.clusterId }}</strong><span v-for="phrase in item.phrases" :key="phrase">{{ phrase }}</span></div>
+                  <div v-for="item in selectedClusterTask.phraseSets" :key="item.clusterId" class="cluster-phrase-preview-row"><strong>{{ item.clusterId }}</strong><div class="cluster-phrase-list"><span v-for="phrase in item.phrases" :key="phrase">{{ phrase }}</span></div></div>
                   <p v-if="selectedClusterTask.clusterCount > selectedClusterTask.phraseSets.length">另有 {{ selectedClusterTask.clusterCount - selectedClusterTask.phraseSets.length }} 个类簇，运行时从数据库完整读取。</p>
                 </div>
                 <div class="info-banner">用户选择的是深度聚类任务；后端根据任务编号读取类簇短语集合，再将该集合提交给标签生成算法。</div>
@@ -2602,7 +2603,7 @@ function downloadResult() {
           </template>
 
           <template v-else-if="toolId === 'cluster-label' && mode === 'batch-text'">
-            <div class="settings-card"><div class="settings-title"><b>可选标签生成参数</b><span>阈值默认自动：不做差异化优化、以模型生成结果为准；调至数值档（0-1）时低于阈值的标签将被强制优化到达标</span></div><div class="three-column"><div class="field"><label><span class="label-main">标签长度限制</span></label><input v-model="labelLengthLimit" class="input" type="number" min="1" /></div><div class="field"><label><span class="label-main">语言类型</span></label><AppSelect v-model="labelLanguageType" :options="labelLanguageTypeOptions" /></div><div class="field"><label><span class="label-main">差异度阈值</span></label><div class="numeric-stepper"><input :value="form.threshold === 'auto' ? '自动确定' : String(form.threshold)" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="差异度阈值" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加差异度阈值" title="增加（从自动确定进入 0；1 时到顶）" :disabled="form.threshold === THRESHOLD_LADDER[THRESHOLD_LADDER.length - 1]" @click="adjustThreshold(1)">▲</button><button type="button" aria-label="减小差异度阈值" title="减小（0 时退回自动确定）" :disabled="form.threshold === 'auto'" @click="adjustThreshold(-1)">▼</button></span></div></div></div></div>
+            <div class="settings-card"><div class="settings-title"><b>可选标签生成参数</b><span>用户可选</span></div><div class="three-column"><div class="field"><label><span class="label-main">标签长度限制</span></label><input v-model="labelLengthLimit" class="input" type="number" min="1" /></div><div class="field"><label><span class="label-main">语言类型</span></label><AppSelect v-model="labelLanguageType" :options="labelLanguageTypeOptions" /></div><div class="field"><label><span class="label-main">差异度阈值</span></label><div class="numeric-stepper"><input :value="form.threshold === 'auto' ? '自动确定' : String(form.threshold)" class="input numeric-stepper-input" type="text" inputmode="none" readonly aria-label="差异度阈值" /><span class="numeric-stepper-controls"><button type="button" aria-label="增加差异度阈值" title="增加（从自动确定进入 0；1 时到顶）" :disabled="form.threshold === THRESHOLD_LADDER[THRESHOLD_LADDER.length - 1]" @click="adjustThreshold(1)">▲</button><button type="button" aria-label="减小差异度阈值" title="减小（0 时退回自动确定）" :disabled="form.threshold === 'auto'" @click="adjustThreshold(-1)">▼</button></span></div></div></div></div>
           </template>
 
           <template v-else-if="toolId === 'structured-review' && mode === 'batch-text'">

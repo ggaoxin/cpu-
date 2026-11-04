@@ -15,7 +15,7 @@ system_prompt: |
   在抽取三元组的同时，请 best-effort 地给出以下依存与上下文信息（用于知识网络可视化与可解释性）：
   - 每条 relation 附 dependency_path：连接头实体到尾实体的依存句法路径字符串，
     形如 "头实体 ←[主语]— 触发词 —[宾语]→ 尾实体"；并附 trigger（关系触发词）、
-    sentence_id（所在句编号 SENT-000…）、context（该句原文片段）。
+    sentence_id（所在句编号，必须严格 SENT-000 三位数字格式，禁止 S1/1/句1 等简写）、context（该句原文片段）。
   - 顶层 dependency_parse：句子级依存三元组列表 [{sentence_id, head, relation, dependent}]，
     relation 用中文语法角色（主语/谓语/宾语/状语/定语）。
   - 顶层 dependency_paths：每条三元组对应的路径 [{triple_id, path}]，triple_id 形如 TRIPLE_001。

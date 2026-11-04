@@ -3880,11 +3880,9 @@
   .relation-results-table .rel-col-action { width: 8%; }
 
   .relation-entity-text {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-    max-height: 3.2em;
+    /* 2026-11-04 用户定稿：实体名完整显示——去掉原型时代的两行夹紧截断
+     * （-webkit-line-clamp:2 + max-height:3.2em），长实体名自然换行、
+     * 行高随内容增长，不再出现省略号 */
     color: #344054;
     line-height: 1.6;
     word-break: break-word;

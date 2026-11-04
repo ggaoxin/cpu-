@@ -227,6 +227,7 @@ def _input_documents(values: list[Any]) -> list[dict[str, Any] | str]:
                     # 从全文自动解析——自动抽取的日期可能取到引用文献/基金年度
                     # 等噪声年份，趋势分析口径应完全由用户提供）
                     "publication_date": value.get("publication_date"),
+                    **({"_moves": value["_moves"]} if value.get("_moves") else {}),
                 })
             else:
                 row = dict(value)
@@ -478,17 +479,29 @@ def execute_deep_clustering(
         doc["technical"] = info if selected_axis == "technical" else {}
         doc["application"] = info if selected_axis == "application" else {}
 
-    document_assignments = [{
-        "document_id": doc["document_id"],
-        "title": doc["title"],
-        "publication_date": doc["published_at"],
-        "publication_year": doc["publication_year"],
-        "cluster_id": (doc["technical"] or doc["application"]).get("topic_id"),
-        "similarity_to_centroid": None,
-        "key_evidence": " ".join(
-            (moves[i]["研究方法"] if selected_axis == "technical"
-             else moves[i]["研究背景"] + moves[i]["研究目的"])[:2])[:300],
-    } for i, doc in enumerate(documents)]
+    document_assignments = []
+    for i, doc in enumerate(documents):
+        # 归类依据兜底链（2026-11-04 用户实测：评论/综述类文献语步提取常无
+        # "研究方法"句 → key_evidence 空串）：优先取轴对应语步，空则逐级
+        # 回退到其他语步类型，全空时取簇名
+        _m = moves[i] if i < len(moves) and isinstance(moves[i], dict) else {}
+        if selected_axis == "technical":
+            _ev = (_m.get("研究方法") or _m.get("研究目的") or _m.get("研究背景") or [])
+        else:
+            _ev = (_m.get("研究背景") or _m.get("研究目的") or _m.get("研究方法") or [])
+        if not _ev:
+            _cid = (doc.get("technical") or doc.get("application") or {}).get("topic_id") or ""
+            _cluster = next((c for c in clusters if c.get("cluster_id") == _cid), {})
+            _ev = [f"归入「{_cluster.get('topic_name') or _cid}」簇"]
+        document_assignments.append({
+            "document_id": doc["document_id"],
+            "title": doc["title"],
+            "publication_date": doc["published_at"],
+            "publication_year": doc["publication_year"],
+            "cluster_id": (doc["technical"] or doc["application"]).get("topic_id"),
+            "similarity_to_centroid": None,
+            "key_evidence": " ".join(str(x) for x in _ev[:2])[:300],
+        })
 
     output = {
         "documents": documents,

@@ -1430,6 +1430,10 @@ async def parse_files(
         return JSONResponse(status_code=422, content={
             "code": 42201, "message": f"批量文件数量不能超过 {settings.MAX_BATCH_FILES} 个（错误码 42201），本次共 {len(uploads)} 个"})
     effective_tool = str(tool_id or "").strip()
+    # query string 补读（2026-11-04：Form 参数不走 query string，前端以
+    # ?tool_id=xxx 传参 → effective_tool 为空 → 语步前移等工具分支不执行）
+    if not effective_tool:
+        effective_tool = str(request.query_params.get("tool_id") or "").strip()
     CITATION_TOOLS = {"citation-intent", "citation-sentiment"}
     is_abstract_tool = effective_tool in ABSTRACT_MOVE_TOOLS
     # 摘要依赖型工具统一限前 8 页（2026-09-09）：摘要语步/分类×3/RQ/关键词×2 的
@@ -1576,11 +1580,26 @@ async def parse_files(
     finally:
         for upload in uploads:
             await upload.close()
+    # 深度聚类语步前移（2026-11-04 甲方响应时间优化）：解析阶段顺带提取
+    # 语步（每篇 1-2 次 LLM 调用，与 PDF 解析同属上传动作，用户无感知），
+    # 提交时直接取用跳过 30+ 秒的 extract_moves_batch。语步提取与聚类参数
+    # 无关（维度/算法/簇数都不影响），可安全前移复用
+    if effective_tool == "deep-cluster" and parsed_pairs:
+        from infrastructure.clustering.move_aligned import extract_moves as _em
+        from infrastructure.llm.glm_client import glm_client as _glm_c
+        from concurrent.futures import ThreadPoolExecutor as _TPE
+        with _TPE(max_workers=min(12, len(parsed_pairs))) as _pool:
+            _pre_moves = list(_pool.map(
+                lambda _p: _em({"title": _p.get("title", ""), "full_text": _p.get("text", "")}, _glm_c),
+                parsed_pairs))
+        for _p, _m in zip(parsed_pairs, _pre_moves):
+            _p["_moves"] = _m
+        print(f"[moves-debug] {_p.get("file_name","?")[:15]}: type={type(_m).__name__} keys={list(_m.keys())[:3] if isinstance(_m,dict) else _m}", flush=True)
+
     from infrastructure.document_parser import parse_store
     results = []
     for item in parsed_pairs:
         text = str(item.get("text") or "")
-        parse_id = parse_store.put(str(item.get("file_name") or "file"), str(item.get("media_type") or ""), text)
         # 2026-10-15 结构化综述等批量文件需要展示元数据：解析后从文本头部
         # 自动提取论文题名（前 500 字内首个 ≥8 字的连续行，去掉文件名噪声）
         _title = ""
@@ -1616,7 +1635,8 @@ async def parse_files(
                     or re.fullmatch(r"(单位代码|学号|分类号|密级|编号)\d+", _s_nospace)
                     or re.fullmatch(r"[A-Z]{1,6}\d{1,6}", _s_nospace))  # 分类号 TP319 裸码
                 if len(_s) >= 8 and not _s.startswith(("#", "摘要", "Abstract", "关键词", "Keywords", "http", "DOI", "收稿", "作者", "Preprint", "arXiv", "ARXIV", "单位代码", "学号", "分类号", "密级", "UDC", "论文编号", "工程编号")) \
-                        and not _is_form_field and not _re_title_journal.search(_s):
+                        and not _is_form_field and not _re_title_journal.search(_s) \
+                        and not re.match(r"(?i)^(published\s+as\s+a\s|under\s+review\s+as\s+a\s|published\s+in\s)", _s):
                     _title = _s[:200]
                     # 断行标题拼接（2026-10-19：19.pdf 标题跨两行只取到前半
                     # "…BLACK-"）：行尾连字符直接续接（BLACK-BOX 复合词），下一行
@@ -1670,6 +1690,9 @@ async def parse_files(
                     _title = _llm_title
         except Exception:  # noqa: BLE001 - 审核失败保持正则结果
             pass
+        # parse_store 存入（2026-11-04 修复：此前 put 在题名提取前引用了
+        # 未定义的 _title → UnboundLocalError 500；移到提取后，题名可存入）
+        parse_id = parse_store.put(str(item.get("file_name") or "file"), str(item.get("media_type") or ""), text, title=str(item.get("title") or _title or ""), moves=item.get("_moves"))
         results.append({"parse_id": parse_id, "file_name": item.get("file_name"), "char_count": len(text), "parsed_title": _title, "parsed_year": _year,
                         # 引用工具带解析文本（2026-10-18 用户定稿：文件解析后前端
                         # 自动提取引用句卡片，提交走信任卡片路径——输入侧卡片数=
@@ -1765,6 +1788,8 @@ def _file_endpoint(tool_id: str, multiple: bool):
                     "file_name": item["file_name"],
                     "media_type": item["media_type"],
                     "text": item["text"],
+                    **({"_moves": item["moves"]} if item.get("moves") else {}),
+                    **({"title": item["title"]} if item.get("title") else {}),
                 } for item in _ps.take_many(parse_ids)]
             except ValueError as exc:
                 raise HTTPException(status_code=422, detail=str(exc)) from exc
@@ -1948,7 +1973,10 @@ def relation_dependency_preview(payload: Dict[str, Any] = Body(...)) -> Dict[str
         "只输出JSON:{\"data\":[{\"head\":\"\",\"relation\":\"\",\"dependent\":\"\",\"sentence_id\":\"SENT-001\"}]}"
     )
     try:
-        out = glm_client.chat_json(system, f"分析以下文本的依存句法:\n{text}", timeout=30.0, max_tokens=2000)
+        # 2026-11-04 用户实测修复：上游记录实体多（68-72 个）时依存弧输出长，
+        # 30s/2000token 常超时或截断（"GLM接口请求超时"）。timeout 30→90、
+        # 输出预算 2000→3000（chat_json 解析失败仍会自动翻倍重试）
+        out = glm_client.chat_json(system, f"分析以下文本的依存句法:\n{text}", timeout=90.0, max_tokens=3000)
         arcs = out.get("data", out) if isinstance(out, dict) else []
         if not isinstance(arcs, list):
             arcs = []
@@ -2255,11 +2283,33 @@ def compatible_history(
             "label": " · ".join(_parts),
         }
         if upstream_type == "entity":
-            # 实体预览从最新结果取（已批量加载，不再逐条 get_task_item）
-            source_text = str(result.get("original_sentence") or "")
+            # 实体预览从最新结果取（已批量加载，不再逐条 get_task_item）。
+            # 2026-11-04 用户实测修复：此前每条只回 5 个（载荷预览截断），下游
+            # "已识别实体列表"显示 5/72 误导——改为全量瘦身（只留 UI 消费的
+            # text/type/domain 三字段，剔除 context 等重字段，72 个也仅数 KB）
             _entities = result.get("entities") or result.get("entity_results") or []
-            option["sentence"] = source_text[:500]
-            option["entities"] = _entities[:5]
+            # 原始句子文本（语境片段）：上游 NER 记录不带 original_sentence
+            # （只有关系结果才透出全文），此前整栏空白——退化为实体语境句，
+            # 与关系抽取实际消费的输入完全同款（S1/S2/… 编号 + 去重，见
+            # _compose_entity_context），不设条数上限、按 1200 字截断
+            source_text = str(result.get("original_sentence") or "").strip()
+            if not source_text:
+                _ctx_seen: list = []
+                for _e in _entities:
+                    if not isinstance(_e, dict):
+                        continue
+                    _c = str(_e.get("context") or "").strip()
+                    if _c and not _c.startswith("/tmp/") and _c not in _ctx_seen:
+                        _ctx_seen.append(_c)
+                source_text = "\n".join(f"S{_j}: {_c}" for _j, _c in enumerate(_ctx_seen, 1))
+                # 语境句数组单独透出（前端逐行 S 编号渲染用；实体瘦身剥离了
+                # context 字段，此前前端 contexts 派生为空 → 预览退化单行）
+                option["contexts"] = _ctx_seen
+            option["sentence"] = source_text[:1200]
+            option["entities"] = [
+                {"text": e.get("text"), "type": e.get("type"), "domain": e.get("domain")}
+                for e in _entities if isinstance(e, dict) and e.get("text")
+            ]
         elif upstream_type == "cluster":
             # 聚类下游需要簇数/篇数/phrase_sets（弹窗"类簇预览"读这些字段）
             clusters = result.get("clusters") or []

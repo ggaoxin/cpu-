@@ -101,7 +101,10 @@ function enrichPositionPreview(value: unknown, mode: PositionPreviewMode) {
       node.section = nextPositionText()
       handled.add('section')
     }
-    if (node.triple_id && !node.source_position && !node.position) {
+    // 2026-11-04 用户定稿：实体关系三元组不再带任何位置字段（句子位置列已撤），
+    // 演示数据的补位逻辑对 triple 跳过
+    if (node.triple_id && !node.source_position && !node.position
+        && !String(node.triple_id).startsWith('TRIPLE_')) {
       node.position = nextPosition()
       handled.add('position')
     }
@@ -687,7 +690,7 @@ const researchNerPreviewResponse = {
 // 此处只保证原型预览中的统计、实体详情和本体映射均可被完整检查。
 // 实体关系识别（历史记录模式）演示三元组：真实响应以 relation_triples/relations/
 // triples/relation_results 四个别名返回同一数组（2026-10-27 live 比对）
-const relationDemoTriples = [{ triple_id: 'TRIPLE_001', head: '阿司匹林', relation: '抑制', tail: '血小板聚集', subject: '阿司匹林', object: '血小板聚集', trigger: '抑制', sentence_id: 'SENT-018', context: '阿司匹林能够抑制血小板聚集。', dependency_path: '阿司匹林 ←[主语]— 抑制 —[宾语]→ 血小板聚集', confidence: 0.96, source_position: { start: 0, end: 12 } }]
+const relationDemoTriples = [{ triple_id: 'TRIPLE_001', head: '阿司匹林', relation: '抑制', tail: '血小板聚集', subject: '阿司匹林', object: '血小板聚集', trigger: '抑制', context: '阿司匹林能够抑制血小板聚集。', dependency_path: '阿司匹林 ←[主语]— 抑制 —[宾语]→ 血小板聚集', confidence: 0.96 }]
 
 const domainNerPreviewResponse = {
   code: 200,
@@ -1211,7 +1214,7 @@ const finalOverrides: Record<string, Partial<ToolDefinition>> = {
       ['cluster_task_id', 'string', 'conditional', '数据库中已完成的深度聚类历史任务编号'],
       ['label_length_limit', 'integer', 'optional', '标签最大长度'],
       ['language_type', 'string', 'optional', '输出语言：自动、中文或英文'],
-      ['distinctiveness_threshold', 'number', 'optional', '类簇间差异阈值，范围 0—1。不传该参数默认"自动"：不做差异化优化，以模型生成的标签为准；显式设定时低于阈值的标签强制优化到达标']
+      ['distinctiveness_threshold', 'number', 'optional', '类簇间差异阈值，范围 0—1，用户可选。不传该参数默认"自动"']
     ],
     demoBatchTextResult: alignedClusterLabelDemo,
     demoBatchFileResult: variantOf(alignedClusterLabelDemo, { meta: { input_type: 'files' } }),

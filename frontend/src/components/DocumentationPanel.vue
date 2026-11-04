@@ -19,7 +19,17 @@ const copyTimers: Record<keyof typeof copiedKeys, ReturnType<typeof setTimeout> 
 const modes = computed(() => modesFor(props.tool))
 watch(() => props.tool, () => { callType.value = 'api'; mode.value = modes.value[0] }, { immediate: true })
 const callCode = computed(() => buildCallCode(props.tool, mode.value, callType.value))
-const responseCode = computed(() => pretty(responseFor(props.tool, mode.value)))
+const responseCode = computed(() => {
+  const full = pretty(responseFor(props.tool, mode.value))
+  // 2026-11-04 性能修复：深度聚类等工具的响应示例 JSON 可达 7000px+，
+  // 长 pre 穿透 code-box 溢出撑高 main-card scrollHeight → 在线测试框底部
+  // 与页面底部间多出 ~200px 空白。截短到 4000 字符（约 code-box 满高的
+  // 3 倍滚动余量），带截断标记
+  if (full.length > 4000) {
+    return full.slice(0, 4000) + '\n…（示例已截断，完整响应请运行在线测试查看）'
+  }
+  return full
+})
 const parameterRows = computed(() => requestParameterRowsFor(props.tool, mode.value))
 async function copy(value: string, key: keyof typeof copiedKeys) {
   try {

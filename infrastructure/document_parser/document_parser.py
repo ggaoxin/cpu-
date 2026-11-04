@@ -70,6 +70,18 @@ class DocumentParser:
 
     HEADING_RE = re.compile(r'^(#{1,6})\s+(.+)$')
     JOURNAL_COVER_RE = re.compile(r'^《.+》网络首发论文')
+    # 会议/预印本页眉条带（2026-11-03 用户反馈 1.pdf：题名被抽取成
+    # "PublishedasaconferencepaperatICLR2021 AUTOREGRESSIVE ENTITY RETRIEVAL"）。
+    # PyMuPDF 轻量抽取常丢失空格（Publishedasa…），词间用 \s* 兼容空格/黏连两种形态。
+    # STANDALONE=整行就是条带（跳过该行）；PREFIX=条带黏在真实题名前（剥前缀）。
+    VENUE_BANNER_STANDALONE_RE = re.compile(
+        r'^(?:published\s*as\s*a\s*(?:conference|workshop)\s*paper\s*(?:at\s*[A-Za-z]+\s*\d{2,4})?'
+        r'|under\s*review\s*(?:as\s*a\s*(?:conference|workshop)\s*paper\s*)?(?:at\s*[A-Za-z]+\s*\d{2,4})?'
+        r'|arxiv\s*:?\s*\d{4}\.\d{4,5}(?:v\d+)?)\s*$',
+        re.IGNORECASE)
+    VENUE_BANNER_PREFIX_RE = re.compile(
+        r'^(?:published|under\s*review)\s*as\s*a\s*(?:conference|workshop)\s*paper\s*(?:at\s*[A-Za-z]+\s*\d{2,4})?\s*[:：,，\-—]?\s*',
+        re.IGNORECASE)
     # 摘要行内标志：兼容「摘要」「摘 要」「摘要:」及 CNKI 网络首发等带括号前缀「[摘要]」「【摘要】」「（摘要）」
     INLINE_ABSTRACT_RE = re.compile(
         r'^[\[【（(]?\s*(?:摘\s*要|Abstract|ABSTRACT)\s*[\]】）)]?\s*[:：]?\s*(.+)$')
@@ -257,9 +269,13 @@ class DocumentParser:
             for line in lines[:10]:
                 stripped = line.strip()
                 if stripped and not stripped.startswith('#') and not stripped.startswith('!') and \
-                   not self.JOURNAL_COVER_RE.match(stripped) and 5 < len(stripped) <= 200:
-                    title = stripped
-                    break
+                   not self.JOURNAL_COVER_RE.match(stripped) and \
+                   not self.VENUE_BANNER_STANDALONE_RE.match(stripped) and 5 < len(stripped) <= 200:
+                    # 条带黏在真实题名前（"…at ICLR 2021 真实题名"）→ 剥前缀取余
+                    candidate = self.VENUE_BANNER_PREFIX_RE.sub('', stripped).strip()
+                    if 5 < len(candidate) <= 200:
+                        title = candidate
+                        break
 
         # 作者
         authors = ''

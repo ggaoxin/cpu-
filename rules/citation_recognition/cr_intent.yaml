@@ -56,7 +56,10 @@ pattern_rules:
     necessary_conditions:
       - kind: keyword
         any_of: ["采用", "基于", "使用", "借鉴", "沿用", "引入.*方法", "引入.*模型", "利用", "借助",
-                 "\\busing\\b", "\\buse[sd]?\\b", "\\bbased on\\b", "\\badopt\\w*\\b", "\\bemploy\\w*\\b",
+                 "\\busing\\b", "\\buse[sd]?\\b", "\\bwe (?:use[ds]?|utilize[ds]?)\\b", "\\bbased on\\b", "\\badopt\\w*\\b", "\\bemploy\\w*\\b",
+                 "\\b(?:was|were|is|are) (?:calculated|measured|assessed|determined|quantified|analy[sz]ed|performed)\\b",
+                 "\\b(?:measured|assessed|determined|calculated|analy[sz]ed|performed|quantified|amplified) using\\b",
+                 "\\bas (?:described|reported|described previously) by\\b", "\\bfollowing\\s+(?:the\\s+)?[A-Z][a-z]+(?:\\s+et\\s+al\\.?)?",
                  "\\bleverag\\w+\\b", "\\bby means of\\b", "\\bmake(?:s)? use of\\b", "\\bdraw(?:n)? on\\b",
                  "\\bborrow\\w* from\\b", "\\bfollow\\w* (?:the|their|his|her) (?:approach|method|framework|work)\\b",
                  "\\badapted from\\b", "\\binspired by\\b"]
@@ -80,6 +83,9 @@ pattern_rules:
       - kind: keyword
         any_of: ["相比", "与.*相比", "对比", "优于", "提升.*%", "高于", "低于", "超过", "而.*提升", "相对于",
                  "\\bthan\\b", "\\bcompared\\b", "\\bin contrast\\b", "\\bin comparison\\b",
+                 "\\b(?:our|these|those|the) (?:results|findings)\\b", "\\bsimilar (?:results|findings|to)\\b",
+                 "\\b(?:in )?agreement with\\b", "\\b(?:are|is|was|were) consistent with\\b",
+                 "\\bcontrary to\\b", "\\bprevious (?:findings|results)\\b", "\\bthe findings\\b",
                  "\\boutperform\\w*\\b", "\\bsurpass\\w*\\b", "\\bfaster\\b", "\\bslower\\b",
                  "\\bhigher\\b", "\\blower\\b", "\\bimprovement of\\b", "\\breduce[sd]? by\\b"]
     stats: {}
@@ -100,6 +106,9 @@ pattern_rules:
                  "\\bin recent (?:years|decades)\\b", "\\bfirst (?:proposed|introduced|presented)\\b",
                  "\\bpropos(?:e|es|ed)\\b", "\\bintroduc\\w+\\b", "\\bpioneer\\w*\\b", "\\bsurvey\\b", "\\breview\\b",
                  "\\bearlier (?:work|studies|methods)\\b", "\\bprevious\\w* (?:work|studies|research|efforts)\\b",
+                 "\\b(?:has|have) been (?:shown|reported|demonstrated|observed|suggested|proposed)\\b",
+                 "\\bit is (?:known|well known|established)\\b", "\\bpreviously (?:shown|reported|demonstrated)\\b",
+                 "\\bwidely (?:used|known|reported)\\b",
                  "\\bprior (?:work|studies|art)\\b", "\\bexisting\\b", "\\bhas (?:attracted|received)\\b"]
     exclusion_conditions:
       - kind: keyword

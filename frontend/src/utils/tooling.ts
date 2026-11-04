@@ -646,8 +646,12 @@ export function requestPayloadFor(
   // never silently submit those examples when the user left a field empty.
   // 资源字段（2026-09-14 修复）直通：模板按"内置=不提交"剥掉了资源键，
   // 若按模板过滤会把用户上传的资源 File 一并丢弃——请求静默退回内置资源
+  // 领域参数直通（2026-11-04 用户实测修复）：domain-ner 的"专业领域"下拉
+  // 值此前被模板过滤静默剥掉——用户选了生物、请求里没带、后端自动判成
+  // 医学。表单仅在非"自动识别"时才设置该键，直通不会引入空值
+  const passthrough = new Set([...METADATA_FIELD_NAMES, 'domain'])
   return Object.fromEntries(Object.keys(values).flatMap(key =>
-    key in template || RESOURCE_FIELD_NAMES.has(key) || METADATA_FIELD_NAMES.has(key)
+    key in template || RESOURCE_FIELD_NAMES.has(key) || passthrough.has(key)
       || CITATION_CARD_FIELD_NAMES.has(key)
       ? [[key, values[key]]] : [],
   ))
