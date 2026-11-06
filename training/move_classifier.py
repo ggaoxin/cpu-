@@ -7,6 +7,7 @@
        → 重拼最终 spans + 证据 + 置信度
 """
 from __future__ import annotations
+import re
 
 import json
 import logging
@@ -123,6 +124,31 @@ def classify_full(
             f"结果段末 {_n_relocated} 个总结性句子已按口径改判研究结论")
 
     final_spans = reassemble_spans(abstract, final_labels)
+    # 分句级语义片段保留（2026-11-06 用户定稿）：reassemble_spans 按整句重组
+    # 会把 LLM 拆好的片段（如"本文针对X问题"=目的 / "采用Y策略"=方法）合并
+    # 回整句归单一语步。LLM 片段覆盖语步数 ≥ 重组结果时优先 LLM 片段输出
+    # （相也要优先：语步数相同但片段粒度更细；仅当引擎裁决/复核救回了 LLM
+    # 漏掉的语步（重组非空更多）才用整句重组）。前提：每个非空片段都是
+    # 原文的逐字子串（去空白比较），否则回退重组版由归一化层吸附到小句边界
+    _p = get_profile()
+    _llm_nonempty = sum(1 for v in spans_llm.values() if v and v.strip())
+    _reassembled_nonempty = sum(1 for v in final_spans.values() if v and v.strip())
+    if _llm_nonempty and _llm_nonempty >= _reassembled_nonempty:
+        _flat = re.sub(r'\s+', '', abstract)
+        _all_verbatim = all(
+            (not v or not v.strip()) or re.sub(r'\s+', '', v) in _flat
+            for v in spans_llm.values()
+        )
+        if _all_verbatim:
+            final_spans = {m: spans_llm.get(m, '') for m in _p.moves}
+    # 分句级片段口径校准（2026-11-06 20 篇实测浮动收敛）：片段保留路径跳过了
+    # 句级 relocate_summary_tail_sentences 等校准，这里在最终 spans（无论来自
+    # LLM 片段还是整句重组）上补齐同口径的小句级规则：结果尾部总结性小句→结论、
+    # 背景尾部宣言小句→目的、目的中步骤小句→方法
+    from training.rule_engine import relocate_fragment_tails
+    final_spans, _frag_notes = relocate_fragment_tails(final_spans, abstract)
+    if _frag_notes:
+        res.setdefault("deterministic_issues", []).extend(_frag_notes)
     n_sent = max(1, len(sentences))
     confidence = round((n_sent - len(res["conflicts"])) / n_sent, 3)
 

@@ -92,6 +92,158 @@ _SUMMARY_TAIL_RE = re.compile(
     r"(能力|性能|效果|精度|鲁棒性|抗扰|泛化)(能力)?(得到|获得)?(显著|明显|大幅|有效)?(提升|改善|提高|增强)"
 )
 
+# ── 分句级片段口径校准（2026-11-06，20 篇实测 LLM 判断层浮动收敛）──────────
+# 与 result_normalizer._split_clauses 同口径的小句切分（层间不互相 import：
+# training 不依赖 application，正则保持手工同步）。半角逗号按"后非数字"切
+# （"实验表明,该方法"这类中文摘要的半角逗号无后随空白也要切；仅千分位
+# "3,400" 不切）
+_CLAUSE_BOUNDARY_RE = re.compile(r"[。！？；，：]|[,](?!\d)|[!?;:](?=\s)|\.(?=[\s\"'”’\)\]]|$)")
+
+# 总结性收尾小句（比 _SUMMARY_TAIL_RE 宽：另覆盖"为…提供/具有…价值/验证了…
+# 潜力/实现…匹配"等收尾形态——实测轨道交通"实现运力资源对突发需求的精准动态
+# 匹配"、WGCNA"为DN的精准诊疗提供了新思路"等被判进结果尾部）
+_FRAG_SUMMARY_RE = re.compile(
+    r"为[^，。；]{0,28}(?:提供|奠定|支撑|参考|依据|途径|思路|基础|借鉴|保障)"
+    r"|具有(?:较[好大]|重要|一定|很高?)?的?[^，。；]{0,12}(?:价值|意义|潜力|前景)"
+    r"|验证了?[^，。；]{0,30}(?:能力|潜力|有效性|可行性)"
+    r"|(?:能力|性能|效率|水平|鲁棒性|泛化[化性]?|抗扰[动性]?)(?:得到|获得)?(?:显著|明显|大幅|有效)?(?:提升|改善|提高|增强)"
+    r"|(?:显著|有效)提升(?:了)?(?:模型|系统|框架)?的?(?:科学性|可解释性|稳定性|可靠性)"
+    r"|实现了?[^，。；]{0,24}(?:匹配|协同|统一|一体化|均衡|闭环|落地|应用)"
+)
+# 目的段中的步骤小句（"首先，在模型中设计了…模块"——宣言归目的、步骤归方法）
+_FRAG_STEP_RE = re.compile(r"^(?:首先|其次|再次|然后|接着|最后|进一步|同时)[，,]")
+_FRAG_METHOD_VERB_RE = re.compile(r"设计|引入|构建|采用|建立|搭建|开发|研制|训练|提出|结合|利用|部署|融合|优化")
+# 背景尾部宣言小句（"针对该问题，提出了一种…模型"——痛点归背景、宣言归目的；
+# re.S：PDF 抽取文本小句内常带换行，`.` 需跨行匹配）
+_FRAG_DECL_RE = re.compile(
+    r"^(?:针对(?:该|这些|上述)?(?:问题|困境|挑战|不足|缺陷|需求)|为此|鉴于此|因此|基于此)[，,]"
+    r".{0,80}?(?:提出|构建|设计|建立|开发|研制|形成)", re.S
+)
+# 第三方主语词（背景里描述他人工作时出现——宣言改判必须排除，防止把
+# "针对该问题，Smith 等提出了 X"误搬进目的）
+_FRAG_THIRD_PARTY_RE = re.compile(r"已有|传统|现有|先前|早期|近年|文献|学者|他人|et al")
+# 宣言动词 + 成果名词（"提出了一种…模型/构建了…框架"——本文首次宣言形态）
+_FRAG_DECL_VERB_RE = re.compile(
+    r"(?:提出|构建|设计|建立|开发|研制|形成)了?[^，。；]{0,40}(?:模型|方法|框架|策略|系统|方案|机制|体系)")
+
+
+def _split_span_clauses(text: str) -> List[str]:
+    """按句读标点把 span 文本切成小句串（含边界标点），供片段级口径校准。"""
+    if not text:
+        return []
+    out: List[str] = []
+    start = 0
+    for m in _CLAUSE_BOUNDARY_RE.finditer(text):
+        end = m.end()
+        while end < len(text) and text[end] in "”’\"')]}":
+            end += 1
+        seg = text[start:end]
+        if seg.strip():
+            out.append(seg)
+        start = end
+    if start < len(text) and text[start:].strip():
+        out.append(text[start:])
+    return out
+
+
+def relocate_fragment_tails(spans: Dict[str, str], abstract: str) -> tuple:
+    """分句级语步片段的确定性口径校准（与 relocate_summary_tail_sentences 同一
+    需求评审口径的片段粒度版）。
+
+    背景：片段保留路径（LLM spans ≥ 重组非空时优先）会跳过句级的
+    relocate_summary_tail_sentences 等校准，实测 20 篇出现三类 LLM 判断层浮动：
+    ① 结果段末总结性小句未拆出（"实现…精准动态匹配""为…提供了新思路"留在
+       结果尾部、结论空置）；
+    ② 背景尾部吞并宣言句（"针对该问题，提出了一种…模型"留在背景、目的错拿
+       方法步骤）；
+    ③ 目的段含"首先，设计了…模块"类步骤小句。
+    三条规则（高置信确定性模式 + 空语步守卫，改判记录进 deterministic_issues）：
+    A 结果尾部连续 ≤2 个无数字总结性小句 → 研究结论（仅结论为空时）；
+    B 背景尾部宣言小句 → 研究目的（仅目的为空且无第三方主语时）；
+    C 目的中步骤小句 → 研究方法（按原文顺序归并）。
+    返回 (调整后 spans, 改判说明列表)；非中文摘要 profile（无此三语步）原样返回。
+    """
+    p = get_profile()
+    need = ("研究背景", "研究目的", "研究方法", "研究结果", "研究结论")
+    if not all(m in p.moves for m in need):
+        return spans, []
+    notes: List[str] = []
+    flat = re.sub(r"\s+", "", abstract)
+
+    def _pos(clause: str) -> int:
+        return flat.find(re.sub(r"\s+", "", clause))
+
+    def _merge_by_doc_order(dst: List[str], moved: List[str]) -> List[str]:
+        # 搬迁小句按原文位置插入目标段（位置取不到的排尾部），保持各段 text
+        # 是原文小句的按序拼接（跨段非连续时由归一化层多段拼接兜底定位）
+        allc = dst + moved
+        allc.sort(key=lambda c: _pos(c) if _pos(c) >= 0 else 10 ** 9)
+        return allc
+
+    # C: 目的段中的步骤小句 → 研究方法。步骤标记"首先，"后的逗号即切分点，
+    # 标记小句与方法动词分属相邻小句——标记小句（≤4 字纯标记）与其后小句
+    # 合并成一个判定单元，命中则两小句一并搬迁（按索引处理，避免同名小句
+    # 误删）
+    purpose_cl = _split_span_clauses(spans.get("研究目的") or "")
+    step_idx = set()
+    for i, c in enumerate(purpose_cl):
+        cs = c.strip()
+        if not _FRAG_STEP_RE.match(cs):
+            continue
+        if _FRAG_METHOD_VERB_RE.search(cs):
+            step_idx.add(i)
+        elif (len(re.sub(r"[，,。\s]", "", cs)) <= 4 and i + 1 < len(purpose_cl)
+              and _FRAG_METHOD_VERB_RE.search(purpose_cl[i + 1])):
+            step_idx.update((i, i + 1))
+    if step_idx and (spans.get("研究方法") or "").strip():
+        moved = [c for i, c in enumerate(purpose_cl) if i in step_idx]
+        spans["研究目的"] = "".join(c for i, c in enumerate(purpose_cl) if i not in step_idx)
+        spans["研究方法"] = "".join(_merge_by_doc_order(
+            _split_span_clauses(spans["研究方法"]), moved))
+        notes.append(f"目的段 {len(moved)} 个步骤小句按口径改判研究方法")
+
+    # B: 背景尾部宣言小句 → 研究目的（目的为空时）。"针对该问题，提出了X模型"
+    # 会被逗号切成"针对该问题，"+"提出了…模型。"两小句——尾部小句命中宣言
+    # 模式、其前是 ≤8 字的 针对/为此/鉴于此 类标记小句时，两小句一并搬迁
+    bg_cl = _split_span_clauses(spans.get("研究背景") or "")
+    if bg_cl and not (spans.get("研究目的") or "").strip():
+        tail = bg_cl[-1].strip()
+        decl_hit = bool(_FRAG_DECL_VERB_RE.search(tail)) and not _FRAG_THIRD_PARTY_RE.search(tail)
+        take = 1
+        if decl_hit and len(bg_cl) >= 2:
+            prev = bg_cl[-2].strip()
+            if (len(re.sub(r"[，,。\s]", "", prev)) <= 8
+                    and re.match(r"^(?:针对|为此|鉴于此|因此|基于此)", prev)
+                    and not _FRAG_THIRD_PARTY_RE.search(prev)):
+                take = 2
+        if decl_hit:
+            moved_bg = bg_cl[-take:]
+            spans["研究背景"] = "".join(bg_cl[:-take])
+            spans["研究目的"] = "".join(moved_bg)
+            notes.append("背景段尾部宣言小句按口径改判研究目的")
+
+    # A: 结果尾部总结性小句 → 研究结论（结论为空时）。守卫：候选小句不得以
+    # 结果引导词开头（"实验表明/结果表明"类是结果本体）、不含数字（带数据的是
+    # 结果不是结论）。结果段单小句且整句是总结形态时允许整段搬迁（[斜拉索]
+    # 实测：结果段仅"验证了…潜力。"一句，结论空置）
+    res_cl = _split_span_clauses(spans.get("研究结果") or "")
+    if res_cl and not (spans.get("研究结论") or "").strip():
+        _result_lead_re = re.compile(r"^(?:实验|相关)?(?:表明|显示|发现|结果|测试|分析)")
+        moved: List[str] = []
+        for c in reversed(res_cl[-2:]):
+            cs = c.strip()
+            core_len = len(re.sub(r"[，。；、,.;:\s]", "", cs))
+            if (core_len >= 6 and not re.search(r"\d", c)
+                    and not _result_lead_re.match(cs)
+                    and _FRAG_SUMMARY_RE.search(cs)):
+                moved.insert(0, c)
+        if moved:
+            spans["研究结果"] = "".join(c for c in res_cl if c not in moved)
+            spans["研究结论"] = "".join(moved)
+            notes.append(f"结果段末 {len(moved)} 个总结性小句按口径改判研究结论")
+
+    return spans, notes
+
 
 def relocate_summary_tail_sentences(sentences: List[str], final_labels: List[str]) -> int:
     """确定性口径校准：结果段末尾连续的总结性句子改判研究结论（需求评审口径）。

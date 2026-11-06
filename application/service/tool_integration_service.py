@@ -726,10 +726,11 @@ class ToolIntegrationService:
             return self._validation_error(contract, request_id, input_type, started, str(error_summary))
 
         # 全部失败且错误同类（2026-09-10 用户需求）：批量上传整批同类错误（如英文论文
-        # 全部进中文工具的语言不匹配）不逐条重复 6 次，直接返回一条干净的错误提示
+        # 全部进中文工具的语言不匹配）不逐条重复 6 次，直接返回一条干净的错误提示；
+        # "未在文件…未检测到摘要"（2026-11-07 无摘要文献）同款升级 42201
         if status is TaskStatus.FAILED and results:
             _all_errors = [str(r.get("error") or "") for r in results if r.get("error")]
-            _common_prefixes = ("语言不匹配", "文件解析失败", "预解析结果已过期")
+            _common_prefixes = ("语言不匹配", "文件解析失败", "预解析结果已过期", "未在文件")
             for _prefix in _common_prefixes:
                 if _all_errors and all(e.startswith(_prefix) for e in _all_errors):
                     self.repository.update_task_status(

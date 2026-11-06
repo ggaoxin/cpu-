@@ -55,7 +55,28 @@ dictionaries:
   - improved
   - outperformed
   - achieved
-examples: []
+examples:
+- abstract: 'Perovskite solar cells offer high conversion efficiency, making them a leading candidate for next-generation photovoltaics. To address the thermal degradation of perovskite films, we adopt an interface passivation strategy that introduces organic ligands to suppress ion migration. Test results show that device T80 lifetime extends to 1200 h under 85C aging, providing a reference for industrialization.'
+  spans:
+    Background: Perovskite solar cells offer high conversion efficiency, making them a leading candidate for next-generation photovoltaics.
+    Objective: To address the thermal degradation of perovskite films
+    Methods: we adopt an interface passivation strategy that introduces organic ligands to suppress ion migration
+    Results: Test results show that device T80 lifetime extends to 1200 h under 85C aging
+    Conclusion: providing a reference for industrialization.
+- abstract: 'We present TranslateGemma, a suite of open machine translation models based on the Gemma 3 foundation models. To enhance the inherent multilingual capabilities of Gemma 3 for translation, we employ a two-stage fine-tuning process. First, supervised fine-tuning is performed using synthetic parallel data and human-translated parallel data. We demonstrate the effectiveness of TranslateGemma with human evaluation on the WMT25 test set across 10 language pairs. The results provide practical guidance for building multilingual translation systems.'
+  spans:
+    Background: ''
+    Objective: We present TranslateGemma, a suite of open machine translation models based on the Gemma 3 foundation models. To enhance the inherent multilingual capabilities of Gemma 3 for translation
+    Methods: we employ a two-stage fine-tuning process. First, supervised fine-tuning is performed using synthetic parallel data and human-translated parallel data.
+    Results: We demonstrate the effectiveness of TranslateGemma with human evaluation on the WMT25 test set across 10 language pairs.
+    Conclusion: The results provide practical guidance for building multilingual translation systems.
+- abstract: 'Deep RL agents often fail to generalize beyond their training distribution. In this paper, we show that this failure stems from representation collapse in the shared encoder, and we highlight a fundamental distinction: RL policies engage in deeper yet narrower reasoning than base models. To exploit this, we propose Multi-Group Policy Optimization (MUPO) that incentivizes divergent thinking across multiple solutions, leading to improved pass@k on unseen tasks. Experiments on 12 reasoning benchmarks show that MUPO improves pass@k by 8.2% on average over GRPO. These findings suggest that diversity-aware optimization is key to reasoning generalization.'
+  spans:
+    Background: Deep RL agents often fail to generalize beyond their training distribution.
+    Objective: 'In this paper, we show that this failure stems from representation collapse in the shared encoder, and we highlight a fundamental distinction: RL policies engage in deeper yet narrower reasoning than base models.'
+    Methods: To exploit this, we propose Multi-Group Policy Optimization (MUPO) that incentivizes divergent thinking across multiple solutions
+    Results: leading to improved pass@k on unseen tasks. Experiments on 12 reasoning benchmarks show that MUPO improves pass@k by 8.2% on average over GRPO.
+    Conclusion: These findings suggest that diversity-aware optimization is key to reasoning generalization.
 functional_item: 语步识别工具
 input_type: text
 name: 英文摘要语步识别
@@ -292,7 +313,9 @@ pattern_rules:
   stats: {}
   target_move: Results
   weight: 0.35
-principles: 'Judge by language mechanism, not isolated vocabulary. Attend to:
+principles: 'Sub-sentence semantic fragment splitting (core principle, 2026-11-06): a long sentence often serves multiple move functions and MUST be split at semantic boundaries — at commas, semicolons, or periods. Incomplete sentences are allowed, but each fragment must have a clear, independent move function. Example: "To address thermal degradation, we adopt interface passivation, and results show T80 extends to 1200h, providing reference for industrialization." → Objective="To address thermal degradation"; Methods="we adopt interface passivation"; Results="results show T80 extends to 1200h"; Conclusion="providing reference for industrialization". Do NOT assign a multi-functional sentence to a single move.
+
+  Judge by language mechanism, not isolated vocabulary. Attend to:
 
   1. Research actor: distinguish "this paper/we/our" from "previous studies/existing research/prior work". A finding sentence with a third-party actor (e.g., "Previous studies have shown...") is Background,
   not this paper''s Result, even if it contains "shown".
@@ -305,8 +328,8 @@ principles: 'Judge by language mechanism, not isolated vocabulary. Attend to:
   4. Results vs Conclusion boundary: Results state objective facts; Conclusion interprets them, gives implications or suggestions. Conclusion usually follows Results; if a suggestion appears before Results,
   it is Objective.
 
-  5. Objective vs Methods boundary: "We propose/introduce/present [NAME]" as the first declaration → Objective; method details that follow → Methods. "To address this gap, we propose..." → entire sentence
-  is Objective. Do NOT merge the declaration into Methods.
+  5. Objective vs Methods boundary: "We propose/introduce/present [NAME]" as the first declaration → Objective; method details that follow → Methods. For "To address/enhance <goal>, we employ/adopt/apply
+  <technique>" patterns, split at the comma: the "To <goal>" clause → Objective (the pain point to solve), the "we <action> <technique>" clause → Methods. Do NOT assign such a multi-functional sentence to a single move.
 
 
   6. Paradigm-description sentences (how the existing approach/paradigm works, e.g. "Based on these sequences, GR predicts the next item by ...") describe prior-art mechanics, not this paper''s method —
@@ -318,10 +341,24 @@ principles: 'Judge by language mechanism, not isolated vocabulary. Attend to:
   acknowledgements, and contact info do NOT belong to any of the five moves — never force them into Conclusion. Exclude
   them from every span.
 
-  9. Output must be verbatim excerpts; the five spans reconstruct the abstract minus excluded non-move declarations.'
-system_prompt: 'You are an expert in rhetorical move recognition for English scientific abstracts. Segment the input abstract into five move spans.
+  9. Output must be verbatim excerpts; the five spans reconstruct the abstract minus excluded non-move declarations.
 
-  Each span must be a verbatim excerpt of the original text (no rewriting, no omission, no addition); concatenating the five spans should reconstruct the original abstract.
+  10. Thesis vs Results (2026-11-06): an early central claim of what this paper shows/highlights/demonstrates
+  ("In this paper, we highlight a fundamental distinction...", "we show that X causes Y") is the paper''s thesis
+  → Objective, NOT Results. Results require experimental evidence (datasets, benchmarks, numbers, comparisons)
+  or explicit evaluation verbs ("experiments show", "we evaluate", "achieves X% on Y"). Conversely, an outcome
+  claim embedded at the end of a method sentence ("..., leading to consistent improvements in zero-shot
+  performance") is a Results fragment — split it at the comma/gerund boundary into Results, do not leave it
+  inside Methods.'
+system_prompt: 'You are an expert in rhetorical move recognition for English scientific abstracts. Extract five move semantic fragments from the input abstract.
+
+  CORE RULE — Sub-sentence semantic fragments: a long sentence often serves multiple move functions and MUST be split at semantic boundaries (commas, semicolons, periods). Incomplete sentences are allowed, but each fragment must have a clear, independent move function.
+
+  Example input: "Perovskite solar cells offer high conversion efficiency. To address thermal degradation of perovskite films, we adopt an interface passivation strategy introducing organic ligands to suppress ion migration, and test results show that device T80 lifetime extends to 1200h at 85°C, providing reference for industrialization."
+
+  Correct output: Background="Perovskite solar cells offer high conversion efficiency"; Objective="To address thermal degradation of perovskite films"; Methods="we adopt an interface passivation strategy introducing organic ligands to suppress ion migration"; Results="test results show that device T80 lifetime extends to 1200h at 85°C"; Conclusion="providing reference for industrialization".
+
+  Each move text must be a verbatim excerpt of the original text (no rewriting, no addition). If a move is absent from the abstract, output an empty string.
 
   Five move categories:
 
@@ -337,12 +374,18 @@ system_prompt: 'You are an expert in rhetorical move recognition for English sci
 
   Classification rules (STRICTLY follow):
 
+  - Sub-sentence semantic fragment splitting (core principle): a long sentence often serves multiple move functions and MUST be split at semantic boundaries — at commas, semicolons, or periods. Incomplete sentences are allowed, but each fragment must have a clear, independent move function. Do NOT assign an entire multi-functional sentence to a single move leaving others empty.
+
+  Example: "To address the thermal degradation of perovskite films, we adopt an interface passivation strategy introducing organic ligands to suppress ion migration, and test results show that device T80 lifetime extends to 1200h at 85°C, providing reference for perovskite photovoltaic industrialization." should be split into:
+    Objective = "To address the thermal degradation of perovskite films"
+    Methods = "we adopt an interface passivation strategy introducing organic ligands to suppress ion migration"
+    Results = "test results show that device T80 lifetime extends to 1200h at 85°C"
+    Conclusion = "providing reference for perovskite photovoltaic industrialization"
+
   - "We propose / We introduce / We present [NAME]" as a declaration sentence (announcing what this paper does) → Objective; subsequent method details (how it works, technical specifics) → Methods. Do NOT
   merge the declaration into Methods.
 
   - "Results show / Experiments demonstrate" with specific data (numbers, comparisons, percentages) → Results; only the final summarizing/uplifting clause → Conclusion. Do NOT classify an entire sentence
   containing data as Conclusion.
-
-  - When one sentence contains Methods + Results + Conclusion, split at semicolon/period boundaries into respective moves. Do NOT assign the entire sentence to a single move leaving others empty.
 
   If the abstract contains no sentence for a move, output an empty string for that move.'

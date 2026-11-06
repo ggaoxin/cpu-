@@ -27,11 +27,56 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 
+# PDF 首页版面杂件行（2026-11-06 31.pdf 实测）：摘要正文跨左右两栏时，左栏
+# 底部的脚注（∗Equal contribution / Work done during … internship）与跨栏
+# 图的图例标签（= Shoes / Balance line / (a) 子图标题 / 孤立省略号/角标数字）
+# 物理位置夹在摘要两段之间——纵坐标排序与版面感知分栏读取都会把它们交错进
+# 摘要文本，语步识别的方法段因此混入整块图注。以下整行模式剥离（仅整行命中，
+# 摘要正文的句子不会以这些形态开头）
+_PAGE_FURNITURE_RE = re.compile(
+    # 前缀符号兼容 ∗(U+2217)/＊/†/✝ 等 PDF 脚注标记（2026-11-06 31.pdf 实测）
+    r"^[^\w\n\s]{0,2}\s*(?:Equal contribution|Contributed equally)\.?\s*$"
+    r"|^Work done during .{0,80}$"
+    r"|^,\s*$"                                    # 悬空逗号行（块切分残片）
+    r"|^\d{1,2}\s*$"                              # 孤立角标数字（作者单位标号）
+    r"|^=\s*[^=\n]{1,30}$"                        # 图例项 "= Shoes"
+    r"|^\([a-z]\)\s+.{0,60}$"                     # 子图标题 "(a) Semantic Alignment Deviation"
+    r"|^[….]{2,}\s*$"                             # 孤立省略号
+    # 单位残块（整行就是一个机构名，≤30 字；正文换行残留通常更长或含小写引导词）
+    r"|^[A-Z][A-Za-z&.\s]{2,30}(?:Inc\.?|Ltd\.?|LLC|GmbH|University|Institute|College|Laboratory)$"
+    # 图内文字标签：2-5 个词、每个词均首字母大写（标题式标签形态）、无任何标点/
+    # 数字——正文换行行必含小写虚词/动词（"We introduce a model-agnostic"），整行
+    # 全大写词的正文行极罕见；段落末行带句点亦被排除
+    r"|^[A-Z][a-z]+(?:[ -][A-Z][A-Za-z-]*){1,4}$"
+    # 单个 Title Case 短词图内标签（"Embedding"）
+    r"|^[A-Z][a-z]{1,11}$"
+    , re.M,
+)
+
+# arXiv 侧边水印（旋转条带被 sort 排进摘要前部，常与首句黏连成行，按前缀剥）
+_ARXIV_BANNER = re.compile(
+    r"^arXiv:\d{4}\.\d{4,5}(?:v\d+)?\s*\[[\w.\-/ ]*\]\s*\d{1,2}\s+[A-Z][a-z]{2}\s*\d{4}\s*"
+)
+
+
+def _strip_page_furniture(text: str) -> str:
+    """剥离脚注/图例/单位残块/arXiv 水印等版面杂件（英文摘要候选专用）。"""
+    if not text:
+        return text
+    out = _PAGE_FURNITURE_RE.sub("", text)
+    out = _ARXIV_BANNER.sub("", out, count=1)
+    return re.sub(r"\n{2,}", "\n", out).strip()
+
+
 def extract_abstract_text(text: str, doc_type: str = "zh_paper") -> str:
     """结构化摘要段提取（模块级，供语步识别/关键词识别等管线复用）。
 
     中文：[【（]?摘要[】）]?[:：]? 到 关键词/中图分类号/引言 等边界；
     英文：## Abstract（markdown 标题）、Abstract:、ABSTRACT 到 Keywords/Introduction 边界。
+    中英双摘要论文按 doc_type 优先取（zh_paper→中文摘要优先，en_paper→英文优先，
+    优先侧无标记时回退另一侧——_detect_type 按字符比误判时的自愈，2026-11-06
+    燃气管道论文实测：中文技术摘要含大量 CNN/ResNet 英文术语+英文摘要段落在
+    前 1000 字内 → 被判 en_paper → 整篇 5190 字英文黏连文本当摘要）。
     提取不到返回空串（调用方据此回退全文路径）。
 
     实现约束（2026-09-21，KEGNER 甲方机器事故同步）：起点/终点标记各一次线性
@@ -41,27 +86,52 @@ def extract_abstract_text(text: str, doc_type: str = "zh_paper") -> str:
     恒为死分支，不再保留。新旧实现在 10 组形态样例上输出逐一等价。
     """
     full = text
-    if doc_type == 'zh_paper':
-        m = re.search(r'[\[【（(]?\s*摘\s*要\s*[\]】）)]?\s*[:：]?\s*', full)
-        if m:
-            rest = full[m.end():]
+    # 中文候选：摘要标记到行首锚定的段标边界
+    zh_cand = ''
+    m = re.search(r'[\[【（(]?\s*摘\s*要\s*[\]】）)]?\s*[:：]?\s*', full)
+    if m:
+        rest = full[m.end():]
+        # 终止标记行首锚定（2026-11-06 焊缝检测论文实测修复）：关键词/中图分类号
+        # 等段标在排版上独立成行；裸搜索会把摘要正文中的普通词"关键词"误当段标
+        # （实测"基于语义对特征描述提取关键词；以焊缝坡口为标尺…"在句中被截断，
+        # 后半摘要整段丢失 → 语步识别结果/结论全空）。行首锚定 + 可选括号前缀
+        # （[关键词]/【关键词】）后，正文句中词不再命中；锚定失配（换行丢失的
+        # 压平文本）再回退裸搜索保持旧行为兜底
+        s = re.search(
+            r'(?:^|\n)\s*[\[【（(]?\s*(?:关键词|中图分类号|文献标识码|文献标志码|文章编号|Abstract|ABSTRACT|引言|0\s*引)',
+            rest)
+        if not s:
             s = re.search(r'关键词|中图分类号|文献标识码|文献标志码|文章编号|Abstract|ABSTRACT|引言|0\s*引', rest)
-            if s:
-                return rest[:s.start()].strip()
+        zh_cand = (rest[:s.start()] if s else rest).strip()
+    # 英文候选一：mineru markdown 的 ## Abstract 标题段（结构化输出，有下一标题
+    # 自然封口，无需长度护栏）
+    en_cand = ''
     m = re.search(r'##\s*(?:Abstract|ABSTRACT)[^\n]*\n\s*', full)
     if m:
         rest = full[m.end():]
         s = re.search(r'\n#{1,2}\s|[\[【（(]?\s*(?:Key\s*words|Keywords|KEYWORDS|Index\s*Terms)', rest)
-        return (rest[:s.start()] if s else rest).strip()
-    for start, stop in (
-        (r'(?:^|\n)Abstract\s*[.。:：]?\s*', r'Keywords|Index Terms|Introduction|1\.'),
-        (r'(?:^|\n)ABSTRACT\s*[.。:：]?\s*', r'Keywords|Index Terms|1\s+INTRODUCTION'),
-    ):
-        m = re.search(start, full)
-        if m:
-            rest = full[m.end():]
-            s = re.search(stop, rest)
-            return (rest[:s.start()] if s else rest).strip()
+        en_cand = (rest[:s.start()] if s else rest).strip()
+    # 英文候选二：行式 Abstract:/ABSTRACT 标记。长度护栏 3000（真实摘要远小于此）：
+    # PyMuPDF 直抽文本词间黏连时 Keywords 等终止标记可能整段丢失，无界切片会把
+    # 摘要后的正文整块吞进来（实测 5190 字），超长视为未命中由调用方走结构化回退
+    if not en_cand:
+        for start, stop in (
+            (r'(?:^|\n)Abstract\s*[.。:：]?\s*', r'Keywords|Index Terms|Introduction|1\.'),
+            (r'(?:^|\n)ABSTRACT\s*[.。:：]?\s*', r'Keywords|Index Terms|1\s+INTRODUCTION'),
+        ):
+            m = re.search(start, full)
+            if m:
+                rest = full[m.end():]
+                s = re.search(stop, rest)
+                cand = (rest[:s.start()] if s else rest).strip()
+                if cand and len(cand) <= 3000:
+                    en_cand = cand
+                    break
+    if en_cand:
+        en_cand = _strip_page_furniture(en_cand)
+    if doc_type == 'zh_paper':
+        return zh_cand or en_cand
+    return en_cand or zh_cand
     return ''
 
 
@@ -238,7 +308,13 @@ class DocumentParser:
         fund_score = sum(1 for m in self.FUND_MARKERS if m in text[:3000])
         if fund_score >= 2:
             return 'fund_project'
-        head = text[:1000]
+        # 语言判定窗口 1000→3000（2026-11-06 燃气管道论文实测修复）：中文技术摘要
+        # 常含大量英文术语（CNN/ResNet/Dropout…），且中英双摘要论文的英文摘要段落
+        # 可能落在前 1000 字内——窗口过小时英文字符比被这两类噪声推过 2:1 阈值，
+        # 中文论文被误判 en_paper → 摘要提取走英文分支。3000 字窗口覆盖完整中文
+        # 摘要+标题段，正文字数稀释术语噪声；regex 仍是单次线性扫描，49MB 输入
+        # 成本可忽略
+        head = text[:3000]
         en_chars = len(re.findall(r'[a-zA-Z]', head))
         cn_chars = len(re.findall(r'[一-鿿]', head))
         if en_chars > cn_chars * 2:

@@ -198,13 +198,20 @@ class V774HttpContractTests(unittest.TestCase):
     def test_every_file_and_batch_file_route_uses_public_primary_field(self):
         file_tools = {tool_id: value for tool_id, value in TEXT_CASES.items() if tool_id != "citation-intent"}
         file_tools["citation-intent"] = TEXT_CASES["citation-intent"]
+        # 摘要语步工具的文件模式抽取层已不伪造摘要（2026-11-07 无摘要文献实测）：
+        # 上传内容须是真实可抽取的摘要（结构标记开头，规则层零 LLM 命中）
+        _ABSTRACT_FILE_TEXTS = {
+            "zh-abstract-move": "摘要：本文提出一种语义计算方法，通过融合知识图谱与深度学习模型实现文本的语义理解，实验表明该方法在标准数据集上取得显著效果。",
+            "en-abstract-move": "Abstract: We propose a semantic computing method that integrates knowledge graphs with deep learning models. Experiments show significant improvements on standard benchmarks.",
+        }
         for tool_id, (text_path, payload) in file_tools.items():
             contract = get_vue_contract(tool_id)
             base_path = text_path.removesuffix("/text")
             extra = {key: json.dumps(value, ensure_ascii=False) if isinstance(value, (dict, list)) else str(value)
                      for key, value in payload.items() if key != contract.primary_input_field}
+            content = _ABSTRACT_FILE_TEXTS.get(tool_id, "semantic computing text [1]")
             for suffix, count in (("/file", 1), ("/files", 2)):
-                files = [(contract.primary_input_field, (f"paper{i}.txt", b"semantic computing text [1]", "text/plain")) for i in range(count)]
+                files = [(contract.primary_input_field, (f"paper{i}.txt", content, "text/plain")) for i in range(count)]
                 with self.subTest(tool_id=tool_id, suffix=suffix):
                     response = self.client.post(f"/api/v1{base_path}{suffix}", data=extra, files=files)
                     self.assertEqual(response.status_code, 200, response.text)

@@ -650,25 +650,29 @@ def _locate_spliced_move(abstract: str, spliced_text: str) -> tuple:
     return first_start, first_end, rebuilt
 
 
-_SENT_BOUNDARY_RE = None
+_CLAUSE_BOUNDARY_RE = None
 
 
-def _split_sentences(text: str) -> list:
-    """按句末标点（。！？!?）把原文切成完整句子，返回 [(start, end)]，含标点。
+def _split_clauses(text: str) -> list:
+    """按句读标点（。！？；，：等）把原文切成小句，返回 [(start, end)]，含标点。
 
-    英文句点需后随空白/行尾/引号才判定句末（避免小数 1.2、缩写 e.g. 被切开）；
-    分号不算句末（含分号的并列长句仍是一个完整句子）。
+    分句级语义片段对齐的原子单元（2026-11-06 用户定稿）：一个长句常含多个
+    语步功能（"本文针对X问题，采用Y策略" = 目的+方法），句子级对齐会把整句
+    判给重叠更多的单一语步、其余语步置空，片段被吞。以小句为原子单元后，
+    片段可在逗号/分号处切分归属不同语步。枚举顿号（、）不切，保持列举项
+    完整；半角逗号按"后非数字"切（中文摘要的"实验表明,该方法"无后随空白也要
+    切，仅千分位 3,400 不切）；其余英文半角标点需后随空白才断（避免小数 1.5
+    与缩写 e.g. 被切）。与 training.rule_engine._CLAUSE_BOUNDARY_RE 手工同步。
     """
     import re as _re
-    global _SENT_BOUNDARY_RE
-    if _SENT_BOUNDARY_RE is None:
-        # 中文句末标点直接断句；英文句点看后一字符
-        _SENT_BOUNDARY_RE = _re.compile(r"[。！？]|(?:\.)(?=[\s\"'”’\)\]]|$)")
+    global _CLAUSE_BOUNDARY_RE
+    if _CLAUSE_BOUNDARY_RE is None:
+        _CLAUSE_BOUNDARY_RE = _re.compile(r"[。！？；，：]|[,](?!\d)|[!?;:](?=\s)|\.(?=[\s\"'”’\)\]]|$)")
     spans = []
     start = 0
-    for m in _SENT_BOUNDARY_RE.finditer(text):
+    for m in _CLAUSE_BOUNDARY_RE.finditer(text):
         end = m.end()
-        # 句末标点后的收尾引号/括号并入本句
+        # 边界标点后的收尾引号/括号并入本小句
         while end < len(text) and text[end] in "”’\"')]}":
             end += 1
         seg = text[start:end]
@@ -680,24 +684,25 @@ def _split_sentences(text: str) -> list:
     return spans
 
 
-def _align_moves_to_sentences(moves: list, abstract: str) -> None:
-    """摘要语步句子完整性对齐与重建：以句子为原子单元重组各语步。
+def _align_moves_to_clauses(moves: list, abstract: str) -> None:
+    """摘要语步小句级对齐与重建：以小句（逗号/分号级片段）为原子单元重组各语步。
 
-    LLM 常见三类缺陷在此统一修复：
-    ① 拆句——一句话从中间拆给两个语步（前语步截断在逗号、后语步从半截开始）；
-    ② 漏句——五段拼接没有覆盖原文全部句子（Background 只给 1 句丢 4 句）；
-    ③ 拼接丢空格——非连续句子拼接处句点后无空格，导致整体定位失败。
+    分句级语义片段（2026-11-06 用户定稿）：允许不完整句子，一个长句内的语义
+    转折处（逗号/分号）可拆给不同语步。LLM 常见三类缺陷仍在此统一修复：
+    ① 半截切断——片段从词语/数字中间断开（"…降低 61%、56、" + "42%，系统…"），
+       对齐到最近小句边界自动修复；
+    ② 漏句——五段拼接没有覆盖原文全部内容（漏掉的连接性小句就近归并，不丢弃）；
+    ③ 拼接丢空格——非连续小句拼接处无空格导致定位失败（重组用原文切片，天然恢复）。
     规则：
     ① 无位置的语步先补定位（indexOf + 去空白两级）；
-    ② 句子归属：分给 [start,end) 与其重叠最多的语步；
-    ③ 未被认领的句子延续归属给原文中前一句的语步（move 是连续区段，漏句就近
-       归并，不丢弃任何原文句子）；
-    ④ 用原文句子按原文字符顺序重组各语步 text（恢复句间空格），位置取首句；
-    ⑤ 参与竞争但没赢得句子的语步置空；始终定位不到的语步保留原文摘录不动。
+    ② 小句归属：分给 [start,end) 与其重叠最多的语步；
+    ③ 未被认领的小句延续归属给原文中前一小句的语步（就近归并不丢弃）；
+    ④ 按原文顺序用连续小句段重组各语步 text，位置取首段；非连续段拼接保留原文；
+    ⑤ 参与竞争但没赢得任何小句的语步置空；始终定位不到的语步保留原文摘录不动。
     """
     if not abstract or not moves:
         return
-    sents = _split_sentences(abstract)
+    sents = _split_clauses(abstract)
     if not sents:
         return
 
@@ -741,20 +746,20 @@ def _align_moves_to_sentences(moves: list, abstract: str) -> None:
             if _first_move is not None:
                 for si in range(_first_claimed):
                     owners[si] = _first_move
-    # 按语步重组：每个语步的句子集合（保持原文顺序），重算 text/start/end
+    # 按语步重组：每个语步的小句集合（保持原文顺序），重算 text/start/end
     by_move = {}
     for si, mi in owners.items():
         by_move.setdefault(mi, []).append(si)
     for mi, mv in enumerate(moves):
         sis = by_move.get(mi)
         if not sis:
-            # 参与了竞争但没赢得任何句子（半截句被邻居吞并）→ 置空；
+            # 参与了竞争但没赢得任何小句（定位失败或整段被邻居覆盖）→ 置空；
             # 未参与竞争（定位不到原文，如文件模式摘要抽取失败）→ 保留原文摘录不动
             if mi in _competing:
                 mv["text"] = ""
                 mv["start"] = None
                 mv["end"] = None
-                # 句子被邻居全部吞并的语步：其句序号已不代表最终归属，一并清除，
+                # 小句被邻居全部吞并的语步：其句序号已不代表最终归属，一并清除，
                 # 避免前端字符范围列给空语步显示过期的句序号
                 mv.pop("sentence_indices", None)
             continue
@@ -762,19 +767,30 @@ def _align_moves_to_sentences(moves: list, abstract: str) -> None:
         # 句序号（如 [1,2,0]），不排序则 s0>s1 → 空切片 → 语步被误清空（2026-10-09
         # 测试人员"有语步结果但没有句子位置/结果变空"根因之一）
         sis = sorted(sis)
-        s0 = sents[sis[0]][0]
-        s1 = sents[sis[-1]][1]
-        # strip 首尾空白但保留句末标点，并同步重算精确字符范围
-        raw_seg = abstract[s0:s1]
+        # 连续小句段合并（相邻小句在原文中首尾相接）；段间断开时（LLM 给出交错
+        # 片段，如方法=小句0+2、目的=小句1）各段分别取原文切片再拼接，保证
+        # text 始终是原文逐字内容
+        runs = []
+        for si in sis:
+            s0, s1 = sents[si]
+            if runs and runs[-1][1] == s0:
+                runs[-1][1] = s1
+            else:
+                runs.append([s0, s1])
+        raw_seg = "".join(abstract[s0:s1] for s0, s1 in runs)
         stripped = raw_seg.strip()
         if not stripped:
             mv["text"], mv["start"], mv["end"] = "", None, None
             # 与上方置空分支同口径：句序号随文本一并清除，防止空语步残留过期句序号
             mv.pop("sentence_indices", None)
             continue
-        lead = len(raw_seg) - len(raw_seg.lstrip())
-        mv["start"] = s0 + lead
-        mv["end"] = mv["start"] + len(stripped)
+        # 位置覆盖首段（strip 首尾空白但保留边界标点），并同步重算精确字符范围
+        _first_raw = abstract[runs[0][0]:runs[0][1]]
+        _last_raw = abstract[runs[-1][0]:runs[-1][1]]
+        lead = len(_first_raw) - len(_first_raw.lstrip())
+        trail = len(_last_raw) - len(_last_raw.rstrip())
+        mv["start"] = runs[0][0] + lead
+        mv["end"] = runs[-1][1] - trail
         mv["text"] = stripped
 
 
@@ -822,6 +838,13 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         # 失败——每次 miss 触发全文逐字符归一化（21M 约 4s），拼接兜底按句循环调用
         # 累计几十分钟不返回，2026-09-22 zh-abstract-move 49MB 卡死根因）
         abstract_text = abstract_text[:300000]
+        # 定位/对齐同源（2026-11-06 斜拉索篇实测修复）：摘要先过 strip_non_move_artifacts
+        # 再定位。此前定位用原始 payload（含 PDF 行距换行/空白），下方小句对齐却用
+        # 清洗后的 document.abstract——两套坐标系偏移不一致（实测 693 vs 596 字），
+        # 小句归属按错误偏移竞争 → 语步在逗号处被整段错分（目的/方法互换、结论丢失）。
+        # 先清洗后定位，两阶段同文本同坐标，返回前端的 document.abstract 与 moves
+        # start/end 也严格一致
+        abstract_text = strip_non_move_artifacts(abstract_text)
         for label in categories:
             text = raw.get(label)
             has_text = text not in (None, "")
@@ -931,14 +954,15 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         if _full and len(_full) > len(str(document.get("abstract") or "")):
             document["abstract"] = _full
         data.pop("source_full_text", None)
-    # 摘要语步句子完整性对齐：一个句子不能被拆给两个语步（LLM 可能从句中截断，
-    # 如"…降低 61%、56、"结尾 + "42%，系统…"开头）。对齐到句末标点边界，
-    # 重叠句归重叠更多的语步，被让空的语步置空。基金语步是归纳性文本不做对齐。
+    # 摘要语步小句级对齐（2026-11-06 分句级语义片段定稿）：允许不完整句子，
+    # 一个长句内的语义转折处（逗号/分号）可拆给不同语步；对齐只修复半截切断
+    # （片段从词/数中间断开时吸附到最近小句边界）与漏句，不再把整句强制归并
+    # 给单一语步。基金语步是归纳性文本不做对齐。
     # 对齐源先过 URL/邮箱剥离（与 service 语步清洗同口径），防止清掉的链接
     # 句子在对齐重组时被拼回语步。
     if tool_id in {"zh-abstract-move", "en-abstract-move"} and document.get("abstract"):
         document["abstract"] = strip_non_move_artifacts(str(document["abstract"]))
-        _align_moves_to_sentences(moves, str(document["abstract"]))
+        _align_moves_to_clauses(moves, str(document["abstract"]))
     result = {
         **data,
         "document": document,

@@ -283,6 +283,11 @@ async def _llm_judge_title_abstract(text: str, cand_title: str, cand_abstract: s
     # 会放过约 200 字的短全文（标题+摘要+关键词），期刊页眉误命中就无人兜底了
     if len(head.strip()) < 50:
         return cand_title, cand_abstract
+    # 短文本且以明确结构标记开头（整文就是一条摘要，如用户把摘要存成 .txt 上传）：
+    # 规则提取结果无歧义，跳过 LLM 判定省一次调用（离线/测试环境也走得通）
+    if (cand_abstract and len(head) <= 600
+            and re.match(r"^(?:摘要|Abstract|ABSTRACT)\s*[:：]", text.strip(), re.I)):
+        return cand_title, cand_abstract
     if not cand_title and not cand_abstract:
         return await _llm_title_abstract_from_text(text)
     cand_block = (
@@ -358,8 +363,10 @@ async def _plain_abstract_title(text: str) -> tuple[str, str]:
     # ② LLM 判定+兜底：候选交 LLM 判真伪（规则误命中由此兜住）；
     #    无候选（无标记纯摘要/乱格式）时退化为纯 LLM 逐字提取
     title, abstract = await _llm_judge_title_abstract(text, title, abstract)
-    # ③ 硬兜底：规则与 LLM 都未命中（正文片段/乱文本）截前 2000 字保证工具可跑
-    return _clean_extracted_abstract(abstract or text[:2000]), _clean_extracted_title(title)
+    # ③ 规则与 LLM 都未命中 → 真无摘要，返回空串（引擎层报"未检测到摘要"）。
+    #    此前"截前 2000 字硬兜底保证工具可跑"会把无摘要文献的标题+引言整篇
+    #    当摘要送去识别，章节标题都被标成语步（2026-11-07 article.docx 用户实测）
+    return _clean_extracted_abstract(abstract), _clean_extracted_title(title)
 
 
 async def _abstract_text_from_plain(tmp_path: str, filename: str) -> tuple[str, str]:
@@ -494,9 +501,10 @@ async def _abstract_text(processor, tmp_path: str, content: bytes | None = None,
     LLM 兜底，毫秒级正则，无 :8899）；扫描件/封面无摘要/低置信时回退 mineru
     process_pdf 保质量。full 模式直接走 mineru。返回 (abstract, title)。
 
+    无摘要文献返回空 abstract（2026-11-07 定稿：不整篇伪造——由引擎层报
+    "未检测到摘要"业务错误，批量场景只错该篇）。
     非 PDF 格式（.txt/.docx/.md 等）不走 PDF 管线（实测 pdfplumber 直接崩溃）：
-    先 extract_bytes 抽纯文本，短文（≤2000 字，通常就是摘要本身）整文作摘要，
-    长文（全文粘贴）用 DocumentParser.parse_text 做摘要/标题结构化提取。
+    extract_bytes 抽纯文本后走 _plain_abstract_title（规则结构切 + LLM 判定）。
     paper_abstract_extractor 只提 abstract 不提 title；light 命中时 title 留空，
     前端按文件名展示规则（record.file_name 优先）显示文件名。content 参数保留兼容
     但不再使用（paper_abstract_extractor 从 tmp_path 路径读 PDF）。"""
@@ -516,21 +524,44 @@ async def _abstract_text(processor, tmp_path: str, content: bytes | None = None,
             abstract, title = await asyncio.to_thread(_extract_abstract_via_pymupdf, tmp_path)
     if not abstract:  # full / light 抽空（扫描/封面无摘要/低置信）→ mineru 兜底
         doc = await asyncio.to_thread(processor.process_pdf, tmp_path, end_page_id=ABSTRACT_MOVE_END_PAGE)
-        abstract = (doc.get("abstract") or "").strip() or (doc.get("full_text") or "").strip()
+        abstract = (doc.get("abstract") or "").strip()
         title = (doc.get("title") or "").strip()
+        if not abstract:
+            # mineru 结构化也无摘要：全文头部交 LLM 判定兜最后一次（版式特殊的
+            # 真摘要由此救回，逐字校验防编造）；仍无 → 返回空串，由引擎层报
+            # "未检测到摘要"业务错误。不再回退 full_text 整篇——无摘要文献的
+            # 标题+引言被整篇当摘要识别，章节标题都会被标成语步
+            # （2026-11-07 article.docx 用户实测）
+            _ft = (doc.get("full_text") or "").strip()
+            if _ft:
+                title, abstract = await _llm_judge_title_abstract(_ft[:8000], title, "")
     return abstract, title
+
+
+def _no_abstract_message(names: List[str]) -> str:
+    """无摘要文献的业务报错文案（2026-11-07 用户定稿：提交时整单弹窗点名文件）。"""
+    return (
+        f"未在文件「{'、'.join(names)}」中检测到摘要（Abstract/摘要段），"
+        "无法进行摘要语步识别；请确认文档包含摘要，或改用文本输入直接粘贴摘要")
 
 
 async def _extract_abstract_only(
     uploads: List[StarletteUploadFile],
     max_size_mb: int,
+    on_missing: str = "raise",
 ) -> List[Dict[str, str]]:
     """摘要语步识别专用提取：PDF → 四层融合解析 → 只取纯摘要（页数预算并发）。
 
     与 ``extract_uploads`` 抽全文不同，这里用 ``DocumentProcessor.process_pdf``
     做结构化解析（MinerU content_list + pdfplumber 兜底 + 正则 + LLM 校验），
     只把摘要文本塞进 ``text``，标题/关键词/正文全部过滤——符合摘要语步
-    只需标注摘要内句子的语义。摘要缺失时回退全文，避免空输入。
+    只需标注摘要内句子的语义。
+
+    无摘要文献（2026-11-07 article.docx 实测定稿，不整篇伪造语步）：
+    - on_missing="raise"（在线测试直传提交路径）：抛 ValueError → 422 弹窗
+      点名无摘要文件，整单拦截；
+    - on_missing="empty"（/files/parse 上传解析路径）：text 存空串，由提交
+      侧统一拦截（解析阶段不报错，避免上传 20 篇中 1 篇无摘要就全批失败）。
 
     多文件并发受 PageBudgetPool 调度（小文件高并发、大文件串行）。
     """
@@ -557,6 +588,8 @@ async def _extract_abstract_only(
                 tmp_path = tmp.name
             try:
                 abstract, title = await _abstract_text(processor, tmp_path, content, upload.filename or "")
+                if not abstract.strip() and on_missing == "raise":
+                    raise ValueError(_no_abstract_message([upload.filename or "未命名"]))
                 results.append({
                     "file_name": upload.filename or "upload.pdf",
                     "media_type": upload.content_type or "application/pdf",
@@ -602,7 +635,13 @@ async def _extract_abstract_only(
             except OSError: pass
             await asyncio.to_thread(pool.release, pages)
 
-    return await asyncio.gather(*[process_one(*i) for i in items])
+    extracted = await asyncio.gather(*[process_one(*i) for i in items])
+    if on_missing == "raise":
+        _no_abs = [str(r.get("file_name") or "未命名") for r in extracted
+                   if not str(r.get("text") or "").strip()]
+        if _no_abs:
+            raise ValueError(_no_abstract_message(_no_abs))
+    return extracted
 
 
 async def _parse_metadata_upload(upload: StarletteUploadFile) -> Any:
@@ -965,7 +1004,11 @@ def _vue_public_response(tool_id: str, internal: Dict[str, Any], input_type: str
             })
         return {
             "code": 0,
-            "message": "success" if not task_data.get("failed_count") else "partial_success",
+            # 0 成功全失败时 message=failed（2026-11-07：全失败批量曾显示
+            # partial_success，与 success_count=0 矛盾）
+            "message": ("success" if not task_data.get("failed_count")
+                        else "failed" if not task_data.get("success_count")
+                        else "partial_success"),
             "data": {
                 "batch_id": task_data.get("task_id"),
                 "input_type": input_type,
@@ -1254,7 +1297,9 @@ async def _extract_abstract_fast(
             data = raw_by_name.get(fb.filename or "upload.pdf", b"")
             return _UF(file=_io.BytesIO(data), filename=fb.filename, headers=fb.headers)
         rebuilt = [await _rebuild(fb) for fb in failed]
-        slow = await _extract_abstract_only(rebuilt, max_size_mb=limit_mb)
+        # on_missing="empty"（2026-11-07）：/files/parse 上传路径——无摘要存空串，
+        # 由提交侧统一拦截弹窗（解析阶段不整批报错）
+        slow = await _extract_abstract_only(rebuilt, max_size_mb=limit_mb, on_missing="empty")
         out.extend(slow)
     return out
 
@@ -1570,8 +1615,10 @@ async def parse_files(
                     for _p in _pairs:
                         if _p.get("text"):
                             _ab, _ti = await _plain_abstract_title(str(_p["text"]))
-                            if _ab:
-                                _p["text"] = _ab
+                            # 无摘要 → 存空串（2026-11-07）：此前空结果保留全量全文，
+                            # 提交侧 ≤2000 字直通引擎整篇伪造语步；空串由提交侧
+                            # 统一拦截弹窗点名文件
+                            _p["text"] = _ab or ""
                             if _ti:
                                 _p["title"] = _ti
                 parsed_pairs.extend(_pairs)
@@ -1594,7 +1641,6 @@ async def parse_files(
                 parsed_pairs))
         for _p, _m in zip(parsed_pairs, _pre_moves):
             _p["_moves"] = _m
-        print(f"[moves-debug] {_p.get("file_name","?")[:15]}: type={type(_m).__name__} keys={list(_m.keys())[:3] if isinstance(_m,dict) else _m}", flush=True)
 
     from infrastructure.document_parser import parse_store
     results = []
@@ -1798,15 +1844,26 @@ def _file_endpoint(tool_id: str, multiple: bool):
             # 49MB 级文件前 300k 全进结果（6183 句、语步文本数万字、document.abstract
             # 30 万字符直传前端拖死弹窗）。parse 阶段已提取的新 parse_id 文本就是摘要，
             # 只有老 parse_id（存的全量全文，>2000 字）才需要在提交侧补提取。
+            # 无摘要拦截（2026-11-07 用户定稿）：提交时整单 422 弹窗点名文件——
+            # parse 阶段无摘要文献存的是空串；老 parse_id 全文重提取仍无摘要同样拦截
             if tool_id in ABSTRACT_MOVE_TOOLS:
+                _no_abs: List[str] = []
                 for item in extracted:
                     _t = str(item.get("text") or "")
-                    if _t and len(_t) > 2000:
+                    if not _t.strip():
+                        _no_abs.append(str(item.get("file_name") or "未命名"))
+                        continue
+                    if len(_t) > 2000:
                         _ab, _ti = await _plain_abstract_title(_t)
                         if _ab:
                             item["text"] = _ab
+                        else:
+                            _no_abs.append(str(item.get("file_name") or "未命名"))
+                            continue
                         if _ti:
                             item["title"] = _ti
+                if _no_abs:
+                    raise HTTPException(status_code=422, detail=_no_abstract_message(_no_abs))
             # 批量预解析提交支持异步（2026-09-09 实时进度需求）：Prefer: respond-async
             # → submit 立即返回 task_id，前端轮询 /tasks/{id}/progress，终态取
             # /tasks/{id}/vue-result（与同步响应同构）。此前 preparsed 分支提前

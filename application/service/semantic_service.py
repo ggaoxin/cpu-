@@ -601,7 +601,14 @@ class SemanticApplicationService(ISemanticService):
         user_payload = self._build_user_payload(fp.input_type, request)
         abstract = user_payload.get("text", "")
         if not abstract:
-            raise ValueError("语步识别需提供 text 字段（单篇摘要）")
+            # 文件模式抽不到摘要（文档无 Abstract/摘要段，四层抽取+LLM 判定均未
+            # 命中）时 text 为空串——明确报无摘要，不整篇伪造语步
+            # （2026-11-07 article.docx 用户实测：无摘要 docx 的引言/章节标题
+            # 曾被整篇当摘要标出五个语步）
+            raise ValueError(
+                "未检测到摘要内容：文件模式下表示该文档中没有摘要段（Abstract/摘要），"
+                "请确认文档包含摘要后重试，或改用文本输入直接粘贴摘要；"
+                "文本模式请填写 text 字段")
         # 超长输入兜底：49MB 级纯文本整篇作"摘要"单次直送 GLM → 1261/1210。
         # 300k 与 NER/概念定义/引用识别同口径（实测单次调用可通过），真实摘要
         # 远小于此，截断只影响病态超长输入。

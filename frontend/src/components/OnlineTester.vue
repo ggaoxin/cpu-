@@ -1909,7 +1909,10 @@ async function run() {
     const message = error instanceof ApiRequestError
       ? error.message
       : error instanceof Error ? error.message : '接口请求失败，请检查 FastAPI 服务和网络连接。'
-    requestError.value = `在线测试失败：${message}`
+    // 顶部小弹窗呈现（2026-11-07 用户定稿）：与"网络中断"同款 toast 样式，
+    // 不进响应结果面板——面板保持"等待测试执行..."占位，可直接重试
+    showToast(`在线测试失败：${message}`)
+    requestError.value = ''
   } finally {
     running.value = false
     runProgress.value = null
