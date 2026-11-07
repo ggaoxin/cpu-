@@ -329,7 +329,10 @@ principles: 'Sub-sentence semantic fragment splitting (core principle, 2026-11-0
   it is Objective.
 
   5. Objective vs Methods boundary: "We propose/introduce/present [NAME]" as the first declaration → Objective; method details that follow → Methods. For "To address/enhance <goal>, we employ/adopt/apply
-  <technique>" patterns, split at the comma: the "To <goal>" clause → Objective (the pain point to solve), the "we <action> <technique>" clause → Methods. Do NOT assign such a multi-functional sentence to a single move.
+  <technique>" patterns, split at the comma: the "To <goal>" clause → Objective (the pain point to solve), the "we <action> <technique>" clause → Methods. The inverted variant splits the same
+  way (2026-11-07 user-reported case): "This study addresses/investigates/examines <the problem of X> by employing/using/adopting <Y>" → Objective = "This study addresses <X>" (the problem
+  addressed), Methods = "by employing <Y>..." — split at the "by V-ing" boundary; never put the whole sentence into Methods leaving Objective empty. Do NOT assign such a multi-functional
+  sentence to a single move.
 
 
   6. Paradigm-description sentences (how the existing approach/paradigm works, e.g. "Based on these sequences, GR predicts the next item by ...") describe prior-art mechanics, not this paper''s method —

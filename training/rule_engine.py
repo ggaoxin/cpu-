@@ -97,7 +97,14 @@ _SUMMARY_TAIL_RE = re.compile(
 # training 不依赖 application，正则保持手工同步）。半角逗号按"后非数字"切
 # （"实验表明,该方法"这类中文摘要的半角逗号无后随空白也要切；仅千分位
 # "3,400" 不切）
-_CLAUSE_BOUNDARY_RE = re.compile(r"[。！？；，：]|[,](?!\d)|[!?;:](?=\s)|\.(?=[\s\"'”’\)\]]|$)")
+_CLAUSE_BOUNDARY_RE = re.compile(
+    r"[。！？；，：]|[,](?!\d)|[!?;:](?=\s)|\.(?=[\s\"'”’\)\]]|$)"
+    # "by + 方法动名词"语义边界（2026-11-07 用户实测：This study addresses X
+    # by employing Y 在 by 前无逗号，纯标点切分把目的+方法并成一个不可分小句，
+    # 对齐赢家通吃导致目的空置）——仅匹配高精度方法引导词，防 "by 15%" 类误切
+    r"|\s(?=by\s+(?:employing|using|adopting|applying|introducing|combining|"
+    r"leveraging|utilizing|incorporating|integrating|designing|developing|"
+    r"training|proposing)\b)")
 
 # 总结性收尾小句（比 _SUMMARY_TAIL_RE 宽：另覆盖"为…提供/具有…价值/验证了…
 # 潜力/实现…匹配"等收尾形态——实测轨道交通"实现运力资源对突发需求的精准动态

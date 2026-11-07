@@ -2019,6 +2019,20 @@ body.figma-ui-v717 .request-card .form-grid {
   gap: 12px !important;
 }
 
+/* 2026-11-07 用户实测修复：响应结果内容多时 response-result-body 从 380px 长
+ * 到 520px，test-panel 等高拉伸（align-items:stretch）把请求卡也撑高，但请求
+ * 卡是 block 布局、form-grid height:auto 不跟随——请求参数白框与响应结果框
+ * 高度错开。请求卡改 flex 纵向布局、form-grid 弹性填充：响应侧变高时请求
+ * 白框同步等高；请求内容更高时（深度聚类批量上传区）form-grid 仍以内容
+ * 高度驱动面板，原行为不变 */
+body.figma-ui-v717 .test-card.request-card {
+  display: flex !important;
+  flex-direction: column !important;
+}
+body.figma-ui-v717 .test-card.request-card .form-grid {
+  flex: 1 1 auto !important;
+}
+
 body.figma-ui-v717 .response-result-body {
   display: block !important;
   height: 380px !important;

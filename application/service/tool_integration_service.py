@@ -994,7 +994,13 @@ class ToolIntegrationService:
             # 给 document.abstract 补值——前端弹窗按字符范围定位每个语步（move.text
             # 在 abstract 内 indexOf 算起止）。单篇 text 输入时与 payload.text 一致，
             # setdefault 不覆盖；批量文件 payload 无 text，这里补上本篇 abstract。
-            value.setdefault("text", group[0].text)
+            # 空串视为缺失（2026-11-07 实测加固）：客户端把主输入字段发成空串时
+            # （如 preparsed 表单携带 chinese_scientific_abstract=""），键已存在使
+            # setdefault 失效 → normalizer 拿空 text → 定位/对齐全失效
+            if not str(value.get("text") or "").strip():
+                value["text"] = group[0].text
+            else:
+                value.setdefault("text", group[0].text)
         return value
 
     @staticmethod

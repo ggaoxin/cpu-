@@ -667,7 +667,13 @@ def _split_clauses(text: str) -> list:
     import re as _re
     global _CLAUSE_BOUNDARY_RE
     if _CLAUSE_BOUNDARY_RE is None:
-        _CLAUSE_BOUNDARY_RE = _re.compile(r"[。！？；，：]|[,](?!\d)|[!?;:](?=\s)|\.(?=[\s\"'”’\)\]]|$)")
+        _CLAUSE_BOUNDARY_RE = _re.compile(
+        r"[。！？；，：]|[,](?!\d)|[!?;:](?=\s)|\.(?=[\s\"'”’\)\]]|$)"
+        # "by + 方法动名词"语义边界：与 training.rule_engine._CLAUSE_BOUNDARY_RE
+        # 手工同步（2026-11-07：by 前无逗号的 "addresses X by employing Y" 拆分）
+        r"|\s(?=by\s+(?:employing|using|adopting|applying|introducing|combining|"
+        r"leveraging|utilizing|incorporating|integrating|designing|developing|"
+        r"training|proposing)\b)")
     spans = []
     start = 0
     for m in _CLAUSE_BOUNDARY_RE.finditer(text):

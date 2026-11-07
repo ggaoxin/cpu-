@@ -692,6 +692,20 @@ def _can_decode(content: bytes, encoding: str) -> bool:
         return False
 
 
+_DIGIT_TOKEN_RE = re.compile(r"\d+(?:\.\d+)?")
+
+
+def _md_abstract_lost_digits(md_abstract: str, py_abstract: str) -> bool:
+    """mineru 摘要数字完整性守卫（2026-11-07）：md 摘要缺失 PyMuPDF 文本层
+    已有的数字 token 即判定丢失（mineru 对个别字体的数字识别会整段丢失，
+    表现为"设计3 组"→"设计 组"、"80.8%～92.3%"消失）。"""
+    if not md_abstract or not py_abstract:
+        return False
+    md_digits = set(_DIGIT_TOKEN_RE.findall(md_abstract))
+    py_digits = set(_DIGIT_TOKEN_RE.findall(py_abstract))
+    return bool(py_digits - md_digits)
+
+
 async def _store_uploaded_resource(
     field: str,
     upload: StarletteUploadFile,
@@ -1531,6 +1545,23 @@ async def parse_files(
                     except Exception:  # noqa: BLE001
                         pass
                 if len(abstract) >= 50:
+                    # 数字完整性守卫（2026-11-07 用户实测 ResNet 混凝土篇）：mineru
+                    # 对摘要区个别字体的数字会整段识别丢失（"设计3 组"→"设计 组"、
+                    # "80.8%～92.3%"消失，同篇正文其他位置的同数字却正常），而
+                    # PyMuPDF 文本层完好。md 摘要缺失文本层已有的数字 token 时
+                    # 弃用 md 版，换用 PyMuPDF 摘要（毫秒级探针，与引用标记门禁
+                    # 同款思路：mineru 静默残缺由文本层探针兜住）
+                    try:
+                        from infrastructure.document_parser.upload_reader import _pymupdf_abstract as _pya
+                        from infrastructure.document_parser.document_parser import extract_abstract_text as _eat
+                        _py_head = await asyncio.to_thread(_pya, content)
+                        _py_abs = _eat(_py_head or "", "zh_paper") if _py_head else ""
+                    except Exception:  # noqa: BLE001
+                        _py_abs = ""
+                    if (_py_abs and len(_py_abs) >= 50
+                            and _md_abstract_lost_digits(abstract, _py_abs)):
+                        logger.warning("mineru 摘要丢数字（%s），换用 PyMuPDF 文本层摘要", name)
+                        abstract = _py_abs
                     parsed_pairs.append({"file_name": name, "media_type": pair["media_type"],
                                          "text": abstract, "title": title})
                 else:
