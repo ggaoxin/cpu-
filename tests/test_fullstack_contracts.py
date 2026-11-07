@@ -351,7 +351,10 @@ class FullstackContractTests(unittest.TestCase):
             task_repo, _ = repositories(Path(temporary_directory))
             service = ToolIntegrationService(FakeSemanticService(), task_repo)
             cases = [
-                ("domain-classify", {"input_type": "text", "text": "测试", "domain": ""}),
+                # domain-classify 领域不再必填（2026-09-16 用户定调：删除手选下拉、
+                # 由算法自动识别），空 domain 已是合法输入——非法载荷改用数值参数
+                # 类型错误（minimum_confidence 非数值 → 42201）
+                ("domain-classify", {"input_type": "text", "text": "测试", "minimum_confidence": "bad"}),
                 ("zh-keyword", {"input_type": "text", "abstract": "测试", "min_keywords": "bad"}),
                 ("zh-keyword", {"input_type": "text", "abstract": "测试", "dictionary_id": "missing"}),
                 ("cluster-label", {

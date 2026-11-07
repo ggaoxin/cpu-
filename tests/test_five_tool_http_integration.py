@@ -141,8 +141,11 @@ class FiveToolHttpIntegrationTests(unittest.TestCase):
                 self.assertTrue(result[expected_field])
 
     def test_validation_and_cors(self):
+        # domain-classify 领域不再必填（2026-09-16 用户定调），缺 domain 已是合法
+        # 请求（仅 title 也构成分类输入）——非法载荷改为完全空载荷
+        # （→ 42201 没有可处理的输入数据）
         invalid = self.client.post("/api/v1/classify/domain/text", json={
-            "input_type": "text", "title": "测试", "abstract": "测试摘要",
+            "input_type": "text",
         })
         self.assertEqual(invalid.status_code, 422)
         self.assertEqual(invalid.json()["code"], 42201)

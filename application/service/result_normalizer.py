@@ -815,7 +815,11 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         _sent_idx_by_move = {_move_label_zh(k): v for k, v in _sent_idx_by_move.items()}
         if isinstance(data.get("move_statistics"), dict):
             data["move_statistics"] = {_move_label_zh(k): v for k, v in data["move_statistics"].items()}
-    source = _list(data.get("moves", data.get("spans", [])) if data else raw)
+    # source 分流须按 raw 自身是否 dict，不能用 data 真值：上方题名透出可能已往
+    # 空 data 写入 document_title 使其变真值 → 引擎返回列表形态（如 fund 引擎的
+    # moves 数组）时 source 恒空、moves 全部丢失（2026-11-07 CI 存量失败根因，
+    # 五工具集成测试 fund/zh/file 实测复现）
+    source = _list(raw.get("moves", raw.get("spans", [])) if isinstance(raw, dict) else raw)
     moves = []
     # GLM 按规则库 output_schema 直接输出「类别→文本」扁平 dict（如 {研究方法: "..."}），
     # 既无 moves 也无 spans。此时按有序类别集合还原成结构化 moves，否则 moves 恒为空、

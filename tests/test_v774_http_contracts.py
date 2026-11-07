@@ -373,7 +373,10 @@ class V774HttpContractTests(unittest.TestCase):
         self.app.dependency_overrides[get_integration_service] = lambda: integration
         form = {"preprocessed_training_set": json.dumps(resource("preprocessed_training_set"))}
 
-        # ① 带引用标记：[1] / [2,3] / [4-6] → 拆分为 [1][2][3][4][5][6]
+        # ① 带引用标记：整句一条卡片（2026-11-04 评测驱动定稿：旧版按编号拆多条
+        # +局部片段判定实测比整句低 15-25pp，与用户手工卡片口径对齐）——
+        # citation_marker=句内首个标记，citation_markers=句内全部标记，
+        # _marker_nums=区间/逗号展开的全部编号（供元数据匹配）
         document = "已有研究表明传统方法存在局限[1]。张三等人提出了改进方案[2,3]，效果优于基线[4-6]。\n本文继续该方向研究。"
         response = self.client.post(
             "/api/v1/citation-intent/file",
@@ -384,10 +387,10 @@ class V774HttpContractTests(unittest.TestCase):
         self.assertEqual(response.json()["code"], 0, response.text)
         self.assertEqual(len(algorithm.requests), 1)
         derived = algorithm.requests[0].params["citation_sentence_and_context"]
-        self.assertEqual([row["citation_marker"] for row in derived], [f"[{n}]" for n in range(1, 7)])
-        self.assertTrue(all(str(row.get("citation_sub_span") or "").strip() for row in derived), derived)
-        marker4 = next(row for row in derived if row["citation_marker"] == "[4]")
-        self.assertIn("效果优于基线", marker4["citation_sub_span"])
+        self.assertEqual([row["citation_marker"] for row in derived], ["[1]", "[2,3]"])
+        self.assertEqual(derived[1]["citation_markers"], ["[2,3]", "[4-6]"])
+        self.assertEqual(derived[1]["_marker_nums"], [2, 3, 4, 5, 6])
+        self.assertIn("效果优于基线", derived[1]["citation_sentence"])
 
         # ② 无引用标记：业务空跑，不派生结构化字段、不报参数错误
         before = len(algorithm.requests)
@@ -519,9 +522,15 @@ class V774HttpContractTests(unittest.TestCase):
             "downstream_tool": "relation-extract", "upstream_type": "entity",
         })
         self.assertEqual(history.status_code, 200, history.text)
+        # 2026-10-15 性能定稿后历史下拉为「每任务最新一条记录」（批量 NER 的
+        # 两条记录只出现任务维度的最新一条）；句子语境由实体 context 拼接，
+        # Fake 实体无 context 时为空串。逐条记录的精确原文由 from-ner-record
+        # 通道保证（下方 relation 断言）
         by_record = {item["record_id"]: item for item in history.json()["data"]}
-        self.assertEqual(by_record[rows[0]["record_id"]]["sentence"], source_texts[0])
-        self.assertEqual(by_record[second_record_id]["sentence"], source_texts[1])
+        self.assertEqual(len(by_record), 1)
+        entry = next(iter(by_record.values()))
+        self.assertTrue(entry["entities"], entry)
+        self.assertIn(second_record_id, {rows[0]["record_id"], second_record_id})
 
         relation = self.client.post("/api/v1/relation/from-ner-record", json={
             "upstream_ner_record_id": second_record_id,

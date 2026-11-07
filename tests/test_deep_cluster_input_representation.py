@@ -105,9 +105,11 @@ def test_collection_document_metadata_preserves_date_keywords_and_body():
 
 
 def test_file_date_parser_requires_publication_context():
-    assert _publication_date_from_text("发布日期：2025年3月12日") == "2025年3月12日"
-    assert _publication_date_from_text("Publication date: 2024-08-01") == "2024-08-01"
-    assert _publication_date_from_text("Published 2023/6/9") == "2023/6/9"
+    """2026-11-03 用户定稿：发表时间不再从全文/解析文本抽取（年份可能来自引用
+    文献或基金年度等噪声），只认用户填写——函数保留仅为兼容引用，恒返 None。"""
+    assert _publication_date_from_text("发布日期：2025年3月12日") is None
+    assert _publication_date_from_text("Publication date: 2024-08-01") is None
+    assert _publication_date_from_text("Published 2023/6/9") is None
     assert _publication_date_from_text("实验于2025年3月12日完成") is None
 
 
