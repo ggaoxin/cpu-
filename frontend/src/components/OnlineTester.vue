@@ -1244,9 +1244,9 @@ async function processSelectedFiles(files: File[], multiple: boolean, reset?: ()
       size: file.size,
       type: file.name.split('.').pop()?.toUpperCase() || '文件',
       documentId: `DOC${String(uploadedFiles.length + 1).padStart(3, '0')}`,
-      // 题名默认取文件全名（含扩展名，如 xxx.pdf）：上传场景无需手填题名；
-      // 发表时间仍需用户填写（趋势分析维度），文献编号已自动生成
-      title: file.name,
+      // 题名：深度聚类初始为空（2026-11-09 用户定稿：解析到真实题名才填充，
+      // 文件名不算题名）；其余工具维持文件名兜底不变
+      title: props.toolId === 'deep-cluster' ? '' : file.name,
       authors: '',
       publicationDate: '',
       source: '',
@@ -2734,7 +2734,7 @@ function downloadResult() {
                     <div class="two-column deep-cluster-metadata-grid">
                       <div class="field"><label><span class="label-main">文献编号</span><small>自动</small></label><input v-model="item.documentId" class="input" placeholder="解析后自动生成（DOC001）" /></div>
                       <div class="field"><label><span class="label-main">发表时间</span><small>可选</small></label><YearPicker v-model="item.publicationDate" /></div>
-                      <div class="field"><label><span class="label-main">题名</span><small>自动解析</small></label><input v-model="item.title" class="input" maxlength="300" placeholder="解析后自动填充" /><small v-if="item.parsedTitle" class="char-count-v755">已自动解析</small></div>
+                      <div class="field"><label><span class="label-main">题名</span><small>自动解析</small></label><input v-model="item.title" class="input" maxlength="300" placeholder="解析后自动填充" /></div>
                       <div class="field"><label><span class="label-main">作者</span><small>可选</small></label><input v-model="item.authors" class="input" placeholder="多人使用逗号分隔" /></div>
                       <div class="field"><label><span class="label-main">文献来源</span><small>可选</small></label><input v-model="item.source" class="input" placeholder="期刊、会议、报告或其他来源" /></div>
                       <div class="field"><label><span class="label-main">关键词</span><small>可选</small></label><input v-model="item.keywords" class="input" placeholder="多个关键词使用逗号分隔" /></div>

@@ -1181,8 +1181,14 @@ def run_move_aligned_clustering(papers, *, selected_axis, glm_client, encoder=No
         if encoder is None:
             raise ValueError("clustering_algorithm_type 指定算法依赖向量编码器（当前不可用），请选择 auto(自动选择)。")
         if cluster_count == 1:
-            groups = [{"name": "单一类簇（用户指定类簇数量=1）",
-                       "indices": list(range(n)), "keywords": []}]
+            # 单簇的语义字段也必须是内容而非参数说明（2026-11-09 甲方问题修复）：
+            # 此前 name=配置说明串"单一类簇（用户指定类簇数量=1）"、keywords 空，
+            # 直接进 topic_name；短语为空时归一化层还会把 topic_name 兜底进
+            # representative_terms——语义字段里全是参数说明。改为 LLM 生成语义
+            # 簇名+关键词（概括全量文献的共同主题），失败时保留中性形状名
+            groups = [{"name": "单一类簇", "indices": list(range(n)), "keywords": []}]
+            _name_fallback_groups(glm_client, papers, groups, moves,
+                                  language_type=language_type)
             method = "single_cluster_requested"
         elif anchor_docs:
             groups = _vector_anchor_groups(papers, moves, anchor_docs, selected_axis,
@@ -1200,10 +1206,13 @@ def run_move_aligned_clustering(papers, *, selected_axis, glm_client, encoder=No
         if not groups:
             # 用户指定单一类簇（k=1）：LLM 按语义分组必然产出多簇（综述粒度，k=1 语义
             # 上不可达——2026-10-09 实测要求 1 得 5），直接确定性输出全量单簇，保证
-            # 参数被忠实执行（锚点路径优先于本规则：用户上传类目时以类目为准）
+            # 参数被忠实执行（锚点路径优先于本规则：用户上传类目时以类目为准）。
+            # 语义字段修复同显式算法路径（2026-11-09）：LLM 语义簇名+关键词，
+            # 不再把参数说明串写进 topic_name/representative_terms
             if cluster_count == 1:
-                groups = [{"name": "单一类簇（用户指定类簇数量=1）",
-                           "indices": list(range(n)), "keywords": []}]
+                groups = [{"name": "单一类簇", "indices": list(range(n)), "keywords": []}]
+                _name_fallback_groups(glm_client, papers, groups, moves,
+                                      language_type=language_type)
                 method = "single_cluster_requested"
             elif USE_TASK_ANCHORED_GROUPING:
                 # 三段式任务锚定分组（2026-10-20 晚）：粒度=数值阈值而非提示词

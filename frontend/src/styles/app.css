@@ -675,6 +675,11 @@ body.v663-fund-move-active .fund-move-src-sep {
   background: #fff !important;
   font-weight: 700;
   line-height: 1.7;
+  /* 长文献名强制换行（2026-11-09 用户实测：无空格长串文件名/题名默认不可断行，
+   * 会把文献列撑破表格横向溢出）；anywhere 允许列宽收缩到内容以下断行，
+   * 正常带空格文本不受影响 */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .visualization-modal-body-v645 table tbody tr:has(> td.viz-merged-source-cell):not(:first-child) > td,
 .visualization-modal-body-v645 table tbody tr.viz-record-start:not(:first-child) > td {

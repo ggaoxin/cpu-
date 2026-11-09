@@ -1722,12 +1722,22 @@ async def parse_files(
                     # 中文续行（2026-10-20：学位论文封面标题跨行"…社交媒体机器人/
                     # 检测框架"——纯汉字短行直接无空格拼接；含字母数字冒号的行不拼
                     _nx_cjk = bool(re.fullmatch(r"[\u4e00-\u9fff]{2,15}", _nx))
+                    # 续接排除元数据标签行（2026-11-09 用户实测：CNKI 网络首发版式
+                    # "文献编号"标签与值分两行、标签行紧邻题名行——4 个纯汉字恰好
+                    # 命中 CJK 续接条件被粘到题名尾（"…应用研究文献编号"）；期刊/
+                    # 学位论文封面的同类表单标签一并排除（去空白前缀判定）
+                    _nx_meta_label = bool(re.match(
+                        r"^(文献编号|论文编号|工程编号|网络首发|引用格式|收稿日期|修回日期|"
+                        r"基金项目|作者简介|文献标识码|文章编号|中图分类号|关键词|摘要|"
+                        r"单位代码|学号|分类号|密级|答辩日期|入学年份|培养单位|导师)",
+                        re.sub(r"[\s　]+", "", _nx)))
                     # 英文小写续行（2026-10-20：题名换行接介词/冠词"in Large…"）
                     _nx_lower_cont = bool(re.match(r"[a-z]", _nx)) and not _nx.endswith((".", "。"))
                     if _nx and "@" not in _nx and len(_nx) <= 60 and not _re_title_pageno.fullmatch(_nx) \
                             and (_title.endswith("-") or (_nx[:1].isupper() and _nx == _nx.upper() and len(_nx) >= 4) or _nx_lower_cont):
                         _title = (_title.rstrip() + (" " if not _title.endswith("-") else "") + _nx.strip())[:200]
-                    elif _nx_cjk and not _is_form_field and not _title.endswith(("。", "？", "！", "：", ":")):
+                    elif _nx_cjk and not _is_form_field and not _nx_meta_label \
+                            and not _title.endswith(("。", "？", "！", "：", ":")):
                         _title = (_title.rstrip() + _nx.strip())[:200]
                     break
         except Exception:
