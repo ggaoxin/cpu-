@@ -1081,13 +1081,24 @@ class ToolIntegrationService:
         # 文件名兜底时，从解析文本头部提取论文真实题名（markdown 标题 / 摘要
         # 锚点回溯 / 首题名行，与关键词工具同款提取器）覆盖兜底值
         _fallback_title = (value.get("title") or "").strip()
-        _raw_text_head = str(group[0].text or "").lstrip()[:1]
-        if group[0].text and _raw_text_head not in ("{", "[") \
+        _title_src = str(group[0].text or "")
+        # JSON 包装的批量文本（分类等工具把每篇 dict 转 JSON 字符串）：从其
+        # text/abstract 字段取正文做题名提取（2026-11-10 测试用例 TC-123：
+        # 批量文本无逐条题名时 document_title 为空——JSON 守卫跳过了提取）
+        if _title_src.lstrip()[:1] in ("{", "["):
+            try:
+                _doc = json.loads(_title_src)
+                if isinstance(_doc, dict):
+                    _title_src = str(_doc.get("text") or _doc.get("abstract")
+                                     or _doc.get("content") or "")
+            except (ValueError, TypeError):
+                _title_src = ""
+        if _title_src.strip() and _title_src.lstrip()[:1] not in ("{", "[") \
                 and (not _fallback_title
                      or _fallback_title == str(source.get("file_name") or "").strip()):
             try:
                 from application.service.semantic_service import SemanticApplicationService as _Svc
-                _real_title = _Svc._extract_paper_title(str(group[0].text)[:8000])
+                _real_title = _Svc._extract_paper_title(_title_src[:8000])
             except Exception:  # noqa: BLE001 - 提取失败保持原兜底
                 _real_title = ""
             if _real_title and 4 <= len(_real_title) <= 200:
@@ -1407,6 +1418,20 @@ class ToolIntegrationService:
             return [InputItem("cluster-result", json.dumps(upstream_result, ensure_ascii=False), {"source_task_id": payload["cluster_task_id"]})] if upstream_result else []
 
         texts = payload.get("document_set") or payload.get("documents") or payload.get("texts")
+        # 文档主字段列表直通（2026-11-10 测试用例 TC-223/248：批量文本接口按
+        # API 文档用主字段名（scientific_document_full_text=[...]）传列表时，
+        # 此前映射不到 texts → "没有可处理的输入数据"422——文档字段与内部
+        # texts 键等价。仅限 input_type=texts 的批量文本场景（citation 的
+        # citation_sentence_and_context 等列表主字段走各自的专用分支，不在此
+        # 映射）；主字段名来自 Vue 契约
+        if not texts and str(payload.get("input_type") or "") == "texts":
+            try:
+                from config.vue_contracts import get_vue_contract
+                _pf = get_vue_contract(contract.tool_id).primary_input_field
+            except Exception:  # noqa: BLE001 - 契约缺失跳过
+                _pf = ""
+            if _pf and isinstance(payload.get(_pf), list):
+                texts = payload[_pf]
         if isinstance(texts, list):
             items = []
             # 批量题目逐条映射:document_title 为列表时按下标对应各篇文献
@@ -2153,9 +2178,19 @@ class ToolIntegrationService:
             contexts = payload.get("citation_sentence_and_context")
             metadata = payload.get("citation_metadata")
             if payload.get("input_type") in {"text", "texts"}:
-                if not isinstance(contexts, list) or not contexts:
+                # 全文文本输入豁免必填校验（2026-11-10 测试用例 TC-223/248：文档
+                # 规定批量文本字段 scientific_document_full_text 直传全文即可，
+                # 引用句由 _semantic_request 从全文自动派生——必填校验只针对
+                # 手动逐条卡片输入（payload 里无任何全文字段时）
+                _has_full_text = any(
+                    str(payload.get(_fk) or "").strip()
+                    for _fk in ("scientific_document_full_text", "text", "abstract", "content")
+                    if isinstance(payload.get(_fk), str)
+                ) or isinstance(payload.get("scientific_document_full_text"), list) \
+                  or (isinstance(payload.get("texts"), list) and bool(payload.get("texts")))
+                if not _has_full_text and (not isinstance(contexts, list) or not contexts):
                     return "citation_sentence_and_context 为必填项；文本输入必须提供引用句及其上下文"
-                for index, item in enumerate(contexts):
+                for index, item in enumerate(contexts or []):
                     if not isinstance(item, dict) or not str(item.get("citation_sentence") or "").strip():
                         return f"第 {index + 1} 条引用数据缺少引用句文本"
                     if not str(item.get("previous_context") or "").strip() or not str(item.get("next_context") or "").strip():

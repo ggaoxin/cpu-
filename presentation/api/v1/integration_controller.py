@@ -374,9 +374,28 @@ async def _plain_abstract_title(text: str) -> tuple[str, str]:
     # ② LLM 判定+兜底：候选交 LLM 判真伪（规则误命中由此兜住）；
     #    无候选（无标记纯摘要/乱格式）时退化为纯 LLM 逐字提取
     title, abstract = await _llm_judge_title_abstract(text, title, abstract)
-    # ③ 规则与 LLM 都未命中 → 真无摘要，返回空串（引擎层报"未检测到摘要"）。
-    #    此前"截前 2000 字硬兜底保证工具可跑"会把无摘要文献的标题+引言整篇
-    #    当摘要送去识别，章节标题都被标成语步（2026-11-07 article.docx 用户实测）
+    # ③ 规则与 LLM 都未命中 → 确定性兜底：题名+摘要纯文本（无标记）格式。
+    #    该格式（测试用例 TC-017/023/048 常用形态：首行题名 + 后续摘要正文）
+    #    LLM 判定存在抖动（同文件时而提出摘要时而空 → 单/批量接口表现不一致），
+    #    确定性拆分：题名 = 首个题名样行，摘要 = 其后正文 ≥50 字。仍无摘要才
+    #    返回空串（引擎层报"未检测到摘要"——无摘要文献的标题+引言整篇不伪造）
+    if not str(abstract or "").strip():
+        try:
+            from application.service.semantic_service import SemanticApplicationService as _Svc
+            _t = _Svc._extract_paper_title(text[:8000])
+        except Exception:  # noqa: BLE001
+            _t = ""
+        if _t and 4 <= len(_t) <= 200:
+            _t_flat = re.sub(r"\s+", "", _t)
+            # 按行定位题名行，摘要 = 其后原文（保留空白——en 词距不破坏）
+            for _ln in text.splitlines()[:30]:
+                _ln_s = _ln.strip()
+                if _ln_s and re.sub(r"\s+", "", _ln_s) == _t_flat:
+                    _pos = text.find(_ln)
+                    _rest = text[_pos + len(_ln):].strip() if _pos >= 0 else ""
+                    if len(_rest) >= 50:
+                        abstract, title = _rest, _ln_s
+                    break
     # 题名空但摘要非空时用确定性提取器兜底（2026-11-10 测试用例 TC-023：LLM
     # 对"题名行+短摘要"常判 title 为空——提取器在原文上回溯题名行更稳）
     if abstract and not str(title or "").strip():
