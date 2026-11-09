@@ -941,6 +941,9 @@ def _moves(raw: Any, tool_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     _user_title = _title_text(payload.get("project_name"), payload.get("document_title"), payload.get("title"))
     if _user_title:
         document["title"] = _user_title
+        # 顶层 document_title 同步用户题名（2026-11-10 测试用例 TC-053/059：基金传
+        # project_name 后 document.title 正确、顶层 document_title 仍回显文件名）
+        data["document_title"] = _user_title
     else:
         document.setdefault("title", "")
     # language 按输入文本实际语言判定（而非按工具页面写死）；引擎已显式给出时保留引擎值
@@ -1618,6 +1621,23 @@ def _research_questions(raw: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
                 for _k in list(_p):
                     if _k not in _phrase_keep:
                         _p.pop(_k)
+        # minimum_confidence 阈值过滤（2026-11-10 测试用例 TC-189/204：参数此前
+        # 仅做数值校验从未消费，0.6/0.7 低于 0.75 阈值仍输出）——句子级/短语级
+        # 按各自 confidence 过滤；结构化问题保留（由存活的句子/短语构成，单独
+        # 过滤会破坏三级关联），statistics 阈值前口径保持（阀后条数由前端按
+        # 存活数组自行呈现）
+        try:
+            _min_conf = float(payload.get("minimum_confidence") or 0)
+        except (TypeError, ValueError):
+            _min_conf = 0
+        if 0 < _min_conf <= 1:
+            def _conf_ok(row: Any) -> bool:
+                try:
+                    return float(row.get("confidence") or 0) >= _min_conf
+                except (TypeError, ValueError):
+                    return True
+            sentences = [s for s in sentences if not isinstance(s, dict) or _conf_ok(s)]
+            phrases = [p for p in phrases if not isinstance(p, dict) or _conf_ok(p)]
         statistics = data.get("research_question_statistics") or data.get("statistics") or {}
         return {
             **data,

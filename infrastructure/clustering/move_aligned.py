@@ -1305,9 +1305,10 @@ def run_move_aligned_clustering(papers, *, selected_axis, glm_client, encoder=No
     quality = {
         "cluster_count": len(clusters),
         "intra_cluster_similarity": round(sum(multi) / len(multi), 3) if multi else None,
-        # algorithm_requested 如实回显（2026-10-09 起）：显式算法回显算法名，
-        # auto/None 保持 v3 设计名 move_aligned（历史记录口径不变）
-        "algorithm_requested": algorithm if algorithm and algorithm != "auto" else "move_aligned",
+        # algorithm_requested 回显用户请求值（2026-11-10 测试用例 TC-368：请求
+        # auto 时回显"move_aligned"被认定与请求不符——requested 回显请求、
+        # used 才是实际方法，两者职责分开；显式算法仍回显算法名）
+        "algorithm_requested": algorithm or "auto",
         "algorithm_used": method,
     }
     return {

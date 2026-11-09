@@ -153,7 +153,12 @@ ABSTRACT_MOVE_TOOLS = {"zh-abstract-move", "en-abstract-move"}
 # 走 PyMuPDF light（毫秒级全文，含双栏分栏+断词重连），其余工具全走 MinerU
 # 基金语步改回 MinerU（2026-09-09 用户确认：需要 ## 章节标题锚定研究目标/
 # 技术方案/预期成果，MinerU md 的结构化标题远优于 PyMuPDF 的正则猜测）
-PYMUPDF_TOOLS = {"definition-detect", "deep-cluster", "structured-review"}
+PYMUPDF_TOOLS = {"definition-detect", "deep-cluster", "structured-review",
+                 # NER/关系文件通道改 PyMuPDF light（2026-11-10 测试用例 TC-329/334：
+                 # 此前走全页 mineru（分钟级），甲方网关 60s 超时返回 502 nginx HTML、
+                 # 文件通道不可用；NER/关系引擎只消费纯文本不依赖 md 结构，light
+                 # 的双栏分栏读取质量足够）
+                 "general-ner", "research-ner", "domain-ner", "relation-extract"}
 # 摘要语步只需摘要文本（期刊首页、学位论文摘要最迟到第7页），限定 mineru 只解析
 # 前 8 页（0-indexed 闭区间 end_page_id=7），vllm 计算量随页数大降而 abstract 仍完整
 # （含无标题摘要——靠末端 LLM 从前若干页 md 语义提取，实测 38.pdf 限8页=全文1301字）。
@@ -220,7 +225,10 @@ async def _llm_title_abstract_from_text(text: str) -> tuple[str, str]:
     用户定稿：乱格式粘贴文本无 # 标题/无"摘要："标记时规则无能为力，LLM 语义
     定位天然稳健）。输出限长防跑偏：title≤200 字、abstract≤6000 字。"""
     head = text[:8000]
-    if len(head.strip()) < 200:
+    # 门槛 200→50（2026-11-10 测试用例 TC-023：题名+短摘要的合法文献文本可
+    # 不足 200 字，此前直接判"无结构"返回空 → 触发无摘要拦截；与
+    # _llm_judge_title_abstract 的 <50 口径对齐，50-200 字文本交 LLM 判定
+    if len(head.strip()) < 50:
         return "", ""
     try:
         from infrastructure.llm.glm_client import glm_client
@@ -313,14 +321,17 @@ async def _llm_judge_title_abstract(text: str, cand_title: str, cand_abstract: s
         final_title = cand_title if (title_ok and cand_title) else str(out.get("title") or "").strip()[:200]
         final_abstract = cand_abstract if (abstract_ok and cand_abstract) else str(out.get("abstract") or "").strip()[:6000]
         # 防幻觉硬校验（LLM 重提的值）：标题须在原文出现（空白不敏感），
-        # 摘要须是原文子串（空白不敏感）——不通过则退回候选值
+        # 摘要须是原文子串（空白不敏感）——不通过则退回候选值。
+        # 大小写敏感（2026-11-10 测试用例 TC-043：casefold 校验会放行 LLM 改动
+        # 大小的"摘录"——"This study investigates"被改写为"This Study investigates"
+        # 造成数据保真缺陷；空白折叠保留，大小写必须逐字一致）
         import re as _re_k
-        _norm = _re_k.sub(r"\s+", "", text[:20000].casefold())
+        _norm = _re_k.sub(r"\s+", "", text[:20000])
         if final_title and not cand_title == final_title:
-            if _re_k.sub(r"\s+", "", final_title.casefold()) not in _norm:
+            if _re_k.sub(r"\s+", "", final_title) not in _norm:
                 final_title = cand_title
         if final_abstract and final_abstract != cand_abstract:
-            if _re_k.sub(r"\s+", "", final_abstract.casefold())[:2000] not in _norm:
+            if _re_k.sub(r"\s+", "", final_abstract)[:2000] not in _norm:
                 final_abstract = cand_abstract
         return final_title, final_abstract
     except Exception:  # noqa: BLE001 - LLM 判定失败退回规则结果
@@ -366,6 +377,16 @@ async def _plain_abstract_title(text: str) -> tuple[str, str]:
     # ③ 规则与 LLM 都未命中 → 真无摘要，返回空串（引擎层报"未检测到摘要"）。
     #    此前"截前 2000 字硬兜底保证工具可跑"会把无摘要文献的标题+引言整篇
     #    当摘要送去识别，章节标题都被标成语步（2026-11-07 article.docx 用户实测）
+    # 题名空但摘要非空时用确定性提取器兜底（2026-11-10 测试用例 TC-023：LLM
+    # 对"题名行+短摘要"常判 title 为空——提取器在原文上回溯题名行更稳）
+    if abstract and not str(title or "").strip():
+        try:
+            from application.service.semantic_service import SemanticApplicationService as _Svc
+            _t = _Svc._extract_paper_title(text[:8000])
+        except Exception:  # noqa: BLE001
+            _t = ""
+        if _t and 4 <= len(_t) <= 200:
+            title = _t
     return _clean_extracted_abstract(abstract), _clean_extracted_title(title)
 
 
@@ -1804,7 +1825,10 @@ def _file_endpoint(tool_id: str, multiple: bool):
         field = contract.primary_input_field
         uploads = [value for value in form.getlist(field) if isinstance(value, StarletteUploadFile)]
         if not uploads:
-            fallback_fields = ("files", "file", "document_set", "scientific_document_texts")
+            # scientific_document_full_text（2026-11-10 测试用例 TC-254/259：引用
+            # 意图文档规定的文件上传字段名此前不在回退清单，422"缺少上传字段"）
+            fallback_fields = ("files", "file", "document_set", "scientific_document_texts",
+                               "scientific_document_full_text")
             uploads = [
                 value for fallback in fallback_fields for value in form.getlist(fallback)
                 if isinstance(value, StarletteUploadFile)
@@ -1904,7 +1928,16 @@ def _file_endpoint(tool_id: str, multiple: bool):
                         if _ti:
                             item["title"] = _ti
                 if _no_abs:
-                    raise HTTPException(status_code=422, detail=_no_abstract_message(_no_abs))
+                    # 42201 业务包络（2026-11-10 测试用例 TC-017②/048②：此前仅
+                    # {"detail":...} 非 Vue 通用错误包络）
+                    return JSONResponse(status_code=422, content={
+                        "code": 42201, "message": _no_abstract_message(_no_abs),
+                        "data": {"task_id": "", "tool_id": tool_id, "status": "failed",
+                                 "input_type": payload.get("input_type", "files"), "progress": 0,
+                                 "total": 0, "success_count": 0, "failed_count": 0,
+                                 "results": [], "summary": {}, "available_exports": ["json", "csv"]},
+                        "meta": {},
+                    })
             # 批量预解析提交支持异步（2026-09-09 实时进度需求）：Prefer: respond-async
             # → submit 立即返回 task_id，前端轮询 /tasks/{id}/progress，终态取
             # /tasks/{id}/vue-result（与同步响应同构）。此前 preparsed 分支提前
@@ -1945,7 +1978,16 @@ def _file_endpoint(tool_id: str, multiple: bool):
                              "results": [], "summary": {}, "available_exports": ["json", "csv"]},
                     "meta": {},
                 })
-            raise HTTPException(status_code=422, detail=str(exc)) from exc
+            # 42201 业务包络（2026-11-10 测试用例：非引用工具的文件解析/无摘要
+            # 拦截此前仅 {"detail":...}，与 Vue 通用错误包络不一致）
+            return JSONResponse(status_code=422, content={
+                "code": 42201, "message": str(exc),
+                "data": {"task_id": "", "tool_id": tool_id, "status": "failed",
+                         "input_type": str(payload.get("input_type") or "file"), "progress": 0,
+                         "total": 0, "success_count": 0, "failed_count": 0,
+                         "results": [], "summary": {}, "available_exports": ["json", "csv"]},
+                "meta": {},
+            })
         finally:
             for upload in uploads:
                 await upload.close()
@@ -2191,6 +2233,38 @@ def get_task_progress(task_id: str) -> Dict[str, Any]:
         "failed_count": task.get("failed_count", 0),
         "items": items_out,
     }}
+
+
+@router.get("/deepcluster/tasks/{task_id}/labels")
+def deep_cluster_task_labels(task_id: str) -> Dict[str, Any]:
+    """查询聚类任务已生成的类簇标签（2026-11-10 测试用例 TC-383：文档声明路径
+    此前 404 未实现）。返回该聚类任务最近一次标签生成（cluster-label 的
+    from-cluster-task）的标签列表；尚未生成过时返回 42201 业务包络提示先调用
+    /api/v1/cluster-labels/from-cluster-task，不自动触发生成（读操作无副作用）。
+    """
+    repository = get_integration_service().repository
+    if not repository.get_task(task_id):
+        return {"code": 42201, "message": f"聚类任务不存在：{task_id}", "data": {}}
+    labels: List[Dict[str, Any]] = []
+    # 最近若干条 cluster-label 任务里找关联该聚类任务的（请求参数含 cluster_task_id）
+    for task in repository.list_tasks(settings.DEFAULT_WORKSPACE_ID, limit=100):
+        if task.get("tool_id") != "cluster-label":
+            continue
+        payload = task.get("request_payload") if isinstance(task.get("request_payload"), dict) else {}
+        if str(payload.get("cluster_task_id") or "") != task_id:
+            continue
+        records = repository.list_results(task.get("id"))
+        if records:
+            result = records[-1].get("result") if isinstance(records[-1].get("result"), dict) else {}
+            labels = _list(result.get("labels")) or labels
+    if not labels:
+        return {
+            "code": 42201,
+            "message": f"聚类任务 {task_id} 尚无标签生成结果；请先调用 "
+                       "/api/v1/cluster-labels/from-cluster-task 生成标签后再查询",
+            "data": {"task_id": task_id, "labels": []},
+        }
+    return {"code": 0, "message": "success", "data": {"task_id": task_id, "labels": labels}}
 
 
 @router.get("/tasks/{task_id}/vue-result")

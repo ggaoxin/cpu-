@@ -2398,7 +2398,18 @@ class SemanticApplicationService(ISemanticService):
         except (TypeError, ValueError):
             _conf_th = 0.75
         if _conf_th > 0:
-            cleaned = [i for i in cleaned if float(i.get("weight") or 0) > _conf_th]
+            _kept_rows, _dropped_by_conf = [], []
+            for _i in cleaned:
+                (_kept_rows if float(_i.get("weight") or 0) > _conf_th else _dropped_by_conf).append(_i)
+            cleaned = _kept_rows
+            # 显式 min_keywords 下限守恒（2026-11-10 测试用例 TC-148/154/159：
+            # min=5 时置信度过滤把补齐词再滤掉只剩 2-3 个，数量下限失效）——
+            # 用户显式要求下限时按置信度降序回补被滤项至下限；默认路径（未显式
+            # 传参）维持 2026-10-14 定稿"宁少勿滥、以置信度为主、不低分凑数"
+            _min_explicit = "min_keywords" in (request.params or {})
+            if _min_explicit and len(cleaned) < minimum_keywords and _dropped_by_conf:
+                _dropped_by_conf.sort(key=lambda x: _number_or_default(x.get("weight"), 0), reverse=True)
+                cleaned.extend(_dropped_by_conf[:minimum_keywords - len(cleaned)])
 
         # 排序：preserve_order=true 时置信度按 0.05 分档降序为主，档内按摘要出现顺序（稳定）；
         #       false 时纯置信度降序。
@@ -3391,8 +3402,20 @@ class SemanticApplicationService(ISemanticService):
             lines = [l.strip() for l in (full_text or "").split('\n')[:40]]
 
             def _title_like(line: str) -> bool:
-                if len(line) < 8 or len(line) > 80:
+                # 句末标点 = 正文句不是题名（2026-11-10：TC-023 无标记纯文本的
+                # 摘要首句曾被当题名）；纯中文行放宽到 ≥4 字（TC-023"科技文献题目"
+                # 6 字），拉丁行保持 ≥8 防裸人名/短词
+                if len(line) > 80:
                     return False
+                if line.endswith(("。", "！", "？", ".", "!", "?", "；", ";")):
+                    return False
+                # 中文标签行（作者：李四 / 导师：王五 / 期刊：xx）不是题名
+                if _re.match(r'^(作者|通讯作者|通信作者|导师|期刊|来源|单位)[:：]', line):
+                    return False
+                if len(line) < 8:
+                    if not (_re.search(r'[一-鿿]', line) and len(line) >= 4
+                            and not _re.search(r'[A-Za-z]', line)):
+                        return False
                 if (journal_pat.search(line)
                         or _re.search(r'\d{4}|[（(]\d+[)）]|@|doi|摘\s*要|关键\s*词|'
                                       r'文献标志码|中图分类号|通信作者|E-?mail|Abstract', line, _re.IGNORECASE)
@@ -3437,6 +3460,10 @@ class SemanticApplicationService(ISemanticService):
                                 and len(lines[j].split()) < 4 and ':' not in lines[j]:
                             break
                         block.insert(0, lines[j])
+                        # 已收集到 ≥8 字的题目行即停（2026-11-10：继续向上会把
+                        # 更高处的期刊中英文名/栏目行并进标题块）
+                        if len(lines[j]) >= 8:
+                            break
                         continue
                     if _author_or_affil(lines[j]):
                         continue  # 作者/单位行：跳过继续向上找题目
@@ -3444,13 +3471,21 @@ class SemanticApplicationService(ISemanticService):
                 if block:
                     merged = "".join(block) if _re.search(r'[一-鿿]', block[0]) else " ".join(block)
                     return _polish(merged)
-            # 2) 兜底：首个题目行（原逻辑），纯拉丁行（期刊英文名）在有中文行时跳过
+            # 2) 兜底：首个题目行，纯拉丁行（期刊英文名）在有中文行时跳过。
+            # 短行（<8 字，如"生物信息学"类栏目/刊名）不立即采用——窗口内存在
+            # 更长的题目行时取长者，仅无长候选时才回退短行（2026-11-10：
+            # 放宽 ≥4 后期刊名被误抓为题名）
             has_cjk_candidate = any(_title_like(l) and _re.search(r'[一-鿿]', l) for l in lines)
+            _short_pick = ""
             for idx, line in enumerate(lines):
                 if not _title_like(line) or _author_or_affil(line):
                     continue
                 if has_cjk_candidate and not _re.search(r'[一-鿿]', line):
                     continue  # 期刊英文名（Information&Computer 等）
+                if len(line) < 8:
+                    if not _short_pick:
+                        _short_pick = line
+                    continue
                 # 题目被拆行：下一行也题目样且过中文规则 → 中文直接拼接/英文空格拼接
                 nxt = ""
                 if idx + 1 < len(lines) and _title_like(lines[idx + 1]):
@@ -3459,6 +3494,8 @@ class SemanticApplicationService(ISemanticService):
                 if nxt and _re.search(r'[一-鿿]', line):
                     return _polish(line + nxt)
                 return _polish(line)
+            if _short_pick:
+                return _polish(_short_pick)
             return ""
 
         candidates = []

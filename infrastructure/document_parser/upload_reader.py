@@ -110,7 +110,12 @@ def _plain_text_guard(content: bytes, text: str, filename: str) -> None:
             _COMMON3 = _COMMON4 | {"the", "and", "for", "are", "not", "can",
                                    "has", "have", "was", "our", "all", "new"}
             _h3 = words & _COMMON3
-            if not (len(_h3) >= 3 or (words & _COMMON4)) :
+            # 结构信号豁免（2026-11-10 测试用例 TC-374/390：术语表/题名清单/
+            # 结构化英文内容可能不含任何常见虚词，被误判乱码——含标点或数字的
+            # 文本具有人类结构特征，放行；2026-09-20 的随机字母流无标点无数字，
+            # 仍被拦截）
+            _has_structure = bool(_re_g.search(r"[.,;:!?，。；：0-9]", text[:20000]))
+            if not _has_structure and not (len(_h3) >= 3 or (words & _COMMON4)):
                 raise ValueError(
                     f"文件 {filename} 内容为不可识别的乱码字符（未检出任何自然语言"
                     "词汇），文件可能已损坏；请确认文件为有效的文本文件")

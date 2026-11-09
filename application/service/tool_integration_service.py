@@ -276,9 +276,14 @@ def _extract_citation_contexts(document_text: str, limit: int = 30) -> list:
                     continue
                 nums, marker_text, citation_markers = [], pn.group(), [pn.group()]
         contexts.append({
-            "citation_sentence": sent,
-            "previous_context": sentences[i - 1] if i > 0 else "（文档开头，无上文）",
-            "next_context": sentences[i + 1] if i + 1 < len(sentences) else "（文档结尾，无下文）",
+            # 句内空白规范化（2026-11-10 测试用例 TC-229：标题行无句末标点会与
+            # 正文首句并成同一段，段内换行被压扁后 context.before 显示为
+            # "…图像分类研究本文围绕…"粘连——统一压成单空格，至少词界可读）
+            "citation_sentence": re.sub(r"\s+", " ", sent).strip(),
+            "previous_context": (re.sub(r"\s+", " ", sentences[i - 1]).strip()
+                                 if i > 0 else "（文档开头，无上文）"),
+            "next_context": (re.sub(r"\s+", " ", sentences[i + 1]).strip()
+                             if i + 1 < len(sentences) else "（文档结尾，无下文）"),
             "citation_marker": marker_text,
             "citation_markers": citation_markers,
             "_marker_nums": sorted(set(nums)),
@@ -863,6 +868,51 @@ class ToolIntegrationService:
                 "error": error, "result": {},
             }
 
+    def _clone_group_from_result(
+        self,
+        *,
+        task_id: str,
+        tool_id: str,
+        contract: ToolContract,
+        index: int,
+        group: List[InputItem],
+        payload: Dict[str, Any],
+        template: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """批内同输入副本复用（2026-11-10 测试问题用例 C 类）：与首个相同输入
+        共享一次 GLM 结果（深拷贝独立落库），保证相同输入批内结果完全一致。
+        仅做 DB 操作不打 GLM，毫秒级完成。"""
+        import copy as _copymod
+        source = dict(group[0].source) if len(group) == 1 else {"input_count": len(group)}
+        item_id = self.repository.create_item(task_id, index, source)
+        self.repository.update_item(item_id, "running")
+        input_id = group[0].input_id if len(group) == 1 else None
+        try:
+            normalized = _copymod.deepcopy(template.get("result") or {})
+            record_id = _id("rec")
+            self._attach_result_identity(tool_id, normalized, task_id, record_id, payload)
+            self.repository.save_result(ResultRecord(
+                id=record_id,
+                task_id=task_id,
+                task_item_id=item_id,
+                tool_id=tool_id,
+                backend_code=contract.backend_code,
+                result=normalized,
+            ))
+            self.repository.update_item(item_id, "succeeded")
+            return {
+                "index": index, "item_id": item_id, "record_id": record_id,
+                "status": "succeeded", "input_id": input_id,
+                "file_name": source.get("file_name"), "source": source, "result": normalized,
+            }
+        except Exception as exc:  # noqa: BLE001
+            self.repository.update_item(item_id, "failed", str(exc))
+            return {
+                "index": index, "item_id": item_id, "record_id": None, "status": "failed",
+                "input_id": input_id, "file_name": source.get("file_name"), "source": source,
+                "error": str(exc), "result": {},
+            }
+
     def _run_groups_concurrent(
         self,
         *,
@@ -893,21 +943,41 @@ class ToolIntegrationService:
         completed = 0
         workers = min(settings.GLM_MAX_CONCURRENCY, total)
 
+        # 批内同输入去重（2026-11-10 测试问题用例 C 类：批内两条完全相同文本各走
+        # 一次 GLM 得到不同结果——主分类号 TU352.1+1/TU311.3、实体类型 TOPIC/
+        # DATASET、关键词集合漂移等 TC-073/079/084/098/104/109/184/323）。相同
+        # 文本只执行首次，副本复用其结果独立落库——批内一致性有保证；跨请求的
+        # 非确定性是模型侧固有，不在此范围
+        _dup_of: Dict[int, int] = {}
+        _seen_key: Dict[str, int] = {}
+        for _gi, _grp in enumerate(execution_groups):
+            _key = "\n".join(i.text or "" for i in _grp)
+            if not _key.strip():
+                continue
+            if _key in _seen_key:
+                _dup_of[_gi] = _seen_key[_key]
+            else:
+                _seen_key[_key] = _gi
+        _clones_by_primary: Dict[int, List[int]] = {}
+        for _dup_i, _primary_i in _dup_of.items():
+            _clones_by_primary.setdefault(_primary_i, []).append(_dup_i)
+
         # 线程池（2026-09-08 回退自进程池）：fork 进程池继承 uvicorn socket fd，
         # 连续 4-5 次批量请求后子进程累积→后端崩溃（稳定性致命缺陷）。
         # GLM IO 是主耗时（释放 GIL），CPU 段已通过轮次合并从 ~3s/篇压到 ~1s/篇，
         # 线程并发的 GIL 开销可接受；sys.setswitchinterval(0.05) 已减轻切换。
         from concurrent.futures import ThreadPoolExecutor, as_completed
         _bucket: Dict[int, Dict[str, Any]] = {}
+        _templates: Dict[int, Dict[str, Any]] = {}
         with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="glm-group") as pool:
             _future_to_index = {
                 pool.submit(
                     self._execute_group_once,
                     task_id=task_id, tool_id=tool_id, contract=contract,
-                    index=index, group=group, params=params, payload=payload,
+                    index=index, group=execution_groups[index], params=params, payload=payload,
                     cancelled=cancelled,
                 ): index
-                for index, group in enumerate(execution_groups)
+                for index in range(total) if index not in _dup_of
             }
             for future in as_completed(_future_to_index):
                 index = _future_to_index[future]
@@ -927,10 +997,27 @@ class ToolIntegrationService:
                         failed_count += 1
                     completed += 1
                     snap_success, snap_failed, snap_done = success_count, failed_count, completed
+                _templates[index] = result
                 if self._task_cancelled(task_id):
                     cancelled.set()
                     for fut in _future_to_index:
                         fut.cancel()
+        # 副本复用（DB-only 快速路径，不打 GLM）：主输入失败时副本正常重跑一次
+        # （引擎失败常为瞬时超时，给副本独立机会）
+        for _primary_i, _clone_list in _clones_by_primary.items():
+            _template = _templates.get(_primary_i)
+            for _ci in _clone_list:
+                if _template and _template.get("status") == "succeeded":
+                    result = self._clone_group_from_result(
+                        task_id=task_id, tool_id=tool_id, contract=contract,
+                        index=_ci, group=execution_groups[_ci], payload=payload,
+                        template=_template)
+                else:
+                    result = self._execute_group_once(
+                        task_id=task_id, tool_id=tool_id, contract=contract,
+                        index=_ci, group=execution_groups[_ci], params=params, payload=payload,
+                        cancelled=cancelled)
+                _bucket[_ci] = result
         _results = [_bucket[i] for i in range(total)]
         # 按序收集进度（进程池 map 有序返回）
         success_count = sum(1 for r in _results if r["status"] == "succeeded")
@@ -987,6 +1074,25 @@ class ToolIntegrationService:
             value["file_name"] = str(source.get("file_name"))[:900]
             value.setdefault("title", value["file_name"])
             value.setdefault("document_title", value["file_name"])
+        # 文件/批量文本模式真实题名兜底（2026-11-10 测试问题用例 A 类，约 20 例）：
+        # 非摘要工具的文件通道此前不提取题名，title/document_title 回显上传文件名
+        # （TC-079/084/098/104/109/129/134/154/159/179/184/204/209/234/279/284/
+        # 304/309/354）；批量文本无逐条题目时为空（TC-123）。title 缺失或仍是
+        # 文件名兜底时，从解析文本头部提取论文真实题名（markdown 标题 / 摘要
+        # 锚点回溯 / 首题名行，与关键词工具同款提取器）覆盖兜底值
+        _fallback_title = (value.get("title") or "").strip()
+        _raw_text_head = str(group[0].text or "").lstrip()[:1]
+        if group[0].text and _raw_text_head not in ("{", "[") \
+                and (not _fallback_title
+                     or _fallback_title == str(source.get("file_name") or "").strip()):
+            try:
+                from application.service.semantic_service import SemanticApplicationService as _Svc
+                _real_title = _Svc._extract_paper_title(str(group[0].text)[:8000])
+            except Exception:  # noqa: BLE001 - 提取失败保持原兜底
+                _real_title = ""
+            if _real_title and 4 <= len(_real_title) <= 200:
+                value["title"] = _real_title
+                value["document_title"] = _real_title
         if value.get("input_type") == "upstream_records":
             value["text"] = group[0].text
         elif group[0].text:
@@ -1482,13 +1588,17 @@ class ToolIntegrationService:
                 effective_params["citation_sentence_and_context"] = contexts_from_source
             elif context:
                 effective_params["citation_sentence_and_context"] = [context]
-            elif str(payload.get("input_type") or "") in {"file", "files"} and not effective_params.get("citation_sentence_and_context"):
+            elif str(payload.get("input_type") or "") in {"file", "files", "text", "texts"} \
+                    and not effective_params.get("citation_sentence_and_context"):
                 # 文件模式内置 PDF 完整解析链路：上传 PDF（路径透传延迟解析或直传文本）
                 # 已得全文 → 定位引用标记 → 按文献编号拆分引用句（含局部子片段），
                 # 自动填充 citation_sentence_and_context 后再执行识别；未发现引用标记时
                 # 不填充，由引擎走全文抽取兜底（无引用返回空结果而非参数错误）。
+                # 文本/批量文本模式同款自动派生（2026-11-10 测试用例 TC-223/248：
+                # 合法全文文本输入此前被 422 要求 citation_sentence_and_context——
+                # 该参数是内部派生字段，不该成为文本通道的必填入参）
                 document_text = str(_text or "").strip()
-                if not document_text:
+                if not document_text and str(payload.get("input_type") or "") in {"file", "files"}:
                     raise ValueError(
                         "文件解析失败，无法执行引用识别：未能从上传文件提取文本。"
                         "请上传含文本层的 PDF/DOCX/TXT 文件（扫描版请先转为文字版）。"
