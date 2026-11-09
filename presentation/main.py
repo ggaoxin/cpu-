@@ -106,7 +106,11 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=settings.CORS_ORIGINS,
         allow_credentials=True,
-        allow_methods=["*"],
+        # 方法白名单收敛为 GET/POST（2026-11-08 前端网关禁用 PUT/DELETE/OPTIONS
+        # 等不安全方法，应用全链路仅使用 GET/POST；预检应答与之对齐。"*" 虽然
+        # 只是声明不放行额外流量，但与网关策略保持一致可避免预检应答里出现
+        # 网关已禁用的方法引起误解）
+        allow_methods=["GET", "POST"],
         allow_headers=["*"],
     )
 

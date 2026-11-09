@@ -68,7 +68,8 @@ class FiveToolHttpIntegrationTests(unittest.TestCase):
             CORSMiddleware,
             allow_origins=settings.CORS_ORIGINS,
             allow_credentials=True,
-            allow_methods=["*"],
+            # 与正式服务同款收敛（2026-11-08 网关策略：应用全链路仅 GET/POST）
+            allow_methods=["GET", "POST"],
             allow_headers=["*"],
         )
         app.include_router(router, prefix="/api/v1")
@@ -153,6 +154,8 @@ class FiveToolHttpIntegrationTests(unittest.TestCase):
             count = session.fetchone("SELECT COUNT(*) AS total FROM analysis_tasks")["total"]
         self.assertEqual(count, 0)
 
+        # OPTIONS 预检是浏览器跨域机制而非业务方法（2026-11-08 网关禁的是不安全
+        # 业务方法；预检针对 POST，在 GET/POST 白名单内，后端 CORS 能力保留）
         preflight = self.client.options(
             "/api/v1/keywords/zh/text",
             headers={

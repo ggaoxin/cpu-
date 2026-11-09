@@ -2493,8 +2493,11 @@ def get_dictionary(dictionary_id: str, version: Optional[int] = Query(None, ge=1
     return {"code": 0, "data": value}
 
 
-@router.delete("/dictionaries/{dictionary_id}")
+@router.post("/dictionaries/{dictionary_id}")
 def delete_dictionary(dictionary_id: str) -> Dict[str, Any]:
+    """删除用户词典。POST 而非 DELETE（2026-11-08 前端网关禁用 PUT/DELETE/
+    OPTIONS 等不安全方法，接口全部收敛为 GET/POST；该路径无 POST 冲突，
+    且原 DELETE 版无任何前端/SDK/测试消费方，行为完全一致）"""
     deleted = resource_service.delete_dictionary(dictionary_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="用户词典不存在或已删除")
