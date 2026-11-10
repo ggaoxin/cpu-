@@ -309,5 +309,6 @@ CREATE INDEX IF NOT EXISTS idx_feedback_result ON user_feedback(result_record_id
 CREATE TABLE IF NOT EXISTS parse_store (
     parse_id TEXT PRIMARY KEY, file_name TEXT NULL,
     media_type TEXT NULL, text TEXT NULL,
+    title TEXT NULL, moves TEXT NULL,
     created_at TEXT NULL, created_ts REAL NULL
 );

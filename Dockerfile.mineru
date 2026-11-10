@@ -1,0 +1,52 @@
+# MinerU 解析服务容器（2026-11-06：本机 CPU 部署补装，pipeline 后端）。
+# 口径同 docs/无GPU版部署文档.md 的 mineru_cpu conda 环境（pip install
+# "mineru[core,pipeline]"，不带 vllm extra），容器化进 compose 三件套变四件套，
+# backend 经 compose 网络名 http://mineru:8899 访问（settings.MINERU_API_URL）。
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
+    PIP_TRUSTED_HOST=pypi.tuna.tsinghua.edu.cn \
+    # pipeline 模型从 modelscope 下载（huggingface 直连不稳，见 server-china-mirrors）
+    MINERU_MODEL_SOURCE=modelscope
+
+WORKDIR /app
+
+RUN sed -i 's|http://deb.debian.org/debian|http://mirrors.tuna.tsinghua.edu.cn/debian|g; s|http://deb.debian.org/debian-security|http://mirrors.tuna.tsinghua.edu.cn/debian-security|g' /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends build-essential libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# torch 先装 CPU 版再装 mineru（同 backend Dockerfile 口径）：pypi 默认 torch 会
+# 拉一整套 CUDA 依赖（约 2-3GB 纯浪费），CPU 版 ~191MB；torch 已满足后 mineru
+# [core] 的 torch>=x 要求不会再重装。
+# 2026-11-06 实测 download.pytorch.org 峰时仅 8KB/s（191MB 轮子要 6h+），改走
+# 阿里云 pytorch-wheels 平铺镜像（~8MB/s）：非 PEP503 索引，须 --find-links +
+# 钉死 +cpu 本地版本号，否则 pip 会从 tuna pypi 解析回 CUDA 版 torch
+# 版本钉死 3.x：4.x 的 mineru-api 换成了 /v1/tasks JSON 协议（无 /file_parse、
+# 根 /health 也移到 /v1/health），backend 客户端（mineru_api_client.py，支持
+# 3.x /file_parse 表单 + 异步任务信封两协议）对不上；3.4.5 为 3.x 末版
+# opencv-python(GUI 版)在 slim 镜像缺 libxcb/libGL 系统库 → import cv2 即挂，
+# 服务器场景换 headless 同版本；必须先卸 GUI 版再装 headless（两者文件同名，
+# 反序会把 headless 刚覆盖的 cv2 文件一并删掉）
+RUN pip install --upgrade pip \
+    && pip install --find-links https://mirrors.aliyun.com/pytorch-wheels/cpu/ \
+        "torch==2.15.0+cpu" "torchvision==0.29.1+cpu" \
+    && pip install "mineru[core,pipeline]==3.4.5" \
+    && pip uninstall -y opencv-python \
+    && pip install opencv-python-headless \
+    # 3.4.5 未声明的运行时隐式依赖：pipeline 的 pytorchocr import six 即挂
+    # （ModuleNotFoundError，/file_parse 500 → backend 降级 pdfplumber）
+    && pip install six
+
+# 2026-11-06 实测 mineru 4.1.7 的 mineru.__version__ 已移除（__getattr__ 懒加载抛
+# AttributeError），版本号改从 importlib.metadata 取
+RUN python -c "from importlib.metadata import version; import mineru; print('mineru ok', version('mineru'))"
+
+EXPOSE 8899
+# MINERU_API_MAX_CONCURRENT_REQUESTS / OMP_NUM_THREADS 由 compose 注入：
+# pipeline 单请求吃满多核（settings.py 实测注释），3 并发 × 8 线程 ≈ 24 线程，
+# 32 核共享机留余量给 backend 与同事容器；无 GPU 不带 --enable-vlm-preload
+CMD ["mineru-api", "--host", "0.0.0.0", "--port", "8899"]

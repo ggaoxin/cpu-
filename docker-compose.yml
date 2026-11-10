@@ -40,6 +40,13 @@ services:
       GLM_MODEL: ${GLM_MODEL:-glm-5.2}
       GLM_REQUIRED_AT_STARTUP: ${GLM_REQUIRED_AT_STARTUP:-true}
       MINERU_BIN: ${MINERU_BIN:-mineru}
+      # mineru-api 常驻服务（2026-11-06 起 compose 内独立容器）：backend 经网络名
+      # 访问，pipeline 后端 + CPU 并发口径同 docs/无GPU版部署文档.md .env.nogpu
+      # （此前未注入 → settings 默认 127.0.0.1:8899/vlm-engine，容器内必然连不上）
+      MINERU_API_URL: ${MINERU_API_URL:-http://mineru:8899}
+      MINERU_BACKEND: ${MINERU_BACKEND:-pipeline}
+      MINERU_API_TIMEOUT: ${MINERU_API_TIMEOUT:-900}
+      MINERU_MAX_CONCURRENCY: ${MINERU_MAX_CONCURRENCY:-3}
       CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
       TZ: Asia/Shanghai
       # 多 Worker 并发守恒：settings.py 按 WEB_CONCURRENCY 整除 ASYNC_WORKERS/GLM_MAX_CONCURRENCY，
@@ -60,6 +67,36 @@ services:
       timeout: 5s
       retries: 12
 
+  # MinerU 解析服务（2026-11-06 补装，pipeline CPU 后端）：PDF 文件输入的标题
+  # 结构化来源（rq-detect 章节溯源/基金语步层级/引用工具版面质量均依赖）。
+  # 首次解析触发模型下载到 mineru_cache 卷（数分钟，modelscope 国内源）；
+  # backend 不 depends_on 本服务——mineru 未就绪时 backend 照常启动、降级
+  # pdfplumber（presentation.main 启动日志有相应提示），不互相阻塞
+  mineru:
+    build:
+      context: .
+      dockerfile: Dockerfile.mineru
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      # 请求级并发上限（mineru-api 自带队列，/health 会回显）；CPU pipeline 单
+      # 请求吃满多核，3 并发饱和，再高抢核反慢（无GPU版部署文档 §十二）
+      MINERU_API_MAX_CONCURRENT_REQUESTS: ${MINERU_API_MAX_CONCURRENT_REQUESTS:-3}
+      # onnxruntime/torch CPU 线程：文档口径 8 核机 4 / 16 核机 6-8；本机 32 核
+      # 但共享（同事多套栈在跑），3 并发 × 8 线程 ≈ 24 线程留余量
+      OMP_NUM_THREADS: ${MINERU_OMP_NUM_THREADS:-8}
+    volumes:
+      - mineru_cache:/root/.cache
+    # 共享机内存护栏：pipeline 模型 + 3 并发推理峰值远小于 16G，防失控占用
+    mem_limit: ${MINERU_MEM_LIMIT:-16g}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8899/health', timeout=3)"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      # CPU pipeline 模型加载慢（无GPU版文档 supervisor startsecs=180 同口径）
+      start_period: 180s
+
   frontend:
     build:
       context: ./frontend
@@ -75,3 +112,4 @@ services:
 
 volumes:
   mysql_data:
+  mineru_cache:

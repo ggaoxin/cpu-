@@ -13,6 +13,7 @@ parse_id 导致文件"消失"。现改为 MySQL/SQLite 持久化为主、进程�
 """
 from __future__ import annotations
 
+import json as _json  # get() 读回 moves 也用（2026-11-05：原局部 import 只在 save 可见，提交带 preparsed 时 NameError→500）
 import logging
 import threading
 import time
@@ -83,7 +84,6 @@ def put(file_name: str, media_type: str, text: str, title: str = "", moves: Any 
     if db is not None:
         try:
             from datetime import datetime as _dt
-            import json as _json
             with db.session() as s:
                 s.execute(
                     """INSERT INTO parse_store (parse_id, file_name, media_type, text, title, moves, created_at, created_ts)

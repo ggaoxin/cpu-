@@ -82,6 +82,9 @@ function previewVisualization(mode: InputMode) {
         <div class="page-shell">
           <div class="document-page-header">
             <div class="breadcrumb"><span>算法中心</span><span class="slash">/</span><span>语义计算工具库</span><span class="slash">/</span><strong>{{ tool.title }}</strong></div>
+            <!-- 算法目录入口已移除（2026-10-13 集成定稿）：集成方系统统一设计导航，页面不再自带
+                 （2026-10-20 上游 998eb62 曾恢复入口，按用户决定再次移除；
+                  上游 58524b0 已同样移除并删除组件，双方一致） -->
           </div>
           <section class="main-card">
             <div class="hero">
@@ -89,10 +92,10 @@ function previewVisualization(mode: InputMode) {
               <p>{{ tool.description }}</p>
               <div class="tag-row"><div class="tag-box"><b>功能特点</b><i aria-hidden="true"></i><span>{{ tool.features }}</span></div><div class="tag-box"><b>适用场景</b><i aria-hidden="true"></i><span>{{ tool.scenarios }}</span></div></div>
             </div>
-            <div v-if="activeId === 'domain-classify'" class="clc-tree-link-v756"><a href="/clc-tree.html" target="_blank" rel="noopener">查看专业领域中图分类法（CLC）标准分类体系 ↗</a><small>覆盖 22 个一级 / 182 个二级 / 35,000+ 个三级类目</small></div>
-            <div v-if="activeId === 'citation-intent'" class="clc-tree-link-v756"><a href="/citation-corpus.html" target="_blank" rel="noopener">查看引用句意图标注语料 ↗</a><small>SciCite 8,190 条标注引用句 · 背景介绍 / 引入研究方法 / 结果比较 三类</small></div>
-            <div v-if="activeId === 'definition-detect'" class="clc-tree-link-v756"><a href="/definition-corpus.html" target="_blank" rel="noopener">查看概念定义句标注语料 ↗</a><small>DEFT 16,314 句标注 · 定义句 4,997 / 非定义句 11,317 · 七个学科主题</small></div>
-            <div v-if="activeId === 'domain-ner'" class="clc-tree-link-v756"><a href="/domain-ner-corpus.html" target="_blank" rel="noopener">查看专业领域命名实体标注语料 ↗</a><small>医学 · 化学 · 物理 三领域 340,042 条 BIO 标注（15,935 句）· 句内实体高亮</small></div>
+            <div v-if="activeId === 'domain-classify'" class="clc-tree-link-v756"><a :href="appPath('/clc-tree.html')" target="_blank" rel="noopener">查看专业领域中图分类法（CLC）标准分类体系 ↗</a><small>覆盖 22 个一级 / 182 个二级 / 35,000+ 个三级类目</small></div>
+            <div v-if="activeId === 'citation-intent'" class="clc-tree-link-v756"><a :href="appPath('/citation-corpus.html')" target="_blank" rel="noopener">查看引用句意图标注语料 ↗</a><small>SciCite 8,190 条标注引用句 · 背景介绍 / 引入研究方法 / 结果比较 三类</small></div>
+            <div v-if="activeId === 'definition-detect'" class="clc-tree-link-v756"><a :href="appPath('/definition-corpus.html')" target="_blank" rel="noopener">查看概念定义句标注语料 ↗</a><small>DEFT 16,314 句标注 · 定义句 4,997 / 非定义句 11,317 · 七个学科主题</small></div>
+            <div v-if="activeId === 'domain-ner'" class="clc-tree-link-v756"><a :href="appPath('/domain-ner-corpus.html')" target="_blank" rel="noopener">查看专业领域命名实体标注语料 ↗</a><small>医学 · 化学 · 物理 三领域 340,042 条 BIO 标注（15,935 句）· 句内实体高亮</small></div>
             <DocumentationPanel :key="`${activeId}-docs`" :tool="tool" />
             <OnlineTester :key="`${activeId}-test`" :tool-id="activeId" :tool="tool" @visualize="visualize" @preview="previewVisualization" />
           </section>

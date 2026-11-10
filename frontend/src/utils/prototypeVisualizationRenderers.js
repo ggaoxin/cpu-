@@ -126,7 +126,7 @@ function renderDomainClassification(response) {
   const detailRows = successful.map(record => {
     const item = record.classifications[0]
     // 领域标签 = 二级类目（与中英文科技文献分类设计一致，2026-10-20 用户定稿）
-    return `<tr class="viz-record-start"><td>${renderTextWithMath(record.name)}</td><td>${escapeHtml(record.match.selected_domain?.name || '未提供目标领域')}</td><td style="white-space:nowrap"><b>${escapeHtml(item.level_1 || '—')}</b><span class="domain-classify-path-sep-v669"> / </span>${escapeHtml(item.level_2 || '—')}<span class="domain-classify-path-sep-v669"> / </span>${escapeHtml(item.level_3 || '—')}</td><td>${confidence(item.confidence)}</td><td><div class="domain-classify-domain-list-v669">${item.level_2 ? `<span class="domain-classify-domain-tag-v669">${escapeHtml(String(item.level_2).replace(/^[A-Z]{1,2}(?:\d+(?:\.\d+)*)?\s+/, ''))}</span>` : '—'}</div></td></tr>`
+    return `<tr class="viz-record-start"><td>${renderTextWithMath(record.name)}</td><td>${escapeHtml(record.match.selected_domain?.name || '未提供目标领域')}</td><td><b>${escapeHtml(item.level_1 || '—')}</b><span class="domain-classify-path-sep-v669"> / </span>${escapeHtml(item.level_2 || '—')}<span class="domain-classify-path-sep-v669"> / </span>${escapeHtml(item.level_3 || '—')}</td><td>${confidence(item.confidence)}</td><td><div class="domain-classify-domain-list-v669">${item.level_2 ? `<span class="domain-classify-domain-tag-v669">${escapeHtml(String(item.level_2).replace(/^[A-Z]{1,2}(?:\d+(?:\.\d+)*)?\s+/, ''))}</span>` : '—'}</div></td></tr>`
   }).join('')
 
   const level2 = new Map()

@@ -1362,48 +1362,12 @@ def _repair_glued_english(md: str, pdf_path: str) -> str:
     """MinerU 断词粘连修复（2026-10-19 用户实测：结构化综述关键句段
     "areoftenabletoemploy…" 单词贴块；综述/聚类/NER 等全链路读的是 mineru 文本）。
 
-    根因：mineru 合并 PDF 断行时丢词间空格，产出 "are often able to"→
-    "areoftenableto" 的全小写粘连串——无词典不可靠拆分。确定性修复：PyMuPDF
-    原始提取（实测无粘连）按去空白索引对位——粘连串在 PyMuPDF 原文中找到同一
-    字母序列后，取原文的带空格版本替换。找不到则保持原样（不猜测）。
+    2026-11-05 实现移至 mineru_reader.repair_glued_english——pdfplumber 兜底
+    同源粘连（MinerU 不可用时综述等强结构工具降级 pdfplumber，实测 ICLR 2026
+    论文集丢英文词间空格），两处共用对位修复；本包装保留旧调用点签名。
     """
-    import re as _re
-    _GLUE = _re.compile(r"[a-z]{18,}")
-    glue_runs = _GLUE.findall(md)
-    if not glue_runs:
-        return md
-    try:
-        import fitz as _fitz
-        doc = _fitz.open(pdf_path)
-        raw = "".join(page.get_text() for page in doc)
-        doc.close()
-    except Exception:  # noqa: BLE001 - PyMuPDF 读取失败则不修
-        return md
-    if not raw.strip():
-        return md
-    stripped = _re.sub(r"\s+", "", raw)
-    # 去空白索引 → 原文索引映射
-    index_map: List[int] = []
-    for _i, _ch in enumerate(raw):
-        if not _ch.isspace():
-            index_map.append(_i)
-    def _spaced(needle: str) -> Optional[str]:
-        flat = _re.sub(r"\s+", "", needle)
-        pos = stripped.find(flat)
-        if pos < 0:
-            return None
-        # 扩一位验证边界（避免子串误配）：取原文区间并折叠空白对比
-        s_orig, e_orig = index_map[pos], index_map[pos + len(flat) - 1] + 1
-        candidate = raw[s_orig:e_orig]
-        if _re.sub(r"\s+", "", candidate) != flat:
-            return None
-        return candidate
-    repaired = md
-    for run in set(glue_runs):
-        fixed = _spaced(run)
-        if fixed and fixed != run and " " in fixed:
-            repaired = repaired.replace(run, fixed)
-    return repaired
+    from infrastructure.document_parser.mineru_reader import repair_glued_english
+    return repair_glued_english(md, pdf_path)
 
 
 def _mineru_parse_one(content: bytes, filename: str, end_page: Optional[int]) -> Optional[Dict[str, str]]:
@@ -2503,6 +2467,13 @@ def compatible_history(
             ]
         elif upstream_type == "cluster":
             # 聚类下游需要簇数/篇数/phrase_sets（弹窗"类簇预览"读这些字段）
+            # 聚类维度：深度聚类结果一直存着 cluster_dimension_name（技术路线/
+            # 应用场景聚类），此前此分支漏传 → 前端下拉摘要恒显"未记录"
+            option["dimension"] = str(
+                result.get("cluster_dimension_name")
+                or result.get("cluster_dimension")
+                or ""
+            ).strip()
             clusters = result.get("clusters") or []
             option["cluster_count"] = len(clusters)
             option["document_count"] = sum(len(c.get("doc_indices") or c.get("members") or []) for c in clusters if isinstance(c, dict))

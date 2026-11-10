@@ -82,7 +82,7 @@ def _pdfplumber_extract(pdf_path: str | Path) -> Dict[str, Any]:
     with pdfplumber.open(str(pdf_path)) as pdf:
         for page in pdf.pages:
             pages.append(page.extract_text() or "")
-    full_text = "\n".join(pages).strip()
+    full_text = repair_glued_english("\n".join(pages).strip(), pdf_path)
     title = ""
     for line in full_text.split("\n"):
         line = line.strip()
@@ -91,6 +91,56 @@ def _pdfplumber_extract(pdf_path: str | Path) -> Dict[str, Any]:
             break
     return {"full_text": full_text, "md_path": "", "title": title,
             "doc_type": "unknown", "parser": "pdfplumber_fallback"}
+
+
+_GLUE_RUN_RE = re.compile(r"[A-Za-z]{12,}")
+
+
+def repair_glued_english(text: str, pdf_path: str | Path) -> str:
+    """英文断词粘连对位修复（MinerU md 与 pdfplumber 兜底共用出口）。
+
+    2026-10-19 首发：mineru 合并 PDF 断行丢词间空格（"are often able to"→
+    "areoftenableto"）。2026-11-05 扩展到 pdfplumber 兜底：MinerU 不可用时
+    综述等强结构工具降级 pdfplumber，实测 ICLR 2026 论文集（20 篇）丢英文
+    词间空格（"We demonstrate"→"Wedemonstrate"），综述 LLM 从粘连文本抄写
+    导致节点标题粘连（用户实测 Self-Harmony 一篇）。PyMuPDF 对同批 PDF 实测
+    无粘连 → 以其为对位源：粘连串按去空白索引在 PyMuPDF 原文中定位，取带
+    空格版本替换；找不到则保持原样（不猜测）。合法长词（如
+    "responsibilities"）在原文同为连续串、替换后不变，天然防误伤。
+    阈值 12 且含大写（2026-11-05 实测：pdfplumber 粘连保留词首大写，
+    "AchievingGold" 被 [a-z] 正则切成 <12 碎片全部漏检）；无粘连 fast-path
+    直接返回不开 PDF。合法长词（"internationalization" 20 字符）在 PyMuPDF
+    原文同为连续串、对位后内容不变不替换。
+    """
+    glue_runs = _GLUE_RUN_RE.findall(text)
+    if not glue_runs:
+        return text
+    try:
+        import pymupdf
+        with pymupdf.open(str(pdf_path)) as doc:
+            raw = "".join(page.get_text() for page in doc)
+    except Exception:  # noqa: BLE001 - PyMuPDF 读取失败则不修
+        return text
+    if not raw.strip():
+        return text
+    stripped = re.sub(r"\s+", "", raw)
+    # 去空白索引 → 原文索引映射
+    index_map = [i for i, ch in enumerate(raw) if not ch.isspace()]
+    def _spaced(needle: str):
+        flat = re.sub(r"\s+", "", needle)
+        pos = stripped.find(flat)
+        if pos < 0 or pos + len(flat) > len(stripped):
+            return None
+        # 扩边界验证（防子串误配）：取原文区间折叠空白后须与 needle 一致
+        candidate = raw[index_map[pos]:index_map[pos + len(flat) - 1] + 1]
+        if re.sub(r"\s+", "", candidate) != flat:
+            return None
+        return candidate
+    for run in set(glue_runs):
+        fixed = _spaced(run)
+        if fixed and fixed != run and " " in fixed:
+            text = text.replace(run, fixed)
+    return text
 
 
 def _is_mineru_broken(full_text: str, title: str) -> bool:

@@ -1337,14 +1337,41 @@ body.figma-ui-v717 .platform-frame-v640 .content-wrap { padding-left: 8px !impor
   background-color: inherit;
 }
 
-/* 弹窗表格滚动条视觉隐藏：保留滚轮滚动功能，不显示右侧滚动条轨道 */
-.visualization-modal-body-v645 .distribution-table-wrap::-webkit-scrollbar,
-.specialized-visualization-host-v804 .distribution-table-wrap::-webkit-scrollbar {
-  display: none;
+/* 弹窗表格滚动条：纵向隐藏（原 2026-09-04 设计，右侧轨道不占视觉），
+   横向恢复可见（2026-11-10 用户反馈：研究问题识别等宽表格在手机上
+   "看不到所有内容、缺少底部横向滑轮"——表格实际可手势横滑，但滚动条
+   被藏掉，用户无从发现可滑，以为右侧列丢失）。
+   选择器用 [class*="table-wrap"] 通配：统一覆盖全部工具的表格容器
+   （distribution-table-wrap / fund-move-result-table-wrap-v663 /
+   domain-classify-result-table-wrap-v669 / zh-en-keyword-* / classify-* /
+   v710-review-table-wrap / deep-cluster-table-wrap）。
+   写法注意：分轴修饰符（:horizontal/:vertical）在新 Chromium 的滚动条
+   定制实现里已不生效（headed 实测：分轴规则被忽略、回退 15px 原生条），
+   必须用基础伪元素——width:0 把纵向轨道宽压为 0（滚轮滚动保留），
+   height:6px 让横向细轨常显。 */
+.visualization-modal-body-v645 [class*="table-wrap"]::-webkit-scrollbar,
+.specialized-visualization-host-v804 [class*="table-wrap"]::-webkit-scrollbar {
+  width: 0;
+  height: 6px;
 }
-.visualization-modal-body-v645 .distribution-table-wrap,
-.specialized-visualization-host-v804 .distribution-table-wrap {
-  scrollbar-width: none;
+.visualization-modal-body-v645 [class*="table-wrap"]::-webkit-scrollbar-track,
+.specialized-visualization-host-v804 [class*="table-wrap"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+.visualization-modal-body-v645 [class*="table-wrap"]::-webkit-scrollbar-thumb,
+.specialized-visualization-host-v804 [class*="table-wrap"]::-webkit-scrollbar-thumb {
+  background: rgba(120, 135, 160, .5);
+  border-radius: 3px;
+}
+/* Firefox 无 webkit 伪元素，整体恢复为细滚动条。注意不能无条件设置：
+   Chromium 一旦应用 scrollbar-width 就会忽略 ::-webkit-scrollbar 伪元素，
+   上面规则失效、滚动条退化成滑动时才浮出的 overlay 条（静态不可见），
+   所以只在浏览器不支持 webkit 伪元素时生效 */
+@supports not selector(::-webkit-scrollbar) {
+  .visualization-modal-body-v645 [class*="table-wrap"],
+  .specialized-visualization-host-v804 [class*="table-wrap"] {
+    scrollbar-width: thin;
+  }
 }
 
 /* 基金语步内容原文片段高亮（2026-09-05）：语步文本中能在原文找到的片段
@@ -2357,6 +2384,21 @@ body.figma-ui-v717 .code-box {
     flex-direction: column !important;
     align-items: stretch;
   }
+  /* 下载按钮被 v751 菜单包了一层 inline-flex，竖排时缩在左侧不满行；撑满与另两个操作一致 */
+  .response-card .response-card-actions-v645 .download-menu-wrap-v751 {
+    display: flex !important;
+    width: 100% !important;
+  }
+  .response-card .response-card-actions-v645 .download-menu-wrap-v751 > #downloadResultBtnV732 {
+    width: 100%;
+  }
+}
+
+/* 小屏响应头部纵向堆叠后（原型层 ≤900px 变 column），操作按钮整组居中，不再整组贴右 */
+@media (max-width: 900px) {
+  .response-card .response-card-actions-v645 {
+    justify-content: center !important;
+  }
 }
 
 /* ===== 统一下拉 AppSelect（问题清单 #2.2 / 第三阶段）=====
@@ -2846,4 +2888,149 @@ body.figma-ui-v717 .main-card { contain: layout paint; }
  * 绝对阻断 scrollHeight 向祖先传播 */
 body.figma-ui-v717 .request-card .form-grid {
   transform: translateZ(0) !important;
+}
+
+/* 2026-11-10 移动端修复：可视化结果弹窗列表内容不自动换行、溢出（测试反馈，
+ * 影响专业领域科技文献分类 domain-classify 与中文摘要语步识别 zh-abstract-move，
+ * 两者分别渲染 v669 / v663 表格）。根因：两表均 table-layout:fixed 列宽锁死，
+ * 单元格里不可断行的原子内容（分类路径整行、语步类别徽章、KaTeX 公式盒）
+ * 从窄列横向溢出，而 wrap 容器 overflow-x:hidden 又把溢出部分直接裁掉。
+ * 修复策略（生成文件不改，按惯例在 app.css 后加载覆盖 prototype.generated.css）：
+ * ① 分类路径的 inline white-space:nowrap 已在 prototypeVisualizationRenderers.js
+ *    源头删除，路径在 " / " 分隔符处自然换行；
+ * ② 语步徽章放开 nowrap——放得下一行时零视觉差（nowrap 无从生效），
+ *    手机窄列放不下时换行显示，替代溢出；
+ * ③ wrap 容器 hidden→auto：公式等确实不可断的原子内容兜底横向滚动，
+ *    保证内容完整可见而非被裁剪。 */
+body.v669-domain-classify-active .domain-classify-result-table-wrap-v669,
+body.v663-fund-move-active .fund-move-result-table-wrap-v663 {
+  overflow-x: auto;
+}
+body.v663-fund-move-active .fund-move-label-badge-v663 {
+  white-space: normal;
+}
+
+/* 2026-11-10 追修（用户定稿：与其他工具统一为"表格横向滚动 + 列内容换行"
+ * 方案）：v663/v669 两表不再豁免全局窄屏 min-width:680px!important——恢复
+ * 680px 最小宽后由各自 wrap（overflow-x:auto，见上方全局段）承接横滑，
+ * 底部滑轨可见性由滑轮规则段统一提供（[class*="table-wrap"] 通配）。
+ * 保留表头/来源列的 nowrap 豁免：全局 th nowrap!important 在 fixed 布局的
+ * 窄百分比列（如 9% 的"分类置信度"）会把多字表头顶出单元格，放开后表头
+ * 自然换行，与"内容不溢出可换行"的要求一致。桌面（>900px）不受影响。 */
+@media (max-width: 900px) {
+  .visualization-modal-body-v645 table.fund-move-result-table-v663 th,
+  .visualization-modal-body-v645 table.domain-classify-result-table-v669 th,
+  .visualization-modal-body-v645 table.fund-move-result-table-v663 .fund-move-src-cell-v663 {
+    white-space: normal !important;
+  }
+}
+
+/* 2026-11-10 第四轮（滚动路线下的列宽重分配，保留）：colgroup 原比例
+ * 21/13/10/46/10 中位置列 10%（680px 下约 68px）放不下"字符 115–159"，
+ * 重分为 13/15/18/41/13——题名与位置列空间充足、片段列仍占大头；col 内联
+ * width 由这里 !important 覆盖（作者 important 声明层叠高于内联非 important
+ * 声明，无须改模板 colgroup）。徽章特殊化已撤销：680px 宽类别列约 94px
+ * 内容区足够"研究背景"类四字徽章单行，回到生成 css 的 inline-flex 原样。 */
+@media (max-width: 900px) {
+  .visualization-modal-body-v645 table.fund-move-result-table-v663[data-v663-table='abstract'] col:nth-child(1) { width: 13% !important; }
+  .visualization-modal-body-v645 table.fund-move-result-table-v663[data-v663-table='abstract'] col:nth-child(2) { width: 15% !important; }
+  .visualization-modal-body-v645 table.fund-move-result-table-v663[data-v663-table='abstract'] col:nth-child(3) { width: 18% !important; }
+  .visualization-modal-body-v645 table.fund-move-result-table-v663[data-v663-table='abstract'] col:nth-child(4) { width: 41% !important; }
+  .visualization-modal-body-v645 table.fund-move-result-table-v663[data-v663-table='abstract'] col:nth-child(5) { width: 13% !important; }
+}
+
+/* 2026-11-10 第五轮（滚动路线下扩展到 v663 两表 + v669 明细表）：主题层
+ * body.figma-ui-v717 th,td 对全站所有单元格施加 padding:13px 16px!important
+ * + font-size:14px!important ——680px 的 5 列表仅水平 padding 就占 160px，
+ * 窄百分比列（9%/10%）内容区被挤到 30px 上下，多字表头与徽章仍会顶出。
+ * 窄屏对三张表统一覆盖回紧凑内距与小字号（!important 对 !important，本段
+ * 位于文件末尾且特异性更高，双保险胜出）；680px 宽下紧凑 padding 让每列
+ * 内容区更宽裕，配合换行豁免实现"列内容不溢出可换行"。 */
+@media (max-width: 900px) {
+  .visualization-modal-body-v645 table.fund-move-result-table-v663 th,
+  .visualization-modal-body-v645 table.fund-move-result-table-v663 td,
+  .visualization-modal-body-v645 table.domain-classify-result-table-v669 th,
+  .visualization-modal-body-v645 table.domain-classify-result-table-v669 td {
+    padding: 5px 4px !important;
+    font-size: 10.5px !important;
+    line-height: 1.5 !important;
+    min-height: 0 !important;
+  }
+}
+
+/* 2026-11-10 全工具统一滚动方案收尾（19 个功能点弹窗表格 375px 全量探针驱动）：
+ * figma 主题层 th,td{padding:13px 16px!important} 对弹窗内所有表格生效，百分比
+ * 窄列（编号 6%≈41px、类型列 8-12%）的内容区被内距吃掉只剩几像素，叠加表头
+ * nowrap!important 与徽章 nowrap，导致 rq-detect/definition/ner 系列表头
+ * （"标准知识库映射ID"顶出 34px）与徽章/编号（顶出 5-36px）溢出单元格。
+ * 窄屏对弹窗内全部表格统一：① 紧凑内距 + 12px 字号（与各表生成样式的设计
+ * 字号一致，v663/v669 两表保留上面更小的 10.5px 段）；② 表头放开 nowrap，
+ * 长表头换行不再顶出（桌面 >900px 的全局 th nowrap 不受影响，表头仍单行）；
+ * ③ 表内徽章放开 nowrap（生成 css 的 nowrap 无 important，此处高特异性直接
+ * 胜出；680px 表宽下列内容区足够徽章单行，仅在更窄时自然换行）。 */
+@media (max-width: 900px) {
+  .visualization-modal-body-v645 table th,
+  .visualization-modal-body-v645 table td {
+    padding: 5px 6px !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+    min-height: 0 !important;
+    white-space: normal !important;
+  }
+  .visualization-modal-body-v645 table [class*="badge"],
+  .visualization-modal-body-v645 table [class*="label-badge"] {
+    white-space: normal;
+  }
+}
+
+/* 2026-11-10 审计收尾②：ner 系列表格"操作"列的"查看详情"文字按钮
+ * （research-ner-detail-btn / domain-research-detail-btn，生成 css nowrap）在
+ * 8-9 列均分后 ~60px 的列内顶出 5-18px。窄屏缩按钮内距与字号，四字按钮
+ * 单行放下；nowrap 保留（按钮文字换行不可读）。 */
+@media (max-width: 900px) {
+  .visualization-modal-body-v645 table button {
+    padding: 2px 4px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* 2026-11-10 审计收尾③：definition-detect"概念分布"面板的
+ * definition-report-columns 为 grid，760px 断点下虽已是单列 1fr，但 grid
+ * 子项默认 min-width:auto 被内层 680px 表格撑开（实测 wrap 被顶到 682px、
+ * 横向滚动失效）。放开子项 min-width 让 wrap 的 overflow-x:auto 接管。 */
+@media (max-width: 900px) {
+  .visualization-modal-body-v645 .definition-report-columns { grid-template-columns: minmax(0, 1fr) !important; }
+  .visualization-modal-body-v645 .definition-report-columns > * { min-width: 0; }
+}
+
+/* 2026-11-10 审计收尾④：domain-ner（9 列）与 research-ner（8 列）明细表的
+ * "操作"列均被内容挤压到 ~48px，"查看详情"四字按钮（已缩至 11px + 紧凑
+ * 内距）仍差 10px。窄屏以 CSS content 换字显示为"详情"两字单行放下
+ * （原文字号归零不占宽，读屏仍可读 ::after 内容）。 */
+@media (max-width: 900px) {
+  .visualization-modal-body-v645 table .domain-research-detail-btn,
+  .visualization-modal-body-v645 table .research-ner-detail-btn {
+    font-size: 0 !important;
+    padding: 3px 2px !important;
+  }
+  .visualization-modal-body-v645 table .domain-research-detail-btn::after,
+  .visualization-modal-body-v645 table .research-ner-detail-btn::after {
+    content: '详情';
+    font-size: 11px;
+    font-weight: 800;
+  }
+}
+
+/* ── 概念定义句识别:窄屏 tab 文字换行(2026-11-10 用户定稿"选择换行") ──
+   设计稿 .definition-tab-btn 带 white-space:nowrap,375px 下 3 等分 tab 格仅
+   ~90px,三个页签(7/7/8 字,实测 98/98/112px)全部超宽被裁——"识别统计分析
+   报告"八字最显眼。放开换行+紧凑内距,长页签两行显示,其余工具 tab 实测够宽不动 */
+@media (max-width: 900px) {
+  .visualization-modal-body-v645 .definition-tab-btn {
+    white-space: normal !important;
+    word-break: break-word;
+    line-height: 1.35;
+    padding: 6px 3px !important;
+    font-size: 12px !important;
+  }
 }

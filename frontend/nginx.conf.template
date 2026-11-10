@@ -23,8 +23,18 @@ server {
     location = /dma/sem { return 302 /dma/sem/; }
     location /dma/sem/ { rewrite ^/dma/sem/(.*)$ /$1 last; }
 
+    # vite 产物带内容 hash，文件名不变内容就不变，可长缓存
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+
+    # HTML 入口禁缓存（no-cache=可缓存但须回源校验）：微信内置浏览器对
+    # index.html 的默认启发式缓存非常顽固，发版后引用的新 hash JS/CSS
+    # 拿不到，用户一直跑旧 bundle（移动端弹窗修复"复测还是老样子"的
+    # 根因，2026-11-10）。try_files 回退到 index.html 的响应也走本头。
     location / {
         try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache";
     }
 
     location /api/ {
