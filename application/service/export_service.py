@@ -5,9 +5,11 @@ import csv
 import json
 import re
 import uuid
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 from xml.etree import ElementTree as ET
+from zoneinfo import ZoneInfo
 
 from config.settings import settings
 from config.tool_contracts import get_contract
@@ -24,6 +26,31 @@ CONTENT_TYPES = {
     "database": "application/json; charset=utf-8",
 }
 
+# CSV 公式注入防护（2026-11-24 漏洞修复）：以 = + - @ TAB CR 开头的单元格
+# 会被 Excel/WPS 当作公式解释（=cmd|'/C calc'!A0 触发 DDE、=HYPERLINK 钓鱼），
+# 统一加 ' 前缀使其成为纯文本。' 本身对正常数据无副作用（Excel 打开时不可见）。
+_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _csv_safe(value: Any) -> Any:
+    """单元格值以公式触发字符开头时加 ' 前缀转义（CSV injection 防护）。
+
+    纯数值（含负数，如情感极性 -0.8）不转义，保持 Excel 数值语义——
+    数值单元格不可能构成公式；"-1+1|cmd" 这类混合串 float() 解析失败仍会转义。
+    """
+    if value is None or isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value
+    text = str(value)
+    if text.startswith(_FORMULA_PREFIXES):
+        try:
+            float(text)
+            return text  # 数字串（如 "-0.8"）：保持数值语义
+        except ValueError:
+            return "'" + text
+    return value
+
 
 class ExportService:
     def __init__(
@@ -35,7 +62,8 @@ class ExportService:
         self.resource_repo = resource_repo or resource_repository
         self.export_dir = settings.PROJECT_ROOT / "runtime" / "exports"
 
-    def create(self, result_record_id: str, export_format: str) -> Dict[str, Any]:
+    def create(self, result_record_id: str, export_format: str,
+               expected_workspace: Optional[str] = None) -> Dict[str, Any]:
         record = self.task_repo.get_result(result_record_id)
         if not record:
             raise ValueError("结果记录不存在")
@@ -44,11 +72,21 @@ class ExportService:
         if export_format not in contract.export_formats:
             raise ValueError(f"{contract.name} 不支持 {export_format} 导出")
         task = self.task_repo.get_task(record["task_id"])
+        # 属主校验（2026-11-24 漏洞修复 V1 第二层）：他人结果不许导出
+        if expected_workspace and task and task.get("workspace_id") \
+                and str(task.get("workspace_id")) != str(expected_workspace):
+            raise ValueError("结果记录不存在或无权导出")
         export_id = f"exp_{uuid.uuid4().hex}"
         extension = "md" if export_format == "report" else "json" if export_format == "database" else export_format
         self.export_dir.mkdir(parents=True, exist_ok=True)
         path = self.export_dir / f"{export_id}.{extension}"
         self._write(path, export_format, record, task or {})
+        # 下载链接时效（2026-11-24 漏洞修复）：默认 30 天，之前无过期概念、
+        # 链接永久有效；EXPORT_TTL_DAYS=0 可关回旧行为。
+        expires_at = None
+        if settings.EXPORT_TTL_DAYS > 0:
+            expires_at = (datetime.now(ZoneInfo("Asia/Shanghai"))
+                          + timedelta(days=settings.EXPORT_TTL_DAYS)).isoformat()
         saved = self.resource_repo.create_export({
             "id": export_id,
             "workspace_id": (task or {}).get("workspace_id", settings.DEFAULT_WORKSPACE_ID),
@@ -57,6 +95,7 @@ class ExportService:
             "format": export_format,
             "status": "succeeded",
             "object_key": str(path),
+            "expires_at": expires_at,
         })
         return {
             **saved,
@@ -69,6 +108,14 @@ class ExportService:
         value = self.resource_repo.get_export(export_id)
         if not value:
             return None
+        # 过期强制生效（2026-11-24 漏洞修复）：过期导出视同不存在（下载/详情均 404）。
+        expires_at = value.get("expires_at")
+        if expires_at:
+            try:
+                if datetime.fromisoformat(str(expires_at)) < datetime.now(ZoneInfo("Asia/Shanghai")):
+                    return None
+            except ValueError:
+                pass
         path = Path(value.get("object_key") or "")
         if not path.is_file() or self.export_dir.resolve() not in path.resolve().parents:
             return None
@@ -114,11 +161,18 @@ class ExportService:
         fields: List[str] = []
         for row in rows:
             fields.extend(key for key in row if key not in fields)
+
+        def _cell(value: Any) -> Any:
+            if isinstance(value, (dict, list)):
+                value = json.dumps(value, ensure_ascii=False)
+            return _csv_safe(value)
+
         with path.open("w", encoding="utf-8-sig", newline="") as handle:
             writer = csv.DictWriter(handle, fieldnames=fields or ["value"], extrasaction="ignore")
             writer.writeheader()
             for row in rows:
-                writer.writerow({key: json.dumps(value, ensure_ascii=False) if isinstance(value, (dict, list)) else value for key, value in row.items()})
+                # 公式注入防护：单元格值经 _csv_safe 转义（2026-11-24）
+                writer.writerow({key: _cell(value) for key, value in row.items()})
 
     @classmethod
     def _xml_value(cls, parent: ET.Element, name: str, value: Any) -> None:

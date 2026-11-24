@@ -23,6 +23,7 @@ from application.dto.common_dto import SemanticRequest
 from config.functional_points import InputType, get_functional_point
 from domain.entity.base import SemanticResult
 from domain.service.base_semantic_service import ISemanticService
+from infrastructure.llm.prompt_isolation import mark_untrusted
 from infrastructure.llm.glm_client import GLMClient
 from infrastructure.rule_engine.rule_loader import RuleLoader
 from domain.value_object.text_input import MultiTextInput, TextInput
@@ -919,8 +920,8 @@ class SemanticApplicationService(ISemanticService):
                             " / technologies used\n"
                             "- core_terms: 2-6 ATOMIC core concepts (1-2 words each, e.g. the paper"
                             " says 'lung nodule localization' → core term 'lung nodule')\n"
-                            f"Title: {title}\nAbstract: {abstract}\n"
-                            + (f"Text (first 8000 chars): {(full_text or abstract)[:8000]}"
+                            f"Title: {mark_untrusted(title)}\nAbstract: {mark_untrusted(abstract)}\n"
+                            + (f"Text (first 8000 chars): {mark_untrusted((full_text or abstract)[:8000])}"
                                if (full_text or abstract) else ""),
                             timeout=60.0, max_tokens=400)
                         _kwd = _kwd.get("data", _kwd) if isinstance(_kwd, dict) else {}
@@ -1224,8 +1225,8 @@ class SemanticApplicationService(ISemanticService):
                         f" dictionary translation; it may closely relate to the category name"
                         f" \"{_t_name}\").\n"
                         + _dim_note
-                        + f"Title: {str(title or '')[:300]}\n"
-                        + f"Abstract: {str(abstract or '')[:2000]}\n"
+                        + f"Title: {mark_untrusted(str(title or '')[:300])}\n"
+                        + f"Abstract: {mark_untrusted(str(abstract or '')[:2000])}\n"
                         + 'Output JSON: {"source_term": "...", "zh_term": "..."}',
                         timeout=30.0, max_tokens=120)
                     _sel = _sel.get("data", _sel) if isinstance(_sel, dict) else {}
@@ -1410,7 +1411,7 @@ class SemanticApplicationService(ISemanticService):
                 "摘要：文献的核心内容概述（100-300字）\n"
                 "关键词：3-8个专业术语\n"
                 "只输出JSON：{\"data\":{\"abstract\":\"...\",\"keywords\":[\"词1\",\"词2\"]}}")
-        d = self._glm.chat_json(sysp, f"文献全文（前3000字）：\n{text[:3000]}",
+        d = self._glm.chat_json(sysp, f"文献全文（前3000字）：\n{mark_untrusted(text[:3000])}",
                                 timeout=60.0, max_tokens=500, temperature=0.0)
         d = d.get("data", d) if isinstance(d, dict) else {}
         abstract = (d.get("abstract") or "").strip()
@@ -1427,13 +1428,15 @@ class SemanticApplicationService(ISemanticService):
         full_text 非 None 时附前 6000 字全文，让 LLM 从全文判断学科（不只看摘要）。
         """
         import json as _json
+        # 提示词注入隔离（2026-11-24）：文献四要素均为用户可控内容，先包定界标记
         obj = {
-            "ch_name": title, "ch_abstract": abstract, "keywords": keywords,
+            "ch_name": mark_untrusted(title), "ch_abstract": mark_untrusted(abstract),
+            "keywords": mark_untrusted(keywords),
             "说明": "凭你对中图分类法的知识预测分类号；main_code 给最贴切的真实中图法类号"
                     "（可细到下位类）；auxiliary_codes 0-1 个；按输出格式返回 JSON。",
         }
         if full_text:
-            obj["全文（前6000字，供从全文判断学科，勿照抄小节标题作分类号）"] = full_text[:6000]
+            obj["全文（前6000字，供从全文判断学科，勿照抄小节标题作分类号）"] = mark_untrusted(full_text[:6000])
         return "请为以下中文科技文献预测中图分类号：\n" + _json.dumps(
             obj, ensure_ascii=False, indent=2)
 
@@ -1829,7 +1832,8 @@ class SemanticApplicationService(ISemanticService):
                 "只输出JSON：{\"data\":{\"main_code\":\"\"}}")
         usr = ("标题：%s\n关键词：%s\n摘要：%s\n初判：%s %s\n可选类目（同级与下位）：\n%s\n"
                "请从中选最贴切文献主题的一个 main_code（可保留初判）。") % (
-            title, " ".join(keywords), abstract, proposed, proposed_entry["clc_name"],
+            mark_untrusted(title), mark_untrusted(" ".join(keywords)), mark_untrusted(abstract),
+            proposed, proposed_entry["clc_name"],
             json.dumps(view, ensure_ascii=False))
         d = self._glm.chat_json(sysp, usr, timeout=120.0, max_tokens=200)
         d = d.get("data", d) if isinstance(d, dict) else {}
@@ -1860,7 +1864,7 @@ class SemanticApplicationService(ISemanticService):
             "只输出 JSON：{\"title\": \"...\", \"abstract\": \"...\"}"
         )
         try:
-            data = self._glm.chat_json(system, f"文献文本：\n{src[:5000]}", timeout=60.0,
+            data = self._glm.chat_json(system, f"文献文本：\n{mark_untrusted(src[:5000])}", timeout=60.0,
                                        max_tokens=3000, temperature=0.0)
         except Exception:  # noqa: BLE001  GLM 不可用 → 回退正则
             return "", ""
@@ -2658,7 +2662,7 @@ class SemanticApplicationService(ISemanticService):
                 _ctx_lines = []
                 for _kw in _unmapped:
                     _c2 = _en_ctxs.get(_kw, "")
-                    _ctx_lines.append(f"术语：{_kw}\n上下文：{_c2[:200]}")
+                    _ctx_lines.append(f"术语：{mark_untrusted(_kw)}\n上下文：{mark_untrusted(_c2[:200])}")
                 try:
                     _d_resp = self._glm.chat_json(_sys_d, "\n\n".join(_ctx_lines),
                                                   timeout=60.0, max_tokens=1200)
@@ -2742,7 +2746,7 @@ class SemanticApplicationService(ISemanticService):
                             "你是中图分类法（CLC）标引专家。为每个中文词给出最贴切的"
                             "分类号（尽量到最下位类；不确定就不给）。"
                             '只输出JSON：{"data":{"mappings":[{"label":"","clc_code":""}]}',
-                            "词表：\n" + "\n".join(f"- {l}" for l in _no_code),
+                            "词表：\n" + "\n".join(f"- {mark_untrusted(l)}" for l in _no_code),
                             temperature=0.0, timeout=60.0, max_tokens=400)
                         _anchor = _anchor.get("data", _anchor) if isinstance(_anchor, dict) else {}
                         _l2c = {str(m.get("label") or "").strip(): str(m.get("clc_code") or "").strip()
@@ -3026,7 +3030,7 @@ class SemanticApplicationService(ISemanticService):
         for i, c in enumerate(candidates):
             path = " > ".join(c.get("path_names") or []) or c.get("classification_path") or ""
             listing.append(f"[{i}] {c.get('clc_code')} {c.get('clc_name')} | 路径: {path}")
-        user = f"术语：{term}\n上下文：{context[:200]}\n候选类目：\n" + "\n".join(listing)
+        user = f"术语：{mark_untrusted(term)}\n上下文：{mark_untrusted(context[:200])}\n候选类目：\n" + "\n".join(listing)
         try:
             out = self._glm.chat_json(sysp, user, timeout=60.0, max_tokens=300)
             data = out.get("data", out) if isinstance(out, dict) else {}
@@ -3063,7 +3067,7 @@ class SemanticApplicationService(ISemanticService):
             _dom_hint = ""
             if job.get("domain_name"):
                 _dom_hint = f"\n  判定领域：{job.get('domain_name')}"
-            parts.append(f"({ji}) 术语：{job.get('term')}\n  上下文：{str(job.get('context') or '')[:150]}{_dom_hint}\n  候选:\n" + "\n".join(lines))
+            parts.append(f"({ji}) 术语：{mark_untrusted(job.get('term'))}\n  上下文：{mark_untrusted(str(job.get('context') or '')[:150])}{_dom_hint}\n  候选:\n" + "\n".join(lines))
         user = "\n\n".join(parts)
         out_map = {}
         try:
@@ -3094,7 +3098,7 @@ class SemanticApplicationService(ISemanticService):
         sysp = ("你是科技术语翻译专家。将给定英文科技术语翻译成最规范的中文标准译名。"
                 "只输出JSON：{\"answer\":\"中文译名\"}")
         try:
-            out = self._glm.chat_json(sysp, term, temperature=0.1, timeout=30.0, max_tokens=60)
+            out = self._glm.chat_json(sysp, mark_untrusted(term), temperature=0.1, timeout=30.0, max_tokens=60)
             data = out.get("data", out) if isinstance(out, dict) else {}
             ans = data.get("answer") or data.get("translation") or data.get("result") or ""
             if isinstance(ans, list):
@@ -3121,7 +3125,8 @@ class SemanticApplicationService(ISemanticService):
             "- 必须带应用场景锚定学科，不能只重复关键词字面（不要只输出'生长性能'）\n"
             "- 不超过30字。只输出JSON：{\"scene\":\"中文描述\"}"
         )
-        user = f"关键词：{term}\n文献标题：{document_title or '（无标题）'}\n上下文：{context[:200]}"
+        user = (f"关键词：{mark_untrusted(term)}\n文献标题：{mark_untrusted(document_title or '（无标题）')}"
+                f"\n上下文：{mark_untrusted(context[:200])}")
         try:
             out = self._glm.chat_json(sysp, user, temperature=0.2, timeout=30.0, max_tokens=80)
             data = out.get("data", out) if isinstance(out, dict) else {}
@@ -3166,7 +3171,7 @@ class SemanticApplicationService(ISemanticService):
         if domain_list:
             _dom_note = ("\n领域编号表（domain 字段用）：\n"
                          + "\n".join(f"{k}: {v}" for k, v in domain_list.items()) + "\n")
-        user = (f"文献标题：{document_title or '（无标题）'}\n摘要：{(abstract or '')[:500]}\n"
+        user = (f"文献标题：{mark_untrusted(document_title or '（无标题）')}\n摘要：{mark_untrusted((abstract or '')[:500])}\n"
                 f"候选术语列表：\n" + "\n".join(listing) + _dom_note)
         scores: dict = {}
         scenes: dict = {}
@@ -3254,8 +3259,8 @@ class SemanticApplicationService(ISemanticService):
         listing = []
         for t in terms:
             ctx = (contexts.get(t) or "")[:150]
-            listing.append(f"- {t} | 上下文：{ctx}")
-        user = f"文献标题：{document_title or '（无标题）'}\n关键词列表：\n" + "\n".join(listing)
+            listing.append(f"- {mark_untrusted(t)} | 上下文：{mark_untrusted(ctx)}")
+        user = f"文献标题：{mark_untrusted(document_title or '（无标题）')}\n关键词列表：\n" + "\n".join(listing)
         try:
             out = self._glm.chat_json(sysp, user, temperature=0.2, timeout=60.0, max_tokens=1000)
             data = out.get("data", out) if isinstance(out, dict) else {}
@@ -3581,8 +3586,8 @@ class SemanticApplicationService(ISemanticService):
                         "scenario words in the title); never let method/model/metric terms crowd "
                         "them out. Return JSON {data:[{keyword,weight,type}]}.")
             obj = {
-                "title": title,
-                "document": abstract,
+                "title": mark_untrusted(title),
+                "document": mark_untrusted(abstract),
                 "keyword_types (classify each keyword into one; aim for coverage, 0-2 per type)": [
                     "research_object", "technical_method", "proposed_model", "application_scenario", "material_data", "phenomenon_metric", "theory_concept", "research_context", "research_problem"
                 ],
@@ -3590,7 +3595,7 @@ class SemanticApplicationService(ISemanticService):
                 "note": note,
             }
             if body_excerpt:
-                obj["body_excerpt (opening of the full text)"] = body_excerpt
+                obj["body_excerpt (opening of the full text)"] = mark_untrusted(body_excerpt)
                 obj["body_excerpt_rule"] = (
                     "Keywords must PRIMARILY come from the title and document (abstract) above. "
                     "Use body_excerpt ONLY to supplement a few SPECIFIC terms for the research "
@@ -3637,7 +3642,7 @@ class SemanticApplicationService(ISemanticService):
                         "关键词必须覆盖文中的应用场景/研究对象领域词（疾病、科室、行业、装备、业务场景等，如标题中的场景词），不得全部集中在方法/模型/指标词——标题中的研究对象与场景词通常就是核心关键词。"
                         "为每个关键词标注 type（从下方 keyword_types 中选一类；本文新提出的模型/方法/算法标 proposed_model，区别于通用 technical_method），返回 JSON {data:[{keyword,weight,type}]}。")
             obj = {
-                "title": title, "abstract": abstract,
+                "title": mark_untrusted(title), "abstract": mark_untrusted(abstract),
                 "keyword_types（为每个关键词归一类，力求覆盖多类，每类 0-2 个）": [
                     "research_object", "technical_method", "proposed_model",
                     "application_scenario", "material_data", "phenomenon_metric",
@@ -3647,7 +3652,7 @@ class SemanticApplicationService(ISemanticService):
                 "说明": desc,
             }
             if body_excerpt:
-                obj["正文节选（全文开头部分）"] = body_excerpt
+                obj["正文节选（全文开头部分）"] = mark_untrusted(body_excerpt)
                 obj["正文节选使用规则"] = (
                     "关键词主要从标题和摘要中提取；正文节选仅用于补充摘要未覆盖的"
                     "研究对象/研究方法/主要结论/创新点的特有术语（如只在方法章节出现的"
@@ -3762,7 +3767,7 @@ class SemanticApplicationService(ISemanticService):
                 '只输出JSON：{"domain_code": "28"}')
         try:
             raw = self._glm.chat_json(
-                sysp, f"标题：{title or '（无）'}\n摘要：{abstract or '（无）'}",
+                sysp, f"标题：{mark_untrusted(title or '（无）')}\n摘要：{mark_untrusted(abstract or '（无）')}",
                 temperature=0.0, timeout=60.0)
         except Exception:  # noqa: BLE001
             return None
@@ -4166,7 +4171,7 @@ class SemanticApplicationService(ISemanticService):
                      "parent_index(子问题填其父main在data中的0基索引，main不填)。顺序：先main后其sub。"
                      "返回 JSON {data:[{sentence,phrase,implication,expression_type,question_type,normalized_question,research_object,constraints,role,parent_index}]}。")}
         user_prompt = ("Identify research questions in this abstract:\n" if is_en
-                       else "请识别以下摘要的研究问题句：\n") + json.dumps(obj, ensure_ascii=False, indent=2)
+                       else "请识别以下摘要的研究问题句：\n") + mark_untrusted(json.dumps(obj, ensure_ascii=False, indent=2))
         def _llm_extract_once():
             """单次 GLM 调用 + 后置字面校验，返回 (cleaned, dropped)。"""
             # 输出预算按输入长度自适应（2026-11-04 用户实测修复：长文献（8000 字
@@ -4299,7 +4304,7 @@ class SemanticApplicationService(ISemanticService):
                 _ab, _ft = _rq_mineru_refallback(_src)
                 if _ab:
                     full_text, abstract = _ft, _ab
-                    obj = {"abstract": abstract, "说明": obj["说明"]}
+                    obj = {"abstract": mark_untrusted(abstract), "说明": obj["说明"]}
                     user_prompt = (("Identify research questions in this abstract:\n" if is_en
                                     else "请识别以下摘要的研究问题句：\n")
                                    + json.dumps(obj, ensure_ascii=False, indent=2))
@@ -4777,12 +4782,12 @@ class SemanticApplicationService(ISemanticService):
         ]
         if not payload:
             return
-        doc_order = "\n".join(f"{i + 1}. {h}" for i, h in enumerate(all_headings)) if all_headings else "（无全文章节清单）"
+        doc_order = "\n".join(f"{i + 1}. {mark_untrusted(h)}" for i, h in enumerate(all_headings)) if all_headings else "（无全文章节清单）"
         user_msg = (
             "以下是基金报告各语步的来源章节（原始，可能含 LaTeX 公式拘留、同一章节多种写法、顺序混乱）。\n\n"
             f"【全文章节先后顺序参考】\n{doc_order}\n\n"
             "【各语步来源章节】\n"
-            + "\n".join(f"《{p['move_type']}》：" + " | ".join(p['source_sections']) for p in payload)
+            + "\n".join(f"《{p['move_type']}》：" + mark_untrusted(" | ".join(p['source_sections'])) for p in payload)
             + "\n\n请按系统提示的规则整理每个语步的来源章节。"
         )
         d = self._glm.chat_json(
@@ -4817,7 +4822,7 @@ class SemanticApplicationService(ISemanticService):
             return
         d = self._glm.chat_json(
             self._SOURCE_FILTER_PROMPT,
-            "请对以下每个语步的候选来源章节按下标做相关性筛选：\n" + json.dumps(candidates, ensure_ascii=False),
+            "请对以下每个语步的候选来源章节按下标做相关性筛选：\n" + mark_untrusted(json.dumps(candidates, ensure_ascii=False)),
             timeout=60.0, max_tokens=1500, temperature=0.0)
         d = d.get("data", d) if isinstance(d, dict) else {}
         judgments = {}
@@ -5005,7 +5010,7 @@ class SemanticApplicationService(ISemanticService):
             logger.info("基金语步识别（全文单调用）：%d 字", len(full_text))
             d = self._glm.chat_json(
                 summary_prompt,
-                "以下是基金报告全文，请直接从中识别并归纳五类语步：\n" + full_text,
+                "以下是基金报告全文，请直接从中识别并归纳五类语步：\n" + mark_untrusted(full_text),
                 timeout=150.0, max_tokens=2500, temperature=0.0)
             d = d.get("data", d) if isinstance(d, dict) else {}
             final_moves = d.get("moves", [])
@@ -5048,12 +5053,12 @@ class SemanticApplicationService(ISemanticService):
                 heading_hint = "\n".join(f"- {h}" for h in headings if h and h != "全文") or "（未识别到章节标题）"
                 d = self._glm.chat_json(
                     system_prompt,
-                    f"以下是基金报告「{src_label}」部分的内容，请识别其中包含的五类语步。\n"
-                    f"本段包含以下章节（完整路径，自上而下）：\n{heading_hint}\n"
+                    f"以下是基金报告「{mark_untrusted(src_label)}」部分的内容，请识别其中包含的五类语步。\n"
+                    f"本段包含以下章节（完整路径，自上而下）：\n{mark_untrusted(heading_hint)}\n"
                     f"⚠️ 每个语步按章节分段输出 fragments，每片段的 section 从上面列出的路径里选**最具体的那条叶子**"
                     f"（语步内容实际出自哪节就标哪节），同一章连续句子合一、跨节分多片段；"
                     f"严禁臆造、严禁用块首笼统路径、严禁串语步（来源章节主题须与语步类别相符）。\n\n"
-                    f"内容：\n{chunk['text']}",
+                    f"内容：\n{mark_untrusted(chunk['text'])}",
                     timeout=90.0, max_tokens=2500, temperature=0.0)
                 d = d.get("data", d) if isinstance(d, dict) else {}
                 return {"idx": idx, "moves": d.get("moves", []), "headings": headings}
@@ -5139,7 +5144,7 @@ class SemanticApplicationService(ISemanticService):
                     fragments_str += f"\n【{mt}】无内容\n"
             d = self._glm.chat_json(
                 summary_prompt,
-                "各片段提取的语步片段：\n" + fragments_str,
+                "各片段提取的语步片段：\n" + mark_untrusted(fragments_str),
                 timeout=120.0, max_tokens=2500, temperature=0.0)
             d = d.get("data", d) if isinstance(d, dict) else {}
             final_moves = d.get("moves", [])
@@ -5257,13 +5262,14 @@ class SemanticApplicationService(ISemanticService):
 
     @staticmethod
     def _render_user_prompt(payload: Dict[str, Any], params: Dict[str, Any]) -> str:
-        """渲染 user prompt：输入文本 + 运行参数。"""
+        """渲染 user prompt：输入文本 + 运行参数（用户内容统一定界标记）。"""
         obj = {"input": payload}
         if params:
             obj["params"] = params
-        return "请处理以下输入并按规则库要求输出 JSON：\n" + json.dumps(
+        # 提示词注入隔离（2026-11-24）：输入载荷是用户可控内容，包定界标记
+        return "请处理以下输入并按规则库要求输出 JSON：\n" + mark_untrusted(json.dumps(
             obj, ensure_ascii=False, indent=2
-        )
+        ))
 
     def _parse_papers_concurrent(self, texts: list, dual_view: bool = False,
                                  max_workers: int = 5, term_mode: bool = False,
@@ -5977,7 +5983,7 @@ class SemanticApplicationService(ISemanticService):
         _chunk_errors: list = []
         def _extract_cite_chunk(chunk):
             try:
-                return self._glm.chat_json(sysp, f"文本：\n{chunk}", timeout=60.0,
+                return self._glm.chat_json(sysp, f"文本：\n{mark_untrusted(chunk)}", timeout=60.0,
                                            max_tokens=2000, temperature=0.0)
             except Exception as exc:  # noqa: BLE001  瞬时错误容忍：其余块照常提取
                 _chunk_errors.append(exc)
@@ -6023,7 +6029,7 @@ class SemanticApplicationService(ISemanticService):
         batch_size = 10
         for start in range(0, len(uncertain), batch_size):
             batch = uncertain[start:start + batch_size]
-            sent_list = "\n".join([f"[{i}] {u['sentence'][:120]}" for i, u in enumerate(batch)])
+            sent_list = "\n".join([f"[{i}] {mark_untrusted(u['sentence'][:120])}" for i, u in enumerate(batch)])
             try:
                 d = self._glm.chat_json(sysp, f"判断以下句子是否引用句：\n{sent_list}",
                                         timeout=60.0, max_tokens=500, temperature=0.0)
@@ -6280,6 +6286,8 @@ class SemanticApplicationService(ISemanticService):
         max_workers = max(1, int(max_workers or _settings.GLM_MAX_CONCURRENCY))
         if not user_prompts:
             return []
+        # 提示词注入隔离（2026-11-24）：批量 prompt 均由用户文献内容拼装，统一包定界标记
+        user_prompts = [mark_untrusted(p) if p else p for p in user_prompts]
         if len(user_prompts) == 1:
             try:
                 return [self._glm.chat_json(system_prompt, user_prompts[0],
@@ -6406,7 +6414,7 @@ class SemanticApplicationService(ISemanticService):
             return {}
         _list = "\n".join(f'{k}: {v}' for k, v in self._DOMAIN_LABEL_NAMES.items())
         _items = "\n".join(
-            f"- {t}（语境：{scenes.get(t, '') or title}）" for t in terms[:30])
+            f"- {mark_untrusted(t)}（语境：{mark_untrusted(scenes.get(t, '') or title)}）" for t in terms[:30])
         try:
             _r = self._glm.chat_json(
                 "你是科技文献领域分类专家。Output only JSON.",
@@ -8082,7 +8090,7 @@ class SemanticApplicationService(ISemanticService):
         batch_size = 10
         for start in range(0, len(uncertain), batch_size):
             batch = uncertain[start:start + batch_size]
-            sent_list = "\n".join([f"[{i}] {u['sentence'][:120]}" for i, u in enumerate(batch)])
+            sent_list = "\n".join([f"[{i}] {mark_untrusted(u['sentence'][:120])}" for i, u in enumerate(batch)])
             try:
                 d = self._glm.chat_json(sysp, f"判断以下句子是否定义句：\n{sent_list}",
                                         timeout=60.0, max_tokens=500, temperature=0.0)
@@ -8106,7 +8114,7 @@ class SemanticApplicationService(ISemanticService):
         batch_size = 10
         for start in range(0, len(definitions), batch_size):
             batch = definitions[start:start + batch_size]
-            sent_list = "\n".join([f"[{i}] {d['sentence'][:150]}" for i, d in enumerate(batch)])
+            sent_list = "\n".join([f"[{i}] {mark_untrusted(d['sentence'][:150])}" for i, d in enumerate(batch)])
             try:
                 d = self._glm.chat_json(sysp, f"定义句列表：\n{sent_list}",
                                         timeout=90.0, max_tokens=1000, temperature=0.0)

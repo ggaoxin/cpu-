@@ -8,14 +8,17 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import tempfile
-from typing import List
+from typing import Iterator, List, Tuple
 
 from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from application.dto.common_dto import SemanticRequest, SemanticResponse
 from application.service.semantic_service import SemanticApplicationService
+from application.service.tool_integration_service import strip_lone_surrogates
 from config.functional_points import FunctionalPoint, get_functional_point, list_functional_points
 from infrastructure.llm.glm_client import glm_client
 from infrastructure.rule_engine.rule_loader import rule_loader
@@ -28,6 +31,14 @@ _semantic_service = SemanticApplicationService(glm=glm_client, rule_loader=rule_
 
 def get_semantic_service() -> SemanticApplicationService:
     return _semantic_service
+
+
+def _ddd_text_fields(request: SemanticRequest) -> Iterator[Tuple[str, str]]:
+    """DDD 文本端点的手工文本字段枚举（与集成层 8000 字符口径一致的校验对象）。"""
+    if request.text is not None:
+        yield "text", request.text
+    for index, item in enumerate(request.texts or []):
+        yield f"texts[{index}]", item
 
 
 def build_item_router(
@@ -46,6 +57,20 @@ def build_item_router(
             _code: str = fp.code,
             _service: SemanticApplicationService = Depends(get_semantic_service),
         ) -> SemanticResponse:
+            # 输入卫生 + 规模对齐（2026-11-24 漏洞修复 V6/V7①）：
+            # ① DDD 旧通道此前不继承现代 /texts 端点的“8000 清洗后字符”上限，
+            #    460 万字符单请求照样全量计算（免鉴权下的算力放大面）；
+            # ② 孤立代理对（\ud800 等）穿透校验导致网关裸 500，先清洗。
+            # 文件上传通道（/file）保持“全文不截断”的既有设计，不在此限。
+            request.text = strip_lone_surrogates(request.text)
+            request.texts = strip_lone_surrogates(request.texts)
+            for _label, _value in _ddd_text_fields(request):
+                _cleaned = re.sub(r"\s+", " ", str(_value or "")).strip()
+                if len(_cleaned) > 8000:
+                    return JSONResponse(status_code=422, content={
+                        "code": 42201,
+                        "message": f"{_label} 清洗后不能超过8000个字符",
+                    })
             result = _service.execute(_code, request)
             return _to_response(result)
 

@@ -123,8 +123,16 @@ def _plain_text_guard(content: bytes, text: str, filename: str) -> None:
 
 def _docx_text(content: bytes) -> str:
     with zipfile.ZipFile(io.BytesIO(content)) as archive:
-        if sum(item.file_size for item in archive.infolist()) > 200 * 1024 * 1024:
-            raise ValueError("DOCX 解压后内容过大")
+        # 解压炸弹防护（2026-11-24 漏洞修复）：旧版仅 200MB 硬顶，432KB 高压缩比
+        # DOCX 解压 62MB 照常通过全量解析。现在双闸门：解压后声明总大小 ≤
+        # DOCX_MAX_DECOMPRESSED_MB（默认 20MB，正常论文 <5MB）+ 压缩比 ≤
+        # DOCX_MAX_COMPRESSION_RATIO（默认 100:1，正常 OOXML 约 10~30:1）。
+        declared = sum(item.file_size for item in archive.infolist())
+        if settings.DOCX_MAX_DECOMPRESSED_MB > 0 and declared > settings.DOCX_MAX_DECOMPRESSED_MB * 1024 * 1024:
+            raise ValueError("DOCX 解压后内容过大（疑似压缩炸弹），已拒绝解析")
+        if settings.DOCX_MAX_COMPRESSION_RATIO > 0 and len(content) > 0 \
+                and declared / max(len(content), 1) > settings.DOCX_MAX_COMPRESSION_RATIO:
+            raise ValueError("DOCX 压缩比异常（疑似压缩炸弹），已拒绝解析")
         xml = archive.read("word/document.xml")
     root = ElementTree.fromstring(xml)
     paragraphs = []
@@ -134,6 +142,28 @@ def _docx_text(content: bytes) -> str:
         if text:
             paragraphs.append(text)
     return "\n".join(paragraphs)
+
+
+# 上传文件名规范化（2026-11-24 漏洞修复）：旧版对文件名内容零清洗，
+# ../../../etc/passwd.pdf、NUL/LF/控制字符、超长名等原样入库并回显。
+# 实际落盘本就用随机临时名（无穿越写盘风险），这里是展示/存储字段卫生：
+# basename + 去控制字符 + 压空白 + 限长，扩展名保留（魔数校验依赖它）。
+_FILENAME_CONTROL_RE = re.compile(r"[\x00-\x1f\x7f  ]")
+
+
+def sanitize_filename(name: str | None, *, fallback: str = "upload", max_length: int = 200) -> str:
+    """规范化上传文件名：仅用于展示与入库字段，不参与磁盘路径拼接。"""
+    text = str(name or "").replace("\\", "/")
+    base = text.rsplit("/", 1)[-1]              # basename（兼容 Windows 分隔符）
+    base = _FILENAME_CONTROL_RE.sub("", base)    # NUL/LF/CR 等控制字符
+    base = re.sub(r"\s+", " ", base).strip()
+    if len(base) > max_length:
+        stem, dot, ext = base.rpartition(".")
+        if dot and len(ext) <= 10:
+            base = stem[: max(1, max_length - len(ext) - 1)] + "." + ext
+        else:
+            base = base[:max_length]
+    return base or fallback
 
 
 def _pdf_text(content: bytes) -> str:
@@ -574,7 +604,9 @@ async def save_uploads_to_temp(uploads: Iterable[UploadFile], max_size_mb: int |
             tmp_path = tmp.name
         _structural_probe(upload.filename or "", tmp_path)  # 损坏结构上传期即拒（2026-09-22）
         results.append({
-            "file_name": upload.filename or "upload",
+            # 文件名规范化（2026-11-24 漏洞修复）：原样入库/回显改为清洗后展示名；
+            # 磁盘路径仍用随机临时名（本来就不受控于用户文件名）。
+            "file_name": sanitize_filename(upload.filename, fallback="upload"),
             "media_type": upload.content_type or "application/octet-stream",
             "path": tmp_path,
             "_temp": True,

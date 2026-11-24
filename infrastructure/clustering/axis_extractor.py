@@ -15,6 +15,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Sequence
 
+from infrastructure.llm.prompt_isolation import mark_untrusted
+
 logger = logging.getLogger(__name__)
 
 PROMPT_VERSION = "dual-axis-evidence-v4-full-text-excerpts"
@@ -236,7 +238,7 @@ class EvidenceBoundAxisExtractor:
             axis_instruction = "请完整抽取 technical 与 application 两个维度。"
         response = self._llm.chat_json(
             SYSTEM_PROMPT,
-            axis_instruction + "\n请抽取以下文献：\n" + json.dumps(payload, ensure_ascii=False),
+            axis_instruction + "\n请抽取以下文献：\n" + mark_untrusted(json.dumps(payload, ensure_ascii=False)),
             timeout=120.0,
             max_tokens=max(1200, len(papers) * 420),
             temperature=0.0,

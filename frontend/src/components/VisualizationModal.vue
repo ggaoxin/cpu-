@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import DOMPurify from 'dompurify'
 import type { ToolDefinition } from '../types'
 import { apiUrl } from '../services/api'
 // Renderer markup and class names are copied from the V7.74 prototype result panels.
@@ -37,7 +38,18 @@ const modalTitle = computed(() => visualizationTitle(props.toolId, props.tool.ti
 const safeClone = (value: any): any => (value == null ? value : JSON.parse(JSON.stringify(value)))
 const localResponse = ref<any>(safeClone(props.response))
 watch(() => props.response, next => { localResponse.value = safeClone(next) })
-const visualizationHtml = computed(() => renderPrototypeVisualization(props.toolId, localResponse.value))
+// XSS 纵深防御（2026-11-24 漏洞修复 V2 第 2 档）：渲染器输出经 escapeHtml/
+// renderTextWithMath 转义，这里再加 DOMPurify 白名单净化兜底——将来任何渲染
+// 代码新增未转义插值，这道闸也会把 <script>/<img onerror> 形态拦下。
+// 白名单放行渲染器实际使用的形态：KaTeX 的 span/MathML、SVG 关系网络图、
+// data-* 交互属性（详情展开按钮依赖）与内联 style。
+const visualizationHtml = computed(() => DOMPurify.sanitize(
+  renderPrototypeVisualization(props.toolId, localResponse.value),
+  {
+    ADD_TAGS: ['math', 'mrow', 'mi', 'mo', 'mn', 'msup', 'msub', 'msubsup', 'mfrac', 'msqrt', 'mroot', 'mtext', 'mspace', 'mtable', 'mtr', 'mtd', 'semantics', 'annotation', 'munder', 'mover', 'munderover', 'mstyle', 'mpadded', 'mphantom', 'mglyph', 'maction', 'merror', 'mprescripts', 'none', 'mlongdiv', 'mscarries', 'mscarry', 'msgroup', 'mstack', 'mlabeledtr'],
+    ADD_ATTR: ['target', 'contenteditable', 'aria-hidden', 'role', 'viewBox', 'preserveAspectRatio', 'xmlns', 'd', 'fill', 'stroke', 'stroke-width', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'rx', 'ry', 'width', 'height', 'points', 'transform', 'marker-end', 'marker-start', 'offset', 'stop-color'],
+  },
+))
 
 function close() {
   emit('close')

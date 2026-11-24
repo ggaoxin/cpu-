@@ -15,6 +15,8 @@ import re
 import unicodedata
 from typing import Any, Mapping, Protocol, Sequence
 
+from infrastructure.llm.prompt_isolation import UNTRUSTED_CLOSE, UNTRUSTED_OPEN, mark_untrusted
+
 
 ENGINE_VERSION = "cluster-label-semantic-only-v10"
 SUPPORTED_LANGUAGES = {"auto", "zh", "en"}
@@ -375,11 +377,12 @@ class SemanticClusterLabelGenerator:
             '{"candidates":[{"label":"...","evidence_phrases":["...","..."]}]}'
         )
         payload = {
-            "cluster_id": cluster.cluster_id,
+            # 提示词注入隔离（2026-11-24）：字段级定界标记，payload 保持合法 JSON
+            "cluster_id": mark_untrusted(cluster.cluster_id),
             "language": cluster.language,
             "label_length_limit": limit,
-            "evidence_phrases": evidence,
-            "member_evidence_sentences": sentences,
+            "evidence_phrases": [mark_untrusted(p) for p in evidence],
+            "member_evidence_sentences": [mark_untrusted(s) for s in sentences],
         }
         response = self.llm_client.chat_json(
             system,
@@ -390,16 +393,22 @@ class SemanticClusterLabelGenerator:
         )
         raw = response.get("data", response) if isinstance(response, Mapping) else {}
         values = raw.get("candidates", []) if isinstance(raw, Mapping) else []
+
+        def _unmark(text: str) -> str:
+            cleaned = str(text or "")
+            return (cleaned.replace(UNTRUSTED_OPEN, "").replace(UNTRUSTED_CLOSE, "").strip()
+                    or cleaned)
+
         evidence_by_key = {_normalize_key(value): value for value in evidence}
         result = []
         for value in values if isinstance(values, list) else []:
             if not isinstance(value, Mapping):
                 continue
-            label = _clean(value.get("label"))
+            label = _unmark(_clean(value.get("label")))
             cited = [
                 evidence_by_key[key]
                 for item in value.get("evidence_phrases", [])
-                if (key := _normalize_key(item)) in evidence_by_key
+                if (key := _normalize_key(_unmark(item))) in evidence_by_key
             ]
             candidate = Candidate(label, "llm_evidence_candidate", list(dict.fromkeys(cited)), 0.0)
             if len(candidate.evidence) < 2:

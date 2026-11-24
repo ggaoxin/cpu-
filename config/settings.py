@@ -6,6 +6,7 @@
 """
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 from typing import List
@@ -81,6 +82,18 @@ class Settings:
     # 批量文件单次提交数量上限（在线测试与 API 一致）
     MAX_BATCH_FILES: int = int(os.getenv("MAX_BATCH_FILES", "20"))
 
+    # ---- 安全加固（2026-11-24 漏洞修复；默认值对正常文件/任务无影响）----
+    # DOCX 解压后声明总大小上限（zip 炸弹防护）。正常论文 DOCX 解压后 <5MB，
+    # 20MB 上限留足余量；0 = 不限制（回到旧行为）。
+    DOCX_MAX_DECOMPRESSED_MB: int = int(os.getenv("DOCX_MAX_DECOMPRESSED_MB", "20"))
+    # DOCX 压缩比上限（解压后/压缩后）。正常 OOXML 约 10~30:1，100:1 仅炸弹命中；0 = 不限制。
+    DOCX_MAX_COMPRESSION_RATIO: int = int(os.getenv("DOCX_MAX_COMPRESSION_RATIO", "100"))
+    # 导出下载链接有效期（天）。到期后下载返回 404；0 = 永久有效（回到旧行为）。
+    EXPORT_TTL_DAYS: int = int(os.getenv("EXPORT_TTL_DAYS", "30"))
+    # 异步任务排队上限（提交后未开始执行的任务数）。超过则立即 429 拒绝，
+    # 避免无界队列堆积；正常前端批量（≤20 文件）远达不到；0 = 不限制。
+    TASK_MAX_PENDING: int = int(os.getenv("TASK_MAX_PENDING", "64"))
+
     # ---- 路径（全部 PROJECT_ROOT 相对，可被 .env 覆盖；项目自包含）----
     PROJECT_ROOT: Path = PROJECT_ROOT
     RULES_DIR: Path = RULES_DIR
@@ -138,6 +151,21 @@ class Settings:
     API_AUTH_ENABLED: bool = os.getenv("API_AUTH_ENABLED", "false").lower() == "true"
     API_KEYS: frozenset = frozenset(
         k.strip() for k in os.getenv("API_KEYS", "").split(",") if k.strip())
+    # 多密钥→数据空间映射（2026-11-24 漏洞修复 V1 第二层·轻量租户隔离）：
+    # config/.env 配 API_KEY_WORKSPACES={"密钥A":"工作区X","密钥B":"工作区Y"}（JSON 对象）。
+    # 密钥通过验证后，身份（=工作区）从密钥派生，客户端自报的 workspace_id 一律作废；
+    # 未出现在映射里的密钥落到 DEFAULT_WORKSPACE_ID。
+    # 只配一把密钥时（现状）所有数据同在一个空间，行为与单密钥完全一致——
+    # 配置第二把密钥并映射到不同工作区后，数据自动按密钥隔离，部署零风险。
+    _KEY_WORKSPACE_RAW: str = os.getenv("API_KEY_WORKSPACES", "{}")
+    try:
+        API_KEY_WORKSPACES: dict = {
+            str(k).strip(): str(v).strip()
+            for k, v in json.loads(_KEY_WORKSPACE_RAW).items()
+            if str(k).strip() and str(v).strip()
+        }
+    except Exception:  # noqa: BLE001 - 配置写错时按无映射处理，不阻断启动
+        API_KEY_WORKSPACES: dict = {}
 
     STRUCTURE_DEPENDENT_TOOLS: frozenset = frozenset({'citation-intent', 'citation-sentiment'})
 

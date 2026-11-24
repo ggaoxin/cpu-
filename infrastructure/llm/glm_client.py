@@ -15,6 +15,7 @@ import openai
 from openai import OpenAI
 
 from config.settings import settings
+from infrastructure.llm.prompt_isolation import ANTI_INJECTION_DIRECTIVE
 
 logger = logging.getLogger(__name__)
 
@@ -61,8 +62,10 @@ class GLMClient:
             raise RuntimeError(
                 "当前功能需要大模型，但尚未配置 GLM_API_KEY；请在 config/.env 中配置后重试。"
             )
+        # 提示词注入防护（2026-11-24 漏洞修复 V2 建议3）：所有 AI 调用的唯一出口，
+        # 统一在系统提示词末尾追加防注入指令，配合各起草点的 <user_content> 定界标记。
         messages = [
-            {"role": "system", "content": system_prompt},
+            {"role": "system", "content": f"{system_prompt}{ANTI_INJECTION_DIRECTIVE}"},
             {"role": "user", "content": user_prompt},
         ]
         kwargs: Dict[str, Any] = {

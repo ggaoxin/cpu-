@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -74,25 +75,36 @@ def create_app() -> FastAPI:
         _sys.setswitchinterval(0.05)
         # bge-m3 / bge-large-zh 预热：懒加载在首个请求线程触发（CPU ~30s），
         # 批量并发线程排队等锁——实测 en-keyword 6 篇卡 39s 空转的根因。
-        # 启动后台线程预热，批量首个请求零等待
+        # 启动后台线程预热，批量首个请求零等待。
+        # SEMANTIC_SKIP_WARMUP=1 可跳过（受限内存沙箱里预热会把 cgroup 打爆，
+        # 典型症状：启动期 mysqld 被 OOM 杀；默认不跳过，行为不变）
         import threading as _threading
+        if os.getenv("SEMANTIC_SKIP_WARMUP", "").lower() in {"1", "true", "yes"}:
+            logging.getLogger(__name__).info("SEMANTIC_SKIP_WARMUP=1：跳过编码器预热")
+        else:
+            def _warm_encoders():
+                try:
+                    from infrastructure.rag.m3_encoder import m3_encoder
+                    m3_encoder.encode(["预热"])
+                    logging.getLogger(__name__).info("bge-m3 编码器预热完成")
+                except Exception:
+                    logging.getLogger(__name__).warning("bge-m3 预热失败（首次使用时再懒加载）", exc_info=True)
+                try:
+                    from infrastructure.rag.clc_retriever import clc_retriever
+                    clc_retriever._ensure_loaded()
+                    clc_retriever._ensure_m3_loaded()
+                    logging.getLogger(__name__).info("CLC 检索索引预热完成")
+                except Exception:
+                    logging.getLogger(__name__).warning("CLC 索引预热失败", exc_info=True)
 
-        def _warm_encoders():
-            try:
-                from infrastructure.rag.m3_encoder import m3_encoder
-                m3_encoder.encode(["预热"])
-                logging.getLogger(__name__).info("bge-m3 编码器预热完成")
-            except Exception:
-                logging.getLogger(__name__).warning("bge-m3 预热失败（首次使用时再懒加载）", exc_info=True)
-            try:
-                from infrastructure.rag.clc_retriever import clc_retriever
-                clc_retriever._ensure_loaded()
-                clc_retriever._ensure_m3_loaded()
-                logging.getLogger(__name__).info("CLC 检索索引预热完成")
-            except Exception:
-                logging.getLogger(__name__).warning("CLC 索引预热失败", exc_info=True)
-
-        _threading.Thread(target=_warm_encoders, name="encoder-warmup", daemon=True).start()
+            _threading.Thread(target=_warm_encoders, name="encoder-warmup", daemon=True).start()
+        # 鉴权未开启告警（2026-11-24 漏洞修复 V1 非破坏性部分）：默认关闭是历史
+        # 行为（本地/内网），但对外部署必须开启——启动时显式提醒，不改变行为。
+        if not settings.API_AUTH_ENABLED:
+            logging.getLogger(__name__).warning(
+                "【安全】API_AUTH_ENABLED=false：全部端点无鉴权对外开放。"
+                "若本服务可被公网/不可信网络访问，请在 config/.env 设置 "
+                "API_AUTH_ENABLED=true 并配置强随机 API_KEYS（≥32 字节）！")
         yield
 
     app = FastAPI(
@@ -125,13 +137,24 @@ def create_app() -> FastAPI:
             if request.url.path.startswith(_PUBLIC_PATHS):
                 return await call_next(request)
             provided = request.headers.get("X-API-Key", "")
-            if provided and provided in settings.API_KEYS:
-                return await call_next(request)
-            from fastapi.responses import JSONResponse
-            return JSONResponse(
-                status_code=401,
-                content={"code": 40101, "message": "未授权：缺少或无效的 X-API-Key 请求头"},
-            )
+            if not (provided and provided in settings.API_KEYS):
+                from fastapi.responses import JSONResponse
+                return JSONResponse(
+                    status_code=401,
+                    content={"code": 40101, "message": "未授权：缺少或无效的 X-API-Key 请求头"},
+                )
+            # 轻量租户（2026-11-24 漏洞修复 V1 第二层）：身份（工作区）从密钥派生，
+            # 客户端自报的 workspace_id 一律作废——把查询串里的 workspace_id
+            # 替换成派生值，所有按 workspace 过滤的端点自动隔离（报告建议
+            # "禁止信任请求体/查询参数中的 workspace_id" 的单点强制实现）。
+            from urllib.parse import parse_qsl, urlencode
+            derived_ws = settings.API_KEY_WORKSPACES.get(provided, settings.DEFAULT_WORKSPACE_ID)
+            request.state.workspace_id = derived_ws
+            params = dict(parse_qsl(request.scope.get("query_string", b"").decode("latin-1")))
+            if params.get("workspace_id") != derived_ws:
+                params["workspace_id"] = derived_ws
+                request.scope["query_string"] = urlencode(params).encode("latin-1")
+            return await call_next(request)
 
     @app.get("/health", tags=["系统"])
     def health() -> dict:
@@ -148,6 +171,21 @@ def create_app() -> FastAPI:
         }
 
     app.include_router(v1_router, prefix=settings.API_PREFIX)
+
+    # 全局异常兜底（2026-11-24 漏洞修复 V7）：此前未处理异常以 Starlette 默认
+    # 的 text/plain "Internal Server Error" 裸 500 返回（无业务信封、无脱敏）。
+    # 现在统一包装为业务错误信封；堆栈只进服务端日志，不外泄内部细节。
+    from fastapi.responses import JSONResponse
+
+    @app.exception_handler(Exception)
+    async def unhandled_exception_handler(request, exc: Exception):  # noqa: BLE001
+        logging.getLogger(__name__).exception(
+            "未处理异常 %s %s", request.method, request.url.path)
+        return JSONResponse(
+            status_code=500,
+            content={"code": 50001, "message": "服务器内部错误，请稍后重试"},
+        )
+
     return app
 
 

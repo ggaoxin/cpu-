@@ -21,6 +21,7 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 
 from infrastructure.clustering.topicfusion_v8.incremental import _keywords
+from infrastructure.llm.prompt_isolation import mark_untrusted
 from infrastructure.rag.m3_encoder import m3_encoder
 
 # 停用词（复用 _name_cluster 的，补常见虚词/泛词）
@@ -243,7 +244,7 @@ def llm_cluster(df: pd.DataFrame, axis: str, glm_client, *, random_state: int = 
     listing = "\n".join(
         f"[{i}] 标题：{d['title']}\n    技术路线：{d['route']}" for i, d in enumerate(docs))
     try:
-        out = glm_client.chat_json(_LLM_CLUSTER_SYSP, f"文献列表（共{n}篇）：\n{listing}",
+        out = glm_client.chat_json(_LLM_CLUSTER_SYSP, f"文献列表（共{n}篇）：\n{mark_untrusted(listing)}",
                                    temperature=0.3, timeout=90.0, max_tokens=2000)
     except Exception:  # noqa: BLE001
         out = {"clusters": []}
@@ -306,7 +307,7 @@ def _llm_cluster_docs(docs: list[dict], glm_client, temp: float = 0.3) -> dict:
     listing = "\n".join(
         f"[{i}] 标题：{d['title']}\n    技术路线：{d['route']}" for i, d in enumerate(docs))
     try:
-        out = glm_client.chat_json(_LLM_CLUSTER_SYSP, f"文献列表（共{n}篇）：\n{listing}",
+        out = glm_client.chat_json(_LLM_CLUSTER_SYSP, f"文献列表（共{n}篇）：\n{mark_untrusted(listing)}",
                                    temperature=temp, timeout=90.0, max_tokens=2000)
     except Exception:  # noqa: BLE001
         return {}
@@ -376,7 +377,7 @@ def _merge_clusters(intermediate: list[dict], M: np.ndarray, *,
                 "你是科技文献聚类命名专家。下面是已分好的若干簇（分组不可改），"
                 "请给每簇一个 3-8 字规范中文标签，反映该簇核心主题。\n"
                 "只输出JSON：{\"names\":[\"标签0\",\"标签1\",...]}",
-                f"簇列表：\n{listing}", temperature=0.1, timeout=90.0, max_tokens=1500)
+                f"簇列表：\n{mark_untrusted(listing)}", temperature=0.1, timeout=90.0, max_tokens=1500)
             names = out.get("names", [])
             if isinstance(names, list) and len(names) == len(groups):
                 for g, nm in zip(groups, names):
@@ -414,7 +415,7 @@ def _llm_split_group(doc_indices: list[int], routes: list[str], glm_client,
     hint = (f"共{len(doc_indices)}篇。请精分为【约{target}组（{max(2, target-1)}~{target+2}组）】，"
             f"按具体研究主题归类。同一主题合并为一组（不要每2-3篇就拆一组）。")
     try:
-        out = glm_client.chat_json(_LLM_SPLIT_SYSP, f"{hint}\n{listing}",
+        out = glm_client.chat_json(_LLM_SPLIT_SYSP, f"{hint}\n{mark_untrusted(listing)}",
                                    temperature=0.1, timeout=120.0, max_tokens=2500)
         result, covered = [], set()
         for g in out.get("groups", []):

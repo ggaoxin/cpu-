@@ -27,6 +27,7 @@ from config.vue_contracts import get_vue_contract
 from domain.entity.analysis_task import AnalysisTask, ResultRecord, TaskStatus
 from infrastructure.database.task_repository import DatabaseTaskRepository, task_repository
 from infrastructure.database.resource_repository import DatabaseResourceRepository
+from infrastructure.llm.prompt_isolation import mark_untrusted
 
 
 DOMAIN_CODE_MAP = {
@@ -312,7 +313,7 @@ def _parse_reference_entries(entries_raw: str) -> list:
               "index=条目序号(条目开头的[n]或n.的数字,无序号按顺序1起)；authors=作者数组(原文人名)；"
               "title=题名；year=发表年份整数(无则null)；venue=期刊/会议/出版社；doi=DOI(无则空串)。")
     user = "解析以下参考文献条目：\n" + "\n".join(lines)
-    out = glm_client.chat_json(system, user, timeout=90.0, max_tokens=4000)
+    out = glm_client.chat_json(system, mark_untrusted(user), timeout=90.0, max_tokens=4000)
     data = out.get("data", out) if isinstance(out, dict) else []
     metadata = []
     for pos, item in enumerate(data if isinstance(data, list) else [], start=1):
@@ -404,6 +405,62 @@ def _extract_domain_term_entries(payload: Dict[str, Any]) -> list:
 
 
 _TASK_EXECUTOR = ThreadPoolExecutor(max_workers=settings.ASYNC_WORKERS, thread_name_prefix="semantic-task")
+
+# 异步提交背压（2026-11-24 漏洞修复）：ThreadPoolExecutor 的内部队列无界，
+# 20 个并发重任务即可让全平台异步提交以裸 500 拒绝且部分任务仍被创建。
+# 修复：①提交前检查排队深度（TASK_MAX_PENDING，默认 64）满则抛
+# TaskQueueBusyError → 控制器映射 HTTP 429；②创建超时改为 cancel future
+# 再抛 TaskQueueBusyError，消除"500 却已建任务"的幽灵副作用。
+_TASK_PENDING = {"count": 0}
+_TASK_PENDING_LOCK = threading.Lock()
+
+
+class TaskQueueBusyError(RuntimeError):
+    """异步任务排队超限/创建超时。控制器应映射为 HTTP 429，而非裸 500。"""
+
+
+def _task_pending_inc() -> bool:
+    """占用一个排队名额；满则返回 False（仅在启用上限时计数）。"""
+    if settings.TASK_MAX_PENDING <= 0:
+        return True
+    with _TASK_PENDING_LOCK:
+        if _TASK_PENDING["count"] >= settings.TASK_MAX_PENDING:
+            return False
+        _TASK_PENDING["count"] += 1
+        return True
+
+
+def _task_pending_dec() -> None:
+    if settings.TASK_MAX_PENDING <= 0:
+        return
+    with _TASK_PENDING_LOCK:
+        _TASK_PENDING["count"] = max(0, _TASK_PENDING["count"] - 1)
+
+
+# ---- 输入卫生（2026-11-24 漏洞修复）----
+# 孤立代理对（\ud800-\udfff）不是合法 Unicode 字符，MySQL utf8mb4 / HTTP 编码
+# 都无法处理：此前穿透全部校验层，19 个文本端点 100% 触发网关裸 500。
+# 合法输入不可能包含孤立代理对，递归清洗为空串无副作用。
+_SURROGATE_RE = re.compile(r"[\ud800-\udfff]")
+
+# 内部异常文本里的文件系统路径（/tmp/xxx、C:\xxx）不外泄给客户端
+_PATH_LEAK_RE = re.compile(r"(?:/[\w.-]+){2,}|[A-Za-z]:\\[^\s'\"]+")
+
+
+def strip_lone_surrogates(value):
+    """递归清除载荷中的孤立代理对（str/dict/list 深度遍历）。"""
+    if isinstance(value, str):
+        return _SURROGATE_RE.sub("", value)
+    if isinstance(value, dict):
+        return {key: strip_lone_surrogates(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [strip_lone_surrogates(item) for item in value]
+    return value
+
+
+def scrub_internal_details(text: str) -> str:
+    """错误消息脱敏：文件路径替换为〈路径〉（2026-11-24 漏洞修复 V7③）。"""
+    return _PATH_LEAK_RE.sub("〈路径〉", str(text or ""))
 
 # 进程级 GLM 并发闸口：解决 _TASK_EXECUTOR(4) × group线程池(6) 嵌套导致的线程爆炸。
 # 多个批量任务同时跑时，全进程在途 GLM 调用总数不超过此值，钳制 GLM QPS 不超限。
@@ -596,7 +653,10 @@ class ToolIntegrationService:
         started = time.perf_counter()
         request_id = _id("req")
         contract = get_contract(tool_id)
-        payload = self._adapt_vue_payload(contract, dict(payload or {}))
+        # 输入卫生（2026-11-24 漏洞修复 V7①）：递归清洗孤立代理对——合法输入不含
+        # 此类字符，而它们会让 MySQL utf8mb4 编码抛 UnicodeEncodeError → 网关裸 500
+        payload = strip_lone_surrogates(dict(payload or {}))
+        payload = self._adapt_vue_payload(contract, payload)
         # 引用工具文本模式自动派生：文献文本+参考文献条目 → 引用句上下文+被引元数据
         # （用户只需提供两项输入；手动提供 citation_sentence_and_context 时不覆盖）。
         # 文件/批量文件模式的 PDF 解析与引用句拆分在 _semantic_request 内完成
@@ -610,7 +670,23 @@ class ToolIntegrationService:
             except Exception as exc:  # noqa: BLE001 - 派生失败回落手动输入校验
                 logger.warning("引用句自动派生异常：%s", exc)
         workspace_id = workspace_id or settings.DEFAULT_WORKSPACE_ID
+        if workspace_id != settings.DEFAULT_WORKSPACE_ID:
+            # 密钥派生的新工作区首次建任务前登记行（外键 fk_tasks_workspace）
+            from infrastructure.database.resource_repository import ensure_workspace
+            ensure_workspace(self.repository.db, workspace_id)
         input_type = str(payload.get("input_type") or ("files" if file_inputs else "text"))
+        # 跨任务引用属主校验（2026-11-24 漏洞修复 V1 第二层）：
+        # cluster-label 的 from-cluster-task 模式引用上游聚类任务触发计算，
+        # 报告实测可零凭据盗用他人结果与算力——上游任务必须属于同一工作区。
+        if tool_id == "cluster-label":
+            upstream_id = str(payload.get("cluster_task_id") or "").strip()
+            if upstream_id:
+                upstream = self.repository.get_task(upstream_id)
+                if upstream and upstream.get("workspace_id") \
+                        and str(upstream.get("workspace_id")) != str(workspace_id):
+                    return self._validation_error(
+                        contract, request_id, input_type, started,
+                        "上游聚类任务不存在或无权访问")
         try:
             params = self._parameters(contract, payload)
         except ValueError as exc:
@@ -1166,21 +1242,36 @@ class ToolIntegrationService:
         workspace_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """创建后台任务并立即返回任务编号；用于批量、文件和集合计算。"""
+        if not _task_pending_inc():
+            raise TaskQueueBusyError("异步任务排队已满，请稍后重试")
         task_id = _id("tsk")
         created = Event()
-        future = _TASK_EXECUTOR.submit(
-            self.execute,
-            tool_id,
-            payload,
-            file_inputs=file_inputs,
-            workspace_id=workspace_id,
-            _task_id=task_id,
-            _created_event=created,
-        )
-        if not created.wait(timeout=3):
-            if future.done():
-                return future.result()
-            raise RuntimeError("后台任务创建超时")
+        future = None
+        try:
+            future = _TASK_EXECUTOR.submit(
+                self.execute,
+                tool_id,
+                payload,
+                file_inputs=file_inputs,
+                workspace_id=workspace_id,
+                _task_id=task_id,
+                _created_event=created,
+            )
+            future.add_done_callback(lambda _f: _task_pending_dec())
+            if not created.wait(timeout=3):
+                if future.done():
+                    return future.result()
+                # 创建超时：取消未启动的任务（防"请求已拒绝但任务仍被创建"的
+                # 幽灵副作用），并以 429 业务错误返回而非裸 500（2026-11-24）
+                future.cancel()
+                raise TaskQueueBusyError("系统繁忙（后台任务创建超时），请稍后重试")
+        except TaskQueueBusyError:
+            raise
+        except Exception:
+            if future is None:
+                # 提交本身就失败，回调未挂上，手动释放名额
+                _task_pending_dec()
+            raise
         task = self.repository.get_task(task_id) or {}
         contract = get_contract(tool_id)
         return {
@@ -1590,9 +1681,11 @@ class ToolIntegrationService:
                 if contract.tool_id.startswith("citation-"):
                     # 引用工具文件解析失败（损坏 PDF/mineru 不可用等）转业务可读提示，
                     # 由 _execute_group_once 兜底为失败项，全败时 _run_execute 升级为
-                    # 42201 业务响应（不暴露底层报错，不报参数缺失类 422）
+                    # 42201 业务响应（不暴露底层报错，不报参数缺失类 422）。
+                    # 2026-11-24 漏洞修复 V7③：异常原文含 /tmp 路径与内部细节，脱敏后再拼
                     raise ValueError(
-                        f"文件解析失败，无法执行引用识别：{exc}。请上传含文本层的 PDF/DOCX/TXT 文件（扫描版请先转为文字版）。"
+                        f"文件解析失败，无法执行引用识别：{scrub_internal_details(str(exc))}。"
+                        "请上传含文本层的 PDF/DOCX/TXT 文件（扫描版请先转为文字版）。"
                     ) from exc
                 raise
             # 解析结果写回 item（2026-10-13 修复）：_result_payload 的
@@ -1828,7 +1921,7 @@ class ToolIntegrationService:
         )
         try:
             out = self.semantic_service._glm.chat_json(
-                sysp, "用户上传内容：\n" + raw, timeout=90.0, temperature=0.0)
+                sysp, mark_untrusted("用户上传内容：\n" + raw), timeout=90.0, temperature=0.0)
         except Exception:  # noqa: BLE001 - LLM 不可用/失败 → 维持规则层报错
             logger.warning("资源 LLM 容错重构调用失败: %s", path.name, exc_info=True)
             return False
@@ -1855,7 +1948,7 @@ class ToolIntegrationService:
                     "你是术语抽取器。从用户上传的词典文件内容中抽取全部术语，"
                     "输出 JSON：{\"data\": [\"术语1\", \"术语2\", ...]}。"
                     "要求：保留原文语言不翻译；去重；跳过表头/编号/权重等非术语字段。",
-                    "文件内容：\n" + content[:20000], timeout=60.0, temperature=0.0)
+                    mark_untrusted("文件内容：\n" + content[:20000]), timeout=60.0, temperature=0.0)
                 rows = out.get("data", out) if isinstance(out, dict) else out
                 return [str(t).strip() for t in rows if str(t).strip()] if isinstance(rows, list) else []
             except Exception:  # noqa: BLE001
@@ -2124,6 +2217,18 @@ class ToolIntegrationService:
                     return f"{field} 必须是数值"
                 if not 0 <= value <= 1:
                     return f"{field} 必须在 0—1 之间"
+        # 展示字段 HTML 标签校验（2026-11-24 漏洞修复 V2 第 1 档）：
+        # document_metadata 标题会进聚类结果/共享下拉/导出，词典名同样回显——
+        # 报告实测 <img onerror> payload 原样入库，入库前直接拒绝。
+        from application.service.input_hygiene import contains_html_tag, html_tag_error
+        metadata_rows = payload.get("document_metadata")
+        if isinstance(metadata_rows, list):
+            for index, meta in enumerate(metadata_rows):
+                if isinstance(meta, dict) and contains_html_tag(meta.get("title")):
+                    return html_tag_error(f"document_metadata 第 {index + 1} 条的 title")
+        dictionary_meta = payload.get("domain_terminology_dictionary")
+        if isinstance(dictionary_meta, dict) and contains_html_tag(dictionary_meta.get("name")):
+            return html_tag_error("词典名称")
         custom_dictionary = payload.get("custom_dictionary")
         if isinstance(custom_dictionary, dict):
             try:
@@ -2142,6 +2247,11 @@ class ToolIntegrationService:
         if contract.tool_id == "cluster-label":
             if not payload.get("cluster_phrase_sets") and not payload.get("cluster_task_id"):
                 return "聚类标签生成必须提供深度聚类输出的类簇短语集合"
+            # 元素结构校验（2026-11-24 漏洞修复）：字符串元素此前穿透到引擎层
+            # 以 `'str' object has no attribute 'get'` 裸异常回显；现在入口即拒。
+            _phrase_sets = payload.get("cluster_phrase_sets")
+            if isinstance(_phrase_sets, list) and not all(isinstance(item, dict) for item in _phrase_sets):
+                return "cluster_phrase_sets 每一项必须是对象（簇结构），不能是字符串或数字"
             try:
                 minimum_length = int(payload.get("label_length_min", 1) or 1)
                 maximum_length = int(payload.get("label_length_max", 12) or 12)

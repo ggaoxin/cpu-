@@ -16,6 +16,8 @@ import re
 import unicodedata
 from typing import Any, Iterable, Mapping, Protocol, Sequence
 
+from infrastructure.llm.prompt_isolation import UNTRUSTED_CLOSE, UNTRUSTED_OPEN, mark_untrusted
+
 
 ENGINE_VERSION = "cluster-label-evidence-v2"
 SUPPORTED_LANGUAGES = {"auto", "zh", "en"}
@@ -198,6 +200,11 @@ def _parse_phrase(value: Any) -> PhraseEvidence | None:
 
 
 def _parse_cluster(value: Mapping[str, Any], index: int, language: str) -> ClusterInput:
+    # 类型守卫（2026-11-24 漏洞修复）：cluster_phrase_sets 元素为零校验的字符串时
+    # 此处曾以 `'str' object has no attribute 'get'` 裸异常回显客户端；现在拒绝并给出业务提示。
+    if not isinstance(value, Mapping):
+        raise ValueError(
+            f"cluster_phrase_sets 第 {index + 1} 项必须是对象（簇结构），当前是 {type(value).__name__}")
     cluster_id = _clean(value.get("cluster_id") or value.get("topic_id") or value.get("id") or f"cluster_{index + 1}")
     raw_phrases = (
         value.get("phrases") or value.get("representative_phrases")
@@ -607,9 +614,11 @@ class ClusterLabelGenerator:
         return values
 
     def _llm_candidates(self, cluster: ClusterInput, limit: int) -> list[Candidate]:
-        evidence = [item.text for item in cluster.phrases[:20]]
+        # 提示词注入隔离（2026-11-24）：短语/题名源自用户文献，包定界标记——
+        # 报告实测的 PWN416B 注入路径即经此进入 LLM
+        evidence = [mark_untrusted(item.text) for item in cluster.phrases[:20]]
         prompt = {
-            "cluster_id": cluster.cluster_id,
+            "cluster_id": mark_untrusted(cluster.cluster_id),
             "language": cluster.language,
             "label_length_limit": limit,
             "phrases": evidence,
@@ -633,12 +642,18 @@ class ClusterLabelGenerator:
         raw = response.get("data", response) if isinstance(response, Mapping) else {}
         values = raw.get("candidates", []) if isinstance(raw, Mapping) else []
         result: list[Candidate] = []
-        evidence_keys = {_clean(item).casefold() for item in evidence}
+        # 提示词注入隔离（2026-11-24）：输入短语带 <user_content> 定界标记，
+        # LLM 回显证据短语可能连标记一起返回——比较前先剥离标记再对原文校验
+        def _unmark(text: str) -> str:
+            cleaned = _clean(text)
+            return (cleaned.replace(UNTRUSTED_OPEN, "").replace(UNTRUSTED_CLOSE, "").strip()
+                    or _clean(text))
+        evidence_keys = {_unmark(item).casefold() for item in evidence}
         for value in values if isinstance(values, list) else []:
             if not isinstance(value, Mapping):
                 continue
-            label = _clean(value.get("label"))
-            cited = [_clean(item) for item in value.get("evidence_phrases", []) if _clean(item)]
+            label = _unmark(value.get("label"))
+            cited = [_unmark(item) for item in value.get("evidence_phrases", []) if _clean(item)]
             verified = [item for item in cited if item.casefold() in evidence_keys]
             candidate = Candidate(label=label, origin="llm_evidence_candidate", evidence=verified)
             if not verified:

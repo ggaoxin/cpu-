@@ -18,6 +18,7 @@ from typing import Any
 from application.dto.common_dto import SemanticRequest
 from config.settings import settings
 from domain.entity.base import SemanticResult
+from infrastructure.llm.prompt_isolation import mark_untrusted
 from infrastructure.cluster_labeling import (
     DEFAULT_LABEL_ENGINE_MODE,
     create_cluster_label_generator,
@@ -241,9 +242,9 @@ def _llm_covers_members(label: str, titles: list, glm_client: Any) -> bool:
     try:
         out = glm_client.chat_json(
             "你是聚类标签审核专家。",
-            f"判断标签「{label}」是否概括了以下【全部】文献的共同技术路线，"
+            f"判断标签「{mark_untrusted(label)}」是否概括了以下【全部】文献的共同技术路线，"
             f"而不是只反映其中某一篇文献的专有方法名：\n"
-            + "\n".join(f"[{i + 1}] {t}" for i, t in enumerate(names[:4]))
+            + "\n".join(f"[{i + 1}] {mark_untrusted(t)}" for i, t in enumerate(names[:4]))
             + '\n只输出JSON：{"covers_all": true, "reason": "一句话依据"}',
             timeout=30.0, max_tokens=120, temperature=0.0)
         row = out.get("data", out) if isinstance(out, dict) else {}
@@ -286,15 +287,15 @@ def _force_distinct_label(current: str, other_labels: dict, shared_terms: list,
         try:
             out = glm_client.chat_json(
                 "你是类簇标签差异化优化专家。",
-                f"标签「{current}」与另一簇标签「{nb_label}」语义相似度过高（余弦 {nb_cos:.2f}），"
+                f"标签「{mark_untrusted(current)}」与另一簇标签「{mark_untrusted(nb_label)}」语义相似度过高（余弦 {nb_cos:.2f}），"
                 f"差异度低于用户设定阈值 {threshold}，必须重写。\n"
-                f"本簇独有术语：{'、'.join(str(t) for t in (shared_terms or [])[:8]) or '（见代表短语）'}\n"
-                f"簇代表短语：{'、'.join(str(p) for p in (phrases or [])[:8])}\n"
+                f"本簇独有术语：{'、'.join(mark_untrusted(str(t)) for t in (shared_terms or [])[:8]) or '（见代表短语）'}\n"
+                f"簇代表短语：{'、'.join(mark_untrusted(str(p)) for p in (phrases or [])[:8])}\n"
                 + (f"簇内文献题名（标签必须概括这些文献的【共同】技术路线，"
-                   f"禁止只用其中一篇的专有方法名命名）：{'；'.join(member_titles[:4])}\n"
+                   f"禁止只用其中一篇的专有方法名命名）：{'；'.join(mark_untrusted(t) for t in member_titles[:4])}\n"
                    if member_titles else "")
-                + f"要求：避免「{nb_label}」及其他所有标签的用词，不超过 12 字，"
-                f"禁止括号补充说明，新标签必须与「{nb_label}」一眼可区分，且覆盖簇内全部文献。"
+                + f"要求：避免「{mark_untrusted(nb_label)}」及其他所有标签的用词，不超过 12 字，"
+                f"禁止括号补充说明，新标签必须与「{mark_untrusted(nb_label)}」一眼可区分，且覆盖簇内全部文献。"
                 '只输出JSON：{"optimized_label":"新标签"}',
                 timeout=45.0, max_tokens=300, temperature=0.2)
             candidate = str((out.get("data", out) if isinstance(out, dict) else {})
@@ -406,10 +407,10 @@ def execute_cluster_labeling(
                     others = set().union(*(t for c, t in _all_terms.items() if c != cid)) if len(_all_terms) > 1 else set()
                     _shared_terms[cid] = sorted(terms - others)
                 _label_list = "\n".join(
-                    f"[{i+1}] {lbl['cluster_id']}: {lbl['label']}"
-                    + (f"（独有术语：{'、'.join(_shared_terms.get(lbl['cluster_id'], [])[:6])}）"
+                    f"[{i+1}] {lbl['cluster_id']}: {mark_untrusted(lbl['label'])}"
+                    + (f"（独有术语：{'、'.join(mark_untrusted(t) for t in _shared_terms.get(lbl['cluster_id'], [])[:6])}）"
                        if _shared_terms.get(lbl['cluster_id']) else "")
-                    + (f"（簇内文献：{'；'.join(cluster_titles.get(lbl['cluster_id'], [])[:3])}）"
+                    + (f"（簇内文献：{'；'.join(mark_untrusted(t) for t in cluster_titles.get(lbl['cluster_id'], [])[:3])}）"
                        if cluster_titles.get(lbl['cluster_id']) else "")
                     for i, lbl in enumerate(labels))
                 _llm_prompt = (
@@ -484,10 +485,10 @@ def execute_cluster_labeling(
                                 f"这个类簇标签差异度不足，需要重写。\n"
                                 f"当前判定：该标签与其他簇标签存在词面重叠（如共享词根/缩写），"
                                 f"只靠换措辞不够，必须换用下方【独有术语】重构。\n"
-                                f"类簇 {_cid}({_lbl['label']}) 的独有术语：{'、'.join(_shared_terms.get(_cid, [])[:8]) or '（见短语）'}\n"
-                                f"簇代表短语：{'、'.join(cluster_phrases.get(_cid, [])[:8])}\n"
+                                f"类簇 {_cid}({mark_untrusted(_lbl['label'])}) 的独有术语：{'、'.join(mark_untrusted(t) for t in _shared_terms.get(_cid, [])[:8]) or '（见短语）'}\n"
+                                f"簇代表短语：{'、'.join(mark_untrusted(str(p)) for p in cluster_phrases.get(_cid, [])[:8])}\n"
                                 + (f"簇内文献题名（新标签必须概括全部文献的共同技术路线，"
-                                   f"禁止只用其中一篇的专有方法名）：{'；'.join(cluster_titles.get(_cid, [])[:4])}\n"
+                                   f"禁止只用其中一篇的专有方法名）：{'；'.join(mark_untrusted(t) for t in cluster_titles.get(_cid, [])[:4])}\n"
                                    if cluster_titles.get(_cid) else "")
                                 + f"其他簇的现有标签（必须避开它们的用词）：{_label_list}\n"
                                 f"要求：写一个 ≤{12} 字的新标签（禁止括号补充说明），"
@@ -780,8 +781,8 @@ def execute_cluster_labeling(
                 others = set().union(*(t for c, t in _all_terms.items() if c != cid)) if len(_all_terms) > 1 else set()
                 _unique_by[cid] = sorted(terms - others)
             _label_list = "\n".join(
-                f"{l['cluster_id']}: {l['label']}"
-                + (f"（独有术语：{'、'.join(_unique_by.get(str(l['cluster_id']), [])[:6])}）"
+                f"{l['cluster_id']}: {mark_untrusted(l['label'])}"
+                + (f"（独有术语：{'、'.join(mark_untrusted(t) for t in _unique_by.get(str(l['cluster_id']), [])[:6])}）"
                    if _unique_by.get(str(l['cluster_id'])) else "")
                 for l in _labels if isinstance(l, dict))
             _opt = llm.chat_json(

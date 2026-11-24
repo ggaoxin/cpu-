@@ -111,7 +111,7 @@ def _count_body_citation_markers(text: str) -> int:
         n += 1
     return n
 
-from application.service.tool_integration_service import ToolIntegrationService
+from application.service.tool_integration_service import ToolIntegrationService, TaskQueueBusyError
 from application.service.result_normalizer import public_viz_result
 from application.service.export_service import export_service
 from application.service.resource_service import resource_service
@@ -755,7 +755,11 @@ async def _store_uploaded_resource(
     max_bytes = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
     if len(content) > max_bytes:
         raise HTTPException(status_code=422, detail=f"资源文件不能超过 {settings.MAX_UPLOAD_SIZE_MB} MB")
-    original_name = Path(upload.filename or "resource.bin").name
+    # 文件名规范化（V8 补漏 2026-11-24）：入库/回显字段此前只做 basename，
+    # 控制字符与超长名仍可入库——统一走 sanitize_filename（basename+去控制字符+
+    # 压空白+限长，扩展名保留）；磁盘名 safe_name 从清洗后的名字派生，只增不减。
+    from infrastructure.document_parser.upload_reader import sanitize_filename
+    original_name = sanitize_filename(upload.filename, fallback="resource.bin")
     safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", original_name) or "resource.bin"
     digest = hashlib.sha256(content).hexdigest()
     directory = settings.PROJECT_ROOT / "runtime" / "semantic_resources"
@@ -913,6 +917,34 @@ async def _store_uploaded_resource(
 
 def get_integration_service() -> ToolIntegrationService:
     return _integration_service
+
+
+def _derived_workspace(request: Request) -> Optional[str]:
+    """当前请求从密钥派生的工作区；鉴权未开启（无派生身份）时返回 None，保持旧行为。"""
+    return getattr(request.state, "workspace_id", None)
+
+
+def _guard_workspace(request: Request, record_workspace: Optional[str]) -> None:
+    """对象级属主校验（2026-11-24 漏洞修复 V1 第二层）：
+
+    鉴权开启时，对象（任务/词典/导出等）的 workspace 必须与密钥派生的工作区一致，
+    不一致按"不存在"响应（404，不泄露资源存在性）；鉴权未开启时不启用（测试/本地）。
+    """
+    derived = _derived_workspace(request)
+    if derived is None or not record_workspace:
+        return
+    if str(record_workspace) != str(derived):
+        raise HTTPException(status_code=404, detail="资源不存在或无权访问")
+
+
+def _guard_result_workspace(request: Request, record: Optional[Dict[str, Any]]) -> None:
+    """结果记录本身无 workspace 字段：经其所属任务做属主校验（V1 补漏 2026-11-24，
+    覆盖 /results/{id} 与 /results/{id}/lineage）。任务查不到或无 workspace 时放行
+    （与 _guard_workspace 的向后兼容语义一致）。"""
+    if not record:
+        return
+    task = task_repository.get_task(str(record.get("task_id") or ""))
+    _guard_workspace(request, task.get("workspace_id") if task else None)
 
 
 JSON_ROUTES = {
@@ -1119,7 +1151,22 @@ def _json_endpoint(tool_id: str, input_type: str):
                 raise HTTPException(status_code=422, detail="JSON 请求体必须是对象")
         payload = {**payload, "input_type": input_type}
         async_mode = _wants_async(request, payload)
-        result = service.submit(tool_id, payload) if async_mode else service.execute(tool_id, payload)
+        _ws = _derived_workspace(request)
+        if async_mode:
+            # 排队背压（2026-11-24 漏洞修复）：满载/创建超时 → 429 业务信封，而非裸 500
+            try:
+                result = service.submit(tool_id, payload, workspace_id=_ws)
+            except TaskQueueBusyError as exc:
+                return JSONResponse(status_code=429, content={
+                    "code": 42901, "message": str(exc),
+                    "data": {"task_id": "", "tool_id": tool_id, "status": "failed",
+                             "input_type": input_type, "progress": 0, "total": 0,
+                             "success_count": 0, "failed_count": 0,
+                             "results": [], "summary": {}},
+                    "meta": {},
+                })
+        else:
+            result = service.execute(tool_id, payload, workspace_id=_ws)
         if not async_mode:
             result = _vue_public_response(tool_id, result, input_type)
         status_code = 202 if async_mode and result.get("code") == 0 else 200 if result.get("code") == 0 else (422 if 42200 <= int(result.get("code", 0)) < 42300 else 500)
@@ -1524,7 +1571,9 @@ async def parse_files(
             # DOCX 改名 .pdf 会被静默"成功"解析——pdf 直送 mineru 分支不走
             # extract_bytes，必须在分发前校验
             verify_content_magic(upload.filename or "", content)
-            name = upload.filename or "upload.pdf"
+            # 文件名规范化（2026-11-24 漏洞修复）：basename+去控制字符+限长后再入库/回显
+            from infrastructure.document_parser.upload_reader import sanitize_filename
+            name = sanitize_filename(upload.filename, fallback="upload.pdf")
             if not name.lower().endswith(".pdf") or effective_tool in PYMUPDF_TOOLS:
                 # 非 PDF 或 PyMuPDF 专用工具（基金/定义/聚类/综述）：直接走
                 # PyMuPDF light（含双栏分栏+断词重连+扫描件 MinerU 兜底）
@@ -1927,11 +1976,24 @@ def _file_endpoint(tool_id: str, multiple: bool):
             # 同步返回，异步分支永远不可达——而前端文件批量恰全走 preparsed。
             async_mode = _wants_async(request, payload)
             if async_mode:
-                result = service.submit(tool_id, payload, file_inputs=extracted)
+                try:
+                    result = service.submit(tool_id, payload, file_inputs=extracted,
+                                            workspace_id=_derived_workspace(request))
+                except TaskQueueBusyError as exc:
+                    # 排队背压（2026-11-24 漏洞修复）：429 业务信封，而非裸 500
+                    return JSONResponse(status_code=429, content={
+                        "code": 42901, "message": str(exc),
+                        "data": {"task_id": "", "tool_id": tool_id, "status": "failed",
+                                 "input_type": payload.get("input_type", "files"), "progress": 0,
+                                 "total": 0, "success_count": 0, "failed_count": 0,
+                                 "results": [], "summary": {}},
+                        "meta": {},
+                    })
                 status_code = 202 if result.get("code") == 0 else (422 if 42200 <= int(result.get("code", 0)) < 42300 else 500)
                 return JSONResponse(status_code=status_code, content=result)
             try:
-                result = service.execute(tool_id, payload, file_inputs=extracted)
+                result = service.execute(tool_id, payload, file_inputs=extracted,
+                                         workspace_id=_derived_workspace(request))
             except ValueError as exc:
                 raise HTTPException(status_code=422, detail=str(exc)) from exc
             result = _vue_public_response(tool_id, result, payload["input_type"])
@@ -1975,7 +2037,22 @@ def _file_endpoint(tool_id: str, multiple: bool):
             for upload in uploads:
                 await upload.close()
         async_mode = _wants_async(request, payload)
-        result = service.submit(tool_id, payload, file_inputs=extracted) if async_mode else service.execute(tool_id, payload, file_inputs=extracted)
+        _ws = _derived_workspace(request)
+        if async_mode:
+            # 排队背压（2026-11-24 漏洞修复）：满载/创建超时 → 429 业务信封，而非裸 500
+            try:
+                result = service.submit(tool_id, payload, file_inputs=extracted, workspace_id=_ws)
+            except TaskQueueBusyError as exc:
+                return JSONResponse(status_code=429, content={
+                    "code": 42901, "message": str(exc),
+                    "data": {"task_id": "", "tool_id": tool_id, "status": "failed",
+                             "input_type": str(payload.get("input_type") or "file"), "progress": 0,
+                             "total": 0, "success_count": 0, "failed_count": 0,
+                             "results": [], "summary": {}},
+                    "meta": {},
+                })
+        else:
+            result = service.execute(tool_id, payload, file_inputs=extracted, workspace_id=_ws)
         if not async_mode:
             result = _vue_public_response(tool_id, result, payload["input_type"])
         status_code = 202 if async_mode and result.get("code") == 0 else 200 if result.get("code") == 0 else (422 if 42200 <= int(result.get("code", 0)) < 42300 else 500)
@@ -2172,15 +2249,16 @@ def list_tasks(
 
 
 @router.get("/tasks/{task_id}")
-def get_task(task_id: str) -> Dict[str, Any]:
+def get_task(task_id: str, request: Request) -> Dict[str, Any]:
     task = task_repository.get_task(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="任务不存在")
+    _guard_workspace(request, task.get("workspace_id"))
     return {"code": 0, "data": task}
 
 
 @router.get("/tasks/{task_id}/progress")
-def get_task_progress(task_id: str) -> Dict[str, Any]:
+def get_task_progress(task_id: str, request: Request) -> Dict[str, Any]:
     """批量任务逐篇进度（2026-09-09 需求：等待响应期间显示哪些文件已出结果+耗时）。
 
     前端批量提交带 Prefer: respond-async 后轮询本端点：items 按输入序返回
@@ -2190,6 +2268,7 @@ def get_task_progress(task_id: str) -> Dict[str, Any]:
     task = task_repository.get_task(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="任务不存在")
+    _guard_workspace(request, task.get("workspace_id"))
     now = datetime.now(ZoneInfo("Asia/Shanghai"))
     items_out = []
     for item in task_repository.list_items(task_id):
@@ -2219,18 +2298,22 @@ def get_task_progress(task_id: str) -> Dict[str, Any]:
 
 
 @router.get("/deepcluster/tasks/{task_id}/labels")
-def deep_cluster_task_labels(task_id: str) -> Dict[str, Any]:
+def deep_cluster_task_labels(task_id: str, request: Request) -> Dict[str, Any]:
     """查询聚类任务已生成的类簇标签（2026-11-10 测试用例 TC-383：文档声明路径
     此前 404 未实现）。返回该聚类任务最近一次标签生成（cluster-label 的
     from-cluster-task）的标签列表；尚未生成过时返回 42201 业务包络提示先调用
     /api/v1/cluster-labels/from-cluster-task，不自动触发生成（读操作无副作用）。
     """
     repository = get_integration_service().repository
-    if not repository.get_task(task_id):
+    _task = repository.get_task(task_id)
+    if not _task:
         return {"code": 42201, "message": f"聚类任务不存在：{task_id}", "data": {}}
+    # 属主校验 + 遍历空间改用密钥派生工作区（V1 补漏 2026-11-24：此前硬编码
+    # default，多密钥部署下既可跨空间读标签、也找不到其他空间的标签任务）
+    _guard_workspace(request, _task.get("workspace_id"))
     labels: List[Dict[str, Any]] = []
     # 最近若干条 cluster-label 任务里找关联该聚类任务的（请求参数含 cluster_task_id）
-    for task in repository.list_tasks(settings.DEFAULT_WORKSPACE_ID, limit=100):
+    for task in repository.list_tasks(_derived_workspace(request) or settings.DEFAULT_WORKSPACE_ID, limit=100):
         if task.get("tool_id") != "cluster-label":
             continue
         payload = task.get("request_payload") if isinstance(task.get("request_payload"), dict) else {}
@@ -2251,7 +2334,7 @@ def deep_cluster_task_labels(task_id: str) -> Dict[str, Any]:
 
 
 @router.get("/tasks/{task_id}/vue-result")
-def get_task_vue_result(task_id: str, tool_id: str = Query(...), input_type: str = Query("files")) -> Dict[str, Any]:
+def get_task_vue_result(task_id: str, request: Request, tool_id: str = Query(...), input_type: str = Query("files")) -> Dict[str, Any]:
     """异步任务终态 → 与同步响应完全同构的 Vue 信封（复用 _vue_public_response）。
 
     前端轮询到终态后取本端点渲染，弹窗/导出/复制与同步路径零差异。
@@ -2260,6 +2343,7 @@ def get_task_vue_result(task_id: str, tool_id: str = Query(...), input_type: str
     task = task_repository.get_task(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="任务不存在")
+    _guard_workspace(request, task.get("workspace_id"))
     items = task_repository.list_items(task_id)
     records_by_item = {}
     for record in task_repository.list_results(task_id):
@@ -2296,22 +2380,29 @@ def get_task_vue_result(task_id: str, tool_id: str = Query(...), input_type: str
 
 
 @router.get("/tasks/{task_id}/results")
-def get_task_results(task_id: str) -> Dict[str, Any]:
-    if not task_repository.get_task(task_id):
+def get_task_results(task_id: str, request: Request) -> Dict[str, Any]:
+    task = task_repository.get_task(task_id)
+    if not task:
         raise HTTPException(status_code=404, detail="任务不存在")
+    _guard_workspace(request, task.get("workspace_id"))
     return {"code": 0, "data": task_repository.list_results(task_id)}
 
 
 @router.get("/results/{record_id}")
-def get_result(record_id: str) -> Dict[str, Any]:
+def get_result(record_id: str, request: Request) -> Dict[str, Any]:
     record = task_repository.get_result(record_id)
     if not record:
         raise HTTPException(status_code=404, detail="结果记录不存在")
+    _guard_result_workspace(request, record)
     return {"code": 0, "data": record}
 
 
 @router.get("/results/{record_id}/lineage")
-def get_result_lineage(record_id: str) -> Dict[str, Any]:
+def get_result_lineage(record_id: str, request: Request) -> Dict[str, Any]:
+    record = task_repository.get_result(record_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="结果记录不存在")
+    _guard_result_workspace(request, record)
     try:
         value = result_governance_service.lineage(record_id)
     except ValueError as exc:
@@ -2322,29 +2413,35 @@ def get_result_lineage(record_id: str) -> Dict[str, Any]:
 @router.post("/tasks/{task_id}/rerun")
 def rerun_task(
     task_id: str,
+    request: Request,
     service: ToolIntegrationService = Depends(get_integration_service),
 ) -> Dict[str, Any]:
     task = task_repository.get_task(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="任务不存在")
+    _guard_workspace(request, task.get("workspace_id"))
     payload = dict(task.get("request_payload") or {})
     payload["rerun_from_task_id"] = task_id
     return service.execute(task["tool_id"], payload, workspace_id=task["workspace_id"])
 
 
 @router.post("/tasks/{task_id}/cancel")
-def cancel_task(task_id: str) -> Dict[str, Any]:
-    if not task_repository.get_task(task_id):
+def cancel_task(task_id: str, request: Request) -> Dict[str, Any]:
+    task = task_repository.get_task(task_id)
+    if not task:
         raise HTTPException(status_code=404, detail="任务不存在")
+    _guard_workspace(request, task.get("workspace_id"))
     if not task_repository.cancel_task(task_id):
         raise HTTPException(status_code=409, detail="任务已结束，不能取消")
     return {"code": 0, "message": "任务已取消", "data": {"task_id": task_id, "status": "cancelled"}}
 
 
 @router.post("/tasks/{task_id}/archive")
-def archive_task(task_id: str) -> Dict[str, Any]:
-    if not task_repository.get_task(task_id):
+def archive_task(task_id: str, request: Request) -> Dict[str, Any]:
+    task = task_repository.get_task(task_id)
+    if not task:
         raise HTTPException(status_code=404, detail="任务不存在")
+    _guard_workspace(request, task.get("workspace_id"))
     task_repository.archive_task(task_id)
     return {"code": 0, "message": "任务已归档", "data": {"task_id": task_id}}
 
@@ -2493,7 +2590,13 @@ def database_health() -> Dict[str, Any]:
 
 
 @router.post("/upstream-records/{kind}")
-def create_upstream_record(kind: str, payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
+def create_upstream_record(kind: str, payload: Dict[str, Any] = Body(...), request: Request = None) -> Dict[str, Any]:
+    # workspace_id 从密钥派生并覆盖客户端自报值（V1 补漏 2026-11-24：鉴权中间件
+    # 只改写查询串，body 里的 workspace_id 此前被 upstream_record_service 直接信任）
+    if request is not None:
+        _derived = _derived_workspace(request)
+        if _derived is not None:
+            payload = {**payload, "workspace_id": _derived}
     try:
         value = upstream_record_service.create(kind, payload)
     except ValueError as exc:
@@ -2502,9 +2605,10 @@ def create_upstream_record(kind: str, payload: Dict[str, Any] = Body(...)) -> Di
 
 
 @router.post("/collections")
-def create_collection(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
+def create_collection(payload: Dict[str, Any] = Body(...), request: Request = None) -> Dict[str, Any]:
     try:
-        value = resource_service.create_collection(payload)
+        value = resource_service.create_collection(
+            payload, workspace_id=_derived_workspace(request) if request is not None else None)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return {"code": 0, "message": "文献集合已创建", "data": value}
@@ -2535,17 +2639,19 @@ def list_collections(
 
 
 @router.get("/collections/{collection_id}")
-def get_collection(collection_id: str) -> Dict[str, Any]:
+def get_collection(collection_id: str, request: Request) -> Dict[str, Any]:
     value = resource_service.get_collection(collection_id)
     if not value:
         raise HTTPException(status_code=404, detail="文献集合不存在")
+    _guard_workspace(request, value.get("workspace_id"))
     return {"code": 0, "data": value}
 
 
 @router.post("/dictionaries")
-def create_dictionary(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
+def create_dictionary(payload: Dict[str, Any] = Body(...), request: Request = None) -> Dict[str, Any]:
     try:
-        value = resource_service.create_dictionary(payload)
+        value = resource_service.create_dictionary(
+            payload, workspace_id=_derived_workspace(request) if request is not None else None)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return {"code": 0, "message": "用户词典已保存", "data": value}
@@ -2560,18 +2666,22 @@ def list_dictionaries(
 
 
 @router.get("/dictionaries/{dictionary_id}")
-def get_dictionary(dictionary_id: str, version: Optional[int] = Query(None, ge=1)) -> Dict[str, Any]:
+def get_dictionary(dictionary_id: str, request: Request, version: Optional[int] = Query(None, ge=1)) -> Dict[str, Any]:
     value = resource_service.get_dictionary(dictionary_id, version)
     if not value:
         raise HTTPException(status_code=404, detail="用户词典或指定版本不存在")
+    _guard_workspace(request, value.get("workspace_id"))
     return {"code": 0, "data": value}
 
 
 @router.post("/dictionaries/{dictionary_id}")
-def delete_dictionary(dictionary_id: str) -> Dict[str, Any]:
+def delete_dictionary(dictionary_id: str, request: Request) -> Dict[str, Any]:
     """删除用户词典。POST 而非 DELETE（2026-11-08 前端网关禁用 PUT/DELETE/
     OPTIONS 等不安全方法，接口全部收敛为 GET/POST；该路径无 POST 冲突，
     且原 DELETE 版无任何前端/SDK/测试消费方，行为完全一致）"""
+    existing = resource_service.get_dictionary(dictionary_id)
+    if existing:
+        _guard_workspace(request, existing.get("workspace_id"))
     deleted = resource_service.delete_dictionary(dictionary_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="用户词典不存在或已删除")
@@ -2579,9 +2689,10 @@ def delete_dictionary(dictionary_id: str) -> Dict[str, Any]:
 
 
 @router.post("/semantic-resources")
-def register_semantic_resource(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
+def register_semantic_resource(payload: Dict[str, Any] = Body(...), request: Request = None) -> Dict[str, Any]:
     try:
-        value = resource_service.register_semantic_resource(payload)
+        value = resource_service.register_semantic_resource(
+            payload, workspace_id=_derived_workspace(request) if request is not None else None)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return {"code": 0, "message": "语义资源已登记", "data": value}
@@ -2608,10 +2719,11 @@ def get_index_status(storage_uri: str = Query(...)) -> Dict[str, Any]:
 
 
 @router.get("/semantic-resources/{resource_id}")
-def get_semantic_resource(resource_id: str) -> Dict[str, Any]:
+def get_semantic_resource(resource_id: str, request: Request) -> Dict[str, Any]:
     value = resource_service.get_semantic_resource(resource_id)
     if not value:
         raise HTTPException(status_code=404, detail="语义资源不存在")
+    _guard_workspace(request, value.get("workspace_id"))
     return {"code": 0, "data": value}
 
 
@@ -2747,19 +2859,24 @@ async def upload_semantic_resource(
 
 
 @router.post("/exports")
-def create_export(payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
+def create_export(payload: Dict[str, Any] = Body(...), request: Request = None) -> Dict[str, Any]:
     try:
-        value = export_service.create(str(payload.get("result_record_id") or ""), str(payload.get("format") or "json"))
+        value = export_service.create(
+            str(payload.get("result_record_id") or ""),
+            str(payload.get("format") or "json"),
+            expected_workspace=_derived_workspace(request) if request is not None else None,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return {"code": 0, "message": "导出文件已生成", "data": value}
 
 
 @router.get("/exports/{export_id}/download")
-def download_export(export_id: str) -> FileResponse:
+def download_export(export_id: str, request: Request) -> FileResponse:
     value = export_service.get(export_id)
     if not value:
         raise HTTPException(status_code=404, detail="导出文件不存在或已失效")
+    _guard_workspace(request, value.get("workspace_id"))
     return FileResponse(
         value["path"],
         media_type=value["content_type"],
@@ -2768,10 +2885,24 @@ def download_export(export_id: str) -> FileResponse:
 
 
 @router.get("/exports/{export_id}")
-def get_export(export_id: str) -> Dict[str, Any]:
+def get_export(export_id: str, request: Request) -> Dict[str, Any]:
     value = export_service.get(export_id)
     if not value:
         raise HTTPException(status_code=404, detail="导出记录不存在或文件已失效")
+    _guard_workspace(request, value.get("workspace_id"))
     public_value = {key: item for key, item in value.items() if key not in {"path", "object_key"}}
     public_value["download_url"] = f"/api/v1/exports/{export_id}/download"
     return {"code": 0, "data": public_value}
+
+
+@router.get("/whoami")
+def whoami(request: Request) -> Dict[str, Any]:
+    """部署自检（2026-11-24）：返回当前密钥派生的工作区，用于部署后一眼确认
+    密钥→工作区映射配置是否生效。需鉴权通过才能访问。"""
+    derived = _derived_workspace(request)
+    return {"code": 0, "data": {
+        "authenticated": True,
+        "auth_enabled": settings.API_AUTH_ENABLED,
+        "workspace_id": derived or settings.DEFAULT_WORKSPACE_ID,
+        "multi_key_isolation_active": derived is not None and bool(settings.API_KEY_WORKSPACES),
+    }}

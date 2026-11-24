@@ -13,6 +13,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from difflib import SequenceMatcher
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
+from infrastructure.llm.prompt_isolation import mark_untrusted
+
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -504,8 +506,8 @@ class StructuredReviewEngine:
             "\"method_evidence_quote\":\"...\"}]}}"
         )
         user_prompt = (
-            f"研究主题或关键词：{topic}\n文献编号：{document.document_id}\n"
-            f"题名（可能为空）：{document.title}\ntext：\n{document.text[:8000]}"
+            f"研究主题或关键词：{mark_untrusted(topic)}\n文献编号：{mark_untrusted(document.document_id)}\n"
+            f"题名（可能为空）：{mark_untrusted(document.title)}\ntext：\n{mark_untrusted(document.text[:8000])}"
         )
         try:
             response = self.glm.chat_json(
@@ -837,7 +839,7 @@ class StructuredReviewEngine:
             try:
                 response = self.glm.chat_json(
                     system_prompt,
-                    f"总主题：{topic}\n类簇内容：{json.dumps(evidence_rows, ensure_ascii=False)}",
+                    mark_untrusted(f"总主题：{topic}\n类簇内容：{json.dumps(evidence_rows, ensure_ascii=False)}"),
                     temperature=0.0, timeout=90.0, max_tokens=500,
                 )
                 data = response.get("data", response) if isinstance(response, dict) else {}
@@ -926,10 +928,10 @@ class StructuredReviewEngine:
                     "summary 开头禁止复述方法做法本身，直接从实验设置/结果写起；"
                     "不得增加证据中没有的方法、数据或结论。"
                     '只输出JSON：{"data":{"summary":"...","conclusion":"..."}}',
-                    json.dumps({
+                    mark_untrusted(json.dumps({
                         "method": method_text[:300],
                         "result_sentences": evidence_sentences,
-                    }, ensure_ascii=False),
+                    }, ensure_ascii=False)),
                     temperature=0.0, timeout=60.0, max_tokens=400,
                 )
                 data = response.get("data", response) if isinstance(response, dict) else {}
@@ -1328,7 +1330,7 @@ class StructuredReviewEngine:
             }
             try:
                 response = self.glm.chat_json(
-                    system_prompt, json.dumps(prompt_data, ensure_ascii=False),
+                    system_prompt, mark_untrusted(json.dumps(prompt_data, ensure_ascii=False)),
                     temperature=0.0, timeout=180.0, max_tokens=4200,
                 )
                 data = response.get("data", response) if isinstance(response, dict) else {}

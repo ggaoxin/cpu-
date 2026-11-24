@@ -17,6 +17,8 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional
 
+from infrastructure.llm.prompt_isolation import mark_untrusted
+
 CHUNK_SIZE = 6000
 CHUNK_OVERLAP = 200
 MAX_WORKERS = 6
@@ -84,7 +86,7 @@ def _clean_text(value: Any) -> str:
 
 def _extract_chunk(glm, chunk: str) -> Dict[str, List[str]]:
     try:
-        raw = glm.chat_json(EXTRACT_SYSTEM, f"文献片段：\n{chunk}",
+        raw = glm.chat_json(EXTRACT_SYSTEM, f"文献片段：\n{mark_untrusted(chunk)}",
                             temperature=0.0, timeout=120.0, max_tokens=3000)
     except Exception:  # noqa: BLE001
         return {}
@@ -196,12 +198,12 @@ def _group_once(glm, papers: List[Dict[str, Any]], moves: List[Dict[str, List[st
             sents = mv["研究方法"][:3]
         else:
             sents = (mv["研究背景"] + mv["研究目的"])[:3]
-        lines.append(f"[{i + 1}]「{title}」{'；'.join(s[:120] for s in sents[:2])}")
+        lines.append(f"[{i + 1}]「{mark_untrusted(title)}」{mark_untrusted('；'.join(s[:120] for s in sents[:2]))}")
     system = GROUP_SYSTEM_TEMPLATE.format(which=which, criterion=spec["criterion"], example=spec["example"])
     if target_k:
         system += f"\n用户要求类簇数量约为 {target_k} 个（允许±1 浮动），请按此粒度分组。"""
     try:
-        raw = glm.chat_json(system, "\n".join(lines), temperature=0.0, timeout=180.0, max_tokens=3000)
+        raw = glm.chat_json(system, mark_untrusted("\n".join(lines)), temperature=0.0, timeout=180.0, max_tokens=3000)
     except Exception:  # noqa: BLE001
         return []
     if isinstance(raw, dict) and isinstance(raw.get("data"), dict):
@@ -239,7 +241,7 @@ def _merge_batches(glm, batch_groups: List[List[Dict[str, Any]]], batch_size: in
             })
     if len(batch_groups) <= 1:
         return flat
-    lines = [f"簇「{g['name']}」: {len(g['indices'])}篇 {g['indices'][:8]}..." for g in flat]
+    lines = [f"簇「{mark_untrusted(g['name'])}」: {len(g['indices'])}篇 {g['indices'][:8]}..." for g in flat]
     system = (
         "下面是对多批文献分别聚类得到的簇（docs 为全局文献编号）。请把研究同一主题"
         "的簇合并（合并后 docs 取并集，簇名保留最贴切的）；不同主题的簇保持独立。"
@@ -251,7 +253,7 @@ def _merge_batches(glm, batch_groups: List[List[Dict[str, Any]]], batch_size: in
     if target_k:
         system += f"\n用户要求类簇数量约为 {target_k} 个（允许±1 浮动）。"
     try:
-        raw = glm.chat_json(system, "\n".join(lines), temperature=0.0, timeout=180.0, max_tokens=3000)
+        raw = glm.chat_json(system, mark_untrusted("\n".join(lines)), temperature=0.0, timeout=180.0, max_tokens=3000)
     except Exception:  # noqa: BLE001
         return flat
     if isinstance(raw, dict) and isinstance(raw.get("data"), dict):
@@ -340,11 +342,11 @@ def _assign_to_anchor_categories(glm, papers, moves, profiles, axis) -> List[str
     for i, (paper, mv) in enumerate(zip(papers, moves)):
         title = _display_title(paper)
         sents = mv["研究方法"][:2] if axis == "technical" else (mv["研究背景"] + mv["研究目的"])[:2]
-        doc_lines.append(f"[{i + 1}]「{title}」{'；'.join(s[:60] for s in sents[:2])}")
+        doc_lines.append(f"[{i + 1}]「{mark_untrusted(title)}」{mark_untrusted('；'.join(s[:60] for s in sents[:2]))}")
     try:
         raw = glm.chat_json(
             ANCHOR_ASSIGN_SYSTEM.format(which=which),
-            "类目档案：\n" + "\n".join(lines) + "\n\n待归类文献：\n" + "\n".join(doc_lines),
+            mark_untrusted("类目档案：\n" + "\n".join(lines) + "\n\n待归类文献：\n" + "\n".join(doc_lines)),
             temperature=0.0, timeout=180.0, max_tokens=3000)
     except Exception:  # noqa: BLE001
         return ["" for _ in papers]
@@ -845,7 +847,7 @@ def _name_fallback_groups(glm_client, papers, groups, moves=None,
             f" {label_length_limit} 字以内的语义名（概括该簇的共同研究方向）{_lang_note}，"
             "并给 2-3 个关键词。只输出JSON："
             '{"named":[{"index":1,"name":"簇名","keywords":["词1","词2"]},...]}',
-            f"聚类结果（题名即簇内文献）：\n{listing}\n请按簇序号逐一命名。\n\n"
+            f"聚类结果（题名即簇内文献）：\n{mark_untrusted(listing)}\n请按簇序号逐一命名。\n\n"
             '只输出JSON：{"named":[{"index":1,"name":"...","keywords":["...","..."]},...]}',
             timeout=45.0, max_tokens=800, temperature=0.0)
         rows = out.get("data", out).get("named", []) if isinstance(out, dict) else []
@@ -906,7 +908,8 @@ def _axis_sentences(mv: Dict[str, List[str]], axis: str, title: str) -> str:
     else:
         sents = (mv.get("研究背景") or []) + (mv.get("研究目的") or []) + (mv.get("研究结果") or [])
     sents = [s for s in sents if s and s.strip()][:10]
-    return "题名：" + str(title or "（无）") + "\n" + "\n".join("- " + s[:200] for s in sents)
+    return ("题名：" + mark_untrusted(str(title or "（无）")) + "\n"
+            + "\n".join("- " + mark_untrusted(s[:200]) for s in sents))
 
 
 def _extract_paper_tasks(glm_client, papers, moves, axis: str) -> List[Dict[str, str]]:
@@ -966,7 +969,7 @@ def _llm_same_task(glm_client, row_i: Dict[str, str], row_j: Dict[str, str],
         f"「{row_j.get('branch')}」，题名：{title_j[:60]}\n原文关键句：\n{_sents(sents_j)}\n"
         '只输出JSON：{"same":"true或false","task":"若同任务，给共同任务名（10字内）"}')
     try:
-        raw = glm_client.chat_json("你是科技文献聚类判定专家。", prompt,
+        raw = glm_client.chat_json("你是科技文献聚类判定专家。", mark_untrusted(prompt),
                                    temperature=0.0, timeout=45.0, max_tokens=150)
         row = raw.get("data", raw) if isinstance(raw, dict) else {}
         return {"same": str(row.get("same") or "").strip().lower(),
@@ -1112,7 +1115,7 @@ def _name_task_groups(glm_client, papers, groups, task_rows) -> None:
             raw = glm_client.chat_json(
                 "你是类簇命名专家。",
                 "为下面这组文献的类簇起名。它们共享同一研究任务，各文献的方法分支如下：\n"
-                + "\n".join(f"- 任务「{t}」分支「{b}」" for t, b in zip(tasks, branches) if t or b)
+                + "\n".join(f"- 任务「{mark_untrusted(t)}」分支「{mark_untrusted(b)}」" for t, b in zip(tasks, branches) if t or b)
                 + "\n要求：簇名 = 这组文献共同任务的浓缩命名（不超过 10 字，任务级而非领域级，"
                   "禁止'大模型''多模态''深度学习'等领域词）。"
                   '只输出JSON：{"name":"簇名"}',

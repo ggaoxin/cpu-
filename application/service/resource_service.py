@@ -6,6 +6,8 @@ import logging
 import os
 from typing import Any, Dict, List, Optional
 
+from application.service.input_hygiene import contains_html_tag, html_tag_error
+from infrastructure.database.resource_repository import ensure_workspace
 from config.settings import settings
 from domain.repository.resource_repository import IResourceRepository
 from infrastructure.database.resource_repository import resource_repository
@@ -18,19 +20,25 @@ class ResourceService:
         self.repository = repository or resource_repository
 
     def create_collection(self, payload: Dict[str, Any], workspace_id: Optional[str] = None) -> Dict[str, Any]:
+        _ws = workspace_id or settings.DEFAULT_WORKSPACE_ID
+        ensure_workspace(self.repository.db, _ws)
         name = str(payload.get("name") or "").strip()
         documents = payload.get("documents") or []
         if not name:
             raise ValueError("文献集合名称不能为空")
+        if contains_html_tag(name):
+            raise ValueError(html_tag_error("文献集合名称"))
         if not isinstance(documents, list) or not documents:
             raise ValueError("文献集合至少需要一篇文献")
         for index, document in enumerate(documents):
             if not isinstance(document, dict):
                 raise ValueError(f"第 {index + 1} 篇文献格式不正确")
+            if contains_html_tag(document.get("title")):
+                raise ValueError(html_tag_error(f"第 {index + 1} 篇文献的 title"))
             if not any(str(document.get(key) or "").strip() for key in ("title", "abstract", "text", "content")):
                 raise ValueError(f"第 {index + 1} 篇文献没有可保存内容")
         return self.repository.create_collection(
-            workspace_id or settings.DEFAULT_WORKSPACE_ID,
+            _ws,
             name,
             str(payload.get("description") or ""),
             documents,
@@ -71,10 +79,18 @@ class ResourceService:
         return self.repository.get_collection(collection_id)
 
     def create_dictionary(self, payload: Dict[str, Any], workspace_id: Optional[str] = None) -> Dict[str, Any]:
-        if not str(payload.get("name") or "").strip():
+        dictionary_name = str(payload.get("name") or "").strip()
+        if not dictionary_name:
             raise ValueError("词典名称不能为空")
+        if contains_html_tag(dictionary_name):
+            raise ValueError(html_tag_error("词典名称"))
         if not payload.get("terms"):
             raise ValueError("词典至少需要一个术语")
+        # 术语会进共享下拉/导出/词典溯源，同样拒绝标签形态（2026-11-24 V2 第1档）
+        for index, term in enumerate(payload.get("terms") or []):
+            term_text = term.get("term") if isinstance(term, dict) else term
+            if contains_html_tag(term_text):
+                raise ValueError(html_tag_error(f"第 {index + 1} 个术语"))
         language = str(payload.get("language") or "zh").strip().lower()
         if language not in {"zh", "en"}:
             raise ValueError("词典 language 仅支持 zh 或 en")
@@ -84,6 +100,7 @@ class ResourceService:
             raise ValueError("词典 weight_boost 必须是数值") from exc
         if not 0 <= weight_boost <= 0.5:
             raise ValueError("词典 weight_boost 必须在 0—0.5 之间")
+        ensure_workspace(self.repository.db, workspace_id or settings.DEFAULT_WORKSPACE_ID)
         return self.repository.create_dictionary(
             workspace_id or settings.DEFAULT_WORKSPACE_ID,
             {**payload, "language": language, "weight_boost": weight_boost},
@@ -99,6 +116,10 @@ class ResourceService:
         return self.repository.delete_dictionary(dictionary_id)
 
     def register_semantic_resource(self, payload: Dict[str, Any], workspace_id: Optional[str] = None) -> Dict[str, Any]:
+        # 展示字段 HTML 拒绝（2026-11-24 V2 第1档）：资源名进全站共享下拉与回显
+        if contains_html_tag(payload.get("name")):
+            raise ValueError(html_tag_error("资源名称"))
+        ensure_workspace(self.repository.db, workspace_id or settings.DEFAULT_WORKSPACE_ID)
         # CLC 资源：读 storage_uri 算 verdict 写 metadata.clc_verdict（供 _resource_context 分治）
         verdict = self._maybe_enrich_clc_verdict(payload)
         resource_row = self.repository.register_semantic_resource(

@@ -16,6 +16,7 @@ from __future__ import annotations
 from difflib import SequenceMatcher
 
 from infrastructure.llm.glm_client import glm_client
+from infrastructure.llm.prompt_isolation import mark_untrusted
 
 REVIEW_SYSP = """你是科技文献主题聚类审核专家。审核一个候选主题提案。
 
@@ -76,7 +77,7 @@ def review_proposal(proposal: dict, existing_topic_names: list,
         f"代表性文献摘要：{docs}"
     )
     try:
-        d = glm_client.chat_json(REVIEW_SYSP, user, timeout=60.0, max_tokens=200, temperature=0.0)
+        d = glm_client.chat_json(REVIEW_SYSP, mark_untrusted(user), timeout=60.0, max_tokens=200, temperature=0.0)
         d = d.get("data", d) if isinstance(d, dict) else {}
         decision = (d.get("decision") or "pending").strip()
         if decision not in ("accept", "use_existing", "pending"):

@@ -19,6 +19,7 @@ from config.settings import settings
 from domain.entity.base import SemanticResult
 from infrastructure.clustering.axis_router import run_selected_axis_clustering
 from infrastructure.document_parser.document_parser import DocumentParser
+from infrastructure.llm.prompt_isolation import mark_untrusted
 from infrastructure.document_parser.upload_reader import extract_bytes
 from infrastructure.rag.m3_encoder import m3_encoder
 
@@ -315,7 +316,7 @@ def _llm_summary_one(paper: dict[str, Any], glm) -> str:
         raw = glm.chat_json(
             "你是科技文献摘要专家。用一段话（250-400字）概括文献的研究内容、采用的方法、"
             "主要研究结果与结论（含研究进展），语言与原文一致，不编造。只输出JSON：{\"summary\":\"...\"}",
-            f"文献题名：{title}\n文献内容：\n{text[:12000]}",
+            f"文献题名：{mark_untrusted(title)}\n文献内容：\n{mark_untrusted(text[:12000])}",
             temperature=0.1, timeout=120.0, max_tokens=900)
         if isinstance(raw, dict) and isinstance(raw.get("data"), dict):
             raw = raw["data"]
@@ -344,7 +345,7 @@ def _llm_summary_batch(papers: list[dict[str, Any]], glm) -> list[str]:
                 "你是科技文献摘要专家。对下面每篇文献各用一段话（250-400字）概括研究内容、"
                 "采用的方法、主要结果与结论。语言与原文一致，不编造。\n"
                 "只输出JSON：{\"items\":[{\"index\":编号,\"summary\":\"...\"},...]}",
-                listing, temperature=0.1, timeout=120.0, max_tokens=2400)
+                mark_untrusted(listing), temperature=0.1, timeout=120.0, max_tokens=2400)
             if isinstance(raw, dict) and isinstance(raw.get("data"), dict):
                 raw = raw["data"]
             for it in (raw or {}).get("items") or []:
@@ -615,7 +616,7 @@ def execute_deep_clustering(
         quality["silhouette_score"] = None  # 已弃用：轮廓系数量向量几何，不度量语义分组
         quality.pop("silhouette_score", None)
         try:
-            raw_m = glm_client.chat_json(metrics_system, "\n".join(cluster_lines),
+            raw_m = glm_client.chat_json(metrics_system, mark_untrusted("\n".join(cluster_lines)),
                                          temperature=0.0, timeout=120.0, max_tokens=1500)
             if isinstance(raw_m, dict) and isinstance(raw_m.get("data"), dict):
                 raw_m = raw_m["data"]

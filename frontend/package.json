@@ -12,6 +12,7 @@
     "audit:interfaces": "node scripts/audit-interface-consistency.mjs"
   },
   "dependencies": {
+    "dompurify": "^3.5.0",
     "katex": "^0.18.4",
     "vue": "^3.5.40"
   },

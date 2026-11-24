@@ -26,6 +26,8 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from infrastructure.llm.prompt_isolation import mark_untrusted
+
 
 # PDF 首页版面杂件行（2026-11-06 31.pdf 实测）：摘要正文跨左右两栏时，左栏
 # 底部的脚注（∗Equal contribution / Work done during … internship）与跨栏
@@ -883,7 +885,7 @@ class DocumentParser:
         full_text = text[:8000]
         usr = f'缺失章节：\n{missing_str}\n\n文档全文（截取前8000字）：\n{full_text}'
         try:
-            d = self._glm.chat_json(sysp, usr, timeout=60.0, max_tokens=1000, temperature=0.0)
+            d = self._glm.chat_json(sysp, mark_untrusted(usr), timeout=60.0, max_tokens=1000, temperature=0.0)
             d = d.get('data', d) if isinstance(d, dict) else {}
             found = d.get('found', [])
         except Exception:
@@ -961,7 +963,7 @@ class DocumentParser:
         usr = f'候选字段：\n{cand}\n\n文档前部文本：\n{ctx}'
 
         try:
-            d = self._glm.chat_json(sysp, usr, timeout=60.0, max_tokens=1500, temperature=0.0)
+            d = self._glm.chat_json(sysp, mark_untrusted(usr), timeout=60.0, max_tokens=1500, temperature=0.0)
             d = d.get('data', d) if isinstance(d, dict) else {}
         except Exception as e:  # noqa: BLE001
             logger.warning('LLM 校验清洗失败(%s)，返回规则预处理结果', e)

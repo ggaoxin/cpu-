@@ -22,6 +22,23 @@ def _now() -> str:
     return datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
 
 
+def ensure_workspace(db, workspace_id: str) -> None:
+    """轻量租户（2026-11-24 漏洞修复 V1 第二层）：确保工作区行存在。
+
+    密钥派生的新工作区（如 ws_team_b）首次写入前需要登记，否则
+    dictionaries/analysis_tasks 等表的外键约束（fk_*_workspace）会拒绝插入。
+    幂等：已存在时无操作。default 工作区由初始化数据保证存在，调用方可跳过。
+    """
+    ws = str(workspace_id or "").strip()
+    if not ws or ws == "default":
+        return
+    verb = "INSERT IGNORE" if getattr(db, "dialect", "") == "mysql" else "INSERT OR IGNORE"
+    with db.session() as session:
+        session.execute(
+            f"{verb} INTO workspaces (id, name, status, created_at) VALUES (?, ?, 'active', ?)",
+            (ws, ws, _now()))
+
+
 _DICT_STAMP_RE = re.compile(r"_\d{8}_\d{4}$")
 
 
